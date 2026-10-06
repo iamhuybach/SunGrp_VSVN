@@ -1,0 +1,9 @@
+# --- VSVN agent workflow (gộp vào .gitignore của repo) ---
+# Kết quả probe/runtime có thể chứa dữ liệu thật → không commit
+.ai/task/*/evidence/results/
+# Cấu hình cá nhân
+.claude/settings.local.json
+# Cache tool verify
+__pycache__/
+.pytest_cache/
+.ruff_cache/

@@ -1,0 +1,18 @@
+# Lint deterministic cho notebook Fabric (.Notebook/notebook-content.py, .ipynb) và script Python.
+target-version = "py311"          # Fabric Runtime 1.3
+line-length = 120
+extend-include = ["*.ipynb"]
+extend-exclude = [".ai"]
+
+# Biến Fabric inject sẵn trong notebook
+builtins = ["spark", "sc", "sqlContext", "notebookutils", "mssparkutils", "display", "displayHTML"]
+
+[lint]
+# E9: syntax/IO error · F: pyflakes (biến chưa dùng, trùng tên, f-string lỗi...) · B: bugbear (default mutable, except trống...)
+select = ["E9", "F", "B"]
+ignore = ["B008"]
+
+[lint.per-file-ignores]
+# Notebook nạp lib bằng %run → tên hàm lib "chưa định nghĩa" là bình thường
+"**/*.Notebook/**" = ["F821", "F811"]
+"*.ipynb" = ["F821", "F811"]

@@ -1,0 +1,13 @@
+---
+description: Quy ước sửa Fabric Data Pipeline (pipeline-content.json) cho VSVN
+globs: **/*.DataPipeline/**
+alwaysApply: false
+---
+
+- Đây là file Fabric Git sinh ra: chỉ sửa phần cần đổi, giữ nguyên format/khóa khác để diff gọn. Không đổi `logicalId`, `objectId` nếu không bắt buộc.
+- Pre-check: đọc `ctrl_mng_pipeline_config` + `ctrl_mng_watermark`, Get Metadata `_delta_log` qua shortcut `Files/_delta_src/<tbl>`; không có dữ liệu mới → không gọi notebook (không khởi động Spark).
+- FL_00: ForEach theo nguồn → If_HasWork → Switch theo `item().src_tbl`. Thêm nguồn mới = thêm case, không nhân bản pipeline.
+- Không lưu notebook GUID trong bảng config (khác nhau giữa dev/stg/prod).
+- Mỗi activity notebook: có timeout và retry rõ ràng; tham số truyền `run_id = @pipeline().RunId`, `pl_name = @pipeline().Pipeline`.
+- Tên activity duy nhất trong pipeline; `dependsOn` chỉ trỏ tới activity cùng cấp (verify kiểm tra tự động).
+- Mọi thay đổi pipeline là risky → bắt buộc qua Codex.

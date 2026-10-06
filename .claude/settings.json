@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "opus",
+  "permissions": {
+    "defaultMode": "dontAsk",
+    "allow": [
+      "Edit(/.ai/**)",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git ls-files *)",
+      "Bash(python scripts/vv.py verify *)",
+      "WebSearch",
+      "WebFetch(domain:learn.microsoft.com)",
+      "WebFetch(domain:docs.delta.io)",
+      "WebFetch(domain:spark.apache.org)",
+      "WebFetch(domain:debezium.io)"
+    ],
+    "deny": [
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git reset *)",
+      "Bash(git restore *)",
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
+      "Bash(rm *)"
+    ]
+  }
+}

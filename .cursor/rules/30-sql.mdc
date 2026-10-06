@@ -1,0 +1,12 @@
+---
+description: Quy ước Spark SQL và SQL PostgreSQL cho VSVN
+globs: **/*.sql
+alwaysApply: false
+---
+
+- `*.sql` = Spark SQL (dialect sparksql). `*.pg.sql` = PostgreSQL. Verify lint theo đúng dialect dựa trên đuôi file.
+- Luôn liệt kê cột tường minh trong INSERT/MERGE; không `SELECT *` vào bảng đích.
+- MERGE: source dedup theo khóa trước (`QUALIFY`/`row_number() = 1` theo thứ tự event), điều kiện ON chỉ dùng khóa + cột partition.
+- DDL Delta: ghi COMMENT cho bảng/cột; script thay đổi schema phải có phần rollback (comment hoặc file `*_rollback.sql`).
+- Script chạy tay trên Fabric: có comment đầu file ghi môi trường, mục đích, thứ tự chạy, có idempotent (`IF NOT EXISTS`, `NOT EXISTS`).
+- PostgreSQL upsert: `INSERT ... ON CONFLICT (...) DO UPDATE ... WHERE (giá trị khác)` để tránh update lặp.

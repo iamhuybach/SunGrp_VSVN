@@ -1,0 +1,34 @@
+---
+description: Quy ước viết notebook PySpark/Spark SQL trên Microsoft Fabric cho VSVN
+globs: **/*.Notebook/**, **/*.ipynb
+alwaysApply: false
+---
+
+## Cấu trúc
+- Tầng: NB00 orchestrator → NBx0 service → NBxy table. Không tạo tầng sâu hơn NBxy.
+- Cell đầu là cell tham số (toggle "parameter cell"); mọi giá trị môi trường/run (`run_id`, `pl_name`, `dry_run`, `allow_full_scan`…) đi qua tham số, không hard-code workspace/lakehouse ID.
+- Hàm dùng chung nằm trong notebook `NB_LIB_*`, nạp bằng `%run`. Không copy hàm lib vào notebook nghiệp vụ.
+- Kết thúc bằng `notebookutils.notebook.exit(json.dumps({...}))` với status + số liệu chính để pipeline đọc.
+
+## Ghi dữ liệu
+- Ghi bảng đích bằng MERGE idempotent: source phải duy nhất theo khóa MERGE (dedup bằng `row_number()` theo thứ tự event trước khi MERGE).
+- Không `INSERT INTO` bảng đích khi rerun có thể chèn trùng.
+- Bảng dùng chung giữa luồng song song (vd `ctrl_cdc_state`, `ctrl_cdc_reject` partition theo `src_tbl`): điều kiện MERGE phải có cột partition (`t.src_tbl = '<nguồn>'`) để tránh xung đột ghi.
+- Retry ghi Delta qua hàm retry trong lib (có jitter), không tự viết vòng retry mới.
+
+## Watermark & log
+- Luôn ghi `ctrl_log_run` (1 dòng/exec_id) và `ctrl_log_table_run` (1 dòng/bảng/attempt), kể cả nhánh NO_DATA và lỗi (`finally`).
+- Watermark chỉ tiến, chỉ ghi SUCCESS khi run còn giữ khóa (`lock_exec_id`), nhả khóa trong `finally`.
+- Chi tiết bảng ctrl: `docs/context/CTRL_TABLES_CONTEXT.md` — đọc trước khi sửa logic liên quan.
+
+## Song song
+- Chạy bảng theo priority wave bằng `ThreadPoolExecutor`; mỗi bảng bắt lỗi riêng, 1 bảng lỗi không làm hỏng log của bảng khác; tổng hợp status sau wave.
+- Không dùng biến global mutable chung giữa các thread; Spark session dùng chung là OK.
+
+## Hiệu năng (F16 dùng chung)
+- Không `collect()`/`toPandas()` trên dữ liệu không giới hạn; `count()` chỉ khi cần cho log.
+- `cache()` chỉ khi DataFrame dùng ≥2 lần, `unpersist()` sau khi xong.
+- Không bật `%%configure` cấu hình lớn khi chưa có số liệu.
+
+## Đặt tên
+- Silver: `slv_pn_*` (partner), `slv_3p_*` (3rd-party). Gold: `gld_*`, schema gold hiện có.

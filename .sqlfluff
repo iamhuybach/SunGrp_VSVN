@@ -1,0 +1,8 @@
+[sqlfluff]
+# dialect được scripts/vv.py truyền theo đuôi file: *.sql = sparksql, *.pg.sql = postgres
+dialect = sparksql
+templater = raw
+max_line_length = 160
+large_file_skip_byte_limit = 0
+# Chỉ giữ rule bắt lỗi logic; lỗi parse (PRS) luôn được báo. Style để dev tự quyết.
+rules = AM01, AM02, AM03, AM05, CV05, RF02
