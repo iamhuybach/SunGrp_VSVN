@@ -76,7 +76,7 @@ Nếu bạn là Claude Code hoặc Codex: KHÔNG sửa file ngoài `.ai/`. Đề
 
 ## 6. Kiến trúc VSVN (tóm tắt — chi tiết ở docs/)
 - Microsoft Fabric, F16 mỗi môi trường (dev/stg/prod), F16 dùng chung với Eventstream, Copy Job, SQL endpoint. Spark runtime 1.3.
-- Lakehouse + SQL analytics endpoint, không Warehouse. bronze/silver/gold là các Lakehouse riêng cùng workspace (`lh_vv_bronze`, `lh_vv_silver`, gold: TODO điền tên).
+- Lakehouse + SQL analytics endpoint, không Warehouse. bronze/silver/gold là các Lakehouse riêng cùng workspace (`lh_vv_bronze`, `lh_vv_silver`, `lh_vv_gold`).
 - Ingestion: Event Hub → Eventstream → bronze. Transform: Spark SQL trong notebook. Orchestration: Data Pipeline.
 - Batch 10–15 phút, ~32 bảng, chủ yếu MERGE. SLA nguồn→serving 30–60 phút. Silver→Gold POI chạy hourly.
 - Không có quyền tạo service principal.
