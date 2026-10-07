@@ -23,6 +23,7 @@ Install deterministic verification tools:
 ```powershell
 python -m pip install -r requirements-dev.txt
 python scripts/vv.py doctor
+python scripts/vv.py external-doctor
 python scripts/vv.py verify --all
 ```
 
@@ -41,13 +42,9 @@ The `.cursor/agents/` directory intentionally contains no reviewer definitions.
 
 ## Claude Code Architect
 
-Project settings select `claude-opus-5-5`, High effort, and `dontAsk` permission mode. The only approved edit is `.ai/tasks/*/architecture.md`; Git mutation and destructive shell commands are denied.
+Project settings select `claude-opus-5-5`, High effort, and `dontAsk` permission mode. Automated runs pass the model, effort, and read-only tools explicitly, use Claude safe mode, and load only user settings, so they do not depend on an interactive workspace-trust dialog or load project customizations. Claude returns structured architecture content and the deterministic runner persists `architecture.md`.
 
-1. Open Claude Code at the repository root.
-2. Run `/model` and `/effort`; verify Opus 5.5 and High.
-3. Run `/permissions`; verify that unmatched write operations are denied.
-4. Generate a handoff with `python scripts/vv.py prompt <task-id> architect`.
-5. Ask Claude to execute the generated file under the task's `handoffs/` directory.
+The runner discovers Claude in this order: `VSVN_CLAUDE_EXE`, `claude` on `PATH`, then the newest Claude Code binary bundled with Cursor or VS Code. Run `python scripts/vv.py external-doctor` to verify discovery and authentication without spending a model turn.
 
 If the installed client does not recognize the configured model ID, do not silently select another model. Report the mismatch and update configuration only with user approval.
 
@@ -63,10 +60,8 @@ Project configuration fixes the coordinator and specialists to `gpt-5.6-sol`, Hi
 
 1. Sign in to the Codex extension or CLI with ChatGPT.
 2. Trust the repository so project configuration is loaded.
-3. Check status and confirm `gpt-5.6-sol`, High, and read-only mode.
-4. Confirm that all five project agents are discoverable.
-5. Generate a handoff with `python scripts/vv.py prompt <task-id> review --round 1`.
-6. Run the handoff in Codex. The coordinator invokes only reviewers listed in `task-state.yaml`; high/critical risk also invokes `risk-gate`.
+3. Run `python scripts/vv.py external-doctor` and confirm Codex authentication.
+4. At `reviewing`, Main runs `python scripts/vv.py run-gate <task-id>`. The runner uses `codex exec` with structured output, the read-only sandbox, the exact configured model and reasoning effort, and an enforced reviewer manifest.
 
 Review agents never edit files. Main stores the returned consolidated report as `reviews/round-<N>.md` and records every disposition in `decision.md`.
 
@@ -78,6 +73,9 @@ python scripts/vv.py validate <task-id>
 python scripts/vv.py transition <task-id> <status>
 python scripts/vv.py prompt <task-id> architect
 python scripts/vv.py prompt <task-id> review --round 1
+python scripts/vv.py external-doctor
+python scripts/vv.py external-smoke
+python scripts/vv.py run-gate <task-id>
 python scripts/vv.py verify <task-id>
 ```
 
@@ -97,8 +95,10 @@ Before changing a model family or effort level:
 | Symptom | Action |
 |---|---|
 | Cursor runs a different Main model | Re-select Grok 4.7 High and record the mismatch; repository config cannot control the picker. |
+| External CLI is not found | Set `VSVN_CLAUDE_EXE` or `VSVN_CODEX_EXE`; otherwise install the CLI on `PATH` or update the corresponding IDE extension. |
+| Automated gate changes an unexpected file | Stop. Inspect the Git diff; the runner will not update task state or overwrite the unexpected change. |
 | Codex ignores project agents | Trust the repository, restart the session, and run `python scripts/vv.py doctor`. |
 | Codex uses a fallback model | Stop the review gate; verify account availability and project config. |
-| Claude asks to edit source code | Keep `dontAsk`; inspect `/permissions` and the active settings source. |
+| Claude automation cannot read required context | Verify the file is inside the repository and rerun; automated Architect receives only `Read`, `Glob`, and `Grep`. |
 | A control-table change lacks context | Restore `CTRL_TABLES_CONTEXT.md` or create a task evidence plan and wait for Fabric DEV results. |
 | Verification reports a missing module | Install `requirements-dev.txt`; use `--allow-missing` only for diagnosis, never as a passing gate. |

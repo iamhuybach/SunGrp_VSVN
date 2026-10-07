@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import json
 from copy import deepcopy
 from pathlib import Path
 
 import pytest
 import yaml
 
-from scripts import vv
+from scripts import agent_runner, vv
 
 
 def template_state() -> dict:
@@ -69,3 +70,77 @@ def test_pipeline_dependency_must_be_in_same_scope() -> None:
         assert "not in the same scope" in details
     finally:
         pipeline.unlink(missing_ok=True)
+
+
+def test_claude_structured_output_parsing() -> None:
+    payload = {
+        "structured_output": {
+            "verdict": "PASS",
+            "document": "RESULT: PASS\n\n# Architecture\n",
+        },
+    }
+    assert agent_runner.parse_claude_output(json.dumps(payload))["verdict"] == "PASS"
+
+
+def test_review_schema_uses_supported_reviewer_array_keywords() -> None:
+    schema = agent_runner._review_schema(["state-correctness-reviewer"])
+    reviewers_run = schema["properties"]["reviewers_run"]
+    assert "uniqueItems" not in reviewers_run
+    assert schema["properties"]["model"]["enum"] == ["gpt-5.6-sol"]
+    assert schema["properties"]["reasoning_effort"]["enum"] == ["high"]
+
+
+def test_reviewer_manifest_rejects_duplicates() -> None:
+    with pytest.raises(agent_runner.RunnerError, match="reviewer manifest mismatch"):
+        agent_runner.validate_reviewer_manifest(
+            ["state-correctness-reviewer", "state-correctness-reviewer"],
+            ["state-correctness-reviewer"],
+        )
+
+
+def test_executable_environment_override() -> None:
+    executable = Path("tests/.agent-runner-test-claude.exe")
+    try:
+        executable.write_bytes(b"test")
+        result = agent_runner.discover_executable(
+            "claude", {"VSVN_CLAUDE_EXE": str(executable), "PATH": ""},
+        )
+        assert result == executable.resolve()
+    finally:
+        executable.unlink(missing_ok=True)
+
+
+def test_architecture_pass_advances_to_implementation() -> None:
+    state = template_state()
+    state["task"].update(status="waiting_architecture", owner="architect")
+    state["classification"]["architecture_required"] = True
+    state["gates"]["architecture"] = "pending"
+    state["models"]["main"]["actual"] = "grok-4.7"
+    candidate = vv.architecture_state_after(state, "PASS")
+    assert candidate["task"]["status"] == "implementing"
+    assert candidate["gates"]["architecture"] == "pass"
+    assert candidate["models"]["architect"]["actual"] == "claude-opus-5-5"
+    assert vv.validate_state_data(candidate, "20261007-test-task") == []
+
+
+def test_review_evidence_verdict_routes_to_evidence() -> None:
+    state = template_state()
+    state["task"].update(status="reviewing", owner="review")
+    state["models"]["main"]["actual"] = "grok-4.7"
+    state["review_plan"]["required_reviewers"] = ["state-correctness-reviewer"]
+    state["gates"]["specialist_review"] = "pending"
+    state["gates"]["local_verification"] = "pass"
+    result = agent_runner.ReviewResult(
+        verdict="EVIDENCE_REQUIRED",
+        report="# Review\n",
+        reviewers_run=("state-correctness-reviewer",),
+        risk_gate_run=False,
+        findings=({"id": "STATE-001", "severity": "P1"},),
+        executable=Path("codex.exe"),
+    )
+    candidate = vv.review_state_after(state, result, 1)
+    assert candidate["task"]["status"] == "waiting_evidence"
+    assert candidate["classification"]["evidence_required"] is True
+    assert candidate["gates"]["evidence"] == "evidence_required"
+    assert candidate["gates"]["specialist_review"] == "evidence_required"
+    assert vv.validate_state_data(candidate, "20261007-test-task") == []

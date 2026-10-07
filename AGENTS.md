@@ -29,12 +29,13 @@ Commands, identifiers, paths, status tokens, and finding IDs remain in English e
 | Review Coordinator | Codex, GPT-5.6 Sol High | Runs independent read-only specialist reviews and produces the consolidated review result. Never fixes code. |
 | Specialist Reviewers | Codex custom agents, GPT-5.6 Sol High | Read-only review of state correctness, Spark runtime, SQL/data, or Fabric pipelines. |
 | Local Verifier | `python scripts/vv.py verify` | Deterministic validation; no LLM judgment. |
+| External Gate Runner | `python scripts/vv.py run-gate` | Calls the configured Claude or Codex CLI non-interactively, validates structured output and repository immutability, persists the owned artifact, and updates state on behalf of Main. |
 | User | Fabric DEV and Git | Runs probes and runtime runbooks, accepts risk, and commits/merges. |
 
 The role model is **single code writer plus explicit artifact ownership**, not a universal single writer.
 
 - Main is the only role allowed to edit source code, notebooks, pipelines, schemas, or deployment configuration.
-- Architect may edit only `.ai/tasks/<task-id>/architecture.md`.
+- Architect may edit only `.ai/tasks/<task-id>/architecture.md`. In automated mode it returns structured document content and the deterministic runner persists that exact content.
 - Codex specialist reviewers are read-only. The consolidated result is captured under the current task's `reviews/` directory by the review runner or Main.
 - Only Main updates `task-state.yaml`.
 - There is no `writer: claude` mode.
@@ -147,10 +148,10 @@ Rules:
 
 1. Main creates the task and classifies it before implementation.
 2. Evidence precedes architecture when architecture depends on runtime data.
-3. Architect defines invariants, state ownership, failure behavior, transaction boundaries, recovery, and the implementation-level design.
+3. Architect defines invariants, state ownership, failure behavior, transaction boundaries, recovery, and the implementation-level design. Main invokes `python scripts/vv.py run-gate <task-id>` at `waiting_architecture`; the runner must stop on CLI, model, structured-output, or repository-immutability failure.
 4. Main implements the approved architecture. Any deviation is recorded in `decision.md` before code changes continue.
 5. Local verification must pass before LLM review.
-6. Review Coordinator invokes only relevant specialist reviewers. First-round specialists work independently and do not read each other's findings.
+6. At `reviewing`, Main invokes `python scripts/vv.py run-gate <task-id>`. Review Coordinator invokes only relevant specialist reviewers. First-round specialists work independently and do not read each other's findings. The runner rejects an incomplete reviewer manifest or an omitted required risk gate.
 7. Round 2 checks unresolved P0/P1 findings and regressions caused by fixes.
 8. A maximum of two verification/remediation rounds and two review rounds is allowed. Exceeding a cap routes to `user_decision`.
 9. Runtime failures are classified as `code`, `data`, `architecture`, or `unclear`; route respectively to implementation, evidence, architecture, or user decision.
@@ -158,9 +159,9 @@ Rules:
 
 ## 7. Review routing
 
-- `state-correctness-reviewer`: CDC, MERGE state semantics, watermark, locks, retry/recovery, event ordering, partial failure, idempotency, and cross-system state.
+- `state-correctness-reviewer`: owns state-transition correctness across CDC, MERGE commit order, watermark, locks, retry/recovery, event ordering, partial failure, idempotency, and cross-system state. It reviews crash timelines and durable-state invariants, not SQL statement construction.
 - `spark-runtime-reviewer`: PySpark, Fabric notebook contracts, concurrency, Delta writes, logging, and F16 performance.
-- `sql-data-reviewer`: Spark SQL, Delta DDL, joins, windows, types, grain, and PostgreSQL SQL.
+- `sql-data-reviewer`: owns statement-level correctness for Spark SQL, Delta DDL, SQL/Delta MERGE match keys and clauses, MERGE-source uniqueness, deterministic rerun behavior, joins, windows, types, grain, and PostgreSQL SQL. Route it whenever a SQL/Delta MERGE implementation is in scope, including retry scenarios reviewed for state correctness.
 - `fabric-pipeline-reviewer`: pipeline expressions, parameters, pre-check, Switch, dependencies, ForEach concurrency, timeout/retry, failure propagation, and notebook exit contracts.
 - `risk-gate`: cross-system invariants and unresolved high-impact risks after specialist review.
 
@@ -206,6 +207,9 @@ python scripts/vv.py validate <task-id>
 python scripts/vv.py transition <task-id> <status>
 python scripts/vv.py prompt <task-id> architect
 python scripts/vv.py prompt <task-id> review --round N
+python scripts/vv.py external-doctor
+python scripts/vv.py external-smoke
+python scripts/vv.py run-gate <task-id> [--round N]
 python scripts/vv.py verify <task-id>
 python scripts/vv.py doctor
 ```

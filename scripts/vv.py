@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import datetime as dt
 import importlib.util
 import json
@@ -15,6 +16,11 @@ import sys
 import tomllib
 from pathlib import Path
 from typing import Any
+
+try:
+    from scripts import agent_runner
+except ImportError:
+    import agent_runner  # type: ignore[no-redef]
 
 try:
     import yaml
@@ -353,21 +359,214 @@ def cmd_transition(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_prompt(args: argparse.Namespace) -> int:
-    directory = task_dir(args.task)
-    template = Path(".ai/prompts") / PROMPTS[args.target]
+def render_prompt(task_id: str, target: str, round_number: int = 1) -> tuple[Path, str]:
+    directory = task_dir(task_id)
+    template = Path(".ai/prompts") / PROMPTS[target]
     if not template.is_file():
         fail(f"Prompt template not found: {template.as_posix()}")
-    if args.target == "review" and args.round not in {1, 2}:
+    if target == "review" and round_number not in {1, 2}:
         fail("Review round must be 1 or 2.")
     text = template.read_text(encoding="utf-8")
-    text = text.replace("{{TASK_ID}}", args.task).replace("{{ROUND}}", str(args.round))
-    name = "architect.md" if args.target == "architect" else f"review-round-{args.round}.md"
+    text = text.replace("{{TASK_ID}}", task_id).replace("{{ROUND}}", str(round_number))
+    name = "architect.md" if target == "architect" else f"review-round-{round_number}.md"
     output = directory / "handoffs" / name
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(text, encoding="utf-8")
+    return output, text
+
+
+def cmd_prompt(args: argparse.Namespace) -> int:
+    output, _ = render_prompt(args.task, args.target, args.round)
     print(output.as_posix())
     return 0
+
+
+def _set_task_status(state: dict[str, Any], status: str) -> None:
+    state["task"]["status"] = status
+    state["task"]["owner"] = OWNER_BY_STATUS.get(status, "main")
+    state["task"]["updated_at"] = dt.date.today().isoformat()
+
+
+def architecture_state_after(state: dict[str, Any], verdict: str) -> dict[str, Any]:
+    candidate = copy.deepcopy(state)
+    candidate["models"]["architect"]["actual"] = agent_runner.ARCHITECT_MODEL
+    candidate["rounds"]["architecture"] += 1
+    if verdict == "PASS":
+        candidate["gates"]["architecture"] = "pass"
+        _set_task_status(candidate, "implementing")
+    elif verdict == "EVIDENCE_REQUIRED":
+        candidate["classification"]["evidence_required"] = True
+        candidate["gates"]["evidence"] = "evidence_required"
+        candidate["gates"]["architecture"] = "evidence_required"
+        _set_task_status(candidate, "waiting_evidence")
+    else:
+        fail(f"Unsupported architecture verdict: {verdict}")
+    return candidate
+
+
+def review_state_after(
+    state: dict[str, Any], result: agent_runner.ReviewResult, round_number: int,
+) -> dict[str, Any]:
+    candidate = copy.deepcopy(state)
+    candidate["models"]["review"]["actual"] = agent_runner.REVIEW_MODEL
+    candidate["review_plan"]["round"] = round_number
+    candidate["rounds"]["review"] = round_number
+    candidate["open_findings"] = [dict(item) for item in result.findings]
+    gate_result = {
+        "PASS": "pass",
+        "FIX_REQUIRED": "fix_required",
+        "EVIDENCE_REQUIRED": "evidence_required",
+        "USER_DECISION": "user_decision",
+    }[result.verdict]
+    required_reviewers = candidate["review_plan"]["required_reviewers"]
+    risk_required = candidate["classification"]["risk_level"] in {"high", "critical"}
+    candidate["gates"]["specialist_review"] = gate_result if required_reviewers else "not_required"
+    candidate["gates"]["risk_gate"] = gate_result if risk_required else "not_required"
+    if result.verdict == "PASS":
+        if candidate["classification"]["runtime_required"]:
+            _set_task_status(candidate, "waiting_runtime")
+        else:
+            _set_task_status(candidate, "user_decision")
+    elif result.verdict == "FIX_REQUIRED":
+        _set_task_status(candidate, "implementing")
+    elif result.verdict == "EVIDENCE_REQUIRED":
+        candidate["classification"]["evidence_required"] = True
+        candidate["gates"]["evidence"] = "evidence_required"
+        _set_task_status(candidate, "waiting_evidence")
+    else:
+        _set_task_status(candidate, "user_decision")
+    return candidate
+
+
+def _validate_candidate_state(task_id: str, state: dict[str, Any]) -> None:
+    errors = validate_state_data(state, task_id)
+    if errors:
+        fail("Automated gate produced invalid task state:\n- " + "\n- ".join(errors))
+
+
+def cmd_external_doctor(args: argparse.Namespace) -> int:
+    try:
+        details = agent_runner.external_preflight(repo_root(), timeout_seconds=args.timeout)
+    except agent_runner.RunnerError as exc:
+        fail(f"EXTERNAL DOCTOR FAIL: {exc}")
+    print("EXTERNAL DOCTOR PASS")
+    for key, value in details.items():
+        print(f"{key}: {value}")
+    return 0
+
+
+def cmd_external_smoke(args: argparse.Namespace) -> int:
+    repo = repo_root()
+    try:
+        details = agent_runner.external_preflight(repo, timeout_seconds=min(args.timeout, 60))
+        architecture_prompt = """# Automated Architect smoke test
+
+Follow AGENTS.md as the VSVN Architect. Analyze this synthetic scenario only:
+the business Delta MERGE commits, the process crashes before watermark update, and the pipeline retries.
+Produce a concise architecture document covering transaction boundaries, idempotency, watermark ownership,
+retry/recovery, evidence requirements, and verification. Do not edit any repository file.
+"""
+        architecture = agent_runner.run_architecture(repo, architecture_prompt, timeout_seconds=args.timeout)
+        review_prompt = """# Automated Codex multi-agent smoke test
+
+Follow AGENTS.md as the VSVN Review Coordinator. Review this synthetic scenario only:
+the business Delta MERGE commits, the process crashes before watermark update, and the pipeline retries.
+Invoke state-correctness-reviewer and sql-data-reviewer independently. After both complete, invoke risk-gate.
+Do not edit any repository file. The purpose is to validate custom-agent execution and result consolidation.
+"""
+        review = agent_runner.run_review(
+            repo,
+            review_prompt,
+            ["state-correctness-reviewer", "sql-data-reviewer"],
+            True,
+            timeout_seconds=args.timeout,
+        )
+    except agent_runner.RunnerError as exc:
+        fail(f"EXTERNAL SMOKE FAIL: {exc}")
+    print("EXTERNAL SMOKE PASS")
+    print(f"Claude: {details['claude_version']} / architecture verdict {architecture.verdict}")
+    print(f"Codex: {details['codex_version']} / review verdict {review.verdict}")
+    print(f"Reviewers: {', '.join(review.reviewers_run)}")
+    print("Risk gate: run")
+    print("Repository changes: none")
+    return 0
+
+
+def cmd_run_gate(args: argparse.Namespace) -> int:
+    directory = task_dir(args.task)
+    state_path = directory / "task-state.yaml"
+    state = load_state(state_path)
+    errors = validate_state_data(state, args.task)
+    if errors:
+        fail("Current task state is invalid:\n- " + "\n- ".join(errors))
+    status = state["task"]["status"]
+    try:
+        if status == "waiting_architecture":
+            if not state["classification"]["architecture_required"]:
+                fail("Task is waiting_architecture but architecture_required is false.")
+            if state["rounds"]["architecture"] >= 2:
+                candidate = copy.deepcopy(state)
+                candidate["gates"]["architecture"] = "user_decision"
+                _set_task_status(candidate, "user_decision")
+                _validate_candidate_state(args.task, candidate)
+                write_state(state_path, candidate)
+                print("Architecture round cap reached; routed task to user_decision.")
+                return 0
+            handoff, prompt = render_prompt(args.task, "architect")
+            print(f"Running Claude Architect from {handoff.as_posix()}...")
+            result = agent_runner.run_architecture(repo_root(), prompt, timeout_seconds=args.timeout)
+            candidate = architecture_state_after(state, result.verdict)
+            _validate_candidate_state(args.task, candidate)
+            architecture = directory / "architecture.md"
+            architecture.write_text(result.document, encoding="utf-8")
+            write_state(state_path, candidate)
+            print(f"ARCHITECTURE {result.verdict}: {architecture.as_posix()}")
+            print(f"Executable: {result.executable}")
+            print(f"Next status: {candidate['task']['status']}")
+            return 0
+        if status == "reviewing":
+            if state["gates"]["local_verification"] != "pass":
+                fail("Local verification must pass before automated review.")
+            expected_round = state["rounds"]["review"] + 1
+            if expected_round > 2:
+                candidate = copy.deepcopy(state)
+                if candidate["review_plan"]["required_reviewers"]:
+                    candidate["gates"]["specialist_review"] = "user_decision"
+                if candidate["classification"]["risk_level"] in {"high", "critical"}:
+                    candidate["gates"]["risk_gate"] = "user_decision"
+                _set_task_status(candidate, "user_decision")
+                _validate_candidate_state(args.task, candidate)
+                write_state(state_path, candidate)
+                print("Review round cap reached; routed task to user_decision.")
+                return 0
+            round_number = args.round if args.round is not None else expected_round
+            if round_number != expected_round or round_number not in {1, 2}:
+                fail(f"Expected review round {expected_round}; received {round_number}.")
+            handoff, prompt = render_prompt(args.task, "review", round_number)
+            reviewers = list(state["review_plan"]["required_reviewers"])
+            risk_required = state["classification"]["risk_level"] in {"high", "critical"}
+            print(f"Running Codex review from {handoff.as_posix()}...")
+            result = agent_runner.run_review(
+                repo_root(), prompt, reviewers, risk_required, timeout_seconds=args.timeout,
+            )
+            candidate = review_state_after(state, result, round_number)
+            _validate_candidate_state(args.task, candidate)
+            review_path = directory / "reviews" / f"round-{round_number}.md"
+            review_path.parent.mkdir(parents=True, exist_ok=True)
+            review_path.write_text(result.report, encoding="utf-8")
+            write_state(state_path, candidate)
+            print(f"REVIEW {result.verdict}: {review_path.as_posix()}")
+            print(f"Reviewers: {', '.join(result.reviewers_run) or 'none'}")
+            print(f"Risk gate: {'run' if result.risk_gate_run else 'not required'}")
+            print(f"Executable: {result.executable}")
+            print(f"Next status: {candidate['task']['status']}")
+            return 0
+    except agent_runner.RunnerError as exc:
+        fail(f"AUTOMATED GATE FAIL: {exc}")
+    fail(
+        f"No automated external gate for status {status!r}. "
+        "Use run-gate only for waiting_architecture or reviewing."
+    )
 
 
 def changed_files(all_files: bool) -> list[str]:
@@ -472,7 +671,11 @@ def cmd_verify(args: argparse.Namespace) -> int:
     tool("sqlfluff[postgres]", "sqlfluff", ["lint", "--dialect", "postgres", "--nocolor"], postgres_sql)
     results.append(("json+pipeline", *check_json(json_files)) if json_files else ("json+pipeline", "SKIP", "no relevant files"))
     results.append(("toml", *check_toml(toml_files)) if toml_files else ("toml", "SKIP", "no relevant files"))
-    tool("pytest", "pytest", ["-q", "--no-header", "-p", "no:cacheprovider"], [str(tests)] if has_tests else [])
+    tool(
+        "pytest", "pytest",
+        ["-q", "--no-header", "-p", "no:cacheprovider", "--basetemp", ".ai/.tmp/pytest"],
+        [str(tests)] if has_tests else [],
+    )
 
     task_errors: list[str] = []
     if args.task:
@@ -617,6 +820,17 @@ def main() -> int:
     command.set_defaults(function=cmd_verify)
     command = subcommands.add_parser("doctor", help="check agent-system installation")
     command.set_defaults(function=cmd_doctor)
+    command = subcommands.add_parser("external-doctor", help="check Claude and Codex CLI automation")
+    command.add_argument("--timeout", type=int, default=30)
+    command.set_defaults(function=cmd_external_doctor)
+    command = subcommands.add_parser("external-smoke", help="run a read-only Claude and Codex integration smoke test")
+    command.add_argument("--timeout", type=int, default=1800)
+    command.set_defaults(function=cmd_external_smoke)
+    command = subcommands.add_parser("run-gate", help="run the current Architect or review gate non-interactively")
+    command.add_argument("task")
+    command.add_argument("--round", type=int, choices=(1, 2))
+    command.add_argument("--timeout", type=int, default=1800)
+    command.set_defaults(function=cmd_run_gate)
     args = parser.parse_args()
     return args.function(args)
 

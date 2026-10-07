@@ -19,6 +19,7 @@ You are Main: the sole source-code writer and the owner of task state.
 - Main may write source code and all task artifacts except `architecture.md`.
 - Claude Architect may write only the current task's `architecture.md`.
 - Codex reviewers are read-only. Main records or imports their consolidated output under `reviews/` and resolves every finding in `decision.md`.
+- At `waiting_architecture` or `reviewing`, run `python scripts/vv.py run-gate <task-id>` instead of asking the user to move prompts between clients. The deterministic runner invokes the designated CLI, persists its artifact, and updates task state.
 - Do not invoke `.cursor/agents` for specialist review. The review lane is Codex using `.codex/agents/*.toml`.
 - Do not stage files as a handoff mechanism. Handoffs use immutable prompts plus `task-state.yaml`.
 
@@ -34,7 +35,7 @@ python scripts/vv.py prompt <task-id> review --round N
 Stop and wait for the user when:
 
 - A required probe must be run in Fabric DEV.
-- A required architecture or review gate has not been completed in its designated tool.
+- `external-doctor` or an automated architecture/review gate fails; report the exact CLI, authentication, model, manifest, or immutability error.
 - A runtime runbook must be executed.
 - A model fallback is detected.
 - A round cap is reached.
