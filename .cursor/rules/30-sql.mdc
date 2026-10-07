@@ -1,12 +1,16 @@
 ---
-description: Quy ước Spark SQL và SQL PostgreSQL cho VSVN
+description: VSVN Spark SQL and PostgreSQL rules
 globs: **/*.sql
 alwaysApply: false
 ---
 
-- `*.sql` = Spark SQL (dialect sparksql). `*.pg.sql` = PostgreSQL. Verify lint theo đúng dialect dựa trên đuôi file.
-- Luôn liệt kê cột tường minh trong INSERT/MERGE; không `SELECT *` vào bảng đích.
-- MERGE: source dedup theo khóa trước (`QUALIFY`/`row_number() = 1` theo thứ tự event), điều kiện ON chỉ dùng khóa + cột partition.
-- DDL Delta: ghi COMMENT cho bảng/cột; script thay đổi schema phải có phần rollback (comment hoặc file `*_rollback.sql`).
-- Script chạy tay trên Fabric: có comment đầu file ghi môi trường, mục đích, thứ tự chạy, có idempotent (`IF NOT EXISTS`, `NOT EXISTS`).
-- PostgreSQL upsert: `INSERT ... ON CONFLICT (...) DO UPDATE ... WHERE (giá trị khác)` để tránh update lặp.
+- `*.sql` uses Spark SQL. `*.pg.sql` uses PostgreSQL. Lint with the matching dialect.
+- List target columns explicitly in INSERT and MERGE. Do not write `SELECT *` into a target table.
+- A MERGE source must be unique on the full match key. Deduplicate with a deterministic `row_number()` ordering before MERGE.
+- The MERGE predicate contains entity keys plus required ownership or partition keys; do not hide business filters in the predicate.
+- Preserve the documented target grain. A join that can multiply rows requires an explicit cardinality argument and test/evidence.
+- Handle null equality, timestamps, time zones, decimal precision, and narrowing casts explicitly.
+- Delta DDL must document tables and columns. A schema migration needs rollback or forward-recovery steps in `runtime-runbook.md`.
+- A manually executed Fabric script starts with Vietnamese comments stating environment, purpose, order, prerequisites, and idempotency behavior.
+- PostgreSQL upsert uses `INSERT ... ON CONFLICT (...) DO UPDATE` with a change predicate when appropriate to avoid unnecessary repeated updates.
+- SQL that depends on real uniqueness, distribution, null rate, or format requires evidence; do not infer it from names or small fixtures.

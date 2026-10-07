@@ -1,112 +1,219 @@
-# VSVN — Agent Constitution
+# VSVN Agent Constitution
 
-Nguồn sự thật chung cho Cursor, Claude Code, Codex. Ngắn, chính xác, cập nhật khi agent lặp lỗi.
+This file is the shared source of truth for Cursor, Claude Code, Codex, and human operators.
+Keep it concise. Put detailed, tool-specific procedures in rules, skills, or specialist-agent files.
 
-## 1. Vai trò (ai được làm gì)
+## 1. Language policy
 
-| Vai trò | Công cụ / model | Quyền |
+English is mandatory for:
+
+- Agent definitions, rules, skills, prompts, configuration, and setup documentation.
+- Machine-readable files, keys, enum values, status values, finding IDs, logs, and error codes.
+- Task artifacts, except for `decision.md` and `runtime-runbook.md`.
+- Code identifiers, table names, column names, and database metadata descriptions.
+
+Vietnamese is mandatory for:
+
+- `decision.md` and `runtime-runbook.md` prose.
+- Explanatory comments in source code, notebooks, and SQL scripts.
+- Conversation with the user.
+
+Commands, identifiers, paths, status tokens, and finding IDs remain in English even inside Vietnamese files.
+
+## 2. Roles and authority
+
+| Role | Runtime | Authority |
 |---|---|---|
-| **Main** (single writer) | Cursor · Composer 2.5 | Ghi code + `.ai/**`. Là agent DUY NHẤT sửa code trừ khi `triage.md` ghi `writer: claude` |
-| CDC Reviewer | Cursor sub-agent · Claude Opus 5.5 | Read-only. Trả findings cho Main; Main ghi vào `.ai/` |
-| PySpark / SQL Reviewer | Cursor sub-agent · Composer 2.5 standard | Read-only. Trả findings cho Main; Main ghi vào `.ai/` |
-| **Architect** | Claude Code · Opus | Đọc code, CHỈ ghi `.ai/**` |
-| **Independent Gate** | Codex · GPT flagship, reasoning high | Đọc code, CHỈ ghi `.ai/**` |
-| Local Verify | `scripts/verify.sh` (không LLM) | — |
-| USER (Hòa) | Fabric DEV | Chạy probe/runbook, quyết định cuối, merge |
+| Main | Cursor, Grok 4.7 High | Sole source-code writer. Owns task state, implementation, remediation, decisions, and runtime runbooks. |
+| Architect | Claude Code, Claude Opus 5.5 High | Reads the repository and writes only the current task's `architecture.md`. Never implements. |
+| Review Coordinator | Codex, GPT-5.6 Sol High | Runs independent read-only specialist reviews and produces the consolidated review result. Never fixes code. |
+| Specialist Reviewers | Codex custom agents, GPT-5.6 Sol High | Read-only review of state correctness, Spark runtime, SQL/data, or Fabric pipelines. |
+| Local Verifier | `python scripts/vv.py verify` | Deterministic validation; no LLM judgment. |
+| User | Fabric DEV and Git | Runs probes and runtime runbooks, accepts risk, and commits/merges. |
 
-Nếu bạn là Claude Code hoặc Codex: KHÔNG sửa file ngoài `.ai/`. Đề xuất code đặt trong file review/spec dạng diff.
+The role model is **single code writer plus explicit artifact ownership**, not a universal single writer.
 
-## 2. Luồng làm việc
+- Main is the only role allowed to edit source code, notebooks, pipelines, schemas, or deployment configuration.
+- Architect may edit only `.ai/tasks/<task-id>/architecture.md`.
+- Codex specialist reviewers are read-only. The consolidated result is captured under the current task's `reviews/` directory by the review runner or Main.
+- Only Main updates `task-state.yaml`.
+- There is no `writer: claude` mode.
 
+## 3. Model policy
+
+- Main: Grok 4.7 with `high` reasoning in Cursor. The active model must be confirmed in the model picker and recorded in `task-state.yaml`.
+- Architect: Claude Opus 5.5 with `high` effort. Record the actual model in `task-state.yaml`.
+- Review Coordinator and all specialist reviewers: `gpt-5.6-sol` with `high` reasoning through Codex authenticated with ChatGPT. Record the actual model in `task-state.yaml`.
+- Do not silently substitute models. If a configured model is unavailable or a client falls back, stop the affected gate and report it to the user.
+- Change model versions only after running the repository's agent evaluation suite or recording a user-approved exception.
+
+## 4. Canonical task state
+
+Every task lives at `.ai/tasks/<YYYYMMDD-slug>/` and has one machine-readable source of truth: `task-state.yaml`.
+
+Allowed task statuses:
+
+```text
+triage
+waiting_evidence
+waiting_architecture
+implementing
+verifying
+reviewing
+waiting_runtime
+user_decision
+ready_to_merge
+blocked
 ```
-[0] TRIAGE → .ai/task/<id>/triage.md
-    evidence_required=YES → PROBE trước (bất kể arch) → USER chạy Fabric DEV → evidence/
-    architecture_required=YES (sau evidence nếu có) → CLAUDE → spec.md
-    Claude thiếu dữ liệu → mục "Evidence needed" trong spec.md → PROBE
-[1] IMPLEMENT (Main)
-[2] LOCAL VERIFY  scripts/verify.sh  · FAIL → fix · tối đa 2 vòng → CLASSIFIER
-[3] TARGETED REVIEW chỉ reviewer liên quan diff · P0/P1 → fix → [2] → review lại · tối đa 2 vòng → CLASSIFIER
-[4] RISK GATE  risky=YES → CODEX (≤2 vòng) · còn P0/P1 → USER DECISION
-[5] RUNTIME RUNBOOK → USER chạy Fabric DEV · FAIL → CLASSIFIER · PASS → READY TO MERGE (USER)
+
+Allowed gate results:
+
+```text
+pending
+pass
+fix_required
+evidence_required
+user_decision
+not_required
 ```
 
-**FAILURE CLASSIFIER** (Main, dựa trên log/findings):
-`code → [1]` · `data → PROBE → [0]` · `architecture → CLAUDE` · `không chắc → USER`
+`PASS` is never valid while required evidence is missing or a P0/P1 finding remains unresolved.
 
-**Budget mỗi task:** ≤1 lần quay lại CLAUDE, ≤2 runtime FAIL. Vượt → dừng, hỏi USER.
+## 5. Classification
 
-**USER DECISION:** `accept-risk → [5]` · `fix theo hướng X → [1]` · `re-scope → [0]`. Ghi vào `decision.md`.
+Classify complexity, risk, architecture needs, and evidence needs separately. Do not use one `risky` boolean as a substitute for all four.
 
-## 3. Bảng tiêu chí (bắt buộc dùng, không tự cảm nhận)
+### Complexity signals
 
-### architecture_required = YES nếu bất kỳ
-- Thêm/xóa/đổi grain hoặc khóa của bảng silver/gold
-- Đổi layer rule, thêm schema, đổi vị trí logic giữa bronze/silver/gold
-- Thêm notebook tầng NB00/NBx0 hoặc đổi cấu trúc orchestration/pipeline
-- Đổi cơ chế CDC, watermark, cơ chế sync sang PostgreSQL
-- Thay đổi chạm ≥3 service (NBx0) hoặc ≥8 file code
+Use the following exact values in `task-state.yaml`:
 
-### evidence_required = YES nếu bất kỳ
-- Logic phụ thuộc phân phối, độ duy nhất của khóa, tỷ lệ null, format, enum của dữ liệu chưa có trong `evidence/`
-- Cần schema thực tế của bảng nguồn/đích chưa có trong repo
-- Lỗi runtime có dấu hiệu do dữ liệu (duplicate key, cast fail, null)
-
-### risky = YES (bắt buộc qua Codex) nếu bất kỳ
-- MERGE / CDC / watermark / dedup logic
-- Bảng `ctrl_*` (schema, ghi, đọc điều khiển luồng)
-- Pre-check, Switch, dependency trong Data Pipeline
-- Sync gold → PostgreSQL
-- Thay đổi sẽ deploy lên stg/prod
-
-### fast-lane (bỏ qua [3], [4]) chỉ khi TẤT CẢ
-- Typo, comment, log message, rename biến cục bộ; không đổi logic; ≤2 file
-
-## 4. Quy tắc dữ liệu (cứng)
-- KHÔNG suy đoán dữ liệu. Thiếu ngữ cảnh → sinh probe script vào `.ai/task/<id>/evidence/probe_*.{sql,py}`, dừng, chờ USER dán kết quả.
-- Mọi giả định còn lại phải ghi trong `decision.md` mục Assumptions.
-
-## 5. Artifact mỗi task
+```text
+stateful_logic
+concurrency
+retry_recovery
+partial_failure
+transaction_boundaries
+event_ordering
+idempotency
+distributed_behavior
+cross_system
+design_tradeoffs
+cross_state_impact
+runtime_proof_required
+data_evidence_required
+low_probability_high_impact
+deep_reasoning_required
 ```
-.ai/task/<id>/        id = YYYYMMDD-<slug>
-  triage.md  evidence/  spec.md  review-<cdc|pyspark|sql|codex>.md
-  verify.log  decision.md  runbook.md
+
+### Architecture is required when any of these apply
+
+- A table grain, key, state owner, transaction boundary, or commit order changes.
+- Logic moves between bronze, silver, gold, orchestration, or PostgreSQL sync.
+- CDC, watermark, locking, retry/recovery, or partial-failure behavior changes.
+- Pipeline or notebook orchestration structure changes.
+- Multiple viable implementations have material trade-offs.
+- The change spans at least three services or eight source files.
+
+### Evidence is required when any of these apply
+
+- Correctness depends on data distribution, uniqueness, null rates, formats, enums, or actual schemas not already captured in task evidence.
+- Correctness cannot be established by repository inspection and deterministic local checks.
+- A runtime failure indicates a possible data or environment cause.
+
+### Risk levels
+
+- `low`: no behavior change or a narrow, locally provable change.
+- `medium`: bounded behavior change with straightforward rollback and local proof.
+- `high`: stateful logic, concurrency, retry/recovery, event ordering, idempotency, cross-system effects, or runtime-only proof.
+- `critical`: a credible path to data loss, irreversible corruption, broad production outage, or unsafe recovery.
+
+Fast lane is derived, not manually asserted: `complexity=low`, `risk_level=low`, no behavior change, and at most two changed files.
+
+## 6. Workflow
+
+```text
+TRIAGE
+  -> EVIDENCE, when required
+  -> ARCHITECTURE, when required
+  -> IMPLEMENT
+  -> LOCAL VERIFY
+  -> TARGETED REVIEW
+  -> CROSS-SYSTEM GATE, when risk is high or critical
+  -> RUNTIME RUNBOOK, when runtime proof is required
+  -> READY TO MERGE
 ```
-- `decision.md`: MỌI finding P0–P3 → 1 dòng accept/reject + lý do. P2/P3 không chặn, ghi Backlog.
-- Severity: P0 sai dữ liệu/mất dữ liệu/không idempotent · P1 lỗi runtime/hiệu năng nghiêm trọng/vi phạm layer rule · P2 maintainability/convention · P3 nit.
 
-## 6. Kiến trúc VSVN (tóm tắt — chi tiết ở docs/)
-- Microsoft Fabric, F16 mỗi môi trường (dev/stg/prod), F16 dùng chung với Eventstream, Copy Job, SQL endpoint. Spark runtime 1.3.
-- Lakehouse + SQL analytics endpoint, không Warehouse. bronze/silver/gold là các Lakehouse riêng cùng workspace (`lh_vv_bronze`, `lh_vv_silver`, `lh_vv_gold`).
-- Ingestion: Event Hub → Eventstream → bronze. Transform: Spark SQL trong notebook. Orchestration: Data Pipeline.
-- Batch 10–15 phút, ~32 bảng, chủ yếu MERGE. SLA nguồn→serving 30–60 phút. Silver→Gold POI chạy hourly.
-- Không có quyền tạo service principal.
+Rules:
 
-### Layer rules
-- **gold** = chỉ sync/expose, KHÔNG xử lý. Tiền tố `gld_`, schema gold hiện có, không tạo schema mới khi không có lý do thuyết phục.
-- **silver** = cleansing, validation, chuẩn hóa schema/type/format, enrich đa nguồn, canonical POI, business rule nền, bảng trung gian. Không có zone "serving" trong silver. Logic gold phụ thuộc gold khác → tách thành bảng silver tái sử dụng.
-- Tiền tố silver: partner `slv_pn_`, 3rd-party (poi_raw_event) `slv_3p_`.
+1. Main creates the task and classifies it before implementation.
+2. Evidence precedes architecture when architecture depends on runtime data.
+3. Architect defines invariants, state ownership, failure behavior, transaction boundaries, recovery, and the implementation-level design.
+4. Main implements the approved architecture. Any deviation is recorded in `decision.md` before code changes continue.
+5. Local verification must pass before LLM review.
+6. Review Coordinator invokes only relevant specialist reviewers. First-round specialists work independently and do not read each other's findings.
+7. Round 2 checks unresolved P0/P1 findings and regressions caused by fixes.
+8. A maximum of two verification/remediation rounds and two review rounds is allowed. Exceeding a cap routes to `user_decision`.
+9. Runtime failures are classified as `code`, `data`, `architecture`, or `unclear`; route respectively to implementation, evidence, architecture, or user decision.
+10. Only the user may accept risk and mark a task ready for merge after required runtime verification.
 
-### Khóa
-- Entity key `poi_uid = md5(source_name + source_id)`, không có `lang` trong key.
-- 3rd-party `poi_id = md5(concat(source_name, source_id))`; partner `poi_id = uuid_format(md5('partner_portal' ‖ business_service_id))`.
+## 7. Review routing
 
-### Orchestration & notebook
-- NB00 orchestrator → NBx0 service (NB10, NB20…) → NBxy table (NB11, NB12…). Không sâu hơn NBxy.
-- Pipeline pre-check đọc `ctrl_mng_pipeline_config` + `ctrl_mng_watermark`, Get Metadata trên `_delta_log` qua OneLake shortcut `Files/_delta_src/<tbl>`; không có dữ liệu mới → không khởi động Spark.
-- Partner extract: 1 notebook, chạy từng priority wave bằng thread pool (wave 4 bảng).
+- `state-correctness-reviewer`: CDC, MERGE state semantics, watermark, locks, retry/recovery, event ordering, partial failure, idempotency, and cross-system state.
+- `spark-runtime-reviewer`: PySpark, Fabric notebook contracts, concurrency, Delta writes, logging, and F16 performance.
+- `sql-data-reviewer`: Spark SQL, Delta DDL, joins, windows, types, grain, and PostgreSQL SQL.
+- `fabric-pipeline-reviewer`: pipeline expressions, parameters, pre-check, Switch, dependencies, ForEach concurrency, timeout/retry, failure propagation, and notebook exit contracts.
+- `risk-gate`: cross-system invariants and unresolved high-impact risks after specialist review.
 
-### Control tables (`lh_vv_bronze.ctrl`) — chi tiết: `docs/context/CTRL_TABLES_CONTEXT.md`
-`ctrl_mng_pipeline_config` · `ctrl_mng_watermark` · `ctrl_cfg_schema_registry` · `ctrl_log_run` · `ctrl_log_table_run` · `ctrl_cdc_state` · `ctrl_cdc_reject`
+Severity is impact-based:
 
-## 7. Lệnh (cross-platform, chạy từ root repo)
-| Lệnh | Khi nào |
-|---|---|
-| `python scripts/vv.py new <slug>` | Bắt đầu task → in ra `<task-id>` |
-| `python scripts/vv.py verify <task-id>` | Bước [2]; ghi `verify.log` |
-| `python scripts/vv.py handoff <task-id> claude\|codex [--round N]` | Trước khi chuyển sang Claude/Codex: stage snapshot + sinh prompt |
-| `python scripts/vv.py guard [--restore]` | Sau phiên Claude/Codex: FAIL nếu có file ngoài `.ai/` bị đổi |
+- P0: data loss/corruption, irreversible state divergence, or non-idempotent behavior with material impact.
+- P1: runtime failure, broken recovery/locking/watermark behavior, serious performance risk, or architecture-rule violation.
+- P2: maintainability, testability, observability, or convention issue.
+- P3: minor clarity or consistency issue.
 
-## 8. Không làm
-- Không commit/push/merge (USER làm).
-- Không sửa `.cursor/`, `.claude/`, `.codex/`, `AGENTS.md`, `scripts/vv.py` trừ khi USER yêu cầu rõ.
-- Không xóa/đổi tên bảng Fabric trong code mà không có mục rollback trong `runbook.md`.
+Finding dispositions in `decision.md` are: `fixed`, `accepted-risk`, `rejected-false-positive`, or `backlog`.
+
+## 8. Data and runtime evidence
+
+- Never infer unknown runtime data characteristics.
+- Main writes probes under `.ai/tasks/<task-id>/evidence/probes/` and the user runs them in Fabric DEV.
+- Results go under `evidence/results/` and must not include personal data. Limit samples to 50 rows.
+- Reviewers may return `EVIDENCE_REQUIRED` with an exact probe instead of guessing.
+- Runtime evidence is required for changes whose correctness cannot be proven locally.
+
+## 9. VSVN platform invariants
+
+- Microsoft Fabric F16 per environment; capacity is shared with Eventstream, Copy Job, and the SQL analytics endpoint.
+- Bronze, silver, and gold are separate Lakehouses in the same workspace: `lh_vv_bronze`, `lh_vv_silver`, and `lh_vv_gold`.
+- Ingestion: Event Hub -> Eventstream -> bronze. Transformation: Spark SQL/PySpark notebooks. Orchestration: Fabric Data Pipeline.
+- Batch cadence is 10-15 minutes; source-to-serving SLA is 30-60 minutes; silver-to-gold POI runs hourly.
+- Gold is expose/sync only. Cleansing, normalization, enrichment, canonical entities, reusable business rules, and intermediate tables belong in silver.
+- Silver prefixes: `slv_pn_` for partner and `slv_3p_` for third party. Gold prefix: `gld_`.
+- `poi_uid = md5(source_name + source_id)` and never includes language.
+- Third-party `poi_id = md5(concat(source_name, source_id))`.
+- Partner `poi_id = uuid_format(md5('partner_portal' || business_service_id))`.
+- Notebook hierarchy: NB00 orchestrator -> NBx0 service -> NBxy table. No deeper orchestration tier.
+- Pipeline pre-check reads `ctrl_mng_pipeline_config` and `ctrl_mng_watermark`, then inspects `_delta_log` through `Files/_delta_src/<table>`. No new data means no Spark startup.
+- Control-table semantics belong in `docs/context/CTRL_TABLES_CONTEXT.md`. If that file is missing or incomplete, changes to `ctrl_*` require evidence and user action.
+
+## 10. Commands
+
+Run from repository root:
+
+```text
+python scripts/vv.py new <slug>
+python scripts/vv.py validate <task-id>
+python scripts/vv.py transition <task-id> <status>
+python scripts/vv.py prompt <task-id> architect
+python scripts/vv.py prompt <task-id> review --round N
+python scripts/vv.py verify <task-id>
+python scripts/vv.py doctor
+```
+
+## 11. Prohibited actions
+
+- Agents do not commit, push, merge, or rewrite Git history.
+- Do not delete or rename Fabric tables without rollback and forward-recovery steps in `runtime-runbook.md`.
+- Do not place secrets, tokens, personal data, or production extracts in task artifacts.
+- Do not bypass required evidence, architecture, review, or runtime gates.
+- Do not modify agent-system configuration unless the user explicitly requests an agent-system change.

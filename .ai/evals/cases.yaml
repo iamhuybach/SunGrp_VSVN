@@ -1,0 +1,43 @@
+schema_version: 1
+cases:
+  - id: merge-watermark-crash-window
+    summary: Business MERGE succeeds, process crashes before watermark update, and the pipeline retries.
+    expected_reviewers: [state-correctness-reviewer, sql-data-reviewer]
+    expected_risk_gate: true
+    required_topics: [idempotency, transaction_boundaries, retry_recovery, watermark]
+  - id: concurrent-control-state-writers
+    summary: Two table workers MERGE into a shared control table without an ownership key in the predicate.
+    expected_reviewers: [state-correctness-reviewer, spark-runtime-reviewer]
+    expected_risk_gate: true
+    required_topics: [concurrency, cross_state_impact, partial_failure]
+  - id: nondeterministic-dedup
+    summary: A row_number dedup window orders only by a timestamp that can tie.
+    expected_reviewers: [state-correctness-reviewer, sql-data-reviewer]
+    expected_risk_gate: true
+    required_topics: [event_ordering, idempotency]
+  - id: foreach-partial-failure
+    summary: A Fabric ForEach runs four notebooks concurrently and reports success when one child fails.
+    expected_reviewers: [fabric-pipeline-reviewer, state-correctness-reviewer]
+    expected_risk_gate: true
+    required_topics: [partial_failure, failure_propagation, concurrency]
+  - id: malformed-notebook-exit
+    summary: Pipeline expressions assume every notebook returns valid JSON with a status field.
+    expected_reviewers: [fabric-pipeline-reviewer, spark-runtime-reviewer]
+    expected_risk_gate: false
+    required_topics: [notebook_contract, retry_recovery]
+  - id: join-cardinality-unknown
+    summary: A new enrichment join assumes one row per entity, but no uniqueness evidence exists.
+    expected_reviewers: [sql-data-reviewer]
+    expected_risk_gate: false
+    expected_verdict: EVIDENCE_REQUIRED
+    required_topics: [grain, data_evidence_required]
+  - id: unbounded-driver-collection
+    summary: A notebook calls collect on an input with unknown production volume.
+    expected_reviewers: [spark-runtime-reviewer]
+    expected_risk_gate: false
+    required_topics: [driver_memory, runtime_proof_required]
+  - id: comment-only-fast-lane
+    summary: A Vietnamese explanatory comment is corrected in one notebook without changing behavior.
+    expected_reviewers: []
+    expected_risk_gate: false
+    required_topics: [fast_lane]

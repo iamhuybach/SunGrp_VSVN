@@ -1,34 +1,42 @@
 ---
-description: Quy ước viết notebook PySpark/Spark SQL trên Microsoft Fabric cho VSVN
+description: VSVN Microsoft Fabric notebook implementation rules
 globs: **/*.Notebook/**, **/*.ipynb
 alwaysApply: false
 ---
 
-## Cấu trúc
-- Tầng: NB00 orchestrator → NBx0 service → NBxy table. Không tạo tầng sâu hơn NBxy.
-- Cell đầu là cell tham số (toggle "parameter cell"); mọi giá trị môi trường/run (`run_id`, `pl_name`, `dry_run`, `allow_full_scan`…) đi qua tham số, không hard-code workspace/lakehouse ID.
-- Hàm dùng chung nằm trong notebook `NB_LIB_*`, nạp bằng `%run`. Không copy hàm lib vào notebook nghiệp vụ.
-- Kết thúc bằng `notebookutils.notebook.exit(json.dumps({...}))` với status + số liệu chính để pipeline đọc.
+## Structure and contracts
 
-## Ghi dữ liệu
-- Ghi bảng đích bằng MERGE idempotent: source phải duy nhất theo khóa MERGE (dedup bằng `row_number()` theo thứ tự event trước khi MERGE).
-- Không `INSERT INTO` bảng đích khi rerun có thể chèn trùng.
-- Bảng dùng chung giữa luồng song song (vd `ctrl_cdc_state`, `ctrl_cdc_reject` partition theo `src_tbl`): điều kiện MERGE phải có cột partition (`t.src_tbl = '<nguồn>'`) để tránh xung đột ghi.
-- Retry ghi Delta qua hàm retry trong lib (có jitter), không tự viết vòng retry mới.
+- Use NB00 orchestrator -> NBx0 service -> NBxy table. Do not create a deeper orchestration tier.
+- The first cell is the parameter cell. Pass environment and run values such as `run_id`, `pl_name`, `dry_run`, and `allow_full_scan` as parameters; never hard-code workspace or Lakehouse IDs.
+- Put shared functions in `NB_LIB_*` notebooks and load them with `%run`. Do not copy library functions into business notebooks.
+- Exit with `notebookutils.notebook.exit(json.dumps({...}))`. The payload must have a stable schema with status, run identifiers, affected-row metrics, and actionable error information.
 
-## Watermark & log
-- Luôn ghi `ctrl_log_run` (1 dòng/exec_id) và `ctrl_log_table_run` (1 dòng/bảng/attempt), kể cả nhánh NO_DATA và lỗi (`finally`).
-- Watermark chỉ tiến, chỉ ghi SUCCESS khi run còn giữ khóa (`lock_exec_id`), nhả khóa trong `finally`.
-- Chi tiết bảng ctrl: `docs/context/CTRL_TABLES_CONTEXT.md` — đọc trước khi sửa logic liên quan.
+## Delta writes and state
 
-## Song song
-- Chạy bảng theo priority wave bằng `ThreadPoolExecutor`; mỗi bảng bắt lỗi riêng, 1 bảng lỗi không làm hỏng log của bảng khác; tổng hợp status sau wave.
-- Không dùng biến global mutable chung giữa các thread; Spark session dùng chung là OK.
+- Target writes must be idempotent. A MERGE source must be unique on the complete target match key before MERGE.
+- Deduplication ordering must be deterministic and derived from a documented event-ordering contract.
+- Do not use append-only INSERT when retry or rerun can duplicate target rows.
+- A shared control table written by concurrent flows must include its ownership or partition key in the MERGE predicate.
+- Advance a watermark only after the business write and success log are durable, and only while the run still owns the lock.
+- Release locks in `finally`; preserve enough state to distinguish retryable from terminal failure.
+- Read `docs/context/CTRL_TABLES_CONTEXT.md` before changing `ctrl_*` behavior. If it is missing, require evidence instead of inferring semantics.
 
-## Hiệu năng (F16 dùng chung)
-- Không `collect()`/`toPandas()` trên dữ liệu không giới hạn; `count()` chỉ khi cần cho log.
-- `cache()` chỉ khi DataFrame dùng ≥2 lần, `unpersist()` sau khi xong.
-- Không bật `%%configure` cấu hình lớn khi chưa có số liệu.
+## Logging, concurrency, and recovery
 
-## Đặt tên
-- Silver: `slv_pn_*` (partner), `slv_3p_*` (3rd-party). Gold: `gld_*`, schema gold hiện có.
+- Write one `ctrl_log_run` row per execution and one `ctrl_log_table_run` row per table attempt, including NO_DATA and failed paths.
+- In priority-wave thread pools, isolate table failures and aggregate status after the wave.
+- Do not share mutable Python state across worker threads.
+- Use the repository retry helper with bounded attempts, backoff, and jitter. Do not add an uncoordinated retry loop.
+- A retry must not repeat non-idempotent side effects or move state beyond an uncommitted business write.
+
+## F16 performance
+
+- Do not use unbounded `collect()` or `toPandas()`.
+- Use `count()` only when the result is required for correctness or operational evidence.
+- Cache only reused DataFrames and always unpersist them.
+- Do not increase Spark resources without runtime evidence and a capacity-impact note.
+
+## Naming
+
+- Silver: `slv_pn_*` for partner and `slv_3p_*` for third party.
+- Gold: `gld_*` in an existing gold schema unless architecture explicitly approves a new schema.

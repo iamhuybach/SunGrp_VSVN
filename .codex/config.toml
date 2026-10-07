@@ -1,16 +1,10 @@
-# Codex trong VSVN = Independent Gate (review rủi ro), KHÔNG phải writer.
-# Project config chỉ được đọc khi project đã "trusted" trong Codex.
-# Nếu IDE extension không nhận file này: copy các dòng dưới vào ~/.codex/config.toml.
-
-# Đổi sang model flagship mới nhất mà `/model` trong Codex hiển thị cho tài khoản của bạn.
-model = "gpt-5.5"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
+sandbox_mode = "read-only"
+approval_policy = "never"
 
-# Cần ghi .ai/task/<id>/review-codex.md → workspace-write.
-# Codex KHÔNG giới hạn ghi theo thư mục con được, nên sau mỗi phiên chạy:
-#   python scripts/vv.py guard
-sandbox_mode = "workspace-write"
-approval_policy = "on-request"
-
-[sandbox_workspace_write]
-network_access = false
+[agents]
+enabled = true
+default_subagent_model = "gpt-5.6-sol"
+default_subagent_reasoning_effort = "high"
+max_concurrent_threads_per_session = 4

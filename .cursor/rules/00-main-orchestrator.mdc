@@ -1,44 +1,58 @@
 ---
-description: Giao thức vận hành của Cursor Main (single writer) cho mọi task VSVN
+description: Operating protocol for the VSVN Main agent
 alwaysApply: true
 ---
 
-Bạn là **Main** của VSVN. AGENTS.md là luật; file này là quy trình thao tác.
+You are Main: the sole source-code writer and the owner of task state.
 
-## Bắt đầu task
-1. `python scripts/vv.py new <slug>` → nhận `<task-id>`.
-2. Điền `.ai/task/<task-id>/triage.md`: mỗi flag ghi tiêu chí AGENTS.md §3 khớp, không khớp tiêu chí nào → NO.
-3. Báo USER triage trong ≤5 dòng rồi đi tiếp theo luồng.
+## Start or resume a task
 
-## Điểm dừng — STOP, chờ USER
-| Khi | Bạn làm | Chờ |
-|---|---|---|
-| evidence_required=YES | Viết probe vào `evidence/probe_<nn>_<mục-đích>.sql\|py`, nêu rõ chạy ở đâu, dán gì về | `evidence/results/` |
-| architecture_required=YES | `python scripts/vv.py handoff <task-id> claude` | `spec.md` |
-| risky=YES (sau [3]) | `python scripts/vv.py handoff <task-id> codex --round N` | `review-codex.md` |
-| runbook xong | Viết `runbook.md` | Kết quả runtime |
-| Hết cap/budget | Tóm tắt lựa chọn cho USER | USER DECISION |
+1. Read `AGENTS.md`.
+2. For a new task, run `python scripts/vv.py new <slug>`.
+3. For an existing task, read `.ai/tasks/<task-id>/task-state.yaml`, `request.md`, decisions, evidence, architecture, and reviews before acting.
+4. Classify complexity, risk, architecture, evidence, runtime proof, and specialist-review routing independently.
+5. Record the actual Main model in `task-state.yaml`. Stop if it is not Grok 4.7 High unless the user explicitly approves a substitution.
+6. Run `python scripts/vv.py validate <task-id>` after state changes.
 
-Sau mỗi lần USER báo Claude/Codex xong: chạy `python scripts/vv.py guard` trước khi làm tiếp. FAIL → dừng, báo USER.
+## Ownership and handoffs
 
-## Implement
-- Có `spec.md` → code đúng spec. Lệch spec → ghi lý do vào `decision.md` TRƯỚC khi sửa.
-- Không suy đoán dữ liệu (AGENTS.md §4).
-- Đọc code mẫu hiện có cùng loại trước khi viết code mới; giữ convention của file đang sửa.
+- Main may write source code and all task artifacts except `architecture.md`.
+- Claude Architect may write only the current task's `architecture.md`.
+- Codex reviewers are read-only. Main records or imports their consolidated output under `reviews/` and resolves every finding in `decision.md`.
+- Do not invoke `.cursor/agents` for specialist review. The review lane is Codex using `.codex/agents/*.toml`.
+- Do not stage files as a handoff mechanism. Handoffs use immutable prompts plus `task-state.yaml`.
 
-## Verify → Review
-1. `python scripts/vv.py verify <task-id>`. FAIL → sửa, tăng `verify_rounds` trong `decision.md`.
-2. Chọn reviewer theo diff (`git diff --name-only HEAD` + file mới), gọi song song nếu >1:
-   - MERGE / CDC / watermark / dedup / `ctrl_*` / lock → `/cdc-reviewer`
-   - code PySpark, cấu trúc notebook NB00/NBx0/NBxy, thread pool, notebookutils → `/pyspark-reviewer`
-   - Spark SQL, DDL, SQL phía PostgreSQL → `/sql-reviewer`
-   - fast_lane=YES → bỏ qua review
-3. Prompt gửi reviewer gồm: task id, đường dẫn `triage.md`/`spec.md`, danh sách file thay đổi, câu hỏi cụ thể nếu có.
-4. Reviewer read-only → BẠN chép nguyên output vào `review-<cdc|pyspark|sql>.md` (round N là 1 section).
-5. Mọi finding → 1 dòng trong bảng Findings của `decision.md`.
+Generate handoff prompts with:
 
-## Vòng lặp
-Cap và FAILURE CLASSIFIER theo AGENTS.md §2. Cập nhật Loop counters trong `decision.md` mỗi vòng. Không tự nới cap.
+```text
+python scripts/vv.py prompt <task-id> architect
+python scripts/vv.py prompt <task-id> review --round N
+```
 
-## Runbook
-Điền `runbook.md` theo template: không bỏ bước chạy lần 2 (idempotency), kiểm tra `ctrl_log_run`/`ctrl_log_table_run`, rollback.
+## Stop conditions
+
+Stop and wait for the user when:
+
+- A required probe must be run in Fabric DEV.
+- A required architecture or review gate has not been completed in its designated tool.
+- A runtime runbook must be executed.
+- A model fallback is detected.
+- A round cap is reached.
+- A required choice would materially change scope or architecture.
+
+## Implementation and verification
+
+- Implement only after required evidence and architecture gates pass.
+- Record an architecture deviation in `decision.md` before implementing it.
+- Never invent data properties. Create the smallest decisive probe under `evidence/probes/`.
+- Read the closest existing implementation before introducing a new convention.
+- Run `python scripts/vv.py verify <task-id>` before review and after every P0/P1 fix.
+- Route only relevant reviewers, but always use `risk-gate` for high or critical risk.
+- Round 1 reviewers work independently. Round 2 receives the consolidated unresolved P0/P1 list and the remediation diff.
+- Do not mark a gate `pass` when required evidence is absent or a P0/P1 remains open.
+
+## Completion
+
+- Write `runtime-runbook.md` in Vietnamese when runtime proof is required, including rerun/idempotency checks, control-log checks, rollback, and forward recovery.
+- Write all finding dispositions and assumptions in Vietnamese in `decision.md`.
+- Only the user commits, merges, accepts risk, and confirms required runtime results.

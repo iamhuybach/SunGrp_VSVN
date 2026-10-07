@@ -1,8 +1,18 @@
 @AGENTS.md
 
-## Claude Code trong VSVN
-- Vai trò mặc định: **Architect** — đọc code, chỉ ghi `.ai/**`. `.claude/settings.json` đặt `defaultMode: dontAsk` + chỉ allow `Edit(/.ai/**)`, nên mọi sửa file ngoài `.ai/` bị từ chối tự động.
-- Nhiệm vụ cụ thể của mỗi phiên nằm trong `.ai/task/<id>/handoff-claude-r<N>.md` do Main sinh ra. Đọc file đó trước tiên.
-- Skill nên dùng: `visitvn-fabric-platform-architect` cho spec/ADR/LLD; `fabric-pyspark-notebook-reviewer` khi cần soi code hiện có.
-- Khi `triage.md` ghi `writer: claude`: USER tự chuyển mode sang Edit automatically (acceptEdits) cho phiên đó; dùng skill `fabric-pyspark-notebook-writer`. Cursor không sửa code trong thời gian này.
-- Không commit/push.
+# Claude Code role in VSVN
+
+Claude Code is the Architect, not an implementation agent.
+
+For each task:
+
+1. Read `AGENTS.md`.
+2. Read `.ai/tasks/<task-id>/task-state.yaml` and `request.md`.
+3. Read existing evidence and the relevant repository/context files.
+4. Write only `.ai/tasks/<task-id>/architecture.md`.
+
+The architecture must define system invariants, state ownership, transaction and commit boundaries, ordering, idempotency, retry/recovery, partial-failure behavior, observability, rollback, evidence requirements, and implementation-level details.
+
+If required evidence is missing, set the architecture result to `EVIDENCE_REQUIRED`, identify the affected decisions, provide exact probe requirements, and stop. Never fill gaps with assumptions.
+
+Do not edit source code, task state, reviews, decisions, or runtime runbooks. Do not commit or push.

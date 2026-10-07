@@ -1,13 +1,17 @@
 ---
-description: Quy ước sửa Fabric Data Pipeline (pipeline-content.json) cho VSVN
+description: VSVN Microsoft Fabric Data Pipeline implementation rules
 globs: **/*.DataPipeline/**
 alwaysApply: false
 ---
 
-- Đây là file Fabric Git sinh ra: chỉ sửa phần cần đổi, giữ nguyên format/khóa khác để diff gọn. Không đổi `logicalId`, `objectId` nếu không bắt buộc.
-- Pre-check: đọc `ctrl_mng_pipeline_config` + `ctrl_mng_watermark`, Get Metadata `_delta_log` qua shortcut `Files/_delta_src/<tbl>`; không có dữ liệu mới → không gọi notebook (không khởi động Spark).
-- FL_00: ForEach theo nguồn → If_HasWork → Switch theo `item().src_tbl`. Thêm nguồn mới = thêm case, không nhân bản pipeline.
-- Không lưu notebook GUID trong bảng config (khác nhau giữa dev/stg/prod).
-- Mỗi activity notebook: có timeout và retry rõ ràng; tham số truyền `run_id = @pipeline().RunId`, `pl_name = @pipeline().Pipeline`.
-- Tên activity duy nhất trong pipeline; `dependsOn` chỉ trỏ tới activity cùng cấp (verify kiểm tra tự động).
-- Mọi thay đổi pipeline là risky → bắt buộc qua Codex.
+- Treat `pipeline-content.json` as a generated Fabric artifact. Make the smallest semantic edit and preserve unrelated IDs, keys, ordering, and formatting.
+- Do not change `logicalId` or `objectId` unless the task explicitly requires it.
+- The pre-check reads `ctrl_mng_pipeline_config` and `ctrl_mng_watermark`, then inspects `_delta_log` through `Files/_delta_src/<table>`. NO_DATA must avoid starting Spark.
+- FL_00 routes source items through ForEach -> If_HasWork -> Switch on `item().src_tbl`. Add a Switch case rather than cloning the pipeline.
+- Do not store environment-specific notebook GUIDs in control tables.
+- Every notebook activity must have explicit timeout, retry, and parameter mappings including `run_id = @pipeline().RunId` and `pl_name = @pipeline().Pipeline`.
+- Activity names must be globally unique. `dependsOn` may reference only activities in the same activity list/scope.
+- Define how ForEach concurrency interacts with locks, shared control tables, Spark capacity, retry, and failure aggregation.
+- Preserve failure propagation: an activity must not report success when a required child, notebook, or state update failed.
+- Parse notebook exit payloads defensively and route unknown or malformed status to failure.
+- Every pipeline change requires `fabric-pipeline-reviewer`. Changes to pre-check, Switch, dependency, concurrency, retry, or cross-system state also require `risk-gate`.
