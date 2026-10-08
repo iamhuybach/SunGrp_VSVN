@@ -59,19 +59,19 @@ Notebook không có hàm riêng.
 
 ```
 [0] _validate_orch_params                         PLAN: plan_run → print_plan → DAG runMultiple (in) → trả, không khoá / ghi
-[1] ensure_lock_row(wm_flow__<pl>) → acquire_flow_lock(hạn = now + p_lock_timeout_min)
+[1] ensure_lock_row(wm_flow__<pl>) → acquire_flow_lock(timeout = p_lock_timeout_min, tính từ lock_at)
       không được → append run log SKIPPED_CONCURRENT, trả (không raise)
     close_stale_runs: run RUNNING khác quá hạn → ABANDONED (sau khi đã giữ khoá)
 [2] append run log RUNNING (read_mode = VERSION_INBOX)
 [3] plan_run:
       build_dag (kiểm tra 1 chủ, chu trình, nhịp) → table_state mọi bảng
-      → external_pins: node pl khác = output_versions_json; bảng extract có batch dở = version trước batch
+      → ghim: node pl khác = output_versions_json nếu có và không lớn hơn version hiện tại; bảng khác = version hiện tại
       → edge_status từng cạnh (HistoryCache) → ứng viên = (bẩn ∪ chưa có bảng ∪ force) + hậu duệ
     không ứng viên → NO_DATA (RUN: output_versions = version hiện tại các node)
 [4] build_run_multiple_dag → notebookutils.notebook.runMultiple(dag)   lỗi runMultiple không dừng NB_00
 [5] collect_outcomes: dòng ctrl_log_table_run của exec; node không có dòng → NOT_RUN
-[6] RUN: advance_edges — node SUCCESS / NO_DATA: cạnh = version node đã đọc (kể cả lùi); node lỗi: ghi trạng thái
-      chỉ khi còn giữ khoá (kiểm tra trước, điều kiện EXISTS trong MERGE, kiểm tra sau)
+[6] RUN: advance_edges — node SUCCESS / NO_DATA: cạnh = version node đã đọc, không lùi khi cùng table id; node lỗi: ghi trạng thái
+      MERGE không kiểm khoá và không có EXISTS
 [7] finally: update run log (status, counts, read_note = tóm tắt kế hoạch, output_versions_json khi SUCCESS) → release_flow_lock
     status ∉ (SUCCESS, NO_DATA) → raise RuntimeError
 ```

@@ -26,12 +26,12 @@
 
 1. Fabric F16, Runtime 1.3, 3 lakehouse `lh_vv_bronze` / `lh_vv_silver` / `lh_vv_gold`, ctrl ở `lh_vv_bronze.ctrl`.
 2. Raw: `partner_raw_data` (Debezium CDC), `poi_raw_event` (tài liệu crawl 3P), Eventstream append, không stats.
-3. Extract (`PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`, 10–15 phút): 1 notebook / nguồn + lib chung; đọc theo version Delta; cấu hình trong ctrl.
+3. Extract (`PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`, 10–15 phút): ForEach tuần tự, nhánh có việc chỉ gọi `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` với `partner_raw_data` gắn cứng. Notebook 3rd-party có trong repo, không nằm trong pipeline này.
 4. Silver L1 đúng cấu trúc nguồn: `slv_pn_*` (23), `slv_3p_poi_*` (14, 13 active). Không rule nghiệp vụ.
 5. Silver L2 (`slv_poi_*`, 5 node) giữ mọi quyết định; rule là dữ liệu ở 5 bảng `ref_*`.
 6. Gold (`gld_srv_poi_*`, 3 bảng) chỉ chiếu / gom từ silver, MERGE theo `row_hash`, xoá mềm.
 7. Luồng tính lại (`PL_VV_TRANSFORM_SLV_TO_GLD_1H`): `NB_00_ORCHES_SLV_TO_GLD` dựng DAG từ cạnh `RECOMPUTE`, chỉ chạy node có đầu vào đổi (so version Delta), runMultiple.
-8. Chống chạy chồng bằng khoá nguyên tử trên dòng watermark; con trỏ chỉ tiến khi đã đọc đủ.
+8. Chống chạy chồng bằng khoá nguyên tử trên dòng watermark. Hạn khoá luồng tính lại = `lock_at` cộng timeout của run đang xét, không phải hạn đã ghi trên dòng khoá.
 9. Bảng `poi_*` cũ, `poi_master`, chuỗi NB_00 cũ vẫn chạy song song tới cutover.
 10. Còn mở: dữ liệu nguồn (`after` rỗng, raw dừng từ 16–17/09), C2 lib extract, `[VERIFY]` runMultiple / múi giờ, R3–R5 gold run 1, bảo trì Delta.
 

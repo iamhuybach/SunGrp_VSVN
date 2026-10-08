@@ -6,9 +6,6 @@ Start with [`00_README.md`](00_README.md). The rest of this directory is the Vis
 
 Counts under "Dữ liệu hiện có" come from logs through 05/10/2026. Refresh them by running `CHECK_CTRL_SNAPSHOT.py` in Fabric DEV (default lakehouse `lh_vv_bronze`) and do not paste personal data back into the repository.
 
-Import review notes for 08/10/2026 are in `.ai/tasks/20261008-import-context-pack/decision.md`. Two points to keep in mind before changing code:
-
-- `notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb` still expires a flow lock with the caller's timeout. The context describes the later `LOCK_EXPIRES_AT` rule.
-- `pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/` has no Switch and calls `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV_BK`. The context describes the later ForEach → Switch design.
+The pack matches `notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb` and `pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/` as aligned on 08/10/2026. The flow lock expires from `lock_at` plus the caller's timeout. FL_00 calls only `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` with `partner_raw_data` fixed in the activity parameters.
 
 A task that changes `ctrl_*` reads, writes, locks, watermarks, logging, or recovery still needs an evidence plan when this contract does not already answer the question.

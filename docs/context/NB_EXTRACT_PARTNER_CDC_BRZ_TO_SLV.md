@@ -9,7 +9,7 @@
 
 | | |
 |---|---|
-| Gọi bởi | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` → ForEach nguồn → If_HasWork (pre-check Get Metadata) → Switch `item().src_tbl = partner_raw_data` |
+| Gọi bởi | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` → `ForEach_Source` (tuần tự) → `If_HasWork` → activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. Không có Switch |
 | Đọc | `ctrl_mng_pipeline_config`, `ctrl_cfg_schema_registry`, `ctrl_mng_watermark`, `ctrl_cdc_state`; raw: file `add` của commit mới theo `_delta_log` (VERSION) hoặc `VERSION AS OF` toàn bộ (FULL) |
 | Ghi | `slv_pn_*` (MERGE, xoá mềm), `ctrl_cdc_state`, `ctrl_cdc_reject`, `ctrl_log_run`, `ctrl_log_table_run`, `ctrl_mng_watermark` |
 | Song song | Bảng cùng `priority` chạy cùng lúc (`max_parallel` luồng): wave 1 = 12 bảng nghiệp vụ / đơn hàng, wave 2 = 11 bảng `slv_pn_product*` |
@@ -33,8 +33,8 @@ Thay notebook cũ `1. parsing_bronze_partner` + bảng `lh_vv_bronze.partner.*`:
 
 | Tham số | Mặc định | Ý nghĩa |
 |---|---|---|
-| `pl_name` | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | `@pipeline().Pipeline` |
-| `run_id` | "" | `@pipeline().RunId`; trống = `exec_id` |
+| `pl_name` | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | Pipeline gắn cứng chuỗi này, không dùng `@pipeline().Pipeline` |
+| `run_id` | "" | Pipeline truyền `""`; notebook lấy `exec_id` khi trống |
 | `src_schema`, `src_tbl` | `lh_vv_bronze.dbo`, `partner_raw_data` | Bảng raw |
 | `overlap_minutes` | 10 | Không còn dùng (giữ để pipeline cũ truyền không lỗi) |
 | `allow_full_scan` | False | Đọc FULL khi không đọc theo version được |
@@ -45,7 +45,7 @@ Thay notebook cũ `1. parsing_bronze_partner` + bảng `lh_vv_bronze.partner.*`:
 | `dry_run` | False | Chỉ đọc, parse, đếm |
 | `stop_on_failure` | False | Wave lỗi → dừng wave sau |
 | `cast_null_policy` | FAIL | FAIL: bảng có giá trị thành NULL khi chuyển kiểu → FAILED trước MERGE; WARN: chỉ cảnh báo |
-| `running_timeout_minutes` | 60 | > thời gian chạy dài nhất và > timeout activity (45 phút) |
+| `running_timeout_minutes` | 60 | Pipeline truyền 60. Timeout activity trong JSON là 12 giờ, lớn hơn 60 |
 
 ## 4. Hằng số Debezium
 
@@ -160,7 +160,7 @@ Luật phân loại:
 
 | Việc | Cách |
 |---|---|
-| Pipeline | Notebook activity nhánh `partner_raw_data`: `pl_name = @pipeline().Pipeline`, `run_id = @pipeline().RunId`; timeout 45 phút (< 60), retry 0, Concurrency pipeline = 1 |
+| Pipeline | Activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` trong nhánh có việc của `If_HasWork`. Tham số gắn cứng `partner_raw_data`, `run_id` rỗng. Timeout 12 giờ, retry 0. ForEach `isSequential = true`. Activity không đọc `item()` |
 | Chạy thử | `dry_run = True` |
 | Nạp lại vài bảng | `table_filter = "..."`, `full_reload = True` (watermark không đổi; tạm dừng lịch khi chạy lâu) |
 | Chạy lại sau lỗi | Chạy bình thường |
@@ -186,5 +186,5 @@ FROM lh_vv_bronze.ctrl.ctrl_log_run WHERE src_tbl = 'partner_raw_data' ORDER BY 
 | H2 | Event xoá lấy khoá từ `before`; REPLICA IDENTITY DEFAULT chỉ gửi PK → bảng có khoá silver khác PK bị reject `MISSING_ENTITY_KEY` khi xoá | Đã nắm, chờ PK + replica identity 23 bảng |
 | M5 | Nhánh cập nhật MERGE vô điều kiện + `_ingested_at = now` → update storm ghi lại silver liên tục | Thêm `WHEN MATCHED AND NOT (t.c <=> s.c AND …)` sau khi xác nhận |
 | L4 | Khoá ghép nối `\|`: giá trị chứa `\|` có thể trùng `_entity_key` | Window theo cột khoá thật (như 3P) |
-| C1 | Mất khoá giữa chừng vẫn SUCCESS; MERGE đích không chặn ghi lùi | Low nhờ Concurrency = 1 + timeout activity < 60 |
+| C1 | Mất khoá giữa chừng vẫn SUCCESS; MERGE đích không chặn ghi lùi | JSON pipeline không đặt timeout activity nhỏ hơn 60 phút (đang là 12 giờ) |
 | L2 | Wave 2 chỉ chạy khi wave 1 xong; bảng không phụ thuộc nhau | Có thể gộp 1 priority |
