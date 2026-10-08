@@ -240,7 +240,7 @@ Hợp đồng cột event notebook phải dựng: `_cdc_ts_ms` BIGINT, `_cdc_lsn
 | `dry_run` | False | False | Chỉ đọc, parse, đếm |
 | `stop_on_failure` | False | False | Wave lỗi thì dừng wave sau |
 | `cast_null_policy` | FAIL | FAIL | FAIL / WARN |
-| `running_timeout_minutes` | 60 | 60 | Khoá / RUNNING quá hạn coi là chết. **Phải > thời gian chạy dài nhất và > timeout activity** (activity 45 phút) |
+| `running_timeout_minutes` | 60 | 60 | Khoá nguồn quá hạn theo số phút này. Activity FL_00 trong repo đặt timeout 12 giờ, lớn hơn 60 |
 
 ## 7. Vấn đề đã biết / việc còn mở
 

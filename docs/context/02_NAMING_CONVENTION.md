@@ -130,7 +130,7 @@ Bắt đầu bằng `_` để không trùng cột nghiệp vụ.
 | `ctrl_log_run.read_mode` | Extract: `VERSION` · `FULL`. NB_00: `VERSION_INBOX` |
 | `ctrl_log_table_run.status` | `SUCCESS` · `FAILED` · `NO_DATA` · `SKIPPED` (NB_00 tự suy `NOT_RUN` khi node không có dòng log) |
 | `ctrl_mng_watermark.status` | Nguồn: `INITIALIZED` · `RUNNING` · `SUCCESS` · `FAILED`. Cạnh: `INITIALIZED` · `SUCCESS` · `FAILED` · `SKIPPED` · `NOT_RUN`. Dòng khoá: trạng thái run cuối |
-| `ctrl_mng_watermark.watermark_column` | Nguồn: tên cột thời gian raw (`EventProcessedUtcTime`, `crawled_at`). Cạnh: `commit_ts`. Dòng khoá: `LOCK_EXPIRES_AT` |
+| `ctrl_mng_watermark.watermark_column` | Nguồn: tên cột thời gian raw (`EventProcessedUtcTime`, `crawled_at`). Cạnh: `commit_ts`. Dòng khoá luồng: NULL trong notebook hiện tại |
 | `ctrl_cdc_reject.reject_reason` | `MISSING_ENTITY_KEY` · `MISSING_EVENT_ORDER` · `MISSING_RAW_CURSOR` · `INVALID_PAYLOAD` |
 | Lý do bỏ qua (`ignored_detail`) | Partner: `TOMBSTONE` · `OP_TRUNCATE` · `OP_MESSAGE` · `UNCONFIGURED` · `OUT_OF_SCOPE`. 3P: `OUT_OF_SCOPE` |
 | Lý do cạnh (`edge_status`) | Bẩn: `MISSING_TABLE` · `NEW_EDGE` · `TABLE_RECREATED` · `VERSION_BACKWARD` · `HISTORY_GAP` · `DATA_CHANGED` · `PARENT_NOT_BUILT`. Sạch: `UNCHANGED` · `MAINTENANCE_ONLY` |

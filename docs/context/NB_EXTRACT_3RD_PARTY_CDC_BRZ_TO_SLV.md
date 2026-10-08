@@ -9,7 +9,7 @@
 
 | | |
 |---|---|
-| Gọi bởi | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` → ForEach → If_HasWork → Switch `item().src_tbl = poi_raw_event` (song song chuỗi `NB_00_POI_PIPELINE_ORCHESTRATOR` cũ tới cutover) |
+| Gọi bởi | Không có trong `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`. Chạy tay hoặc pipeline khác. Chuỗi `NB_00_POI_PIPELINE_ORCHESTRATOR` cũ vẫn chạy song song tới cutover |
 | Đọc | `ctrl_mng_pipeline_config` (`load_mode`, `align_path`, `dedup_order`), `ctrl_cfg_schema_registry`, `ctrl_mng_watermark`, `ctrl_cdc_state`; raw theo version / FULL |
 | Ghi | `slv_3p_poi_*` (MERGE, **không xoá**), `ctrl_cdc_state`, `ctrl_cdc_reject`, `ctrl_log_run`, `ctrl_log_table_run`, `ctrl_mng_watermark` |
 | Song song | 13 bảng active cùng priority 1 → 1 wave, `max_parallel` luồng |
@@ -183,7 +183,7 @@ Cột JSON giữ nguyên khối (transform sau): `raw_data_json`, `amenity_schem
 
 | Việc | Cách |
 |---|---|
-| Pipeline | Activity nhánh `poi_raw_event`, song song chuỗi NB_00 cũ; timeout 45 phút, retry 0 |
+| Pipeline | Chưa có activity trong FL_00. JSON hiện tại chỉ gọi notebook partner |
 | Lần đầu | `dry_run = True, allow_full_scan = True` (xem `cast_null`, `langs`) → `allow_full_scan = True` → bật lịch, sau đó `False` |
 | Thêm cột | INSERT 1 dòng registry; dữ liệu cũ: `full_reload` bảng đó |
 | Thêm ngôn ngữ | Tham số `langs`; tài liệu cũ: `full_reload` bảng LANG* |

@@ -42,6 +42,8 @@ Mỗi lần chạy (exec_id):
 
 Pre-check FL_00 (Get Metadata, không Spark) chỉ đọc 8 cột cũ của `pipeline_config` và `last_src_version`, `last_success_at`, `watermark_value` của dòng nguồn — thêm cột / thêm dòng `RECOMPUTE` không ảnh hưởng (lọc theo `pl_name`).
 
+JSON trong repo (`pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/`): `Get_Config_4Run` và `Lookup_WM` chạy song song, rồi `ForEach_Source` (`isSequential = true`, items = dòng config active). Trong ForEach: lọc watermark, Get Metadata `_delta_log`, `If_HasWork`. Nhánh có việc chỉ gọi activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` (timeout `0.12:00:00` = 12 giờ, retry 0). Tham số gắn cứng `src_schema = lh_vv_bronze.dbo`, `src_tbl = partner_raw_data`, `pl_name = PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`, `run_id = ""`. Không có Switch. `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV` không nằm trong pipeline này. `notebookId` của activity không đổi khi đổi tên.
+
 ---
 
 ## 3. `ctrl_mng_pipeline_config`
@@ -178,23 +180,23 @@ CREATE TABLE IF NOT EXISTS ctrl.ctrl_mng_watermark (
 | `watermark_id` | `wm_transform_partner_raw_data` | `wm_e__slv_poi__slv_3p_poi` | `wm_flow__PL_VV_TRANSFORM_SLV_TO_GLD_1H` |
 | `src_schema`, `src_tbl` | Bảng raw | Bảng đầu vào | `src_tbl` = `pl_name` |
 | `trg_schema`, `trg_tbl` | NULL (dòng cấp nguồn; notebook cần **đúng 1** dòng `trg_tbl IS NULL`) | Node | NULL |
-| `watermark_column` | `EventProcessedUtcTime` / `crawled_at` | `commit_ts` | NULL lúc tạo; `LOCK_EXPIRES_AT` từ lần nhận khoá đầu tiên (giữ nguyên sau khi nhả) |
-| `watermark_value` | Max thời điểm ingest đã đọc — **chỉ để theo dõi** (không lọc theo cột này) | Thời điểm commit của version đã đọc | **Hạn khoá** = lúc nhận + `p_lock_timeout_min` (NB_00) hoặc + 90 (node chạy tay); nhả khoá → NULL. Dòng chưa có hạn → hạn = `lock_at` + 90 |
+| `watermark_column` | `EventProcessedUtcTime` / `crawled_at` | `commit_ts` | NULL. Notebook không ghi `LOCK_EXPIRES_AT` |
+| `watermark_value` | Max thời điểm ingest đã đọc — **chỉ để theo dõi** (không lọc theo cột này) | Thời điểm commit của version đã đọc | NULL. Không dùng làm hạn khoá |
 | `last_success_at` | Lần chạy thành công gần nhất (pre-check: Start time = giá trị − 1 ngày) | Lần tiến cạnh gần nhất | — |
 | `status` | `INITIALIZED` / `RUNNING` / `SUCCESS` / `FAILED` | `INITIALIZED` / `SUCCESS` / `FAILED` / `SKIPPED` / `NOT_RUN` | `RUNNING` khi nhận khoá; nhả khoá → trạng thái run (`SUCCESS`, `NO_DATA`, `PARTIAL_FAILED`, `FAILED`) |
 | `flow_name` | Notebook extract | Notebook node | `NB_00_ORCHES_SLV_TO_GLD` |
 | `watermark_sequence` | -1 (không dùng) | NULL | — |
 | `last_run_id` | `run_id` gần nhất | `run_id` gần nhất | `run_id` gần nhất |
-| `last_src_version` | **Con trỏ đọc chính**: version raw đã xử lý. NULL → pre-check luôn cho chạy, notebook phải `allow_full_scan = True` | Version đầu vào node đã đọc (ghi đúng version đã dựng, **kể cả lùi**) | — |
+| `last_src_version` | **Con trỏ đọc chính**: version raw đã xử lý. NULL → pre-check luôn cho chạy, notebook phải `allow_full_scan = True` | Version đầu vào node đã đọc. Cùng table id thì chỉ ghi khi version mới ≥ version đang lưu; table id khác thì ghi version mới (bảng tạo lại) | — |
 | `last_src_table_id` | Delta table id raw lúc ghi version; khác hiện tại = raw bị tạo lại | Table id đầu vào lúc đọc (`TABLE_RECREATED`) | — |
 | `error_message` | Lỗi gần nhất | Lỗi node gần nhất | — |
-| `lock_exec_id`, `lock_at` | Khoá chạy của nguồn; quá `running_timeout_minutes` (60) → run sau lấy lại | NULL | Khoá luồng; quá **hạn đã ghi** ở `watermark_value` → lấy lại |
+| `lock_exec_id`, `lock_at` | Khoá chạy của nguồn; quá `running_timeout_minutes` (60) → run sau lấy lại | NULL | Khoá luồng. Quá hạn khi `lock_at` NULL hoặc `lock_at` < now − timeout của **run đang xét** (NB_00: `p_lock_timeout_min`; node chạy tay: 90 phút) |
 | `updated_at` | Lần sửa dòng gần nhất (kể cả RUNNING / lỗi) | Như bên | Như bên |
 
 Luật ghi:
 - **Extract**: SUCCESS / NO_DATA → tiến `last_src_version`, `last_success_at`, `watermark_value = max(cũ, mới)` cùng lúc, chỉ khi còn giữ khoá và **không lùi** (ghi khi NULL / ≤ version chốt / raw bị tạo lại). Lỗi → giữ nguyên, chỉ ghi `FAILED` + lỗi.
-- **Cạnh**: NB_00 ghi bằng 1 MERGE sau runMultiple; node SUCCESS / NO_DATA → ghi version node đã đọc (`src_versions_json`), node lỗi → chỉ ghi trạng thái. Câu MERGE có điều kiện `EXISTS` dòng khoá còn thuộc `exec_id` (run mất khoá không ghi đè). Cạnh chưa có dòng → INSERT.
-- **Khoá**: nhận = `UPDATE … WHERE lock_exec_id IS NULL OR quá hạn` rồi đọc lại (Delta optimistic concurrency → đúng 1 run thắng); nhả trong `finally`, chỉ khi còn là chủ.
+- **Cạnh**: NB_00 ghi bằng 1 MERGE sau runMultiple (`sql_merge_edge_wm`). Node SUCCESS / NO_DATA và có version trong `src_versions_json` → ghi version, table id, commit ts khi version mới ≥ version đang lưu hoặc table id khác. Node lỗi → chỉ ghi trạng thái và lỗi. MERGE không có `EXISTS` dòng khoá. Cạnh chưa có dòng → INSERT.
+- **Khoá luồng**: nhận = `UPDATE` `lock_exec_id`, `lock_at = current_timestamp()`, `status = RUNNING` khi khoá trống hoặc `_lock_expired_sql(timeout_min)`, rồi đọc lại. `timeout_min` là của run đang nhận khoá. Nhả trong `finally` chỉ khi `lock_exec_id` còn là mình. Run mất khoá vẫn có thể ghi MERGE đích và tiến cạnh.
 
 ### Dữ liệu hiện có
 
@@ -549,11 +551,11 @@ FROM ctrl.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 ORDER BY so_
 
 | Ngày | Thay đổi |
 |---|---|
-| 01/10 | Registry v2 (`src_*` / `trg_*`, `convert_rule`, bỏ `table_is_active`, order từ 1); `exec_id` cho 2 bảng log; `updated_at` cho watermark; Switch theo nguồn trong FL_00 |
+| 01/10 | Registry v2 (`src_*` / `trg_*`, `convert_rule`, bỏ `table_is_active`, order từ 1); `exec_id` cho 2 bảng log; `updated_at` cho watermark. Bản thiết kế có Switch theo nguồn; JSON FL_00 trong repo không có Switch |
 | 02/10 | Đọc raw theo version (`_delta_log`) thay lọc `EventProcessedUtcTime`; thêm `read_mode`, `read_note`; reject "after rỗng" ở bước phân loại |
 | 03/10 | Tiền tố silver theo nguồn (`slv_pn_*`, `slv_3p_poi_*`); tạo lại 7 bảng ctrl; `last_src_table_id`, `lock_exec_id`, `lock_at` vào DDL; sửa INSERT watermark 16 cột / 17 giá trị; sửa công thức priority; khoá nguyên tử; state không lùi; `cast_null_policy` |
 | 04/10 | `pipeline_config` + `load_mode`, `align_path`, `dedup_order`; 14 bảng 3P; `ctrl_cdc_state` / `ctrl_cdc_reject` `PARTITIONED BY (src_tbl)`; registry 3P 182 cột (36 tắt), `policy` tắt, content khoá + `content_type`; tạo lại toàn bộ ctrl + silver 2 luồng (`RERUN_ALL_0410.sql`) |
-| 05/10 | Luồng tính lại: `load_mode = RECOMPUTE`, 33 cạnh, 33 dòng `wm_e__*` + `wm_flow__PL_VV_TRANSFORM_SLV_TO_GLD_1H`; `ctrl_log_run.output_versions_json`; `ctrl_log_table_run` + `src_versions_json`, `trg_version`, `deactivated_rows`, `qg_json`. Review #1: hạn khoá ghi ở dòng khoá (`LOCK_EXPIRES_AT`), dấu đã đọc của cạnh được lùi (có điều kiện khoá trong MERGE) |
+| 05/10 | Luồng tính lại: `load_mode = RECOMPUTE`, 33 cạnh, 33 dòng `wm_e__*` + `wm_flow__PL_VV_TRANSFORM_SLV_TO_GLD_1H`; `ctrl_log_run.output_versions_json`; `ctrl_log_table_run` + `src_versions_json`, `trg_version`, `deactivated_rows`, `qg_json`. Notebook trong repo chưa ghi `LOCK_EXPIRES_AT` và chưa cho lùi dấu đã đọc khi cùng table id |
 
 ## 11. Việc còn lại liên quan ctrl
 

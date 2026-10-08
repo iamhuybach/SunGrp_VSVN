@@ -70,7 +70,7 @@ flowchart LR
 
 | Pipeline | Nhịp | Notebook | Đọc → Ghi |
 |---|---|---|---|
-| `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | 10–15 phút | Pre-check Get Metadata (`_delta_log` qua shortcut) → ForEach nguồn → Switch `item().src_tbl` → `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` / `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV` | bronze raw → silver L1 |
+| `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | 10–15 phút | `Get_Config_4Run` + `Lookup_WM` → `ForEach_Source` (tuần tự) → Get Metadata `_delta_log` → `If_HasWork` → activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. Tham số gắn cứng `partner_raw_data`. Không có Switch và không gọi notebook 3rd-party | bronze `partner_raw_data` → `slv_pn_*` |
 | `PL_VV_TRANSFORM_SLV_TO_GLD_1H` | 1 giờ | `NB_00_ORCHES_SLV_TO_GLD` (`p_pl_name`) → runMultiple 8 notebook node | silver L1 + ref → silver L2 → gold |
 
 ## 4. Bronze — bảng raw

@@ -62,9 +62,7 @@ Vì sao tính lại toàn bộ thay vì incremental: dữ liệu ~19k POI, logic
 | `OP_ROW_METRICS` | Metric đếm dòng đổi theo operation (`MERGE`: inserted / updated / deleted; `UPDATE`, `DELETE`, `WRITE`, `STREAMING UPDATE`, `CTAS`) |
 | `TECH_COLUMNS` / `TECH_NAMES` | `row_hash`, `created_at`, `updated_at`, `deleted_at` |
 | `TABLE_PROPERTIES` | `optimizeWrite` + `autoCompact` |
-| `LOCK_TIMEOUT_DEFAULT_MIN` | 90: hạn khoá khi node chạy tay tự nhận; mốc dự phòng cho dòng khoá cũ chưa ghi hạn |
-| `LOCK_EXPIRY_COLUMN` | `LOCK_EXPIRES_AT` (review #1) |
-| `EXTRACT_INCOMPLETE_STATUSES` / `EXTRACT_DONE_STATUSES` | `RUNNING, FAILED, PARTIAL_FAILED, ABANDONED` / `SUCCESS, NO_DATA` (review #2) |
+| `LOCK_TIMEOUT_DEFAULT_MIN` | 90: node chạy tay dùng số phút này để xét `lock_at` quá hạn |
 | `CADENCE_RE`, `CADENCE_UNIT_MIN` | Nhịp từ hậu tố pl: `_15M` = 15, `_1H` = 60, `_1D` = 1440 |
 | `NEW_LOG_COLUMNS` | 5 cột log mới phải có (`require_ctrl_columns`) |
 
@@ -72,7 +70,7 @@ Vì sao tính lại toàn bộ thay vì incremental: dữ liệu ~19k POI, logic
 
 | Hàm | Mô tả |
 |---|---|
-| `ConfigError`, `QualityGateError`, `LockLostError` | Cấu hình sai (không thử lại) / QG chặn (không MERGE) / run không còn giữ khoá (dừng trước khi ghi) |
+| `ConfigError`, `QualityGateError` | Cấu hình sai (không thử lại) / QG chặn (không MERGE). Notebook không có `LockLostError` |
 | `utc_now`, `to_bool`, `split_csv`, `short_error`, `log(msg, level, node)` | Như lib extract (log gắn tên node) |
 | `is_transient`, `with_retry` | Như lib extract (6 lần, jitter) |
 | `is_identifier`, `is_fq_name`, `quote_name`, `table_exists`, `table_columns` | Tên an toàn; cột lower → kiểu |
@@ -111,21 +109,16 @@ Vì sao tính lại toàn bộ thay vì incremental: dữ liệu ~19k POI, logic
 | `WM_EDGE_SCHEMA` | Schema dòng ghi cạnh (có cờ `advance`) |
 | `load_edge_wm(edges)` | Dòng watermark các cạnh → {(src_fq, trg_fq): {version, table_id, ts, status}}; id đúng nhưng src / trg lệch config → `ConfigError` |
 | `edge_status(consumed, state, read_version, hist, src_fq)` | → (bẩn, lý do, versions): `MISSING_TABLE`, `NEW_EDGE`, `TABLE_RECREATED`, `VERSION_BACKWARD`, `UNCHANGED`, `HISTORY_GAP`, `DATA_CHANGED` (kèm ≤ 20 version), `MAINTENANCE_ONLY` |
-| `sql_merge_edge_wm(view, lock_id, exec_id)` / `merge_edge_wm(rows, tag, lock_id, exec_id)` | 1 MERGE ghi cạnh: `advance` → version / table id / commit ts **đúng version node đã đọc (kể cả lùi)**, `last_success_at`, `SUCCESS`; không `advance` → trạng thái + lỗi; chưa có dòng → INSERT. Nguồn MERGE bọc `WHERE EXISTS (dòng khoá còn thuộc exec_id)` → run mất khoá không ghi đè (review #1 / #2) |
-| `sql_ensure_lock_row`, `ensure_lock_row(pl, flow_name)` | Tạo dòng `wm_flow__<pl>` nếu chưa có (`src_tbl = pl`, INITIALIZED) |
-| `_lock_expired_sql(fallback_min)` | Quá hạn = qua **hạn do run giữ khoá ghi** (`watermark_value` khi `watermark_column = LOCK_EXPIRES_AT`); dòng cũ không có hạn → `lock_at + fallback`; `lock_at` NULL → coi như trống |
-| `read_flow_lock(pl, fallback)` | `lock_exec_id`, `lock_at`, `lock_expires_at`, `expired` |
-| `assert_lock_owner(pl, exec_id, step)` | Kiểm tra còn giữ khoá ngay trước bước ghi; mất → `LockLostError` |
-| `acquire_flow_lock(pl, exec_id, run_id, timeout_min)` | `UPDATE … SET lock_exec_id, lock_at, watermark_column = LOCK_EXPIRES_AT, watermark_value = now + timeout_min, status RUNNING WHERE trống / quá hạn` → đọc lại. `timeout_min` chỉ quyết hạn của khoá **mình** nhận |
-| `release_flow_lock(pl, exec_id, status)` | Nhả (xoá `lock_*`, hạn) và ghi `status`, chỉ khi còn là chủ |
+| `sql_merge_edge_wm(view)` / `merge_edge_wm(rows, tag)` | 1 MERGE. `advance`: ghi version / table id / commit ts khi `last_src_version` đang lưu NULL, table id NULL, table id khác, hoặc version mới ≥ version đang lưu. Không `advance`: chỉ trạng thái + lỗi. Chưa có dòng → INSERT. Không có `EXISTS` dòng khoá |
+| `sql_ensure_lock_row`, `ensure_lock_row(pl, flow_name)` | Tạo dòng `wm_flow__<pl>` nếu chưa có (`src_tbl = pl`, `watermark_column` NULL, INITIALIZED) |
+| `_lock_expired_sql(timeout_min)` | `coalesce(lock_at < current_timestamp() - INTERVAL {timeout_min} MINUTES, true)`. `timeout_min` là của run đang xét |
+| `read_flow_lock(pl, timeout_min)` | `lock_exec_id`, `lock_at`, `expired` |
+| `acquire_flow_lock(pl, exec_id, run_id, timeout_min)` | `UPDATE` `lock_exec_id`, `lock_at = current_timestamp()`, `status = RUNNING`, `last_run_id` khi khoá trống hoặc quá hạn, rồi đọc lại. Không ghi `watermark_column` / `watermark_value` |
+| `release_flow_lock(pl, exec_id, status)` | Xoá `lock_exec_id` và `lock_at`, ghi `status`, chỉ khi `lock_exec_id` còn là mình |
 | `close_stale_runs(pl, exec_id, timeout_min)` | Run log RUNNING khác quá hạn → `ABANDONED`. Gọi **sau** khi đã nhận khoá |
 | `write_run_log(row)` / `update_run_log(exec_id, values)` | Append dòng run log / UPDATE khi đóng |
 | `write_node_log(row)` / `node_logs(exec_id)` | Node append 1 dòng `ctrl_log_table_run` / NB_00 đọc dòng mới nhất của từng node |
-| `last_output_versions(pl)` | `output_versions_json` của run SUCCESS / NO_DATA gần nhất của pl (lát cắt nhất quán) |
-| `load_writer_rows()` | Dòng config active không phải `RECOMPUTE`: luồng extract nào ghi bảng nào |
-| `incomplete_batch_start(pl, src_schema, src_tbl)` / `sql_incomplete_batch_start()` | `started_at` sớm nhất của run extract RUNNING / FAILED / PARTIAL_FAILED / ABANDONED bắt đầu sau lần SUCCESS / NO_DATA gần nhất; None = không có batch dở |
-| `version_before(fq, boundary, history_limit)` | Version lớn nhất có commit trước mốc |
-| `external_pins(external, states, history_limit)` | Version đọc của đầu vào ngoài: node của pl khác → `output_versions_json` của pl đó; bảng do extract ghi mà extract có **batch dở** → version cuối trước lúc batch dở bắt đầu (review #2); bảng khác (ref, CMS, mapping) → hiện tại. Trả `(pinned, notes)` |
+| `last_output_versions(pl)` | `output_versions_json` của run SUCCESS / NO_DATA gần nhất của pl. `plan_run` dùng cho node thuộc pl khác; không có hoặc version lớn hơn hiện tại → đọc version hiện tại và cảnh báo |
 
 ### §6 node
 
@@ -136,9 +129,9 @@ Các bước `run_node`:
 | 1 | `require_ctrl_columns`; đọc config; `_resolve_node`: đúng 1 bảng đích, đúng 1 pl, `spec.inputs` khớp cạnh |
 | 2 | Khoá: qua NB_00 → `p_exec_id` phải đang giữ khoá luồng; chạy tay RUN → tự nhận khoá (hạn 90'); không được → chỉ cho DRY_RUN; DRY_RUN khi luồng đang chạy → cảnh báo |
 | 3 | Qua NB_00: node cha lỗi / bị bỏ qua trong cùng exec → `SKIPPED` |
-| 4 | Version đọc: đầu vào ngoài = `p_pinned_json` (chạy tay: `external_pins`), node cha = hiện tại; version chốt > hiện tại → lỗi. `edge_status` từng cạnh; không cạnh nào bẩn, không `p_force`, bảng đích đã có → `NO_DATA` |
+| 4 | Version đọc: đầu vào ngoài = `p_pinned_json` (chạy tay: version hiện tại, node của pl khác lấy `last_output_versions`), node cha = hiện tại. `edge_status` từng cạnh; không cạnh nào bẩn, không `p_force`, bảng đích đã có → `NO_DATA` |
 | 5 | `required_inputs` rỗng → QG chặn (chống xoá mềm hàng loạt); `build(ctx)` → `add_row_hash` → `quality_gate` → `diff_counts` |
-| 6 | RUN: `assert_lock_owner` → `ensure_target` → MERGE (bỏ qua khi diff = 0: không tạo commit → node con thấy hộp thư rỗng) → `trg_version`. DRY_RUN dừng ở diff |
+| 6 | RUN: `ensure_target` → MERGE (bỏ qua khi diff = 0) → `trg_version`. Không kiểm khoá lại ngay trước MERGE. DRY_RUN dừng ở diff |
 | 7 | `finally`: append 1 dòng `ctrl_log_table_run` (cả FAILED / SKIPPED / NO_DATA), nhả khoá nếu tự nhận |
 
 | Tên | Mô tả |
@@ -159,11 +152,11 @@ Các bước `run_node`:
 | Tên | Mô tả |
 |---|---|
 | `Plan` | `dag`, `states`, `pinned`, `edges` (mỗi cạnh: bẩn, lý do, versions, consumed, read), `dirty`, `forced`, `candidates` (topo), `pin_notes` |
-| `plan_run(pl, force_nodes, non_data_ops, history_limit)` | **Chỉ đọc**: dựng DAG → `table_state` mọi đầu vào + node → đầu vào ngoài chưa có → `ConfigError` → `external_pins` → `edge_status` từng cạnh (node cha chưa dựng → `PARENT_NOT_BUILT`) → ứng viên = (node bẩn ∪ node chưa có bảng ∪ force) + hậu duệ |
+| `plan_run(pl, force_nodes, non_data_ops, history_limit)` | **Chỉ đọc**: dựng DAG → `table_state` → đầu vào ngoài chưa có → `ConfigError` → ghim node của pl khác bằng `last_output_versions`, bảng khác lấy version hiện tại → `edge_status` (node cha chưa dựng → `PARENT_NOT_BUILT`) → ứng viên = (node bẩn ∪ node chưa có bảng ∪ force) + hậu duệ |
 | `plan_summary(plan)` / `print_plan(plan)` | Tóm tắt: cạnh bẩn, ứng viên, ép chạy, ghim |
 | `build_run_multiple_dag(plan, exec_id, run_id, node_mode, node_timeout_min, dag_timeout_min, max_parallel, history_limit)` | 1 activity / node ứng viên: `name` = `trg_tbl`, `path` = notebook, `timeoutPerCellInSeconds`, `retry` 0, `args` (`p_exec_id`, `p_run_id`, `p_pl_name`, `p_trg_fq`, `p_mode`, `p_force`, `p_history_limit`, `p_pinned_json` = version chốt của đầu vào ngoài **của chính node**), `dependencies` = node cha cũng là ứng viên; DAG `timeoutInSeconds`, `concurrency`. `[VERIFY]` tên trường |
 | `collect_outcomes(exec_id, plan)` | Kết quả từng ứng viên từ `ctrl_log_table_run` (không phụ thuộc dạng trả về của runMultiple); không có dòng → `NOT_RUN` |
-| `advance_edges(plan, outcomes, run_id, tag, exec_id)` | `assert_lock_owner` → 1 MERGE: node OK → tiến cạnh tới `src_versions_json` của chính node; node lỗi → ghi trạng thái → `assert_lock_owner` lần nữa |
+| `advance_edges(plan, outcomes, run_id, tag)` | 1 MERGE: node OK và có version → tiến cạnh tới `src_versions_json` của chính node (không lùi khi cùng table id); node lỗi → ghi trạng thái. Không kiểm khoá |
 | `_validate_orch_params(p)` | Miền giá trị (bài học C2): `p_max_parallel` 1–8, `p_node_timeout_min` 1–240, `p_dag_timeout_min` 1–720, `p_lock_timeout_min` 5–1440, `p_history_limit` 10–100000; node ≤ DAG; **lock > DAG + 5** |
 | `orchestrate(**params)` | Thân NB_00 (xem `NB_00_ORCHES_SLV_TO_GLD.md`) |
 
@@ -213,13 +206,13 @@ Chạy tay 1 node: để trống `p_exec_id` → RUN tự nhận khoá luồng (
 | Node lỗi | Hậu duệ `SKIPPED`; cạnh không tiến → lần sau tự chạy lại node + hậu duệ |
 | Đầu vào bắt buộc rỗng (đang nạp lại) | QG chặn, bảng đích không bị xoá mềm |
 | Mapping hỏng làm N5 ra 0 dòng | `block_empty_output` chặn → G1 / G3 giữ bản cũ, nhất quán |
-| Extract đang chạy dở | Đọc version của batch hoàn tất gần nhất (`external_pins`) |
+| Extract đang chạy dở | Notebook không ghim version trước batch dở. Đầu vào ngoài lấy version hiện tại, trừ node của pl khác có `output_versions_json` |
 | Bảng đầu vào tạo lại cùng nội dung | `TABLE_RECREATED` → tính lại → diff 0 → 0 MERGE |
-| Run cũ mất khoá vẫn chạy | Kiểm tra khoá trước MERGE đích, trước / trong / sau khi tiến cạnh → `LockLostError` |
+| Run cũ mất khoá vẫn chạy | Không có `LockLostError`. Run sau có thể nhận khoá theo timeout của chính nó trong khi run trước vẫn MERGE và tiến cạnh |
 | Tái lập | `src_versions_json` ghi version đã đọc của từng đầu vào → dựng lại bằng `VERSION AS OF` trong hạn VACUUM |
 
 ## 7. Kiểm thử và việc còn mở
 
 - Test local 05/10: 121 / 121 (thêm 38 phản ví dụ của review 7 điểm, `test_review.py`). Logic 8 node chạy thật trên Spark local; Delta / version / history / runMultiple **giả lập** (Maven bị chặn) → phải xác nhận trên Fabric.
-- `[VERIFY]` trên Fabric: tên trường runMultiple (`timeoutPerCellInSeconds`, `timeoutInSeconds`, `concurrency`, `retry`, `dependencies`); `WHEN NOT MATCHED BY SOURCE` trên Delta 3.2; `operationMetrics` MERGE; tên operation của auto compaction; MERGE watermark có nguồn là subquery `EXISTS` đọc chính bảng đích; `current_timestamp() + INTERVAL n MINUTES` khi UPDATE; múi giờ `started_at` extract so với `timestamp` của history (`CHECK_PIN_EXTRACT_0510.py`).
+- `[VERIFY]` trên Fabric: tên trường runMultiple (`timeoutPerCellInSeconds`, `timeoutInSeconds`, `concurrency`, `retry`, `dependencies`); `WHEN NOT MATCHED BY SOURCE` trên Delta 3.2; `operationMetrics` MERGE; tên operation của auto compaction.
 - Thời gian PLAN đo được ~93 s (đọc history + DESCRIBE DETAIL ~24 bảng, tuần tự) — chiếm phần lớn lần chạy `NO_DATA`.
