@@ -1,0 +1,57 @@
+schema_version: 1
+task:
+  id: 20261008-import-fabric-source
+  title: Import Fabric notebooks and bronze-to-silver pipeline
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-08'
+  updated_at: '2026-10-08'
+classification:
+  complexity: low
+  risk_level: low
+  architecture_required: false
+  evidence_required: false
+  runtime_required: false
+  signals: []
+scope:
+  systems:
+  - fabric-notebook
+  - fabric-pipeline
+  files:
+  - notebooks/NB_00_ORCHES_SLV_TO_GLD.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb
+  - notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb
+  - notebooks/NB_LIB_EXTRACT_RAWDATA.ipynb
+  - notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb
+  - pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json
+  - pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/manifest.json
+review_plan:
+  required_reviewers: []
+  round: 0
+models:
+  main:
+    expected: grok-4.7
+    effort: high
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+  review:
+    expected: gpt-5.6-sol
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: not_required
+  local_verification: pass
+  specialist_review: not_required
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 1
+  review: 0
+  architecture: 0
+  runtime_failure: 0
+open_findings: []
