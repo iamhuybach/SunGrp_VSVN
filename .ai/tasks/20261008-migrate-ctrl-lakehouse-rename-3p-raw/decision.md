@@ -4,6 +4,8 @@
 
 - Probe E1 ngày 2026-10-08 trên Fabric DEV trả `missing_event_id_rows = 0`, `conflicting_exact_ties = 0`, `conflicting_entity_time_ties = 0`.
 - 2026-10-08, người dùng xác nhận nguồn bảo đảm `crawled_at` tăng nghiêm ngặt theo từng POI qua mọi commit sau này. Task này không đổi thứ tự CDC.
+- Partner FULL `19c15ef9` reject 199418. Bằng 199.408 event `product*` `after` rỗng cộng 10 event `order_item_*` đã ghi ở `docs/context/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.md` và `99_PAIN_POINTS.md` D1. Log ghi lỗi theo bảng = 0. Không có số reject của bảng control cũ trong log này để so từng dòng.
+- 3P FULL `21733707` đọc 1 dòng raw, hợp lệ 1, reject 0, ghi 16 dòng silver trên 8 bảng. Năm bảng `NO_DATA` vì tài liệu không có khối tương ứng. `vi` có trong danh sách ngôn ngữ của tài liệu. `en` và `ko` không có.
 
 ## Sai lệch so với kiến trúc
 
@@ -41,3 +43,5 @@ Giá trị đóng hợp lệ, khi người dùng hoặc round 2 chốt: `fixed`,
 - 2026-10-08: Codex hết hạn mức. Người dùng chấp nhận chạy review round 2 trên Cursor bằng slug `gpt-5.6-sol-medium`. Báo cáo đó được giữ ở `reviews/round-2-cursor-medium.md`.
 - 2026-10-08: Codex đã có token. Người dùng yêu cầu chạy lại review bằng `gpt-5.6-sol` effort high. Round medium không tính là round Codex. Bộ đếm review đưa về 1 để `run-gate` ghi round 2 chính thức.
 - 2026-10-08: GATE-001, nguồn bảo đảm `crawled_at` tăng nghiêm ngặt theo từng POI. GATE-009, `max_parallel = 12`. GATE-008 và GATE-006, người dùng coi như xong và sẽ bổ sung log cùng bản export sau. GATE-003, bỏ lock và cấu hình gold hiện tại.
+- 2026-10-09: người dùng đã chạy bốn `DELETE` gold. Đã export `FL_00`. Manifest và JSON cùng khai báo `conn_lh_vv_bronze_by_sqlep`, `lh_vv_ctrl`, `lh_vv_bronze`. Query export đọc `dbo.ctrl_mng_pipeline_config` trên database `lh_vv_ctrl` và làm mất điều kiện `src_tbl = 'partner_raw_data'`. Activity notebook trong export tên `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV_BK`. Main thêm lại điều kiện `partner_raw_data` vào JSON repo. Lần chạy 09/10 00:13 có hai vòng ForEach, cả hai `Set_Msg_Skip`, không mở notebook.
+- 2026-10-09: người dùng đã dán lại `src_tbl = 'partner_raw_data'` vào `Get_Config_4Run` trên Fabric và xác nhận `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV_BK` là notebook vừa chạy thành công, không phải bản backup cũ.
