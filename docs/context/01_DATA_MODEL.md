@@ -2,7 +2,7 @@
 
 > Bộ context dùng chung cho người và agent. Cập nhật: 08/10/2026.
 > Trạng thái số liệu: theo lần chạy gần nhất có log (extract rerun 04/10, gold run 1 ngày 05/10). Số liệu thay đổi theo dữ liệu nguồn; muốn số mới nhất thì chạy script chỉ đọc `CHECK_CTRL_SNAPSHOT.py` (kèm bộ này).
-> Nguồn gốc: `claude/GOLD_POI_FLOW_DESIGN.md`, `claude/POI_3P_EXTRACT_REDESIGN.md`, `claude/PARTNER_EXTRACT_REDESIGN.md`, `claude/NB_CREATE_DDL.ipynb`, `claude/NB_SETUP_GOLD_POI_1H.ipynb`.
+> Nguồn gốc: `claude/GOLD_POI_FLOW_DESIGN.md`, `claude/POI_3P_EXTRACT_REDESIGN.md`, `claude/PARTNER_EXTRACT_REDESIGN.md`, `notebooks/NB_CREATE_DDL.ipynb`.
 
 ## 1. Bối cảnh nền tảng
 
@@ -71,7 +71,6 @@ flowchart LR
 | Pipeline | Nhịp | Notebook | Đọc → Ghi |
 |---|---|---|---|
 | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | 10–15 phút | `Get_Config_4Run` + `Lookup_WM` → `ForEach_Source` (tuần tự) → Get Metadata `_delta_log` → `If_HasWork` → activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. Tham số gắn cứng `partner_raw_data`. Không có Switch và không gọi notebook 3rd-party | bronze `partner_raw_data` → `slv_pn_*` |
-| `PL_VV_TRANSFORM_SLV_TO_GLD_1H` | 1 giờ | `NB_00_ORCHES_SLV_TO_GLD` (`p_pl_name`) → runMultiple 8 notebook node | silver L1 + ref → silver L2 → gold |
 
 ## 4. Bronze — bảng raw
 
@@ -141,7 +140,7 @@ Cột JSON giữ nguyên khối, transform sau: `raw_data_json`, `amenity_schema
 
 ## 6. Silver L2 — tích hợp POI (5 node)
 
-Ghi bởi các notebook node, điều phối bởi `NB_00_ORCHES_SLV_TO_GLD` (pl `PL_VV_TRANSFORM_SLV_TO_GLD_1H`). Mọi bảng tính lại toàn bộ rồi MERGE theo `row_hash`; cột kỹ thuật `row_hash`, `created_at`, `updated_at`, `deleted_at` (xoá mềm khi dòng biến mất khỏi kết quả).
+Mọi bảng tính lại toàn bộ rồi MERGE theo `row_hash`; cột kỹ thuật `row_hash`, `created_at`, `updated_at`, `deleted_at` (xoá mềm khi dòng biến mất khỏi kết quả).
 
 | # | Bảng | Grain / PK | Đầu vào | Quyết định nằm ở đây | Số dòng run 1 (05/10) |
 |---|---|---|---|---|---|
@@ -169,18 +168,18 @@ Sửa 1 dòng ref = 1 commit đổi dữ liệu → lần chạy 1H sau tự tí
 
 Chung: MERGE theo khoá; cập nhật chỉ khi `row_hash` khác; dòng biến mất → xoá mềm (`deleted_at`, `is_active = false`), không xoá cứng để PG nhận tombstone; `updated_at` chỉ đổi khi nội dung đổi. Gold chỉ giữ POI có đủ vi, en, ko (`has_required_langs`, lọc ở cả 3 bảng).
 
-| Bảng | Grain / PK | Cột | Notebook | Nguồn | Run 1 |
+| Bảng | Grain / PK | Cột | Nguồn | Run 1 |
 |---|---|---|---|---|---|
-| `gld_srv_poi_registry` | `poi_id` | `poi_id`, `canonical_poi_id`, `source_name`, `source_id`, `partner_id`, `poi_type`, `business_sector`, `business_category`, `subcategory_tags` (JSON), `brand_name`, `operating_status`, `lifecycle_state`, `is_active`, `is_verified`, `is_bookable`, `is_recommended`, `primary_destination_id`, `available_langs` (JSON, chỉ lang có tên **thật**), `source_first_seen_at` + 4 cột kỹ thuật | `NB_GLD_SRV_POI_REGISTRY` | N2 ⋈ N5 (`is_primary`) ⋈ gom lang N4 | 19.066 |
-| `gld_srv_poi_multi_lang` | (`poi_id`, `lang`) | `poi_id`, `lang`, `poi_name`, `short_description`, `slug`, `legacy_poi_id`, `name_source`, `description_source`, `is_active` + 4 cột kỹ thuật | `NB_GLD_SRV_POI_MULTI_LANG` | N4 (chiếu 1–1) | 57.198 |
-| `gld_srv_poi_destination_membership` | (`poi_id`, `destination_id`) | `poi_id`, `destination_id`, `is_primary`, `relation_type` (`DIRECT` / `ANCESTOR`), `depth`, `match_rule`, `rule_id`, `matched_ward`, `matched_province`, `is_active` + 4 cột kỹ thuật | `NB_GLD_SRV_POI_DESTINATION_MEMBERSHIP` | N5 (chiếu 1–1) | 22.293 |
+| `gld_srv_poi_registry` | `poi_id` | `poi_id`, `canonical_poi_id`, `source_name`, `source_id`, `partner_id`, `poi_type`, `business_sector`, `business_category`, `subcategory_tags` (JSON), `brand_name`, `operating_status`, `lifecycle_state`, `is_active`, `is_verified`, `is_bookable`, `is_recommended`, `primary_destination_id`, `available_langs` (JSON, chỉ lang có tên **thật**), `source_first_seen_at` + 4 cột kỹ thuật | N2 ⋈ N5 (`is_primary`) ⋈ gom lang N4 | 19.066 |
+| `gld_srv_poi_multi_lang` | (`poi_id`, `lang`) | `poi_id`, `lang`, `poi_name`, `short_description`, `slug`, `legacy_poi_id`, `name_source`, `description_source`, `is_active` + 4 cột kỹ thuật | N4 (chiếu 1–1) | 57.198 |
+| `gld_srv_poi_destination_membership` | (`poi_id`, `destination_id`) | `poi_id`, `destination_id`, `is_primary`, `relation_type` (`DIRECT` / `ANCESTOR`), `depth`, `match_rule`, `rule_id`, `matched_ward`, `matched_province`, `is_active` + 4 cột kỹ thuật | N5 (chiếu 1–1) | 22.293 |
 
 ## 8. Định danh
 
 | Khái niệm | Công thức / nguồn |
 |---|---|
 | `poi_id` 3rd-party | `uuid_format(md5(source_name ‖ source_id))` — cùng công thức `HASH_MD5_UUID` ở extract |
-| `poi_id` partner | `uuid_format(md5('partner_portal' ‖ business_service_id))` (chốt 05/10) |
+| `poi_id` partner | `uuid_format(md5('partner_portal' ‖ business_service_id))` (chốt 05/10, giữ để dùng sau; notebook hiện tại chưa gọi) |
 | `canonical_poi_id` | = `poi_id` tới khi POI management gửi quyết định (dự kiến qua Debezium CDC như partner → `slv_pm_*` → N1) |
 | `legacy_poi_id` | `poi_id` cũ của `poi_master` (theo lang), lấy từ `ref_poi_legacy_id` |
 | `review_id` | `sha2(concat(...), 256)` (`HASH_SHA256`) |

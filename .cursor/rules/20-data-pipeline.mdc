@@ -7,9 +7,9 @@ alwaysApply: false
 - Treat `pipeline-content.json` as a generated Fabric artifact. Make the smallest semantic edit and preserve unrelated IDs, keys, ordering, and formatting.
 - Do not change `logicalId` or `objectId` unless the task explicitly requires it.
 - The pre-check reads `ctrl_mng_pipeline_config` and `ctrl_mng_watermark`, then inspects `_delta_log` through `Files/_delta_src/<table>`. NO_DATA must avoid starting Spark.
-- FL_00 routes source items through ForEach -> If_HasWork -> Switch on `item().src_tbl`. Add a Switch case rather than cloning the pipeline.
+- FL_00 uses ForEach -> If_HasWork and calls only `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` with `partner_raw_data` fixed in the activity. Do not add a Switch. Other sources are handled by a script outside this pipeline.
 - Do not store environment-specific notebook GUIDs in control tables.
-- Every notebook activity must have explicit timeout, retry, and parameter mappings including `run_id = @pipeline().RunId` and `pl_name = @pipeline().Pipeline`.
+- Every notebook activity must have explicit timeout, retry, and parameter mappings. `run_id` may be an empty string; the notebook then uses `exec_id`. `pl_name` is the pipeline name stored in `ctrl`.
 - Activity names must be globally unique. `dependsOn` may reference only activities in the same activity list/scope.
 - Define how ForEach concurrency interacts with locks, shared control tables, Spark capacity, retry, and failure aggregation.
 - Preserve failure propagation: an activity must not report success when a required child, notebook, or state update failed.

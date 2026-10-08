@@ -6,7 +6,7 @@ alwaysApply: false
 
 ## Structure and contracts
 
-- Use NB00 orchestrator -> NBx0 service -> NBxy table. Do not create a deeper orchestration tier.
+- Follow `docs/context/02_NAMING_CONVENTION.md`: `NB_LIB_*` library, `NB_EXTRACT_*_CDC_BRZ_TO_SLV` per raw source, `NB_00_ORCHES_*` orchestrator selected by `p_pl_name`, and `NB_<UPPER(trg_tbl)>` for one target table. Do not create a deeper orchestration tier.
 - The first cell is the parameter cell. Pass environment and run values such as `run_id`, `pl_name`, `dry_run`, and `allow_full_scan` as parameters; never hard-code workspace or Lakehouse IDs.
 - Put shared functions in `NB_LIB_*` notebooks and load them with `%run`. Do not copy library functions into business notebooks.
 - Exit with `notebookutils.notebook.exit(json.dumps({...}))`. The payload must have a stable schema with status, run identifiers, affected-row metrics, and actionable error information.

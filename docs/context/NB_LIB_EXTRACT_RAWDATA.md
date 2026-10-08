@@ -1,6 +1,6 @@
 # NB_LIB_EXTRACT_RAWDATA — Thư viện dùng chung cho extract raw → silver L1
 
-> Cập nhật: 08/10/2026. Bản code: `claude/NB_LIB_EXTRACT_RAWDATA.ipynb` (project, 04/10). 14 mục, ~2.150 dòng.
+> Cập nhật: 08/10/2026. Bản code: `notebooks/NB_LIB_EXTRACT_RAWDATA.ipynb`. 14 mục, ~2.150 dòng.
 > Liên quan: `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.md`, `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md`, `CTRL_TABLES_CONTEXT.md`.
 
 ## 1. Mô tả
@@ -240,7 +240,7 @@ Hợp đồng cột event notebook phải dựng: `_cdc_ts_ms` BIGINT, `_cdc_lsn
 | `dry_run` | False | False | Chỉ đọc, parse, đếm |
 | `stop_on_failure` | False | False | Wave lỗi thì dừng wave sau |
 | `cast_null_policy` | FAIL | FAIL | FAIL / WARN |
-| `running_timeout_minutes` | 60 | 60 | Khoá nguồn quá hạn theo số phút này. Activity FL_00 trong repo đặt timeout 12 giờ, lớn hơn 60 |
+| `running_timeout_minutes` | 780 | 780 | Khoá nguồn quá hạn sau 13 giờ. Activity partner trong FL_00 đặt timeout 59 phút, ngắn hơn hạn khoá |
 
 ## 7. Vấn đề đã biết / việc còn mở
 

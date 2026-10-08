@@ -190,10 +190,11 @@ Finding dispositions in `decision.md` are: `fixed`, `accepted-risk`, `rejected-f
 - Batch cadence is 10-15 minutes; source-to-serving SLA is 30-60 minutes; silver-to-gold POI runs hourly.
 - Gold is expose/sync only. Cleansing, normalization, enrichment, canonical entities, reusable business rules, and intermediate tables belong in silver.
 - Silver prefixes: `slv_pn_` for partner and `slv_3p_` for third party. Gold prefix: `gld_`.
-- `poi_uid = md5(source_name + source_id)` and never includes language.
-- Third-party `poi_id = md5(concat(source_name, source_id))`.
-- Partner `poi_id = uuid_format(md5('partner_portal' || business_service_id))`.
-- Notebook hierarchy: NB00 orchestrator -> NBx0 service -> NBxy table. No deeper orchestration tier.
+- The POI identifier is `poi_id`. It never includes language. Do not use `poi_uid`.
+- Third-party `poi_id = uuid_format(md5(concat(source_name, source_id)))` (`HASH_MD5_UUID`).
+- Partner `poi_id = uuid_format(md5('partner_portal' || business_service_id))`. The formula is retained for a future notebook. No current notebook applies it.
+- Notebook roles follow `docs/context/02_NAMING_CONVENTION.md`. `NB_LIB_*` is a `%run` library. `NB_EXTRACT_*_CDC_BRZ_TO_SLV` is one extract notebook per raw source. `NB_00_ORCHES_*` is the shared orchestrator, selected by `p_pl_name`. `NB_<UPPER(trg_tbl)>` is one node notebook per target table. `NB_SETUP_*` is a manual one-shot setup notebook. `NB_CREATE_DDL` creates the control tables. No deeper orchestration tier.
+- `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` has no Switch. Its notebook activity is `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` with `partner_raw_data` fixed. `run_id` may be empty so the notebook uses `exec_id` and the other activity parameters. Other sources are handled by a script outside this pipeline.
 - Pipeline pre-check reads `ctrl_mng_pipeline_config` and `ctrl_mng_watermark`, then inspects `_delta_log` through `Files/_delta_src/<table>`. No new data means no Spark startup.
 - Control-table semantics belong in `docs/context/CTRL_TABLES_CONTEXT.md`. If that file is missing or incomplete, changes to `ctrl_*` require evidence and user action.
 

@@ -1,6 +1,6 @@
 # NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV — Extract Debezium CDC partner → `slv_pn_*`
 
-> Cập nhật: 08/10/2026. Bản code: `claude/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb` (project, 04/10). Luồng chi tiết: `claude/NB_EXTRACT_PARTNER_CDC_FLOW.md`, thiết kế: `claude/PARTNER_EXTRACT_REDESIGN.md`.
+> Cập nhật: 08/10/2026. Bản code: `notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb`. Luồng chi tiết: `claude/NB_EXTRACT_PARTNER_CDC_FLOW.md`, thiết kế: `claude/PARTNER_EXTRACT_REDESIGN.md`.
 > Hàm dùng chung: `NB_LIB_EXTRACT_RAWDATA.md`.
 
 ## 1. Mô tả
@@ -45,7 +45,7 @@ Thay notebook cũ `1. parsing_bronze_partner` + bảng `lh_vv_bronze.partner.*`:
 | `dry_run` | False | Chỉ đọc, parse, đếm |
 | `stop_on_failure` | False | Wave lỗi → dừng wave sau |
 | `cast_null_policy` | FAIL | FAIL: bảng có giá trị thành NULL khi chuyển kiểu → FAILED trước MERGE; WARN: chỉ cảnh báo |
-| `running_timeout_minutes` | 60 | Pipeline truyền 60. Timeout activity trong JSON là 12 giờ, lớn hơn 60 |
+| `running_timeout_minutes` | 780 | Pipeline truyền 780 (13 giờ). Timeout activity trong JSON là 59 phút, ngắn hơn hạn khoá |
 
 ## 4. Hằng số Debezium
 
@@ -160,7 +160,7 @@ Luật phân loại:
 
 | Việc | Cách |
 |---|---|
-| Pipeline | Activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` trong nhánh có việc của `If_HasWork`. Tham số gắn cứng `partner_raw_data`, `run_id` rỗng. Timeout 12 giờ, retry 0. ForEach `isSequential = true`. Activity không đọc `item()` |
+| Pipeline | Activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` trong nhánh có việc của `If_HasWork`. Tham số gắn cứng `partner_raw_data`, `run_id` rỗng. Timeout 59 phút, retry 0. ForEach `isSequential = true`. Activity không đọc `item()` |
 | Chạy thử | `dry_run = True` |
 | Nạp lại vài bảng | `table_filter = "..."`, `full_reload = True` (watermark không đổi; tạm dừng lịch khi chạy lâu) |
 | Chạy lại sau lỗi | Chạy bình thường |
@@ -186,5 +186,5 @@ FROM lh_vv_bronze.ctrl.ctrl_log_run WHERE src_tbl = 'partner_raw_data' ORDER BY 
 | H2 | Event xoá lấy khoá từ `before`; REPLICA IDENTITY DEFAULT chỉ gửi PK → bảng có khoá silver khác PK bị reject `MISSING_ENTITY_KEY` khi xoá | Đã nắm, chờ PK + replica identity 23 bảng |
 | M5 | Nhánh cập nhật MERGE vô điều kiện + `_ingested_at = now` → update storm ghi lại silver liên tục | Thêm `WHEN MATCHED AND NOT (t.c <=> s.c AND …)` sau khi xác nhận |
 | L4 | Khoá ghép nối `\|`: giá trị chứa `\|` có thể trùng `_entity_key` | Window theo cột khoá thật (như 3P) |
-| C1 | Mất khoá giữa chừng vẫn SUCCESS; MERGE đích không chặn ghi lùi | JSON pipeline không đặt timeout activity nhỏ hơn 60 phút (đang là 12 giờ) |
+| C1 | Mất khoá giữa chừng vẫn SUCCESS; MERGE đích không chặn ghi lùi | Timeout activity là 59 phút, hạn khoá là 13 giờ |
 | L2 | Wave 2 chỉ chạy khi wave 1 xong; bảng không phụ thuộc nhau | Có thể gộp 1 priority |

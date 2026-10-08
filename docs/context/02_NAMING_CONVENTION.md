@@ -34,8 +34,8 @@ Quy tắc:
 | `NB_LIB_<VIỆC>` | Thư viện `%run`: chỉ hằng số / class / hàm, không đọc ghi khi được `%run` | `NB_LIB_EXTRACT_RAWDATA`, `NB_LIB_TRANSFORM_SLV_GLD` |
 | `NB_EXTRACT_<NGUỒN>_CDC_BRZ_TO_SLV` | Extract 1 nguồn raw → silver L1 (**1 notebook / nguồn**) | `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`, `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`, `NB_EXTRACT_POIMGMT_CDC_BRZ_TO_SLV` `[PROPOSED]` |
 | `NB_00_ORCHES_<TỪ>_TO_<ĐẾN>` | Điều phối dùng chung, chọn luồng bằng tham số `p_pl_name` | `NB_00_ORCHES_SLV_TO_GLD` |
-| `NB_<UPPER(trg_tbl)>` | Notebook node: 1 notebook = 1 bảng đích. Tên suy ra từ `trg_tbl` (hoặc cột tuỳ chọn `nb_name` ở `pipeline_config`) | `NB_SLV_POI_SOURCE_MAP`, `NB_GLD_SRV_POI_REGISTRY` |
-| `NB_SETUP_<LUỒNG>` | Chạy tay 1 lần: thêm cột ctrl, tạo + seed ref, cạnh, watermark. Mặc định chỉ in (`p_apply = false`) | `NB_SETUP_GOLD_POI_1H` |
+| `NB_<UPPER(trg_tbl)>` | Notebook node: 1 notebook = 1 bảng đích. Tên suy ra từ `trg_tbl` (hoặc cột tuỳ chọn `nb_name` ở `pipeline_config`) | — |
+| `NB_SETUP_<LUỒNG>` | Chạy tay 1 lần: thêm cột ctrl, tạo + seed ref, cạnh, watermark. Mặc định chỉ in (`p_apply = false`) | — |
 | `NB_CREATE_DDL` | DDL + seed 7 bảng ctrl + `TABLE_CONFIGS` / `TABLE_CONFIGS_3P` | — |
 | `CHECK_<CHỦ ĐỀ>_<DDMM>.py` | Script **chỉ đọc**, dán vào 1 cell, gửi lại output | `CHECK_PIN_EXTRACT_0510.py` |
 | `DIAG_<CHỦ ĐỀ>_<DDMM>.py` | Chẩn đoán chỉ đọc (truy nguyên nhân) | `DIAG_GOLD_GAPS_0510.py` |
@@ -50,7 +50,7 @@ Notebook cũ (không đổi tên): `NB_00_POI_PIPELINE_ORCHESTRATOR`, `NB_10…N
 | Mẫu | Ví dụ | Ghi chú |
 |---|---|---|
 | `PL_VV_TRANSFORM_<TỪ>_TO_<ĐẾN>_<HẬU TỐ>` | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | Pipeline extract (hậu tố `FL_00` = luồng chính) |
-| Hậu tố nhịp `_<n>M` / `_<n>H` / `_<n>D` | `PL_VV_TRANSFORM_SLV_TO_GLD_1H`, `…_15M` `[PROPOSED]`, `…_1D` `[PROPOSED]` | **Bắt buộc với luồng tính lại**: lib đọc nhịp từ hậu tố (`CADENCE_RE = _(\d+)([MHD])$`) để chặn luồng nhanh đọc node của luồng chậm |
+| Hậu tố nhịp `_<n>M` / `_<n>H` / `_<n>D` | `…_15M` `[PROPOSED]`, `…_1H` `[PROPOSED]`, `…_1D` `[PROPOSED]` | **Bắt buộc với luồng tính lại**: lib đọc nhịp từ hậu tố (`CADENCE_RE = _(\d+)([MHD])$`) để chặn luồng nhanh đọc node của luồng chậm |
 
 `pl_name` trong ctrl = đúng tên pipeline (`@pipeline().Pipeline`). 1 node chỉ thuộc 1 `pl_name` đang active.
 
@@ -60,7 +60,7 @@ Notebook cũ (không đổi tên): `NB_00_POI_PIPELINE_ORCHESTRATOR`, `NB_10…N
 |---|---|---|
 | Nguồn raw của extract | `wm_transform_<src_tbl>` | `wm_transform_partner_raw_data` |
 | Cạnh của luồng tính lại (hộp thư) | `wm_e__<trg_tbl>__<src_tbl>` | `wm_e__slv_poi__slv_3p_poi` |
-| Khoá cả luồng tính lại | `wm_flow__<pl_name>` | `wm_flow__PL_VV_TRANSFORM_SLV_TO_GLD_1H` |
+| Khoá cả luồng tính lại | `wm_flow__<pl_name>` | — |
 
 | Id chạy | Ý nghĩa |
 |---|---|

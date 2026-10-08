@@ -1,14 +1,14 @@
 # CTRL_TABLES_CONTEXT — 7 bảng control `lh_vv_bronze.ctrl`
 
-> Nguồn sự thật cho bảng ctrl của Visit Vietnam. Cập nhật: **08/10/2026** (thay bản 04/10 trong project: thêm luồng tính lại silver → gold `PL_VV_TRANSFORM_SLV_TO_GLD_1H`, 5 cột log mới, dòng cạnh / dòng khoá).
-> DDL + seed 2 nguồn extract: `claude/NB_CREATE_DDL.ipynb`. Cột + dòng của luồng gold: `claude/NB_SETUP_GOLD_POI_1H.ipynb`.
+> Nguồn sự thật cho bảng ctrl của Visit Vietnam. Cập nhật: **08/10/2026** (thay bản 04/10 trong project: 5 cột log mới, dòng cạnh / dòng khoá của luồng tính lại).
+> DDL + seed 2 nguồn extract: `notebooks/NB_CREATE_DDL.ipynb`.
 > **Dữ liệu ở mục "Dữ liệu hiện có" là theo log / kết quả đã gửi về tới 05/10**, không phải đọc trực tiếp hôm nay. Lấy số mới nhất: chạy `CHECK_CTRL_SNAPSHOT.py` (chỉ đọc, kèm bộ này) và gửi lại output.
 
 ## 1. Tổng quan
 
 | # | Bảng | Nhóm | Grain / khoá logic | Ghi bởi | Đọc bởi |
 |---|---|---|---|---|---|
-| 1 | `ctrl_mng_pipeline_config` | Cấu hình | 1 dòng / (`pl_name`, `src_schema`, `src_tbl`, `trg_schema`, `trg_tbl`) | Tay / `NB_CREATE_DDL` / `NB_SETUP_GOLD_POI_1H` | Pre-check FL_00, 2 notebook extract, NB_00 + node |
+| 1 | `ctrl_mng_pipeline_config` | Cấu hình | 1 dòng / (`pl_name`, `src_schema`, `src_tbl`, `trg_schema`, `trg_tbl`) | Tay / `NB_CREATE_DDL` | Pre-check FL_00, 2 notebook extract, NB_00 |
 | 2 | `ctrl_mng_watermark` | Trạng thái | 1 dòng / `watermark_id` | Notebook extract, NB_00 (cạnh + khoá), node chạy tay (chỉ khoá) | Pre-check FL_00, extract, NB_00, node |
 | 3 | `ctrl_cfg_schema_registry` | Cấu hình | 1 dòng / (`src_schema`, `src_tbl`, `trg_schema`, `trg_tbl`, `trg_column`) | Tay (cell seed trong `NB_CREATE_DDL`) | 2 notebook extract |
 | 4 | `ctrl_log_run` | Log | 1 dòng / `exec_id` | Extract (MERGE theo `exec_id`), NB_00 (append + UPDATE) | Vận hành, extract (run RUNNING quá hạn), NB_00 (ghim theo batch extract, lát cắt luồng khác) |
@@ -42,7 +42,7 @@ Mỗi lần chạy (exec_id):
 
 Pre-check FL_00 (Get Metadata, không Spark) chỉ đọc 8 cột cũ của `pipeline_config` và `last_src_version`, `last_success_at`, `watermark_value` của dòng nguồn — thêm cột / thêm dòng `RECOMPUTE` không ảnh hưởng (lọc theo `pl_name`).
 
-JSON trong repo (`pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/`): `Get_Config_4Run` và `Lookup_WM` chạy song song, rồi `ForEach_Source` (`isSequential = true`, items = dòng config active). Trong ForEach: lọc watermark, Get Metadata `_delta_log`, `If_HasWork`. Nhánh có việc chỉ gọi activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` (timeout `0.12:00:00` = 12 giờ, retry 0). Tham số gắn cứng `src_schema = lh_vv_bronze.dbo`, `src_tbl = partner_raw_data`, `pl_name = PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`, `run_id = ""`. Không có Switch. `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV` không nằm trong pipeline này. `notebookId` của activity không đổi khi đổi tên.
+JSON trong repo (`pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/`): `Get_Config_4Run` và `Lookup_WM` chạy song song, rồi `ForEach_Source` (`isSequential = true`, items = dòng config active). Trong ForEach: lọc watermark, Get Metadata `_delta_log`, `If_HasWork`. Nhánh có việc chỉ gọi activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` (timeout `0.00:59:00` = 59 phút, retry 0). Tham số gắn cứng `src_schema = lh_vv_bronze.dbo`, `src_tbl = partner_raw_data`, `pl_name = PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`, `run_id = ""`. Không có Switch. `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV` không nằm trong pipeline này. `notebookId` của activity không đổi khi đổi tên.
 
 ---
 
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS ctrl.ctrl_mng_pipeline_config (
 | Cột | Kiểu | Extract | Luồng tính lại (`RECOMPUTE`) |
 |---|---|---|---|
 | `id` | BIGINT | `MAX(id) + seq` lúc seed, chỉ là số thứ tự | Như extract |
-| `pl_name` | STRING | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | `PL_VV_TRANSFORM_SLV_TO_GLD_1H` (hậu tố nhịp bắt buộc) |
+| `pl_name` | STRING | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | Tên pipeline của luồng tính lại; hậu tố nhịp bắt buộc |
 | `src_schema`, `src_tbl` | STRING | Bảng raw (`lh_vv_bronze.dbo`, `partner_raw_data` / `poi_raw_event`) | Bảng đầu vào của node (silver L1, ref, node khác, bảng gold cũ) |
 | `trg_schema`, `trg_tbl` | STRING | Bảng silver L1 | Node (silver L2 / gold) |
 | `is_active` | INT | 1 bật / 0 tắt **cả bảng** | 1 bật / 0 tắt cạnh |
@@ -110,30 +110,12 @@ Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (ch�
 | `slv_3p_poi_enrichment` | LANG | | | 1 |
 | `slv_3p_poi_review_i18n` | LANG_ARRAY | `poi_review` | | 1 |
 
-**`PL_VV_TRANSFORM_SLV_TO_GLD_1H` — 33 cạnh `RECOMPUTE`** (`NB_SETUP_GOLD_POI_1H` 05/10; id = `MAX(id)` lúc setup + 1…33, dự kiến 38–70 — xác nhận bằng snapshot). `S` = `lh_vv_silver.dbo`, `G` = `lh_vv_gold.dbo`:
-
-| priority (tầng) | Node (trg) | Notebook | Đầu vào (src) — số cạnh |
-|---|---|---|---|
-| 0 | `S.slv_poi_source_map` (N1) | `NB_SLV_POI_SOURCE_MAP` | `S.slv_3p_poi`, `S.slv_pn_business_services`, `S.slv_pn_business_service_poi_link`, `S.ref_poi_legacy_id` — 4 |
-| 1 | `S.slv_poi` (N2) | `NB_SLV_POI` | `S.slv_poi_source_map`, `S.slv_3p_poi`, `S.slv_3p_poi_enrichment`, `S.slv_pn_business_services`, `S.slv_pn_partners`, `S.ref_business_category`, `S.ref_source` — 7 |
-| 1 | `S.slv_poi_address` (N3) | `NB_SLV_POI_ADDRESS` | `S.slv_poi_source_map`, `S.slv_3p_poi_address`, `S.slv_pn_business_services`, `G.poi_address_enrichment_staging` — 4 |
-| 1 | `S.slv_poi_localization` (N4) | `NB_SLV_POI_LOCALIZATION` | `S.slv_poi_source_map`, `S.slv_3p_poi`, `S.slv_3p_poi_content`, `S.slv_3p_poi_enrichment`, `S.slv_pn_business_services`, `S.slv_pn_business_service_i18ns`, `S.ref_lang_policy`, `S.ref_source` — 8 |
-| 2 | `S.slv_poi_destination` (N5) | `NB_SLV_POI_DESTINATION` | `S.slv_poi_address`, `G.destination_ward_mapping`, `S.ref_destination_special_rule`, `S.cms_destination` — 4 |
-| 2 | `G.gld_srv_poi_multi_lang` (G2) | `NB_GLD_SRV_POI_MULTI_LANG` | `S.slv_poi_localization` — 1 |
-| 3 | `G.gld_srv_poi_registry` (G1) | `NB_GLD_SRV_POI_REGISTRY` | `S.slv_poi`, `S.slv_poi_localization`, `S.slv_poi_destination` — 3 |
-| 3 | `G.gld_srv_poi_destination_membership` (G3) | `NB_GLD_SRV_POI_DESTINATION_MEMBERSHIP` | `S.slv_poi_destination`, `S.slv_poi_localization` — 2 |
-
-8 node, 33 cạnh, 16 đầu vào ngoài. 2 ngoại lệ silver đọc gold cũ (`poi_address_enrichment_staging`, `destination_ward_mapping`) — tạm thời, sẽ chuyển về silver.
-
 ### Thao tác thường gặp
 
 ```sql
 -- Tắt 1 bảng extract (vd bảng policy) / bật lại (sau đó full_reload bảng đó)
 UPDATE ctrl.ctrl_mng_pipeline_config SET is_active = 0
 WHERE pl_name = 'PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00' AND src_tbl = 'poi_raw_event' AND trg_tbl = 'slv_3p_poi_policy';
-
--- Gỡ cả luồng tính lại (bảng / cột giữ nguyên)
-UPDATE ctrl.ctrl_mng_pipeline_config SET is_active = 0 WHERE pl_name = 'PL_VV_TRANSFORM_SLV_TO_GLD_1H';
 ```
 
 ---
@@ -177,7 +159,7 @@ CREATE TABLE IF NOT EXISTS ctrl.ctrl_mng_watermark (
 
 | Cột | Dòng nguồn (extract) | Dòng cạnh | Dòng khoá luồng |
 |---|---|---|---|
-| `watermark_id` | `wm_transform_partner_raw_data` | `wm_e__slv_poi__slv_3p_poi` | `wm_flow__PL_VV_TRANSFORM_SLV_TO_GLD_1H` |
+| `watermark_id` | `wm_transform_partner_raw_data` | `wm_e__<trg_tbl>__<src_tbl>` | `wm_flow__<pl_name>` |
 | `src_schema`, `src_tbl` | Bảng raw | Bảng đầu vào | `src_tbl` = `pl_name` |
 | `trg_schema`, `trg_tbl` | NULL (dòng cấp nguồn; notebook cần **đúng 1** dòng `trg_tbl IS NULL`) | Node | NULL |
 | `watermark_column` | `EventProcessedUtcTime` / `crawled_at` | `commit_ts` | NULL. Notebook không ghi `LOCK_EXPIRES_AT` |
@@ -190,7 +172,7 @@ CREATE TABLE IF NOT EXISTS ctrl.ctrl_mng_watermark (
 | `last_src_version` | **Con trỏ đọc chính**: version raw đã xử lý. NULL → pre-check luôn cho chạy, notebook phải `allow_full_scan = True` | Version đầu vào node đã đọc. Cùng table id thì chỉ ghi khi version mới ≥ version đang lưu; table id khác thì ghi version mới (bảng tạo lại) | — |
 | `last_src_table_id` | Delta table id raw lúc ghi version; khác hiện tại = raw bị tạo lại | Table id đầu vào lúc đọc (`TABLE_RECREATED`) | — |
 | `error_message` | Lỗi gần nhất | Lỗi node gần nhất | — |
-| `lock_exec_id`, `lock_at` | Khoá chạy của nguồn; quá `running_timeout_minutes` (60) → run sau lấy lại | NULL | Khoá luồng. Quá hạn khi `lock_at` NULL hoặc `lock_at` < now − timeout của **run đang xét** (NB_00: `p_lock_timeout_min`; node chạy tay: 90 phút) |
+| `lock_exec_id`, `lock_at` | Khoá chạy của nguồn; quá `running_timeout_minutes` (780, 13 giờ) → run sau lấy lại | NULL | Khoá luồng. Quá hạn khi `lock_at` NULL hoặc `lock_at` < now − timeout của **run đang xét** (NB_00: `p_lock_timeout_min`; node chạy tay: 90 phút) |
 | `updated_at` | Lần sửa dòng gần nhất (kể cả RUNNING / lỗi) | Như bên | Như bên |
 
 Luật ghi:
@@ -204,10 +186,8 @@ Luật ghi:
 |---|---|---|
 | `wm_transform_partner_raw_data` | Tạo lại 03/10 (INITIALIZED) → rerun FULL 04/10 (exec `de379b89`, 313 s, 1,52 triệu event). `last_src_version`, `watermark_value` sau rerun **chưa có số** — raw partner dừng nhận từ 17/09 nên `watermark_value` dự kiến ≈ 17/09 `[chưa xác nhận]` | Log rerun 04/10 |
 | `wm_transform_poi_raw_event` | Tạo lại → rerun 04/10 (exec `88ea49e7`, 213 s, 21.168 tài liệu). Lần FULL trước đó (exec `43cae547`) ghi version 1043, `watermark_value` 2026-09-16 11:01:11 — raw 3P không nhận dữ liệu từ 16/09 nên giá trị sau rerun dự kiến như vậy `[chưa xác nhận]` | `POI_3P_EXTRACT_REDESIGN.md` §5.8 |
-| 33 dòng `wm_e__*` | Tạo 05/10 `INITIALIZED`, `watermark_column = commit_ts`. Sau gold run 1 (exec `c8d4218f`, 373 s): đã đọc version 1 của mọi đầu vào L1 / ref (bảng tạo lại 04/10, 1 commit), trừ `poi_address_enrichment_staging` @26, `destination_ward_mapping` @29, `cms_destination` @8 | Log gold run 1 |
-| `wm_flow__PL_VV_TRANSFORM_SLV_TO_GLD_1H` | Sau run 1: `status = SUCCESS`, `lock_exec_id` NULL | Log gold run 1 |
 
-Tổng: 2 + 33 + 1 = **36 dòng**.
+Tổng biết được trong repo: **2 dòng** nguồn extract.
 
 ### Thao tác thường gặp
 
@@ -364,10 +344,9 @@ CREATE TABLE IF NOT EXISTS ctrl.ctrl_log_run (
     read_mode           STRING    COMMENT 'Cách đọc raw: VERSION | FULL',
     read_note           STRING    COMMENT 'Chi tiết cách đọc: khoảng version, số file, lý do đọc FULL',
     -- [THÊM 05/10 GOLD] NB_00_ORCHES_SLV_TO_GLD (luồng tính lại silver -> gold); extract để NULL
-    output_versions_json STRING   COMMENT 'NB_00 luồng tính lại: version các bảng pl sở hữu khi run SUCCESS / NO_DATA (lát cắt nhất quán cho luồng khác)'
+    output_versions_json STRING    COMMENT 'NB_00: version các bảng pl sở hữu khi run SUCCESS / NO_DATA (lát cắt cho luồng khác)'
 ) USING DELTA
 COMMENT 'Log mỗi lần chạy notebook extract CDC';
--- Bảng đã có: NB_SETUP_GOLD_POI_1H thêm output_versions_json bằng ALTER TABLE ADD COLUMNS
 ```
 
 ### Cột khác nghĩa giữa extract và NB_00
@@ -391,7 +370,6 @@ COMMENT 'Log mỗi lần chạy notebook extract CDC';
 |---|---|---|
 | `de379b89…` | `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` (rerun FULL 04/10) | 313 s; 1,52 triệu event; điều khiển + commit 132 s (42%) |
 | `88ea49e7…` | `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV` (rerun FULL 04/10) | 213 s; 21.168 tài liệu, 19.046 địa điểm; điều khiển + commit 118 s (55%) |
-| `c8d4218f…` | `NB_00_ORCHES_SLV_TO_GLD` (gold run 1, 05/10) | 373 s; 8 node SUCCESS |
 
 Log trước 04/10 16:09 có thể đã mất khi tạo lại 7 bảng ctrl (`RERUN_ALL_0410.sql`, sao lưu log là tuỳ chọn).
 
@@ -429,10 +407,10 @@ CREATE TABLE IF NOT EXISTS ctrl.ctrl_log_table_run (
     duration_ms         BIGINT    COMMENT 'Thời gian xử lý bảng (ms)',
     error_message       STRING    COMMENT 'Lỗi của bảng (tóm tắt)',
     -- [THÊM 05/10 GOLD] node của luồng tính lại (NB_LIB_TRANSFORM_SLV_GLD); extract để NULL
-    src_versions_json   STRING    COMMENT 'Node: JSON {bảng đầu vào: {v, tid, ts, dirty}} đã đọc — NB_00 tiến cạnh theo cột này',
+    src_versions_json   STRING    COMMENT 'Node: JSON {bảng đầu vào: {v, tid, ts, dirty}} đã đọc',
     trg_version         BIGINT    COMMENT 'Node: version bảng đích sau MERGE',
     deactivated_rows    BIGINT    COMMENT 'Node: số dòng xoá mềm',
-    qg_json             STRING    COMMENT 'Node: kết quả exit QG, hộp thư cạnh, cảnh báo'
+    qg_json             STRING    COMMENT 'Node: kết quả exit QG, hộp thư, cảnh báo'
 ) USING DELTA
 COMMENT 'Log từng bảng đích trong mỗi lần chạy extract CDC';
 ```
@@ -555,7 +533,7 @@ FROM ctrl.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 ORDER BY so_
 | 02/10 | Đọc raw theo version (`_delta_log`) thay lọc `EventProcessedUtcTime`; thêm `read_mode`, `read_note`; reject "after rỗng" ở bước phân loại |
 | 03/10 | Tiền tố silver theo nguồn (`slv_pn_*`, `slv_3p_poi_*`); tạo lại 7 bảng ctrl; `last_src_table_id`, `lock_exec_id`, `lock_at` vào DDL; sửa INSERT watermark 16 cột / 17 giá trị; sửa công thức priority; khoá nguyên tử; state không lùi; `cast_null_policy` |
 | 04/10 | `pipeline_config` + `load_mode`, `align_path`, `dedup_order`; 14 bảng 3P; `ctrl_cdc_state` / `ctrl_cdc_reject` `PARTITIONED BY (src_tbl)`; registry 3P 182 cột (36 tắt), `policy` tắt, content khoá + `content_type`; tạo lại toàn bộ ctrl + silver 2 luồng (`RERUN_ALL_0410.sql`) |
-| 05/10 | Luồng tính lại: `load_mode = RECOMPUTE`, 33 cạnh, 33 dòng `wm_e__*` + `wm_flow__PL_VV_TRANSFORM_SLV_TO_GLD_1H`; `ctrl_log_run.output_versions_json`; `ctrl_log_table_run` + `src_versions_json`, `trg_version`, `deactivated_rows`, `qg_json`. Notebook trong repo chưa ghi `LOCK_EXPIRES_AT` và chưa cho lùi dấu đã đọc khi cùng table id |
+| 05/10 | `ctrl_log_run.output_versions_json`; `ctrl_log_table_run` + `src_versions_json`, `trg_version`, `deactivated_rows`, `qg_json`. Notebook trong repo chưa ghi `LOCK_EXPIRES_AT` và chưa cho lùi dấu đã đọc khi cùng table id |
 
 ## 11. Việc còn lại liên quan ctrl
 

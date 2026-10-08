@@ -1,6 +1,6 @@
 # NB_LIB_TRANSFORM_SLV_GLD — Thư viện luồng tính lại silver → silver L2 → gold
 
-> Cập nhật: 08/10/2026. Bản code: `claude/NB_LIB_TRANSFORM_SLV_GLD.ipynb` (project, 05/10 sau bản vá review 7 điểm). 8 mục, ~1.740 dòng. Thiết kế: `claude/GOLD_POI_FLOW_DESIGN.md` §5, §12. Bản vá: `PATCH_REVIEW_0510.md`.
+> Cập nhật: 08/10/2026. Bản code: `notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb`. 8 mục, ~1.740 dòng. Thiết kế: `claude/GOLD_POI_FLOW_DESIGN.md` §5, §12. Bản vá: `PATCH_REVIEW_0510.md`.
 > Điều phối: `NB_00_ORCHES_SLV_TO_GLD.md`. Bảng ctrl: `CTRL_TABLES_CONTEXT.md`.
 
 ## 1. Mô tả
@@ -13,11 +13,11 @@ Gồm 2 phần dùng ở 2 nơi:
 
 | | |
 |---|---|
-| Được gọi bởi | `NB_00_ORCHES_SLV_TO_GLD`, 8 notebook node (`NB_SLV_POI_*`, `NB_GLD_SRV_POI_*`), `NB_SETUP_GOLD_POI_1H` |
+| Được gọi bởi | `NB_00_ORCHES_SLV_TO_GLD` |
 | Đọc / ghi khi `%run` | Không |
 | Default lakehouse | `lh_vv_bronze` (bắt buộc giống nhau với runMultiple) |
 | Tự chứa | Không `%run NB_LIB_EXTRACT_RAWDATA`; `with_retry`, `append_rows`, `quote_name`… **chép mẫu** từ lib extract, giữ hành vi |
-| Bảng ctrl dùng | `ctrl_mng_pipeline_config` (đọc), `ctrl_mng_watermark` (cạnh + khoá), `ctrl_log_run`, `ctrl_log_table_run` + 5 cột mới (`NB_SETUP_GOLD_POI_1H` thêm) |
+| Bảng ctrl dùng | `ctrl_mng_pipeline_config` (đọc), `ctrl_mng_watermark` (cạnh + khoá), `ctrl_log_run`, `ctrl_log_table_run` + 5 cột log mới |
 
 ## 2. Ý nghĩa / mô hình
 
@@ -115,7 +115,7 @@ Vì sao tính lại toàn bộ thay vì incremental: dữ liệu ~19k POI, logic
 | `read_flow_lock(pl, timeout_min)` | `lock_exec_id`, `lock_at`, `expired` |
 | `acquire_flow_lock(pl, exec_id, run_id, timeout_min)` | `UPDATE` `lock_exec_id`, `lock_at = current_timestamp()`, `status = RUNNING`, `last_run_id` khi khoá trống hoặc quá hạn, rồi đọc lại. Không ghi `watermark_column` / `watermark_value` |
 | `release_flow_lock(pl, exec_id, status)` | Xoá `lock_exec_id` và `lock_at`, ghi `status`, chỉ khi `lock_exec_id` còn là mình |
-| `close_stale_runs(pl, exec_id, timeout_min)` | Run log RUNNING khác quá hạn → `ABANDONED`. Gọi **sau** khi đã nhận khoá |
+| `close_stale_runs(pl, exec_id, timeout_min)` | Run log RUNNING khác quá hạn → `ABANDONED`. `orchestrate` gọi hàm này trước `acquire_flow_lock` |
 | `write_run_log(row)` / `update_run_log(exec_id, values)` | Append dòng run log / UPDATE khi đóng |
 | `write_node_log(row)` / `node_logs(exec_id)` | Node append 1 dòng `ctrl_log_table_run` / NB_00 đọc dòng mới nhất của từng node |
 | `last_output_versions(pl)` | `output_versions_json` của run SUCCESS / NO_DATA gần nhất của pl. `plan_run` dùng cho node thuộc pl khác; không có hoặc version lớn hơn hiện tại → đọc version hiện tại và cảnh báo |

@@ -1,6 +1,6 @@
 # NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV — Extract tài liệu crawl 3rd-party → `slv_3p_poi_*`
 
-> Cập nhật: 08/10/2026. Bản code: `claude/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb` (project, 04/10). Thiết kế + kết quả đối chiếu payload: `claude/POI_3P_EXTRACT_REDESIGN.md` §5.
+> Cập nhật: 08/10/2026. Bản code: `notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb`. Thiết kế + kết quả đối chiếu payload: `claude/POI_3P_EXTRACT_REDESIGN.md` §5.
 > Hàm dùng chung: `NB_LIB_EXTRACT_RAWDATA.md`. Tên có "CDC" để cùng mẫu với partner, thực chất nguồn là **snapshot** (mỗi event = 1 tài liệu đầy đủ).
 
 ## 1. Mô tả
