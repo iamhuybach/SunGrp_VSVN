@@ -67,6 +67,8 @@ Review agents never edit files. Main stores the returned consolidated report as 
 
 ## Task workflow
 
+Copyable Cursor Agent entry prompts for common task types are available in [`docs/AGENT_PROMPT_SAMPLES.md`](docs/AGENT_PROMPT_SAMPLES.md). Choose the closest case, replace its placeholders, and submit it from the repository root with Grok 4.7 High selected.
+
 ```powershell
 python scripts/vv.py new <slug>
 python scripts/vv.py validate <task-id>
