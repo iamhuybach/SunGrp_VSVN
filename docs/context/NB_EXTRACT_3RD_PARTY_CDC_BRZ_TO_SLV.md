@@ -5,7 +5,7 @@
 
 ## 1. Mô tả
 
-Đọc tài liệu crawl (Google Places + enrichment) từ `lh_vv_bronze.dbo.poi_raw_event`, tách mỗi tài liệu ra 14 bảng `lh_vv_silver.dbo.slv_3p_poi_*` (13 active) theo cấu hình: 1 dòng / tài liệu, / khối, / phần tử mảng, / object bản địa hoá, / phần tử mảng trong object bản địa hoá. Chuẩn kiểu, sinh khoá. **Chỉ extract**: không rule nghiệp vụ, không canonical, không gate.
+Đọc tài liệu crawl (Google Places + enrichment) từ `lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream`, tách mỗi tài liệu ra 14 bảng `lh_vv_silver.dbo.slv_3p_poi_*` (13 active) theo cấu hình: 1 dòng / tài liệu, / khối, / phần tử mảng, / object bản địa hoá, / phần tử mảng trong object bản địa hoá. Chuẩn kiểu, sinh khoá. **Chỉ extract**: không rule nghiệp vụ, không canonical, không gate.
 
 | | |
 |---|---|
@@ -14,7 +14,7 @@
 | Ghi | `slv_3p_poi_*` (MERGE, **không xoá**), `ctrl_cdc_state`, `ctrl_cdc_reject`, `ctrl_log_run`, `ctrl_log_table_run`, `ctrl_mng_watermark` |
 | Song song | 13 bảng active cùng priority 1 → 1 wave, `max_parallel` luồng |
 | Chạy lại | State (`poi_id`) bỏ tài liệu đã áp dụng; MERGE chỉ ghi đè khi (`_crawled_at`, `_event_id`) mới ≥ đang lưu; watermark chỉ tiến khi mọi bảng thành công |
-| Chạy chồng | Khoá trên dòng `wm_transform_poi_raw_event`. Song song với partner: MERGE state / reject chỉ đọc partition `src_tbl` của mình |
+| Chạy chồng | Khoá trên dòng `wm_transform_brz_3rd_crawler_poi_stream`. Song song với partner: MERGE state / reject chỉ đọc partition `src_tbl` của mình |
 
 ## 2. Ý nghĩa
 
@@ -47,9 +47,9 @@ Thay phần extract của chuỗi cũ NB_00 → NB_30 (3P):
 
 | Tham số | Mặc định | Ý nghĩa |
 |---|---|---|
-| `pl_name`, `run_id`, `src_schema`, `src_tbl` | FL_00, "", `lh_vv_bronze.dbo`, `poi_raw_event` | |
+| `pl_name`, `run_id`, `src_schema`, `src_tbl` | FL_00, "", `lh_vv_bronze.dbo`, `brz_3rd_crawler_poi_stream` | |
 | `allow_full_scan`, `max_retries`, `table_filter`, `full_reload`, `dry_run`, `stop_on_failure`, `cast_null_policy`, `running_timeout_minutes` | như partner | `dry_run` không raise `CastNullError` (để xem đủ mọi bảng) |
-| `max_parallel` | 8 | Nên ≥ 13 (= số bảng active) để không có lượt 2 (rerun dùng 12 → `review_i18n` chạy lượt 2) |
+| `max_parallel` | 12 | 13 bảng active nên một bảng chạy lượt 2. Người dùng chốt 12 ngày 08/10 |
 | `sources` | `google` | `source_name` được xử lý (CSV, không phân biệt hoa thường); ngoài danh sách → IGNORED `OUT_OF_SCOPE`; rỗng = mọi nguồn |
 | `langs` | `vi,en,ko` | Ngôn ngữ nhận cho bảng LANG / LANG_ARRAY; ngôn ngữ khác: đếm, bỏ qua |
 | `lang_object_path` | `extra_info.enrichment` | Object bản địa hoá chính; ngôn ngữ ở trường `lang_field` |
@@ -170,7 +170,7 @@ Luật phân loại tài liệu (luật đầu tiên khớp quyết định):
 
 Cột JSON giữ nguyên khối (transform sau): `raw_data_json`, `amenity_schema_json`, `ext_attributes_json` (62 khoá phẳng, có `primaryType`, `open_now`), `facilities_json`, `secondary_hours_json`. Mảng 1 tầng để cột JSON: `periods_json`, `experiences_json`, `types_json`, `subcategory_tags_json`, `weekday_text_json`, `enrichment_failed_langs_json`, `available_langs_json`. Cần tách sau: chỉ thêm cấu hình `DOC_ARRAY` / `LANG_ARRAY`, không sửa code.
 
-## 9. Số liệu đo
+## 9. Ghi chú migration — số liệu đo trên raw 3P cũ trước 08/10
 
 | Lần | Kết quả |
 |---|---|
@@ -184,7 +184,7 @@ Cột JSON giữ nguyên khối (transform sau): `raw_data_json`, `amenity_schem
 | Việc | Cách |
 |---|---|
 | Pipeline | Chưa có activity trong FL_00. JSON hiện tại chỉ gọi notebook partner |
-| Lần đầu | `dry_run = True, allow_full_scan = True` (xem `cast_null`, `langs`) → `allow_full_scan = True` → bật lịch, sau đó `False` |
+| Lần đầu | `dry_run = True, allow_full_scan = True, max_parallel = 12` (xem `cast_null`, `langs`) rồi chạy thật `allow_full_scan = True, max_parallel = 12, max_retries = 1` |
 | Thêm cột | INSERT 1 dòng registry; dữ liệu cũ: `full_reload` bảng đó |
 | Thêm ngôn ngữ | Tham số `langs`; tài liệu cũ: `full_reload` bảng LANG* |
 | Thêm nguồn crawl | Tham số `sources`; kiểm tra payload cùng cấu trúc; tài liệu cũ đã IGNORED → 1 lần `full_reload = True` |
@@ -193,7 +193,7 @@ Cột JSON giữ nguyên khối (transform sau): `raw_data_json`, `amenity_schem
 
 ```sql
 SELECT trg_tbl, reject_reason, reject_detail, COUNT(*) AS so_dong, SUM(reject_count) AS so_lan
-FROM lh_vv_bronze.ctrl.ctrl_cdc_reject WHERE src_tbl = 'poi_raw_event' AND NOT is_resolved
+FROM lh_vv_ctrl.dbo.ctrl_cdc_reject WHERE src_tbl = 'brz_3rd_crawler_poi_stream' AND NOT is_resolved
 GROUP BY 1, 2, 3 ORDER BY so_dong DESC;
 ```
 

@@ -1,0 +1,98 @@
+schema_version: 1
+task:
+  id: 20261008-migrate-ctrl-lakehouse-rename-3p-raw
+  title: Move control tables to lh_vv_ctrl and rename the 3rd-party raw source
+  status: user_decision
+  owner: user
+  created_at: '2026-10-08'
+  updated_at: '2026-10-08'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: false
+  runtime_required: true
+  signals:
+  - stateful_logic
+  - retry_recovery
+  - partial_failure
+  - transaction_boundaries
+  - event_ordering
+  - idempotency
+  - distributed_behavior
+  - cross_system
+  - design_tradeoffs
+  - cross_state_impact
+  - runtime_proof_required
+  - low_probability_high_impact
+  - deep_reasoning_required
+scope:
+  systems:
+  - lh_vv_bronze
+  - lh_vv_ctrl
+  - lh_vv_silver
+  - fabric-pipeline
+  - notebooks
+  - docs
+  files:
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb
+  - notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb
+  - notebooks/NB_LIB_EXTRACT_RAWDATA.ipynb
+  - notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb
+  - notebooks/NB_00_ORCHES_SLV_TO_GLD.ipynb
+  - pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json
+  - docs/context/CTRL_TABLES_CONTEXT.md
+  - docs/context/01_DATA_MODEL.md
+  - docs/context/02_NAMING_CONVENTION.md
+  - docs/context/00_README.md
+  - docs/context/CHECK_CTRL_SNAPSHOT.py
+  - docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md
+  - docs/context/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.md
+  - docs/context/NB_LIB_EXTRACT_RAWDATA.md
+  - docs/context/NB_00_ORCHES_SLV_TO_GLD.md
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  - state-correctness-reviewer
+  - fabric-pipeline-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: high
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: user_decision
+  risk_gate: user_decision
+  runtime: pending
+rounds:
+  verification: 2
+  review: 2
+  architecture: 1
+  runtime_failure: 0
+open_findings:
+- id: GATE-003
+  severity: P1
+- id: GATE-006
+  severity: P1
+- id: GATE-007
+  severity: P1
+- id: GATE-008
+  severity: P1
+- id: GATE-009
+  severity: P1
+- id: GATE-010
+  severity: P2

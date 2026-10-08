@@ -1,4 +1,4 @@
-# CTRL_TABLES_CONTEXT — 7 bảng control `lh_vv_bronze.ctrl`
+# CTRL_TABLES_CONTEXT — 7 bảng control `lh_vv_ctrl.dbo`
 
 > Nguồn sự thật cho bảng ctrl của Visit Vietnam. Cập nhật: **08/10/2026** (thay bản 04/10 trong project: 5 cột log mới, dòng cạnh / dòng khoá của luồng tính lại).
 > DDL + seed 2 nguồn extract: `notebooks/NB_CREATE_DDL.ipynb`.
@@ -17,7 +17,7 @@
 | 7 | `ctrl_cdc_reject` | Lỗi extract | 1 dòng / `event_hash` | Extract (MERGE) | Vận hành |
 
 Quy ước chung:
-- Vị trí `lh_vv_bronze.ctrl` (notebook có default lakehouse `lh_vv_bronze` nên SQL viết `ctrl.<bảng>`; code viết đầy đủ `lh_vv_bronze.ctrl.<bảng>`).
+- Vị trí `lh_vv_ctrl.dbo`. Code và SQL luôn viết đầy đủ `lh_vv_ctrl.dbo.<bảng>`. Không dùng dạng ngắn `ctrl.<bảng>`. Default lakehouse của notebook vẫn có thể là `lh_vv_bronze`.
 - Delta **không có PK / UNIQUE**: khoá logic ghi ở tài liệu này; ghi bằng MERGE theo khoá hoặc `WHERE NOT EXISTS` trước INSERT.
 - Mọi `*_at` là UTC. `exec_id` = uuid mỗi lần notebook chạy; `run_id` = `@pipeline().RunId` (chạy tay = `exec_id`).
 - 7 bảng **chưa** bật `optimizeWrite` / `autoCompact`, chưa có lịch OPTIMIZE / VACUUM (xem `99_PAIN_POINTS.md` M6).
@@ -40,9 +40,9 @@ Mỗi lần chạy (exec_id):
   Extract còn ghi: ctrl_cdc_state (1 dòng / entity / bảng đích), ctrl_cdc_reject (1 dòng / event lỗi)
 ```
 
-Pre-check FL_00 (Get Metadata, không Spark) chỉ đọc 8 cột cũ của `pipeline_config` và `last_src_version`, `last_success_at`, `watermark_value` của dòng nguồn — thêm cột / thêm dòng `RECOMPUTE` không ảnh hưởng (lọc theo `pl_name`).
+Pre-check FL_00 (Get Metadata, không Spark) chỉ đọc 8 cột cũ của `pipeline_config` và `last_src_version`, `last_success_at`, `watermark_value` của dòng nguồn — thêm cột / thêm dòng `RECOMPUTE` không ảnh hưởng (lọc theo `pl_name` và `src_tbl = 'partner_raw_data'`).
 
-JSON trong repo (`pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/`): `Get_Config_4Run` và `Lookup_WM` chạy song song, rồi `ForEach_Source` (`isSequential = true`, items = dòng config active). Trong ForEach: lọc watermark, Get Metadata `_delta_log`, `If_HasWork`. Nhánh có việc chỉ gọi activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` (timeout `0.00:59:00` = 59 phút, retry 0). Tham số gắn cứng `src_schema = lh_vv_bronze.dbo`, `src_tbl = partner_raw_data`, `pl_name = PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`, `run_id = ""`. Không có Switch. `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV` không nằm trong pipeline này. `notebookId` của activity không đổi khi đổi tên.
+JSON trong repo (`pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/`): `Get_Config_4Run` đọc `lh_vv_ctrl.dbo.ctrl_mng_pipeline_config` qua `conn_lh_vv_ctrl_by_sqlep` (`database = lh_vv_ctrl`). `Lookup_WM` đọc `lh_vv_ctrl.dbo.ctrl_mng_watermark` qua linked service `lh_vv_ctrl` (schema `dbo`). Hai activity chạy song song, rồi `ForEach_Source` (`isSequential = true`). `Get_Config_4Run` chỉ trả dòng `is_active = 1` và `src_tbl = 'partner_raw_data'`. Dòng 3P vẫn nằm trong bảng config cho notebook chạy tay, và không vào ForEach. Trong ForEach: lọc watermark, Get Metadata `_delta_log` trên `lh_vv_bronze` `Files/_delta_src/<src_tbl>`, `If_HasWork`. Nhánh có việc chỉ gọi activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` (timeout `0.00:59:00` = 59 phút, retry 0). Tham số gắn cứng `src_schema = lh_vv_bronze.dbo`, `src_tbl = partner_raw_data`, `pl_name = PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`, `run_id = ""`. Không có Switch. `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV` không nằm trong pipeline này. `notebookId` của activity không đổi khi đổi tên.
 
 ---
 
@@ -54,7 +54,7 @@ JSON trong repo (`pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/`): `Get_Conf
 ### DDL
 
 ```sql
-CREATE TABLE IF NOT EXISTS ctrl.ctrl_mng_pipeline_config (
+CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_mng_pipeline_config (
     id          BIGINT,
     pl_name     STRING,
     src_schema  STRING,
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS ctrl.ctrl_mng_pipeline_config (
 |---|---|---|---|
 | `id` | BIGINT | `MAX(id) + seq` lúc seed, chỉ là số thứ tự | Như extract |
 | `pl_name` | STRING | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | Tên pipeline của luồng tính lại; hậu tố nhịp bắt buộc |
-| `src_schema`, `src_tbl` | STRING | Bảng raw (`lh_vv_bronze.dbo`, `partner_raw_data` / `poi_raw_event`) | Bảng đầu vào của node (silver L1, ref, node khác, bảng gold cũ) |
+| `src_schema`, `src_tbl` | STRING | Bảng raw (`lh_vv_bronze.dbo`, `partner_raw_data` / `brz_3rd_crawler_poi_stream`) | Bảng đầu vào của node (silver L1, ref, node khác, bảng gold cũ) |
 | `trg_schema`, `trg_tbl` | STRING | Bảng silver L1 | Node (silver L2 / gold) |
 | `is_active` | INT | 1 bật / 0 tắt **cả bảng** | 1 bật / 0 tắt cạnh |
 | `priority` | INT | Wave: cùng priority chạy song song (`max_parallel`) | = tầng của node trong DAG (chỉ để đọc; NB_00 tự tính thứ tự từ cạnh) |
@@ -97,7 +97,7 @@ Kiểm tra khi nạp (lib): trùng bảng đích, `table_filter` có tên lạ, 
 
 Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (chốt 02/10). Các bảng không phụ thuộc nhau (L2 trong review: có thể gộp 1 priority).
 
-**`PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` — nguồn `poi_raw_event`** (id 24–37, priority 1, 1 wave):
+**`PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` — nguồn `brz_3rd_crawler_poi_stream`** (id 24–37, priority 1, 1 wave):
 
 | trg_tbl | load_mode | align_path | dedup_order | is_active |
 |---|---|---|---|---|
@@ -114,8 +114,8 @@ Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (ch�
 
 ```sql
 -- Tắt 1 bảng extract (vd bảng policy) / bật lại (sau đó full_reload bảng đó)
-UPDATE ctrl.ctrl_mng_pipeline_config SET is_active = 0
-WHERE pl_name = 'PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00' AND src_tbl = 'poi_raw_event' AND trg_tbl = 'slv_3p_poi_policy';
+UPDATE lh_vv_ctrl.dbo.ctrl_mng_pipeline_config SET is_active = 0
+WHERE pl_name = 'PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00' AND src_tbl = 'brz_3rd_crawler_poi_stream' AND trg_tbl = 'slv_3p_poi_policy';
 ```
 
 ---
@@ -133,7 +133,7 @@ WHERE pl_name = 'PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00' AND src_tbl = 'poi_raw_
 ### DDL
 
 ```sql
-CREATE TABLE IF NOT EXISTS ctrl.ctrl_mng_watermark (
+CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_mng_watermark (
     watermark_id        STRING,
     src_schema          STRING,
     src_tbl             STRING,
@@ -180,7 +180,7 @@ Luật ghi:
 - **Cạnh**: NB_00 ghi bằng 1 MERGE sau runMultiple (`sql_merge_edge_wm`). Node SUCCESS / NO_DATA và có version trong `src_versions_json` → ghi version, table id, commit ts khi version mới ≥ version đang lưu hoặc table id khác. Node lỗi → chỉ ghi trạng thái và lỗi. MERGE không có `EXISTS` dòng khoá. Cạnh chưa có dòng → INSERT.
 - **Khoá luồng**: nhận = `UPDATE` `lock_exec_id`, `lock_at = current_timestamp()`, `status = RUNNING` khi khoá trống hoặc `_lock_expired_sql(timeout_min)`, rồi đọc lại. `timeout_min` là của run đang nhận khoá. Nhả trong `finally` chỉ khi `lock_exec_id` còn là mình. Run mất khoá vẫn có thể ghi MERGE đích và tiến cạnh.
 
-### Dữ liệu hiện có
+### Ghi chú migration — số đo watermark trước 08/10 tại `lh_vv_bronze.ctrl` (dòng 3P cũ `wm_transform_poi_raw_event`)
 
 | watermark_id | Trạng thái biết được | Nguồn thông tin |
 |---|---|---|
@@ -193,15 +193,15 @@ Tổng biết được trong repo: **2 dòng** nguồn extract.
 
 ```sql
 -- Nhả khoá extract treo (run bị kill, chưa hết hạn) — chỉ khi chắc chắn không còn run nào chạy
-UPDATE ctrl.ctrl_mng_watermark SET lock_exec_id = NULL, lock_at = NULL
+UPDATE lh_vv_ctrl.dbo.ctrl_mng_watermark SET lock_exec_id = NULL, lock_at = NULL
 WHERE watermark_id = 'wm_transform_partner_raw_data' AND lock_exec_id = '<exec_id trong lỗi SKIPPED_CONCURRENT>';
 
 -- Đọc lại N commit raw gần nhất (extract)
-UPDATE ctrl.ctrl_mng_watermark SET last_src_version = last_src_version - <N>
-WHERE watermark_id = 'wm_transform_poi_raw_event';
+UPDATE lh_vv_ctrl.dbo.ctrl_mng_watermark SET last_src_version = last_src_version - <N>
+WHERE watermark_id = 'wm_transform_brz_3rd_crawler_poi_stream';
 
 -- Reset nguồn để nạp lại từ đầu → lần chạy sau phải allow_full_scan = True
-UPDATE ctrl.ctrl_mng_watermark
+UPDATE lh_vv_ctrl.dbo.ctrl_mng_watermark
 SET watermark_value = NULL, last_success_at = NULL, last_src_version = NULL, last_src_table_id = NULL,
     lock_exec_id = NULL, lock_at = NULL, status = 'INITIALIZED'
 WHERE watermark_id = '<wm_transform_...>';
@@ -219,7 +219,7 @@ WHERE watermark_id = '<wm_transform_...>';
 ### DDL
 
 ```sql
-CREATE TABLE IF NOT EXISTS ctrl.ctrl_cfg_schema_registry (
+CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_cfg_schema_registry (
     src_schema          STRING    COMMENT 'Schema bảng raw, vd lh_vv_bronze.dbo',
     src_tbl             STRING    COMMENT 'Bảng raw, vd partner_raw_data (khớp ctrl_mng_pipeline_config.src_tbl)',
     src_object_schema   STRING    COMMENT 'CDC: schema trong Debezium source.schema, vd public. Snapshot (3rd-party): NULL',
@@ -281,7 +281,7 @@ COMMENT 'Mapping cột JSON sang bảng đích (CDC partner, snapshot 3rd-party)
 | `slv_pn_order_item_hotels` | order_id **[chưa xác nhận K1]** | 12 | 1 |
 | `slv_pn_order_item_flights` | order_id **[chưa xác nhận K1]** | 22 | 2 |
 
-**3rd-party** (`src_tbl = poi_raw_event`, `src_object_schema` NULL): 14 bảng, **182 cột (146 bật, 36 tắt** — khoá luôn null trong payload thật, D1 04/10). Mọi bảng có `poi_id` (`HASH_MD5_UUID` của `_doc.source_name,_doc.source_id`) — bắt buộc vì là `entity_key` của state.
+**3rd-party** (`src_tbl = brz_3rd_crawler_poi_stream`, `src_object_schema` NULL): 14 bảng, **182 cột (146 bật, 36 tắt** — khoá luôn null trong payload thật, D1 04/10). Mọi bảng có `poi_id` (`HASH_MD5_UUID` của `_doc.source_name,_doc.source_id`) — bắt buộc vì là `entity_key` của state.
 
 | Bảng | src_object | Khoá | Cột (bật) | Rule khoá / đặc biệt |
 |---|---|---|---|---|
@@ -311,7 +311,7 @@ Seed lại: cell seed trong `NB_CREATE_DDL` hoặc `claude/seed_ctrl_cfg_schema_
 ### DDL
 
 ```sql
-CREATE TABLE IF NOT EXISTS ctrl.ctrl_log_run (
+CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_log_run (
     exec_id             STRING    COMMENT 'ID mỗi lần notebook chạy (uuid) - khoá',
     run_id              STRING    COMMENT 'RunId của pipeline (chạy tay: = exec_id)',
     pl_name             STRING    COMMENT 'Pipeline, khớp ctrl_mng_pipeline_config.pl_name',
@@ -364,7 +364,7 @@ COMMENT 'Log mỗi lần chạy notebook extract CDC';
 | `output_versions_json` | NULL | Version các node của pl khi run SUCCESS / NO_DATA (RUN) |
 | Cách ghi | MERGE theo `exec_id` (mở RUNNING, đóng cuối run) | Append dòng RUNNING, UPDATE khi đóng; không nhận được khoá → append 1 dòng `SKIPPED_CONCURRENT` |
 
-### Dữ liệu hiện có (run đã thấy log)
+### Ghi chú migration — log đã thấy trước 08/10 tại vị trí control cũ
 
 | exec_id | Notebook | Kết quả |
 |---|---|---|
@@ -380,7 +380,7 @@ Log trước 04/10 16:09 có thể đã mất khi tạo lại 7 bảng ctrl (`RE
 ### DDL
 
 ```sql
-CREATE TABLE IF NOT EXISTS ctrl.ctrl_log_table_run (
+CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_log_table_run (
     exec_id             STRING    COMMENT 'Khớp ctrl_log_run.exec_id',
     run_id              STRING    COMMENT 'RunId của pipeline',
     pl_name             STRING    COMMENT 'Pipeline',
@@ -438,7 +438,7 @@ Gold run 1 (exec `c8d4218f`, theo DAG): `slv_poi_source_map` 19.070 · `slv_poi`
 ### DDL
 
 ```sql
-CREATE TABLE IF NOT EXISTS ctrl.ctrl_cdc_state (
+CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_cdc_state (
     trg_schema          STRING    COMMENT 'Schema bảng đích (khoá)',
     trg_tbl             STRING    COMMENT 'Bảng đích (khoá)',
     entity_key          STRING    COMMENT 'Giá trị khoá; khoá ghép nối bằng | (khoá). 3rd-party: poi_id cho mọi bảng',
@@ -454,7 +454,7 @@ CREATE TABLE IF NOT EXISTS ctrl.ctrl_cdc_state (
     last_run_id         STRING    COMMENT 'run_id lần cập nhật gần nhất',
     updated_at          TIMESTAMP COMMENT 'Thời điểm cập nhật state (UTC)'
 ) USING DELTA
-PARTITIONED BY (src_tbl)    -- MERGE của partner và 3rd-party chỉ đọc partition của mình nên không xung đột ghi
+PARTITIONED BY (src_tbl) -- FL_00 ForEach chạy tuần tự. Partition theo src_tbl để MERGE của partner và 3P (chạy tay hoặc pipeline khác) chỉ đọc partition của nguồn mình
 COMMENT 'State CDC theo entity - đảm bảo chạy lại không áp dụng event cũ';
 ```
 
@@ -465,9 +465,9 @@ COMMENT 'State CDC theo entity - đảm bảo chạy lại không áp dụng eve
 | `cdc_op` / `is_deleted` | c / r / u / d / theo `op = d` | NULL / false |
 | Ghi | 1 MERGE / run cho các bảng SUCCESS; dòng khớp chỉ cập nhật khi thứ tự mới ≥ đang lưu (**không lùi**); thêm điều kiện `t.src_tbl = <nguồn>` | Như bên |
 
-**Dữ liệu hiện có:** 3P ~188k dòng (13 bảng × POI có khối, đo 04/10). Partner: chưa có số → snapshot.
+**Ghi chú migration — số đo state trước 08/10 tại vị trí control cũ:** 3P ~188k dòng (13 bảng × POI có khối, đo 04/10). Partner: chưa có số → snapshot.
 
-Kiểm tra: `SELECT trg_tbl, entity_key, COUNT(*) FROM ctrl.ctrl_cdc_state GROUP BY 1, 2 HAVING COUNT(*) > 1` — kỳ vọng 0 dòng.
+Kiểm tra: `SELECT trg_tbl, entity_key, COUNT(*) FROM lh_vv_ctrl.dbo.ctrl_cdc_state GROUP BY 1, 2 HAVING COUNT(*) > 1` — kỳ vọng 0 dòng.
 
 ---
 
@@ -476,7 +476,7 @@ Kiểm tra: `SELECT trg_tbl, entity_key, COUNT(*) FROM ctrl.ctrl_cdc_state GROUP
 ### DDL
 
 ```sql
-CREATE TABLE IF NOT EXISTS ctrl.ctrl_cdc_reject (
+CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_cdc_reject (
     event_hash          STRING    COMMENT 'sha2(source||op||before||after) - khoá MERGE',
     pl_name             STRING    COMMENT 'Pipeline',
     src_schema          STRING    COMMENT 'Schema bảng nguồn raw',
@@ -503,7 +503,7 @@ CREATE TABLE IF NOT EXISTS ctrl.ctrl_cdc_reject (
     is_resolved         BOOLEAN   COMMENT 'Đã xử lý xong (đánh dấu tay hoặc khi nạp lại)',
     resolved_at         TIMESTAMP COMMENT 'Thời điểm đánh dấu đã xử lý'
 ) USING DELTA
-PARTITIONED BY (src_tbl)
+PARTITIONED BY (src_tbl) -- FL_00 ForEach chạy tuần tự. Partition theo src_tbl để MERGE của partner và 3P (chạy tay hoặc pipeline khác) chỉ đọc partition của nguồn mình
 COMMENT 'Event CDC lỗi, không áp dụng được vào bảng đích';
 ```
 
@@ -516,11 +516,11 @@ COMMENT 'Event CDC lỗi, không áp dụng được vào bảng đích';
 
 Event **bỏ qua** (tombstone, truncate, message, bảng chưa cấu hình, ngoài phạm vi / ngoài tham số `sources`) không ghi ở đây, chỉ đếm ở `ctrl_log_run.ignored_rows` / `ignored_detail`.
 
-**Dữ liệu hiện có:** partner ~199k dòng, gần như toàn bộ `INVALID_PAYLOAD` "after rỗng" của 10 bảng `slv_pn_product*` + 10 event `order_item_*` (upstream gửi `after = ''`, xem `99_PAIN_POINTS.md`). 3P: chưa có số → snapshot.
+**Ghi chú migration — số đo reject trước 08/10 tại vị trí control cũ:** partner ~199k dòng, gần như toàn bộ `INVALID_PAYLOAD` "after rỗng" của 10 bảng `slv_pn_product*` + 10 event `order_item_*` (upstream gửi `after = ''`, xem `99_PAIN_POINTS.md`). 3P: chưa có số → snapshot.
 
 ```sql
 SELECT src_tbl, trg_tbl, reject_reason, reject_detail, COUNT(*) AS so_dong, SUM(reject_count) AS so_lan
-FROM ctrl.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 ORDER BY so_dong DESC;
+FROM lh_vv_ctrl.dbo.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 ORDER BY so_dong DESC;
 ```
 
 ---
@@ -534,6 +534,7 @@ FROM ctrl.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 ORDER BY so_
 | 03/10 | Tiền tố silver theo nguồn (`slv_pn_*`, `slv_3p_poi_*`); tạo lại 7 bảng ctrl; `last_src_table_id`, `lock_exec_id`, `lock_at` vào DDL; sửa INSERT watermark 16 cột / 17 giá trị; sửa công thức priority; khoá nguyên tử; state không lùi; `cast_null_policy` |
 | 04/10 | `pipeline_config` + `load_mode`, `align_path`, `dedup_order`; 14 bảng 3P; `ctrl_cdc_state` / `ctrl_cdc_reject` `PARTITIONED BY (src_tbl)`; registry 3P 182 cột (36 tắt), `policy` tắt, content khoá + `content_type`; tạo lại toàn bộ ctrl + silver 2 luồng (`RERUN_ALL_0410.sql`) |
 | 05/10 | `ctrl_log_run.output_versions_json`; `ctrl_log_table_run` + `src_versions_json`, `trg_version`, `deactivated_rows`, `qg_json`. Notebook trong repo chưa ghi `LOCK_EXPIRES_AT` và chưa cho lùi dấu đã đọc khi cùng table id |
+| 08/10 | Chuyển 7 bảng sang `lh_vv_ctrl.dbo`, seed mới từ repo (không copy vị trí cũ), đổi danh tính nguồn 3P sang `brz_3rd_crawler_poi_stream` / `wm_transform_brz_3rd_crawler_poi_stream`, bỏ cell DROP trong `NB_CREATE_DDL`, không seed cạnh gold |
 
 ## 11. Việc còn lại liên quan ctrl
 

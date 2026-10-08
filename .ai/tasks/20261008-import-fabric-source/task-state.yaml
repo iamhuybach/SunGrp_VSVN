@@ -40,7 +40,7 @@ models:
     actual: ''
   review:
     expected: gpt-5.6-sol
-    effort: high
+    effort: medium
     actual: ''
 gates:
   evidence: not_required

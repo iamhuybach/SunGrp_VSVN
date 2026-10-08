@@ -9,7 +9,7 @@
 | Hạng mục | Giá trị |
 |---|---|
 | Nền tảng | Microsoft Fabric, mỗi môi trường (dev, stg, prod) 1 capacity **F16**, dùng chung với Eventstream, Copy Job, SQL endpoint, pipeline khác |
-| Lưu trữ | 3 Lakehouse trong cùng workspace: `lh_vv_bronze`, `lh_vv_silver`, `lh_vv_gold`; schema dữ liệu `dbo`; bảng control ở `lh_vv_bronze.ctrl`. Không dùng Warehouse |
+| Lưu trữ | 3 Lakehouse medallion trong cùng workspace: `lh_vv_bronze`, `lh_vv_silver`, `lh_vv_gold`, cộng lakehouse control `lh_vv_ctrl` (schema `dbo`). Không dùng Warehouse |
 | Xử lý | Notebook PySpark / Spark SQL, Spark Runtime **1.3** (Delta 3.2); điều phối bằng Data Pipeline |
 | Nạp dữ liệu | Event Hub → Eventstream → bronze (append) |
 | Quy mô | ~100k POI mục tiêu (3rd-party hiện 19.046 địa điểm / 21.168 tài liệu raw), ~10k event / ngày, SLA nguồn → serving 30–60 phút |
@@ -25,7 +25,7 @@
 | **Silver L2 — tích hợp** (`lh_vv_silver.dbo.slv_poi_*`) | Mọi quyết định nghiệp vụ dùng chung | Định danh, phân loại, chuẩn hoá địa chỉ, chọn tên / mô tả, slug, destination, cờ đủ ngôn ngữ | Không "serving zone" hình dáng theo consumer |
 | **Ref** (`lh_vv_silver.dbo.ref_*`) | Rule dạng dữ liệu, sửa tay | 1 dòng = 1 rule; sửa = commit đổi dữ liệu → luồng tự tính lại | Không rule viết cứng trong code |
 | **Gold** (`lh_vv_gold.dbo.gld_srv_*`) | Chỉ đồng bộ / phơi ra | Join theo khoá, gom, tính `row_hash`, lọc theo cờ silver | Không xử lý nghiệp vụ; gold không đọc gold khác |
-| **Ctrl** (`lh_vv_bronze.ctrl.ctrl_*`) | Cấu hình + trạng thái + log | Xem `CTRL_TABLES_CONTEXT.md` | — |
+| **Ctrl** (`lh_vv_ctrl.dbo.ctrl_*`) | Cấu hình + trạng thái + log | Xem `CTRL_TABLES_CONTEXT.md` | — |
 
 Quy tắc phụ:
 - Gold phụ thuộc gold khác → logic đó phải thành bảng silver L2 có nghĩa, dùng lại được.
@@ -42,7 +42,7 @@ flowchart LR
   end
   subgraph BRZ["Bronze lh_vv_bronze.dbo"]
     R1["partner_raw_data"]
-    R2["poi_raw_event"]
+    R2["brz_3rd_crawler_poi_stream"]
   end
   subgraph L1["Silver L1 (extract)"]
     PN["slv_pn_* (23 bảng)"]
@@ -70,15 +70,183 @@ flowchart LR
 
 | Pipeline | Nhịp | Notebook | Đọc → Ghi |
 |---|---|---|---|
-| `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | 10–15 phút | `Get_Config_4Run` + `Lookup_WM` → `ForEach_Source` (tuần tự) → Get Metadata `_delta_log` → `If_HasWork` → activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. Tham số gắn cứng `partner_raw_data`. Không có Switch và không gọi notebook 3rd-party | bronze `partner_raw_data` → `slv_pn_*` |
+| `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | 10–15 phút | `Get_Config_4Run` lọc `src_tbl = 'partner_raw_data'` + `Lookup_WM` → `ForEach_Source` (tuần tự) → Get Metadata `_delta_log` → `If_HasWork` → activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. Tham số gắn cứng `partner_raw_data`. Không có Switch và không gọi notebook 3rd-party | bronze `partner_raw_data` → `slv_pn_*` |
 
 ## 4. Bronze — bảng raw
 
 | Bảng | Nguồn | Cột chính | Đặc điểm |
 |---|---|---|---|
 | `lh_vv_bronze.dbo.partner_raw_data` | Debezium CDC (connector `dev_cdc` 3.0.0.Final, db `partner`, `commerce`) | `before`, `after`, `source` (JSON chuỗi), `op` (`c` / `r` / `u` / `d` / `t` / `m`), `EventProcessedUtcTime` | Append-only do Eventstream ghi; **không có stats** trong `_delta_log` (20.431 file / 3,2 GB lúc đo 02/10) → không lọc theo thời gian được, phải đọc theo version. 1 event = 1 thay đổi của 1 dòng của 1 bảng Postgres (`source.schema`, `source.table`) |
-| `lh_vv_bronze.dbo.poi_raw_event` | Collector 3rd-party | `normalized_payload` (tài liệu JSON đầy đủ của 1 địa điểm), `event_id`, `source_name`, `source_id`, `language_code`, `crawled_at` | 1 event = 1 tài liệu đầy đủ (snapshot) lúc crawl. Không có tín hiệu xoá, không TOAST. 21.168 dòng, raw dừng nhận từ 16/09 (lúc kiểm 04/10) |
+| `lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream` | Collector 3rd-party | `event_id`, `source_name`, `source_id`, `crawled_at`, `ingested_date`, `normalized_payload`, `raw_payload`, `language_code` (tất cả STRING) | 1 event = 1 tài liệu đầy đủ (snapshot) lúc crawl. Không có tín hiệu xoá, không TOAST. DDL tương đương bảng raw 3P trước đó |
 | `lh_vv_bronze.dbo.brz_watermark`, `brz_pipeline_run` | — | — | Thuộc chuỗi NB_00 cũ; luồng mới không đọc / ghi |
+
+### Cấu trúc `normalized_payload`
+
+Suy ra từ 1 dòng mẫu, không phải hợp đồng schema. `normalized_payload` và `raw_payload` là chuỗi JSON. Bảng dưới chỉ ghi khóa và kiểu JSON của object đã parse từ `normalized_payload`. `raw_payload` là JSON string, không khai triển.
+
+| path | JSON type | element / note |
+|---|---|---|
+| `$` | object |  |
+| `source_id` | string |  |
+| `source` | string |  |
+| `poi_name` | string |  |
+| `poi_name_normalized` | string |  |
+| `business_sector` | string |  |
+| `business_category` | string |  |
+| `subcategory_tags` | array | string |
+| `types` | array | string |
+| `operating_status` | string |  |
+| `partner_id` | null |  |
+| `slug` | null |  |
+| `slug_history` | null |  |
+| `price_level` | null |  |
+| `star_rating` | null |  |
+| `accommodation_type` | null |  |
+| `country_code` | string |  |
+| `language_code` | string |  |
+| `created_at` | string |  |
+| `awards` | null |  |
+| `poi_address` | object |  |
+| `poi_address.full_address` | string |  |
+| `poi_address.house_number` | null |  |
+| `poi_address.street` | null |  |
+| `poi_address.ward` | string |  |
+| `poi_address.district` | string |  |
+| `poi_address.city` | string |  |
+| `poi_address.country` | string |  |
+| `poi_address.country_code` | string |  |
+| `poi_address.postal_code` | string |  |
+| `poi_address.lat` | number |  |
+| `poi_address.lng` | number |  |
+| `poi_address.plus_code` | string |  |
+| `poi_address.timezone` | string |  |
+| `poi_address.address_line1` | string |  |
+| `poi_address.address_line2` | string |  |
+| `poi_address.state_province` | string |  |
+| `poi_address.short_address` | string |  |
+| `poi_address.address_google` | string |  |
+| `poi_address.address_viet_map` | string |  |
+| `poi_address.vietmap_status` | string |  |
+| `poi_address.vietmap_message` | null |  |
+| `poi_rating` | object |  |
+| `poi_rating.rating_overall` | number |  |
+| `poi_rating.rating_count` | number |  |
+| `poi_rating.rating_breakdown` | null |  |
+| `poi_rating.sub_ratings` | null |  |
+| `poi_contact` | object |  |
+| `poi_contact.phone` | string |  |
+| `poi_contact.phone_raw` | string |  |
+| `poi_contact.website_url` | null |  |
+| `poi_contact.google_maps_url` | string |  |
+| `poi_contact.social_links` | null |  |
+| `poi_contact.delivery_links` | null |  |
+| `poi_contact.booking_links` | null |  |
+| `poi_amenity` | object |  |
+| `poi_amenity.ext_attributes` | object | <dynamic-key>: string |
+| `poi_amenity.amenity_schema` | object |  |
+| `poi_amenity.amenity_schema.facilities` | object |  |
+| `poi_amenity.amenity_schema.facilities.type` | string |  |
+| `poi_amenity.amenity_schema.facilities.required` | string |  |
+| `poi_amenity.amenity_schema.facilities.main_cuisine` | object |  |
+| `poi_amenity.amenity_schema.facilities.main_cuisine.type` | string |  |
+| `poi_amenity.amenity_schema.facilities.main_cuisine.required` | string |  |
+| `poi_amenity.amenity_schema.facilities.main_cuisine.multiple_lang` | boolean |  |
+| `poi_amenity.amenity_schema.facilities.main_cuisine.enum` | array | string |
+| `poi_amenity.amenity_schema.facilities.specialty_tags` | object |  |
+| `poi_amenity.amenity_schema.facilities.specialty_tags.type` | string |  |
+| `poi_amenity.amenity_schema.facilities.specialty_tags.required` | string |  |
+| `poi_amenity.amenity_schema.facilities.specialty_tags.item_type` | string |  |
+| `poi_amenity.amenity_schema.facilities.specialty_tags.multiple_lang` | boolean |  |
+| `poi_amenity.amenity_schema.facilities.specialty_tags.enum` | array | string |
+| `poi_amenity.amenity_schema.facilities.space_and_services` | object |  |
+| `poi_amenity.amenity_schema.facilities.space_and_services.type` | string |  |
+| `poi_amenity.amenity_schema.facilities.space_and_services.required` | string |  |
+| `poi_amenity.amenity_schema.facilities.space_and_services.item_type` | string |  |
+| `poi_amenity.amenity_schema.facilities.space_and_services.multiple_lang` | boolean |  |
+| `poi_amenity.amenity_schema.facilities.space_and_services.enum` | array | string |
+| `poi_amenity.amenity_schema.facilities.additional_amenities` | object |  |
+| `poi_amenity.amenity_schema.facilities.additional_amenities.type` | string |  |
+| `poi_amenity.amenity_schema.facilities.additional_amenities.required` | string |  |
+| `poi_amenity.amenity_schema.facilities.additional_amenities.item_type` | string |  |
+| `poi_amenity.amenity_schema.facilities.additional_amenities.multiple_lang` | boolean |  |
+| `poi_amenity.amenity_schema.facilities.additional_amenities.enum` | array | string |
+| `poi_amenity_schema` | null |  |
+| `facilities` | object |  |
+| `facilities.type` | string |  |
+| `facilities.required` | string |  |
+| `facilities.main_cuisine` | object |  |
+| `facilities.main_cuisine.type` | string |  |
+| `facilities.main_cuisine.required` | string |  |
+| `facilities.main_cuisine.multiple_lang` | boolean |  |
+| `facilities.main_cuisine.enum` | array | string |
+| `facilities.specialty_tags` | object |  |
+| `facilities.specialty_tags.type` | string |  |
+| `facilities.specialty_tags.required` | string |  |
+| `facilities.specialty_tags.item_type` | string |  |
+| `facilities.specialty_tags.multiple_lang` | boolean |  |
+| `facilities.specialty_tags.enum` | array | string |
+| `facilities.space_and_services` | object |  |
+| `facilities.space_and_services.type` | string |  |
+| `facilities.space_and_services.required` | string |  |
+| `facilities.space_and_services.item_type` | string |  |
+| `facilities.space_and_services.multiple_lang` | boolean |  |
+| `facilities.space_and_services.enum` | array | string |
+| `facilities.additional_amenities` | object |  |
+| `facilities.additional_amenities.type` | string |  |
+| `facilities.additional_amenities.required` | string |  |
+| `facilities.additional_amenities.item_type` | string |  |
+| `facilities.additional_amenities.multiple_lang` | boolean |  |
+| `facilities.additional_amenities.enum` | array | string |
+| `poi_media` | array | object |
+| `poi_media[].media_id` | string |  |
+| `poi_media[].photo_api_uri` | string |  |
+| `poi_media[].original_url` | string |  |
+| `poi_media[].thumbnail_url` | string |  |
+| `poi_media[].blob_url` | string |  |
+| `poi_media[].media_type` | string |  |
+| `poi_media[].category` | string |  |
+| `poi_media[].is_blessed` | boolean |  |
+| `poi_media[].display_order` | number |  |
+| `poi_media[].photographer` | string |  |
+| `poi_media[].width_px` | null |  |
+| `poi_media[].height_px` | null |  |
+| `poi_media[].file_size_bytes` | number |  |
+| `poi_media[].caption` | null |  |
+| `poi_media[].license` | string |  |
+| `poi_media[].processing_status` | string |  |
+| `poi_price` | null |  |
+| `poi_content` | null |  |
+| `poi_review` | array | object |
+| `poi_review[].author_name` | string |  |
+| `poi_review[].rating` | number |  |
+| `poi_review[].text` | string |  |
+| `poi_review[].time` | string |  |
+| `poi_review[].source` | string |  |
+| `poi_opening_hours` | object |  |
+| `poi_opening_hours.open_now` | boolean |  |
+| `poi_opening_hours.is_24_7` | boolean |  |
+| `poi_opening_hours.is_temporarily_closed` | boolean |  |
+| `poi_opening_hours.periods` | array | object |
+| `poi_opening_hours.periods[].close_hour` | number |  |
+| `poi_opening_hours.periods[].close_day` | number |  |
+| `poi_opening_hours.periods[].open_hour` | number |  |
+| `poi_opening_hours.periods[].close_minute` | number |  |
+| `poi_opening_hours.periods[].open_minute` | number |  |
+| `poi_opening_hours.periods[].day_of_week` | number |  |
+| `poi_opening_hours.weekday_text` | array | string |
+| `poi_opening_hours.secondary_hours` | array | object |
+| `poi_opening_hours.secondary_hours[].periods` | array | object |
+| `poi_opening_hours.secondary_hours[].periods[].close_hour` | number |  |
+| `poi_opening_hours.secondary_hours[].periods[].close_day` | number |  |
+| `poi_opening_hours.secondary_hours[].periods[].open_hour` | number |  |
+| `poi_opening_hours.secondary_hours[].periods[].close_minute` | number |  |
+| `poi_opening_hours.secondary_hours[].periods[].open_minute` | number |  |
+| `poi_opening_hours.secondary_hours[].periods[].day_of_week` | number |  |
+| `poi_opening_hours.secondary_hours[].weekday_text` | array | string |
+| `poi_opening_hours.secondary_hours[].type` | string |  |
+| `policies` | null |  |
+| `extra_info` | object |  |
+| `poi_id` | string |  |
 
 ## 5. Silver L1 — extract (đúng cấu trúc nguồn)
 

@@ -172,7 +172,7 @@ Luật phân loại:
 ```sql
 SELECT status, run_mode, read_mode, read_rows, valid_rows, ignored_rows, rejected_rows, tbl_success_count, tbl_failed_count,
        watermark_from, watermark_to, duration_ms, error_message
-FROM lh_vv_bronze.ctrl.ctrl_log_run WHERE src_tbl = 'partner_raw_data' ORDER BY started_at DESC LIMIT 10;
+FROM lh_vv_ctrl.dbo.ctrl_log_run WHERE src_tbl = 'partner_raw_data' ORDER BY started_at DESC LIMIT 10;
 ```
 
 ## 10. Vấn đề đã biết

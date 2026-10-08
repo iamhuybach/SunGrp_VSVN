@@ -72,7 +72,7 @@ Bất kỳ lỗi nào trong `body` → run `FAILED`, watermark giữ nguyên, v�
 
 | Tên | Giá trị / ý nghĩa |
 |---|---|
-| `CTRL_SCHEMA`, `T_PIPELINE_CONFIG`, `T_WATERMARK`, `T_REGISTRY`, `T_LOG_RUN`, `T_LOG_TABLE_RUN`, `T_CDC_STATE`, `T_CDC_REJECT` | `lh_vv_bronze.ctrl` + tên đầy đủ 7 bảng |
+| `CTRL_SCHEMA`, `T_PIPELINE_CONFIG`, `T_WATERMARK`, `T_REGISTRY`, `T_LOG_RUN`, `T_LOG_TABLE_RUN`, `T_CDC_STATE`, `T_CDC_REJECT` | `lh_vv_ctrl.dbo` + tên đầy đủ 7 bảng |
 | `TECH_COLUMNS` | Cột kỹ thuật bảng CDC: `deleted` BOOLEAN, `_ingested_at` TIMESTAMP, `_source_db` STRING |
 | `SNAPSHOT_TECH_COLUMNS` | Bảng snapshot: `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at`, `_ingested_at` |
 | `IDENT_RE` | `[A-Za-z][A-Za-z0-9_]*` — không cho bắt đầu bằng `_` (dành cho cột nội bộ) |

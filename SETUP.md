@@ -50,7 +50,7 @@ If the installed client does not recognize the configured model ID, do not silen
 
 ## Codex review lane
 
-Project configuration fixes the coordinator and specialists to `gpt-5.6-sol`, High reasoning, read-only sandbox, and no approval prompts. Custom agents are defined under `.codex/agents/`:
+Project configuration fixes the coordinator and specialists to `gpt-5.6-sol`, medium reasoning, read-only sandbox, and no approval prompts. Custom agents are defined under `.codex/agents/`:
 
 - `state-correctness-reviewer`
 - `spark-runtime-reviewer`

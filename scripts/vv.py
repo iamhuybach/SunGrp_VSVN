@@ -212,8 +212,9 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
             continue
         if model.get("expected") != expected:
             errors.append(f"models.{role}.expected must be {expected!r}")
-        if model.get("effort") != "high":
-            errors.append(f"models.{role}.effort must be 'high'")
+        expected_effort = "medium" if role == "review" else "high"
+        if model.get("effort") != expected_effort:
+            errors.append(f"models.{role}.effort must be {expected_effort!r}")
         if not isinstance(model.get("actual"), str):
             errors.append(f"models.{role}.actual must be a string")
 
@@ -731,8 +732,11 @@ def cmd_doctor(_: argparse.Namespace) -> int:
                 codex = tomllib.load(handle)
             if codex.get("model") != "gpt-5.6-sol":
                 errors.append(".codex/config.toml model must be gpt-5.6-sol")
-            if codex.get("model_reasoning_effort") != "high":
-                errors.append(".codex/config.toml reasoning effort must be high")
+            if codex.get("model_reasoning_effort") != "medium":
+                errors.append(".codex/config.toml reasoning effort must be medium")
+            agents = codex.get("agents") or {}
+            if agents.get("default_subagent_reasoning_effort") != "medium":
+                errors.append(".codex/config.toml subagent reasoning effort must be medium")
             if codex.get("sandbox_mode") != "read-only":
                 errors.append(".codex/config.toml sandbox_mode must be read-only")
         except Exception as exc:  # noqa: BLE001
@@ -761,8 +765,8 @@ def cmd_doctor(_: argparse.Namespace) -> int:
                 agent = tomllib.load(handle)
             if agent.get("name") != name:
                 errors.append(f"{agent_path.as_posix()} name must be {name!r}")
-            if agent.get("model") != "gpt-5.6-sol" or agent.get("model_reasoning_effort") != "high":
-                errors.append(f"{agent_path.as_posix()} must use gpt-5.6-sol with high reasoning")
+            if agent.get("model") != "gpt-5.6-sol" or agent.get("model_reasoning_effort") != "medium":
+                errors.append(f"{agent_path.as_posix()} must use gpt-5.6-sol with medium reasoning")
             if agent.get("sandbox_mode") != "read-only":
                 errors.append(f"{agent_path.as_posix()} must use read-only sandbox")
             if not agent.get("description") or not agent.get("developer_instructions"):

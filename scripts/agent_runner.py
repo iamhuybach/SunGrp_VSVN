@@ -14,8 +14,9 @@ from typing import Any
 
 
 ARCHITECT_MODEL = "claude-opus-5-5"
+ARCHITECT_EFFORT = "high"
 REVIEW_MODEL = "gpt-5.6-sol"
-REASONING_EFFORT = "high"
+REVIEW_EFFORT = "medium"
 VERDICTS = {"PASS", "FIX_REQUIRED", "EVIDENCE_REQUIRED", "USER_DECISION"}
 
 
@@ -201,10 +202,10 @@ Do not wrap the JSON or document in Markdown fences.
         str(executable),
         "-p",
         "--model", ARCHITECT_MODEL,
-        "--effort", REASONING_EFFORT,
+        "--effort", ARCHITECT_EFFORT,
         "--output-format", "json",
         "--json-schema", json.dumps(schema, separators=(",", ":")),
-        "--max-turns", "20",
+        "--max-turns", "80",
         "--permission-mode", "dontAsk",
         "--permission-prompts", "none",
         "--tools", "Read,Glob,Grep",
@@ -232,7 +233,7 @@ def _review_schema(reviewers: list[str]) -> dict[str, Any]:
         "type": "object",
         "properties": {
             "model": {"type": "string", "enum": [REVIEW_MODEL]},
-            "reasoning_effort": {"type": "string", "enum": [REASONING_EFFORT]},
+            "reasoning_effort": {"type": "string", "enum": [REVIEW_EFFORT]},
             "reviewers_run": {
                 "type": "array",
                 "items": {"type": "string", "enum": reviewers or ["none"]},
@@ -317,7 +318,7 @@ Markdown review. Never edit repository files.
             "--ephemeral",
             "--json",
             "--model", REVIEW_MODEL,
-            "-c", f'model_reasoning_effort="{REASONING_EFFORT}"',
+            "-c", f'model_reasoning_effort="{REVIEW_EFFORT}"',
             "-c", 'approval_policy="never"',
             "--sandbox", "read-only",
             "--cd", str(repo),
@@ -335,7 +336,7 @@ Markdown review. Never edit repository files.
         payload = _parse_json_text(output_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise RunnerError("Codex final result must be a JSON object.")
-    if payload.get("model") != REVIEW_MODEL or payload.get("reasoning_effort") != REASONING_EFFORT:
+    if payload.get("model") != REVIEW_MODEL or payload.get("reasoning_effort") != REVIEW_EFFORT:
         raise RunnerError("Codex reported a model or reasoning-effort mismatch.")
     reviewers_run = validate_reviewer_manifest(payload.get("reviewers_run"), required_reviewers)
     if payload.get("risk_gate_run") is not risk_gate_required:

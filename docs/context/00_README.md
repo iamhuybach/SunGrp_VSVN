@@ -24,8 +24,8 @@
 
 ## Tóm tắt 10 dòng
 
-1. Fabric F16, Runtime 1.3, 3 lakehouse `lh_vv_bronze` / `lh_vv_silver` / `lh_vv_gold`, ctrl ở `lh_vv_bronze.ctrl`.
-2. Raw: `partner_raw_data` (Debezium CDC), `poi_raw_event` (tài liệu crawl 3P), Eventstream append, không stats.
+1. Fabric F16, Runtime 1.3, 3 lakehouse medallion `lh_vv_bronze` / `lh_vv_silver` / `lh_vv_gold`, bảng control ở `lh_vv_ctrl.dbo`.
+2. Raw: `partner_raw_data` (Debezium CDC), `brz_3rd_crawler_poi_stream` (tài liệu crawl 3P), Eventstream append, không stats.
 3. Extract (`PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`, 10–15 phút): ForEach tuần tự, nhánh có việc chỉ gọi `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` với `partner_raw_data` gắn cứng. Notebook 3rd-party có trong repo, không nằm trong pipeline này.
 4. Silver L1 đúng cấu trúc nguồn: `slv_pn_*` (23), `slv_3p_poi_*` (14, 13 active). Không rule nghiệp vụ.
 5. Rule nghiệp vụ dạng dữ liệu nằm ở bảng `ref_*`.

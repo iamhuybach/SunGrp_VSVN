@@ -5,6 +5,8 @@
 
 ## 1. Mô tả
 
+Sau cutover 08/10, `NB_00_ORCHES_SLV_TO_GLD` raise `ConfigError` cho đến khi cạnh `RECOMPUTE` được seed vào `lh_vv_ctrl`. Lỗi xảy ra trước khi tạo khoá `wm_flow__<pl>` và trước khi ghi log. Không có cạnh thì không chạy node và không ghi bảng gold.
+
 1 notebook điều phối dùng chung cho **mọi** luồng tính lại: chọn luồng bằng `p_pl_name`, DAG dựng từ `ctrl_mng_pipeline_config` (cạnh `load_mode = 'RECOMPUTE'`), **không viết cứng** notebook / bảng nào. Mỗi lần chạy: khoá luồng → lập kế hoạch (cạnh nào có dữ liệu mới) → chốt version đầu vào ngoài → chạy các node cần chạy bằng `notebookutils.notebook.runMultiple` theo phụ thuộc → đọc kết quả node từ log → ghi dấu đã đọc của cạnh → đóng run log, nhả khoá.
 
 NB_00 là nơi **duy nhất** ghi `ctrl_mng_watermark` (cạnh) và `ctrl_log_run` của luồng; node chỉ append `ctrl_log_table_run` của mình.
@@ -98,10 +100,10 @@ Trạng thái run: `SUCCESS` (mọi ứng viên OK), `NO_DATA` (không ứng vi�
 -- Lần chạy gần nhất
 SELECT exec_id, status, run_mode, started_at, duration_ms, tbl_total_count, tbl_success_count, tbl_failed_count,
        tbl_no_data_count, error_message, read_note
-FROM lh_vv_bronze.ctrl.ctrl_log_run WHERE pl_name = '<pl_name>' ORDER BY started_at DESC LIMIT 5;
+FROM lh_vv_ctrl.dbo.ctrl_log_run WHERE pl_name = '<pl_name>' ORDER BY started_at DESC LIMIT 5;
 -- Node của 1 lần chạy
 SELECT trg_tbl, status, entity_rows, inserted_rows, updated_rows, deactivated_rows, duration_ms, error_message, qg_json
-FROM lh_vv_bronze.ctrl.ctrl_log_table_run WHERE exec_id = '<exec_id>' ORDER BY priority, trg_tbl;
+FROM lh_vv_ctrl.dbo.ctrl_log_table_run WHERE exec_id = '<exec_id>' ORDER BY priority, trg_tbl;
 ```
 
 ## 7. Việc còn mở

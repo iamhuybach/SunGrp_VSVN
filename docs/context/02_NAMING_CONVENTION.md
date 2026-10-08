@@ -8,8 +8,8 @@
 
 | Vị trí | Tiền tố | Ý nghĩa | Ví dụ |
 |---|---|---|---|
-| `lh_vv_bronze.dbo` | (tên nguồn) + `_raw_data` / `_raw_event` | Raw do Eventstream append, không sửa | `partner_raw_data`, `poi_raw_event` |
-| `lh_vv_bronze.ctrl` | `ctrl_mng_` | Cấu hình + trạng thái điều khiển pipeline | `ctrl_mng_pipeline_config`, `ctrl_mng_watermark` |
+| `lh_vv_bronze.dbo` | tên đã chốt theo nguồn | Raw do Eventstream append, không sửa. Hai tên đang dùng: partner và crawler 3P. Không suy ra thêm quy tắc đặt tên raw | `partner_raw_data`, `brz_3rd_crawler_poi_stream` |
+| `lh_vv_ctrl.dbo` | `ctrl_mng_` | Cấu hình + trạng thái điều khiển pipeline | `ctrl_mng_pipeline_config`, `ctrl_mng_watermark` |
 | | `ctrl_cfg_` | Cấu hình chi tiết (mapping cột) | `ctrl_cfg_schema_registry` |
 | | `ctrl_log_` | Log chạy | `ctrl_log_run`, `ctrl_log_table_run` |
 | | `ctrl_cdc_` | State / reject của extract | `ctrl_cdc_state`, `ctrl_cdc_reject` |

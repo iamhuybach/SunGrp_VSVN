@@ -87,7 +87,7 @@ def test_review_schema_uses_supported_reviewer_array_keywords() -> None:
     reviewers_run = schema["properties"]["reviewers_run"]
     assert "uniqueItems" not in reviewers_run
     assert schema["properties"]["model"]["enum"] == ["gpt-5.6-sol"]
-    assert schema["properties"]["reasoning_effort"]["enum"] == ["high"]
+    assert schema["properties"]["reasoning_effort"]["enum"] == ["medium"]
 
 
 def test_reviewer_manifest_rejects_duplicates() -> None:

@@ -1,5 +1,5 @@
 # =============================================================================
-# CHECK_CTRL_SNAPSHOT — chụp dữ liệu hiện có của 7 bảng ctrl (lh_vv_bronze.ctrl). CHỈ ĐỌC, không ghi gì.
+# CHECK_CTRL_SNAPSHOT — chụp dữ liệu hiện có của 7 bảng ctrl (lh_vv_ctrl.dbo). CHỈ ĐỌC, không ghi gì.
 # Dùng để cập nhật mục "Dữ liệu hiện có" của CTRL_TABLES_CONTEXT.md.
 #   S0  Môi trường + version / số file / dung lượng / property của 7 bảng
 #   S1  Cột thực tế của 7 bảng so với DDL tài liệu (thiếu / thừa)
@@ -10,13 +10,13 @@
 #   S6  ctrl_log_table_run: dòng của run gần nhất mỗi (pl_name, nguồn)
 #   S7  ctrl_cdc_state: số dòng theo (src_tbl, trg_tbl) + kiểm tra trùng khoá (kỳ vọng 0)
 #   S8  ctrl_cdc_reject: theo (src_tbl, trg_tbl, lý do), chưa xử lý
-# Dán CẢ FILE vào 1 cell (default lakehouse lh_vv_bronze), chạy, gửi lại toàn bộ output.
+# Dán CẢ FILE vào 1 cell. Default lakehouse có thể vẫn là lh_vv_bronze. Chạy, gửi lại toàn bộ output.
 # =============================================================================
 import json
 from pyspark.sql import functions as F
 from delta.tables import DeltaTable
 
-CTRL = "lh_vv_bronze.ctrl"
+CTRL = "lh_vv_ctrl.dbo"
 TABLES = ["ctrl_mng_pipeline_config", "ctrl_mng_watermark", "ctrl_cfg_schema_registry", "ctrl_log_run",
           "ctrl_log_table_run", "ctrl_cdc_state", "ctrl_cdc_reject"]
 # Cột theo CTRL_TABLES_CONTEXT.md (08/10) — để so với bảng thật

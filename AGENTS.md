@@ -44,7 +44,7 @@ The role model is **single code writer plus explicit artifact ownership**, not a
 
 - Main: Grok 4.7 with `high` reasoning in Cursor. The active model must be confirmed in the model picker and recorded in `task-state.yaml`.
 - Architect: Claude Opus 5.5 with `high` effort. Record the actual model in `task-state.yaml`.
-- Review Coordinator and all specialist reviewers: `gpt-5.6-sol` with `high` reasoning through Codex authenticated with ChatGPT. Record the actual model in `task-state.yaml`.
+- Review Coordinator and all specialist reviewers: `gpt-5.6-sol` with `medium` reasoning through Codex authenticated with ChatGPT. Record the actual model in `task-state.yaml`. User approved this effort on 2026-10-08 so review uses fewer tokens. Main and Architect stay at `high`.
 - Do not silently substitute models. If a configured model is unavailable or a client falls back, stop the affected gate and report it to the user.
 - Change model versions only after running the repository's agent evaluation suite or recording a user-approved exception.
 
