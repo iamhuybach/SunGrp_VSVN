@@ -16,3 +16,5 @@ ignore = ["B008"]
 # Notebook nạp lib bằng %run → tên hàm lib "chưa định nghĩa" là bình thường
 "**/*.Notebook/**" = ["F821", "F811"]
 "*.ipynb" = ["F821", "F811"]
+# Script dán vào cell Fabric; import để sẵn, chưa dùng trong bản chỉ đọc này
+"docs/context/CHECK_CTRL_SNAPSHOT.py" = ["F401"]
