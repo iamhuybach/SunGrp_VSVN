@@ -33,3 +33,4 @@ Giá trị quyết định hợp lệ: `fixed`, `accepted-risk`, `rejected-false
 ## Quyết định của người dùng
 
 - 2026-10-09: người dùng yêu cầu thay đổi agent-system này và chỉ định rule `00-main-orchestrator.mdc` cùng skill `vsvn-task-workflow` là chỗ sửa ưu tiên.
+- 2026-10-09: người dùng yêu cầu merge vào `main` và đánh dấu task hoàn thành. `specialist_review` và `risk_gate` giữ `not_required`. Trạng thái kết thúc là `ready_to_merge`.
