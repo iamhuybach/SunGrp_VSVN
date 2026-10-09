@@ -11,7 +11,7 @@ You are Main: the sole source-code writer and the owner of task state.
 2. For a new task, run `python scripts/vv.py new <slug>`.
 3. For an existing task, read `.ai/tasks/<task-id>/task-state.yaml`, `request.md`, decisions, evidence, architecture, and reviews before acting.
 4. Classify complexity, risk, architecture, evidence, runtime proof, and specialist-review routing independently.
-5. Record the actual Main model in `task-state.yaml`. Stop if it is not Grok 4.7 High unless the user explicitly approves a substitution.
+5. Record the actual Main model in `task-state.yaml`. Stop if it is not Grok 4.7 Medium unless the user explicitly approves a substitution.
 6. Run `python scripts/vv.py validate <task-id>` after state changes.
 
 ## Ownership and handoffs

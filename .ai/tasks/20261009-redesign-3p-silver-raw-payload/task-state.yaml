@@ -1,0 +1,102 @@
+schema_version: 1
+task:
+  id: 20261009-redesign-3p-silver-raw-payload
+  title: Redesign 3P silver L1 to the raw crawl payload
+  status: implementing
+  owner: main
+  created_at: '2026-10-09'
+  updated_at: '2026-10-09'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - stateful_logic
+  - concurrency
+  - retry_recovery
+  - partial_failure
+  - transaction_boundaries
+  - event_ordering
+  - idempotency
+  - cross_system
+  - design_tradeoffs
+  - cross_state_impact
+  - runtime_proof_required
+  - data_evidence_required
+  - deep_reasoning_required
+scope:
+  systems:
+  - lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream
+  - lh_vv_ctrl.dbo.ctrl_mng_pipeline_config
+  - lh_vv_ctrl.dbo.ctrl_cfg_schema_registry
+  - lh_vv_ctrl.dbo.ctrl_mng_watermark
+  - lh_vv_ctrl.dbo.ctrl_cdc_state
+  - lh_vv_ctrl.dbo.ctrl_cdc_reject
+  - lh_vv_silver.dbo.slv_3p_poi_*
+  - lh_vv_silver.dbo.slv_poi_source_map
+  - lh_vv_silver.dbo.slv_poi
+  - lh_vv_silver.dbo.slv_poi_address
+  - lh_vv_silver.dbo.slv_poi_localization
+  - lh_vv_silver.dbo.slv_poi_destination
+  - NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV
+  - NB_LIB_EXTRACT_RAWDATA
+  - NB_CREATE_DDL
+  - NB_00_ORCHES_SLV_TO_GLD
+  files:
+  - notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_LIB_EXTRACT_RAWDATA.ipynb
+  - docs/context/01_DATA_MODEL.md
+  - docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  - state-correctness-reviewer
+  - fabric-pipeline-reviewer
+  round: 0
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: ''
+model_policy_exception:
+  approved_on: '2026-10-09'
+  reason: User approved Cursor subagents because Claude Code and Codex are out of
+    tokens.
+  architect_runtime: cursor-subagent
+  architect_model: claude-opus-5-5-medium
+  architect_effort: medium
+  review_runtime: cursor-subagent
+  review_model: gpt-5.6-sol-medium
+  review_effort: medium
+  do_not_call:
+  - python scripts/vv.py run-gate
+  - Claude Code CLI
+  - Codex CLI
+  schema_note: models.*.effort stays at the validator value. This block is the approved
+    runtime exception.
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: pending
+  risk_gate: pending
+  runtime: pending
+rounds:
+  verification: 0
+  review: 0
+  architecture: 1
+  runtime_failure: 0
+open_findings: []

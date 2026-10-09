@@ -282,29 +282,26 @@ Ghi bởi `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. 1 dòng = 1 dòng bảng Postgres
 
 Ghi chú dữ liệu (rerun 04/10): 11 bảng (`products`, 9 bảng `product_*`, `order_item_flights`) có `after = ''` ở 100% event → NO_DATA / reject; `business_locations`, `product_post_translations` không có event nào trong raw. Chi tiết: `99_PAIN_POINTS.md`.
 
-### 5.2 3rd-party `slv_3p_poi_*` (14 bảng, 13 active, snapshot)
+### 5.2 3rd-party `slv_3p_poi_*` (9 bảng trong registry, 8 active, snapshot)
 
-Ghi bởi `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`. Cột kỹ thuật: `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at`, `_ingested_at`. Không có nhánh xoá; bảng con chỉ upsert, `_last_seen_at` cho biết lần cuối thấy. Registry 182 cột (146 bật, 36 tắt vì luôn null).
+Ghi bởi `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`. Cột kỹ thuật: `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at`, `_ingested_at`. Không có nhánh xoá; bảng con chỉ upsert, `_last_seen_at` cho biết lần cuối thấy. [SỬA 09/10] Registry 93 cột (78 bật, 15 tắt). L1 chỉ extract 1:1 và cast kiểu. Năm bảng không còn khối nguồn bị gỡ khỏi registry và `DROP` trên DEV theo runbook.
 
 | Bảng | load_mode | Khối nguồn (`src_object`) | Khoá | Cột (bật) | Số dòng lần FULL 04/10 |
 |---|---|---|---|---|---|
-| `slv_3p_poi` | DOC | `$` (gốc payload) | `poi_id` | 23 (17) | 21.168 tài liệu → 19.046 địa điểm |
+| `slv_3p_poi` | DOC | `$` (gốc payload) | `poi_id` | 21 (15) | Bỏ `available_langs_json`, `enrichment_failed_langs_json` |
 | `slv_3p_poi_address` | DOC | `poi_address` | `poi_id` | 21 (20) | — |
 | `slv_3p_poi_contact` | DOC | `poi_contact` | `poi_id` | 8 (5) | — |
-| `slv_3p_poi_price` | DOC | `poi_price` | `poi_id` | 5 (5) | 9.726 |
-| `slv_3p_poi_opening_hours` | DOC | `poi_opening_hours` | `poi_id` | 6 (6) | 17.829 |
-| `slv_3p_poi_policy` | DOC | `policies` | `poi_id` | 2 (2) | **tắt** (`is_active = 0`, khối luôn null) |
+| `slv_3p_poi_opening_hours` | DOC | `poi_opening_hours` | `poi_id` | 7 (7) | Thêm `open_now` |
+| `slv_3p_poi_policy` | DOC | `policies` | `poi_id` | 2 (2) | **tắt** (`is_active = 0`) |
 | `slv_3p_poi_rating` | DOC | `poi_rating` | `poi_id` | 5 (3) | — |
-| `slv_3p_poi_amenity` | DOC | `poi_amenity` | `poi_id` | 41 (29) | — |
-| `slv_3p_poi_raw_data` | DOC | `raw_data` | `poi_id` | 2 (2) | 8.199 |
-| `slv_3p_poi_content` | DOC_ARRAY | `poi_content` | (`poi_id`, `locale`, `content_type`) | 4 (4) | 1.179 |
-| `slv_3p_poi_review` | DOC_ARRAY | `poi_review` | `review_id` (sha256) | 8 (8) | 102.401 |
-| `slv_3p_poi_media` | DOC_ARRAY | `poi_media` | `media_dedup_key` (sha256 nối `\|`) | 18 (15) | 102.643 |
-| `slv_3p_poi_enrichment` | LANG | `$` của object bản địa hoá | (`poi_id`, `lang`) | 30 (26) | 38.195 |
-| `slv_3p_poi_review_i18n` | LANG_ARRAY | `reviews` (align `poi_review` theo vị trí) | (`review_id`, `lang`) | 9 (4) | 181.687 |
+| `slv_3p_poi_amenity` | DOC | `poi_amenity` | `poi_id` | 3 (3) | Chỉ `poi_id`, `amenity_schema_json`, `ext_attributes_json` |
+| `slv_3p_poi_review` | DOC_ARRAY | `poi_review` | `review_id` (sha256) | 8 (8) | — |
+| `slv_3p_poi_media` | DOC_ARRAY | `poi_media` | `media_dedup_key` (sha256 nối `\|`) | 18 (15) | — |
+
+Đã gỡ khỏi registry và `DROP` trên DEV: `slv_3p_poi_price`, `slv_3p_poi_raw_data`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`.
 
 `poi_id` 3rd-party = `md5(concat(source_name, source_id))` định dạng UUID 8-4-4-4-12 (`HASH_MD5_UUID`). Id của collector giữ ở cột `collector_poi_id`.
-Cột JSON giữ nguyên khối, transform sau: `raw_data_json`, `amenity_schema_json`, `ext_attributes_json`, `facilities_json`, `secondary_hours_json`; mảng 1 tầng để cột JSON: `periods_json`, `experiences_json`, `types_json`, `subcategory_tags_json`, `weekday_text_json`.
+Cột JSON giữ nguyên khối: `amenity_schema_json`, `ext_attributes_json`, `facilities_json`, `secondary_hours_json`; mảng 1 tầng để cột JSON: `periods_json`, `types_json`, `subcategory_tags_json`, `weekday_text_json`.
 
 ## 6. Silver L2 — tích hợp POI (5 node)
 
@@ -313,9 +310,9 @@ Mọi bảng tính lại toàn bộ rồi MERGE theo `row_hash`; cột kỹ thu�
 | # | Bảng | Grain / PK | Đầu vào | Quyết định nằm ở đây | Số dòng run 1 (05/10) |
 |---|---|---|---|---|---|
 | N1 | `slv_poi_source_map` | (`source_name`, `source_id`) | `slv_3p_poi`, `slv_pn_business_services`, `slv_pn_business_service_poi_link`, `ref_poi_legacy_id` | **Định danh**: `poi_id`; `canonical_poi_id` (= `poi_id` tới khi POI management gửi quyết định); `legacy_poi_ids_json` theo lang; `match_rule` (`SELF` / `PARTNER_LINK` / `POI_MGMT` / `MANUAL`); first / last seen | 19.070 |
-| N2 | `slv_poi` | `poi_id` | N1, `slv_3p_poi`, `slv_3p_poi_enrichment`, `slv_pn_business_services`, `slv_pn_partners`, `ref_business_category`, `ref_source` | Sector / category / `poi_type` / `subcategory_tags` qua ref; `operating_status`, `is_active`, `is_verified`, `lifecycle_state`; `brand_name`; `is_bookable` = NULL; `is_recommended` theo `ref_source`; ứng viên model `model_business_sector`, `model_type` (không lên gold) | 19.070 |
+| N2 | `slv_poi` | `poi_id` | N1, `slv_3p_poi`, `slv_pn_business_services`, `slv_pn_partners`, `ref_business_category`, `ref_source` | [SỬA 09/10] Sector / category / `poi_type` từ `slv_3p_poi` qua ref, không đọc enrichment. `brand_name`, `model_business_sector`, `model_type` = NULL với 3P. Notebook node chưa có trong repo | 19.070 |
 | N3 | `slv_poi_address` | `poi_id` | N1, `slv_3p_poi_address`, `slv_pn_business_services`, `lh_vv_gold.dbo.poi_address_enrichment_staging` | Chọn nguồn địa chỉ (3P / partner Vietmap / partner JSON); 1 hàm chuẩn hoá `ward_norm`, `province_norm`; `addr_parts` cho rule đặc biệt | 19.070 |
-| N4 | `slv_poi_localization` | (`poi_id`, `lang`) | N1, `slv_3p_poi`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_pn_business_services`, `slv_pn_business_service_i18ns`, `ref_lang_policy`, `ref_source` | Tên, mô tả theo lang (không lấy mô tả lang khác); tên giả lập khi thiếu (`FALLBACK_UNACCENT` / `FALLBACK_COPY`); slug cấp 1 lần; `has_required_langs`; `legacy_poi_id` | 57.200 |
+| N4 | `slv_poi_localization` | (`poi_id`, `lang`) | N1, `slv_3p_poi`, `slv_pn_business_services`, `slv_pn_business_service_i18ns`, `ref_lang_policy`, `ref_source` | [SỬA 09/10] Tên 3P từ `slv_3p_poi.poi_name` theo `language_code`. Mô tả 3P = NULL. Fallback tên vẫn ở L2, không copy mô tả. Notebook node chưa có trong repo | 57.200 |
 | N5 | `slv_poi_destination` | (`poi_id`, `destination_id`) | N3, `lh_vv_gold.dbo.destination_ward_mapping`, `ref_destination_special_rule`, `cms_destination` | (ward, province) → destination; rule đặc biệt (Phú Quốc); tên → `MAX(documentId)`; ≥ 2 destination → id nhỏ nhất là `DIRECT` / `is_primary`; chuỗi cha → `ANCESTOR` (`depth`) | 22.298 |
 
 Hai ngoại lệ tạm (silver đọc gold): N3 đọc `poi_address_enrichment_staging`, N5 đọc `destination_ward_mapping`. Hướng xử lý: chuyển xuống silver (`slv_poi_address_enrichment`, `ref_destination_ward`) — chỉ đổi dòng config cạnh, không sửa code node.

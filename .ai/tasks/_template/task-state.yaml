@@ -22,7 +22,7 @@ review_plan:
 models:
   main:
     expected: grok-4.7
-    effort: high
+    effort: medium
     actual: ""
   architect:
     expected: claude-opus-5-5

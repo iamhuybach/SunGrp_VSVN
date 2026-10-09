@@ -1,6 +1,6 @@
 # Các prompt mẫu cho VSVN Cursor Agent
 
-Sử dụng các prompt này làm điểm bắt đầu cho người vận hành. Mở thư mục gốc của repository trong Cursor Agent, chọn **Grok 4.7 High**, sau đó thay tất cả `<placeholder>` trước khi gửi prompt.
+Sử dụng các prompt này làm điểm bắt đầu cho người vận hành. Mở thư mục gốc của repository trong Cursor Agent, chọn **Grok 4.7 Medium**, sau đó thay tất cả `<placeholder>` trước khi gửi prompt.
 
 Theo yêu cầu của người dùng, nội dung hướng dẫn và prompt mẫu trong tài liệu này được viết bằng tiếng Việt. Command, path, model ID, status, reviewer name, finding ID và các giá trị máy đọc vẫn giữ bằng tiếng Anh.
 
@@ -42,7 +42,7 @@ Tiêu chí nghiệm thu:
 Ràng buộc đã biết:
 - <ràng buộc hoặc "Không có">
 
-Tuân thủ AGENTS.md và tất cả project rule, skill có liên quan. Tạo canonical task trước khi triển khai, ghi nhận Grok 4.7 High là model thực tế của Main, đồng thời phân loại riêng complexity, risk, architecture needs và evidence needs. Không suy đoán các đặc điểm runtime data chưa biết.
+Tuân thủ AGENTS.md và tất cả project rule, skill có liên quan. Tạo canonical task trước khi triển khai, ghi nhận Grok 4.7 Medium là model thực tế của Main, đồng thời phân loại riêng complexity, risk, architecture needs và evidence needs. Không suy đoán các đặc điểm runtime data chưa biết.
 
 Chạy các bước evidence, architecture, local verification, targeted specialist review, risk gate và runtime runbook khi được yêu cầu. Tự động gọi external architecture và review gate bằng `python scripts/vv.py run-gate <task-id>`. Dừng lại và báo chính xác probe cần chạy hoặc quyết định người dùng cần đưa ra nếu gate không thể tiếp tục. Không commit, push, merge hoặc âm thầm thay thế model.
 ```

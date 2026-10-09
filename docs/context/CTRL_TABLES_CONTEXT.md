@@ -281,24 +281,19 @@ COMMENT 'Mapping cột JSON sang bảng đích (CDC partner, snapshot 3rd-party)
 | `slv_pn_order_item_hotels` | order_id **[chưa xác nhận K1]** | 12 | 1 |
 | `slv_pn_order_item_flights` | order_id **[chưa xác nhận K1]** | 22 | 2 |
 
-**3rd-party** (`src_tbl = brz_3rd_crawler_poi_stream`, `src_object_schema` NULL): 14 bảng, **182 cột (146 bật, 36 tắt** — khoá luôn null trong payload thật, D1 04/10). Mọi bảng có `poi_id` (`HASH_MD5_UUID` của `_doc.source_name,_doc.source_id`) — bắt buộc vì là `entity_key` của state.
+**3rd-party** (`src_tbl = brz_3rd_crawler_poi_stream`, `src_object_schema` NULL): [SỬA 09/10] 9 bảng, **93 cột (78 bật, 15 tắt)**. Chỉ `DOC` / `DOC_ARRAY`. Mọi bảng có `poi_id` (`HASH_MD5_UUID` của `_doc.source_name,_doc.source_id`) — bắt buộc vì là `entity_key` của state.
 
 | Bảng | src_object | Khoá | Cột (bật) | Rule khoá / đặc biệt |
 |---|---|---|---|---|
-| `slv_3p_poi` | `$` | poi_id | 23 (17) | `HASH_MD5_UUID`, `LOWER_TRIM` (`language_code`); `available_langs_json` = `_langs` |
+| `slv_3p_poi` | `$` | poi_id | 21 (15) | `HASH_MD5_UUID`, `LOWER_TRIM` (`language_code`) |
 | `slv_3p_poi_address` | `poi_address` | poi_id | 21 (20) | |
 | `slv_3p_poi_contact` | `poi_contact` | poi_id | 8 (5) | |
-| `slv_3p_poi_price` | `poi_price` | poi_id | 5 (5) | |
-| `slv_3p_poi_opening_hours` | `poi_opening_hours` | poi_id | 6 (6) | |
+| `slv_3p_poi_opening_hours` | `poi_opening_hours` | poi_id | 7 (7) | Thêm `open_now` |
 | `slv_3p_poi_policy` | `policies` | poi_id | 2 (2) | Bảng tắt |
 | `slv_3p_poi_rating` | `poi_rating` | poi_id | 5 (3) | |
-| `slv_3p_poi_amenity` | `poi_amenity` | poi_id | 41 (29) | Giữ JSON `amenity_schema_json`, `ext_attributes_json` |
-| `slv_3p_poi_raw_data` | `raw_data` | poi_id | 2 (2) | `raw_data_json` (TB 22 KB) |
-| `slv_3p_poi_content` | `poi_content` | poi_id, locale, content_type | 4 (4) | `LOWER_TRIM` |
+| `slv_3p_poi_amenity` | `poi_amenity` | poi_id | 3 (3) | Chỉ JSON `amenity_schema_json`, `ext_attributes_json` |
 | `slv_3p_poi_review` | `poi_review` | review_id | 8 (8) | `HASH_SHA256` |
 | `slv_3p_poi_media` | `poi_media` | media_dedup_key | 18 (15) | `HASH_SHA256_PIPE` |
-| `slv_3p_poi_enrichment` | `$` (object bản địa hoá) | poi_id, lang | 30 (26) | `_lang` |
-| `slv_3p_poi_review_i18n` | `reviews` (align `poi_review`) | review_id, lang | 9 (4) | `HASH_SHA256`, `_align.*` |
 
 Seed lại: cell seed trong `NB_CREATE_DDL` hoặc `claude/seed_ctrl_cfg_schema_registry.py` — flatten → validate → so dòng đang có (dừng nếu mất cột trừ khi `ALLOW_REMOVE = True`) → giữ `is_active` / `description` sửa tay → ghi `overwrite` + `replaceWhere` theo (`src_schema`, `src_tbl`).
 

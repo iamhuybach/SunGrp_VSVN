@@ -5,7 +5,7 @@
 
 ## 1. Mô tả
 
-Đọc tài liệu crawl (Google Places + enrichment) từ `lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream`, tách mỗi tài liệu ra 14 bảng `lh_vv_silver.dbo.slv_3p_poi_*` (13 active) theo cấu hình: 1 dòng / tài liệu, / khối, / phần tử mảng, / object bản địa hoá, / phần tử mảng trong object bản địa hoá. Chuẩn kiểu, sinh khoá. **Chỉ extract**: không rule nghiệp vụ, không canonical, không gate.
+[SỬA 09/10] Đọc payload raw từ `lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream`, tách mỗi tài liệu ra 8 bảng active `lh_vv_silver.dbo.slv_3p_poi_*` (`DOC` / `DOC_ARRAY`). Extract 1:1 và cast kiểu, sinh khoá MERGE. Không lọc ngôn ngữ, không dựng object bản địa hoá.
 
 | | |
 |---|---|
@@ -49,12 +49,8 @@ Thay phần extract của chuỗi cũ NB_00 → NB_30 (3P):
 |---|---|---|
 | `pl_name`, `run_id`, `src_schema`, `src_tbl` | FL_00, "", `lh_vv_bronze.dbo`, `brz_3rd_crawler_poi_stream` | |
 | `allow_full_scan`, `max_retries`, `table_filter`, `full_reload`, `dry_run`, `stop_on_failure`, `cast_null_policy`, `running_timeout_minutes` | như partner | `dry_run` không raise `CastNullError` (để xem đủ mọi bảng) |
-| `max_parallel` | 12 | 13 bảng active nên một bảng chạy lượt 2. Người dùng chốt 12 ngày 08/10 |
+| `max_parallel` | 12 | [SỬA 09/10] 8 bảng active cùng một wave |
 | `sources` | `google` | `source_name` được xử lý (CSV, không phân biệt hoa thường); ngoài danh sách → IGNORED `OUT_OF_SCOPE`; rỗng = mọi nguồn |
-| `langs` | `vi,en,ko` | Ngôn ngữ nhận cho bảng LANG / LANG_ARRAY; ngôn ngữ khác: đếm, bỏ qua |
-| `lang_object_path` | `extra_info.enrichment` | Object bản địa hoá chính; ngôn ngữ ở trường `lang_field` |
-| `lang_field` | `lang` | |
-| `lang_map_path` | `extra_info.enrichmentSiblings` | Map ngôn ngữ → object bản địa hoá |
 | `doc_key_column` | `poi_id` | Cột định danh tài liệu, phải có trong registry của **mọi** bảng |
 | `state_key` | `doc` | `doc`: `entity_key` = `poi_id` (mọi bảng; tài liệu cũ đến trễ bị bỏ qua ở mọi bảng). `row`: khoá bảng (bảng con nhận phần tử chỉ có ở tài liệu cũ đến trễ; state ~3 lần nhiều dòng hơn). Đổi không cần reset state |
 
@@ -156,19 +152,16 @@ Luật phân loại tài liệu (luật đầu tiên khớp quyết định):
 | `slv_3p_poi` | DOC | `$` | poi_id | `poi_source_map` / `poi_entity` (danh tính nguồn) |
 | `slv_3p_poi_address` | DOC | `poi_address` | poi_id | `poi_address` |
 | `slv_3p_poi_contact` | DOC | `poi_contact` | poi_id | `poi_contact` |
-| `slv_3p_poi_price` | DOC | `poi_price` | poi_id | `poi_price` |
 | `slv_3p_poi_opening_hours` | DOC | `poi_opening_hours` | poi_id | `poi_opening_hours` |
 | `slv_3p_poi_policy` | DOC | `policies` | poi_id | `poi_policy` — **tắt** (khối luôn null) |
 | `slv_3p_poi_rating` | DOC | `poi_rating` | poi_id | `poi_rating` |
 | `slv_3p_poi_amenity` | DOC | `poi_amenity` | poi_id | `poi_amenity_source` |
-| `slv_3p_poi_raw_data` | DOC | `raw_data` | poi_id | (mới) |
-| `slv_3p_poi_content` | DOC_ARRAY | `poi_content` | poi_id, locale, content_type | `poi_content` |
 | `slv_3p_poi_review` | DOC_ARRAY | `poi_review` | review_id | `poi_review` (bản gốc) |
 | `slv_3p_poi_media` | DOC_ARRAY | `poi_media` | media_dedup_key | `poi_media` |
-| `slv_3p_poi_enrichment` | LANG | `$` | poi_id, lang | `poi_enrichment` |
-| `slv_3p_poi_review_i18n` | LANG_ARRAY | `reviews` (align `poi_review`) | review_id, lang | `poi_review` (bản dịch) |
 
-Cột JSON giữ nguyên khối (transform sau): `raw_data_json`, `amenity_schema_json`, `ext_attributes_json` (62 khoá phẳng, có `primaryType`, `open_now`), `facilities_json`, `secondary_hours_json`. Mảng 1 tầng để cột JSON: `periods_json`, `experiences_json`, `types_json`, `subcategory_tags_json`, `weekday_text_json`, `enrichment_failed_langs_json`, `available_langs_json`. Cần tách sau: chỉ thêm cấu hình `DOC_ARRAY` / `LANG_ARRAY`, không sửa code.
+[SỬA 09/10] Đã xóa khỏi registry và pipeline config: `slv_3p_poi_price`, `slv_3p_poi_raw_data`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`.
+
+Cột JSON giữ nguyên khối: `amenity_schema_json`, `ext_attributes_json`, `facilities_json`, `secondary_hours_json`. Mảng 1 tầng để cột JSON: `periods_json`, `types_json`, `subcategory_tags_json`, `weekday_text_json`.
 
 ## 9. Ghi chú migration — số liệu đo trên raw 3P cũ trước 08/10
 
@@ -186,7 +179,7 @@ Cột JSON giữ nguyên khối (transform sau): `raw_data_json`, `amenity_schem
 | Pipeline | Chưa có activity trong FL_00. JSON hiện tại chỉ gọi notebook partner |
 | Lần đầu | `dry_run = True, allow_full_scan = True, max_parallel = 12` (xem `cast_null`, `langs`) rồi chạy thật `allow_full_scan = True, max_parallel = 12, max_retries = 1` |
 | Thêm cột | INSERT 1 dòng registry; dữ liệu cũ: `full_reload` bảng đó |
-| Thêm ngôn ngữ | Tham số `langs`; tài liệu cũ: `full_reload` bảng LANG* |
+| Ngôn ngữ | Do L2 (`ref_lang_policy`) quyết định. Extract không lọc ngôn ngữ |
 | Thêm nguồn crawl | Tham số `sources`; kiểm tra payload cùng cấu trúc; tài liệu cũ đã IGNORED → 1 lần `full_reload = True` |
 | Exit có `bad_shape` / `langs.primary_without_lang` | Payload khác cấu trúc cấu hình: xem mẫu raw, sửa cấu hình hoặc báo collector |
 | `CastNullError`, `VersionGapError`, `SKIPPED_CONCURRENT` | Như partner |

@@ -212,7 +212,7 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
             continue
         if model.get("expected") != expected:
             errors.append(f"models.{role}.expected must be {expected!r}")
-        expected_effort = "medium" if role == "review" else "high"
+        expected_effort = "high" if role == "architect" else "medium"
         if model.get("effort") != expected_effort:
             errors.append(f"models.{role}.effort must be {expected_effort!r}")
         if not isinstance(model.get("actual"), str):

@@ -4,16 +4,16 @@ The repository uses three deliberately separate model lanes:
 
 | Lane | Model | Purpose | Write authority |
 |---|---|---|---|
-| Cursor Main | Grok 4.7 High | Triage, implementation, remediation, and task state | Source code and Main-owned task artifacts |
+| Cursor Main | Grok 4.7 Medium | Triage, implementation, remediation, and task state | Source code and Main-owned task artifacts |
 | Claude Code Architect | Claude Opus 5.5 High | Architecture for complex changes | Current task `architecture.md` only |
-| Codex review | GPT-5.6 Sol High | Independent specialist review and risk gate | Read-only |
+| Codex review | GPT-5.6 Sol Medium | Independent specialist review and risk gate | Read-only |
 
 Cursor-native subagents are not used for review. This avoids conflicting reviewer definitions and keeps review usage in Codex authenticated with ChatGPT rather than Cursor's Other Models pool.
 
 ## Prerequisites
 
 - Python 3.11 or later and Git for Windows.
-- Cursor with access to Grok 4.7 High.
+- Cursor with access to Grok 4.7 Medium.
 - Claude Code authenticated with an account that exposes Claude Opus 5.5.
 - Codex extension or CLI authenticated with ChatGPT and access to `gpt-5.6-sol`.
 - A trusted checkout of this repository.
@@ -32,7 +32,7 @@ python scripts/vv.py verify --all
 ## Cursor Main
 
 1. Open the repository root in Cursor.
-2. Select Grok 4.7 and High reasoning in the model picker. Repository files cannot force Cursor's active model.
+2. Select Grok 4.7 and Medium reasoning in the model picker. Repository files cannot force Cursor's active model.
 3. Confirm that `.cursor/rules/00-main-orchestrator.mdc` is Always Apply.
 4. Confirm that the notebook, pipeline, and SQL rules attach to their declared globs.
 5. Confirm that `vsvn-task-workflow` and `fabric-runtime-evidence` appear as project skills.
@@ -67,7 +67,7 @@ Review agents never edit files. Main stores the returned consolidated report as 
 
 ## Task workflow
 
-Copyable Cursor Agent entry prompts for common task types are available in [`docs/AGENT_PROMPT_SAMPLES.md`](docs/AGENT_PROMPT_SAMPLES.md). Choose the closest case, replace its placeholders, and submit it from the repository root with Grok 4.7 High selected.
+Copyable Cursor Agent entry prompts for common task types are available in [`docs/AGENT_PROMPT_SAMPLES.md`](docs/AGENT_PROMPT_SAMPLES.md). Choose the closest case, replace its placeholders, and submit it from the repository root with Grok 4.7 Medium selected.
 
 ```powershell
 python scripts/vv.py new <slug>
@@ -96,7 +96,7 @@ Before changing a model family or effort level:
 
 | Symptom | Action |
 |---|---|
-| Cursor runs a different Main model | Re-select Grok 4.7 High and record the mismatch; repository config cannot control the picker. |
+| Cursor runs a different Main model | Re-select Grok 4.7 Medium and record the mismatch; repository config cannot control the picker. |
 | External CLI is not found | Set `VSVN_CLAUDE_EXE` or `VSVN_CODEX_EXE`; otherwise install the CLI on `PATH` or update the corresponding IDE extension. |
 | Automated gate changes an unexpected file | Stop. Inspect the Git diff; the runner will not update task state or overwrite the unexpected change. |
 | Codex ignores project agents | Trust the repository, restart the session, and run `python scripts/vv.py doctor`. |

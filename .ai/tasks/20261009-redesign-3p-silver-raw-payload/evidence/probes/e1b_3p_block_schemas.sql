@@ -1,0 +1,4 @@
+-- Probe E1b đã chuyển sang evidence/probes/e1b_3p_block_schemas.py.
+-- schema_of_json trên Spark chỉ nhận chuỗi hằng.
+-- Câu SELECT schema_of_json(body) lỗi DATATYPE_MISMATCH.NON_FOLDABLE_INPUT.
+-- Không chạy lại file SQL này.

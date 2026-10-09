@@ -24,10 +24,10 @@ Commands, identifiers, paths, status tokens, and finding IDs remain in English e
 
 | Role | Runtime | Authority |
 |---|---|---|
-| Main | Cursor, Grok 4.7 High | Sole source-code writer. Owns task state, implementation, remediation, decisions, and runtime runbooks. |
+| Main | Cursor, Grok 4.7 Medium | Sole source-code writer. Owns task state, implementation, remediation, decisions, and runtime runbooks. |
 | Architect | Claude Code, Claude Opus 5.5 High | Reads the repository and writes only the current task's `architecture.md`. Never implements. |
-| Review Coordinator | Codex, GPT-5.6 Sol High | Runs independent read-only specialist reviews and produces the consolidated review result. Never fixes code. |
-| Specialist Reviewers | Codex custom agents, GPT-5.6 Sol High | Read-only review of state correctness, Spark runtime, SQL/data, or Fabric pipelines. |
+| Review Coordinator | Codex, GPT-5.6 Sol Medium | Runs independent read-only specialist reviews and produces the consolidated review result. Never fixes code. |
+| Specialist Reviewers | Codex custom agents, GPT-5.6 Sol Medium | Read-only review of state correctness, Spark runtime, SQL/data, or Fabric pipelines. |
 | Local Verifier | `python scripts/vv.py verify` | Deterministic validation; no LLM judgment. |
 | External Gate Runner | `python scripts/vv.py run-gate` | Calls the configured Claude or Codex CLI non-interactively, validates structured output and repository immutability, persists the owned artifact, and updates state on behalf of Main. |
 | User | Fabric DEV and Git | Runs probes and runtime runbooks, accepts risk, and commits/merges. |
@@ -42,9 +42,9 @@ The role model is **single code writer plus explicit artifact ownership**, not a
 
 ## 3. Model policy
 
-- Main: Grok 4.7 with `high` reasoning in Cursor. The active model must be confirmed in the model picker and recorded in `task-state.yaml`.
+- Main: Grok 4.7 with `medium` reasoning in Cursor. The active model must be confirmed in the model picker and recorded in `task-state.yaml`. User approved this effort on 2026-10-09.
 - Architect: Claude Opus 5.5 with `high` effort. Record the actual model in `task-state.yaml`.
-- Review Coordinator and all specialist reviewers: `gpt-5.6-sol` with `medium` reasoning through Codex authenticated with ChatGPT. Record the actual model in `task-state.yaml`. User approved this effort on 2026-10-08 so review uses fewer tokens. Main and Architect stay at `high`.
+- Review Coordinator and all specialist reviewers: `gpt-5.6-sol` with `medium` reasoning through Codex authenticated with ChatGPT. Record the actual model in `task-state.yaml`. User approved this effort on 2026-10-08 so review uses fewer tokens. Architect stays at `high`.
 - Do not silently substitute models. If a configured model is unavailable or a client falls back, stop the affected gate and report it to the user.
 - Change model versions only after running the repository's agent evaluation suite or recording a user-approved exception.
 
