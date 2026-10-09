@@ -282,15 +282,16 @@ Ghi bởi `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. 1 dòng = 1 dòng bảng Postgres
 
 Ghi chú dữ liệu (rerun 04/10): 11 bảng (`products`, 9 bảng `product_*`, `order_item_flights`) có `after = ''` ở 100% event → NO_DATA / reject; `business_locations`, `product_post_translations` không có event nào trong raw. Chi tiết: `99_PAIN_POINTS.md`.
 
-### 5.2 3rd-party `slv_3p_poi_*` (9 bảng trong registry, 8 active, snapshot)
+### 5.2 3rd-party `slv_3p_poi_*` (10 bảng trong registry, 9 active, snapshot)
 
-Ghi bởi `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`. Cột kỹ thuật: `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at`, `_ingested_at`. Không có nhánh xoá; bảng con chỉ upsert, `_last_seen_at` cho biết lần cuối thấy. [SỬA 09/10] Registry 93 cột (78 bật, 15 tắt). L1 chỉ extract 1:1 và cast kiểu. Năm bảng không còn khối nguồn bị gỡ khỏi registry và `DROP` trên DEV theo runbook.
+Ghi bởi `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`. Cột kỹ thuật: `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at`, `_ingested_at`. Không có nhánh xoá; bảng con chỉ upsert, `_last_seen_at` cho biết lần cuối thấy. [SỬA 10/10] Registry 98 cột (83 bật, 15 tắt). L1 chỉ extract 1:1 và cast kiểu. `slv_3p_poi_price` được thêm lại vì 13/53 tài liệu có object `poi_price`. Bốn bảng không còn khối nguồn vẫn bị gỡ khỏi registry.
 
 | Bảng | load_mode | Khối nguồn (`src_object`) | Khoá | Cột (bật) | Số dòng lần FULL 04/10 |
 |---|---|---|---|---|---|
 | `slv_3p_poi` | DOC | `$` (gốc payload) | `poi_id` | 21 (15) | Bỏ `available_langs_json`, `enrichment_failed_langs_json` |
 | `slv_3p_poi_address` | DOC | `poi_address` | `poi_id` | 21 (20) | — |
 | `slv_3p_poi_contact` | DOC | `poi_contact` | `poi_id` | 8 (5) | — |
+| `slv_3p_poi_price` | DOC | `poi_price` | `poi_id` | 5 (5) | `currency`, `price_level` int, `price_min`, `price_max` |
 | `slv_3p_poi_opening_hours` | DOC | `poi_opening_hours` | `poi_id` | 7 (7) | Thêm `open_now` |
 | `slv_3p_poi_policy` | DOC | `policies` | `poi_id` | 2 (2) | **tắt** (`is_active = 0`) |
 | `slv_3p_poi_rating` | DOC | `poi_rating` | `poi_id` | 5 (3) | — |
@@ -298,7 +299,7 @@ Ghi bởi `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`. Cột kỹ thuật: `_crawled_a
 | `slv_3p_poi_review` | DOC_ARRAY | `poi_review` | `review_id` (sha256) | 8 (8) | — |
 | `slv_3p_poi_media` | DOC_ARRAY | `poi_media` | `media_dedup_key` (sha256 nối `\|`) | 18 (15) | — |
 
-Đã gỡ khỏi registry và `DROP` trên DEV: `slv_3p_poi_price`, `slv_3p_poi_raw_data`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`.
+Đã gỡ khỏi registry: `slv_3p_poi_raw_data`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`.
 
 `poi_id` 3rd-party = `md5(concat(source_name, source_id))` định dạng UUID 8-4-4-4-12 (`HASH_MD5_UUID`). Id của collector giữ ở cột `collector_poi_id`.
 Cột JSON giữ nguyên khối: `amenity_schema_json`, `ext_attributes_json`, `facilities_json`, `secondary_hours_json`; mảng 1 tầng để cột JSON: `periods_json`, `types_json`, `subcategory_tags_json`, `weekday_text_json`.

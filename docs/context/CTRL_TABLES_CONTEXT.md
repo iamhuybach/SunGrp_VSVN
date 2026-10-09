@@ -281,13 +281,14 @@ COMMENT 'Mapping cột JSON sang bảng đích (CDC partner, snapshot 3rd-party)
 | `slv_pn_order_item_hotels` | order_id **[chưa xác nhận K1]** | 12 | 1 |
 | `slv_pn_order_item_flights` | order_id **[chưa xác nhận K1]** | 22 | 2 |
 
-**3rd-party** (`src_tbl = brz_3rd_crawler_poi_stream`, `src_object_schema` NULL): [SỬA 09/10] 9 bảng, **93 cột (78 bật, 15 tắt)**. Chỉ `DOC` / `DOC_ARRAY`. Mọi bảng có `poi_id` (`HASH_MD5_UUID` của `_doc.source_name,_doc.source_id`) — bắt buộc vì là `entity_key` của state.
+**3rd-party** (`src_tbl = brz_3rd_crawler_poi_stream`, `src_object_schema` NULL): [SỬA 10/10] 10 bảng, **98 cột (83 bật, 15 tắt)**. Chỉ `DOC` / `DOC_ARRAY`. Mọi bảng có `poi_id` (`HASH_MD5_UUID` của `_doc.source_name,_doc.source_id`) — bắt buộc vì là `entity_key` của state.
 
 | Bảng | src_object | Khoá | Cột (bật) | Rule khoá / đặc biệt |
 |---|---|---|---|---|
 | `slv_3p_poi` | `$` | poi_id | 21 (15) | `HASH_MD5_UUID`, `LOWER_TRIM` (`language_code`) |
 | `slv_3p_poi_address` | `poi_address` | poi_id | 21 (20) | |
 | `slv_3p_poi_contact` | `poi_contact` | poi_id | 8 (5) | |
+| `slv_3p_poi_price` | `poi_price` | poi_id | 5 (5) | `price_level` int, `price_min`/`price_max` decimal(18,2) |
 | `slv_3p_poi_opening_hours` | `poi_opening_hours` | poi_id | 7 (7) | Thêm `open_now` |
 | `slv_3p_poi_policy` | `policies` | poi_id | 2 (2) | Bảng tắt |
 | `slv_3p_poi_rating` | `poi_rating` | poi_id | 5 (3) | |

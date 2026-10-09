@@ -5,7 +5,7 @@
 
 ## 1. Mô tả
 
-[SỬA 09/10] Đọc payload raw từ `lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream`, tách mỗi tài liệu ra 8 bảng active `lh_vv_silver.dbo.slv_3p_poi_*` (`DOC` / `DOC_ARRAY`). Extract 1:1 và cast kiểu, sinh khoá MERGE. Không lọc ngôn ngữ, không dựng object bản địa hoá.
+[SỬA 10/10] Đọc payload raw từ `lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream`, tách mỗi tài liệu ra 9 bảng active `lh_vv_silver.dbo.slv_3p_poi_*` (`DOC` / `DOC_ARRAY`). Extract 1:1 và cast kiểu, sinh khoá MERGE. Không lọc ngôn ngữ, không dựng object bản địa hoá.
 
 | | |
 |---|---|
@@ -49,7 +49,7 @@ Thay phần extract của chuỗi cũ NB_00 → NB_30 (3P):
 |---|---|---|
 | `pl_name`, `run_id`, `src_schema`, `src_tbl` | FL_00, "", `lh_vv_bronze.dbo`, `brz_3rd_crawler_poi_stream` | |
 | `allow_full_scan`, `max_retries`, `table_filter`, `full_reload`, `dry_run`, `stop_on_failure`, `cast_null_policy`, `running_timeout_minutes` | như partner | `dry_run` không raise `CastNullError` (để xem đủ mọi bảng) |
-| `max_parallel` | 12 | [SỬA 09/10] 8 bảng active cùng một wave |
+| `max_parallel` | 12 | [SỬA 10/10] 9 bảng active cùng một wave |
 | `sources` | `google` | `source_name` được xử lý (CSV, không phân biệt hoa thường); ngoài danh sách → IGNORED `OUT_OF_SCOPE`; rỗng = mọi nguồn |
 | `doc_key_column` | `poi_id` | Cột định danh tài liệu, phải có trong registry của **mọi** bảng |
 | `state_key` | `doc` | `doc`: `entity_key` = `poi_id` (mọi bảng; tài liệu cũ đến trễ bị bỏ qua ở mọi bảng). `row`: khoá bảng (bảng con nhận phần tử chỉ có ở tài liệu cũ đến trễ; state ~3 lần nhiều dòng hơn). Đổi không cần reset state |
@@ -152,6 +152,7 @@ Luật phân loại tài liệu (luật đầu tiên khớp quyết định):
 | `slv_3p_poi` | DOC | `$` | poi_id | `poi_source_map` / `poi_entity` (danh tính nguồn) |
 | `slv_3p_poi_address` | DOC | `poi_address` | poi_id | `poi_address` |
 | `slv_3p_poi_contact` | DOC | `poi_contact` | poi_id | `poi_contact` |
+| `slv_3p_poi_price` | DOC | `poi_price` | poi_id | `poi_price` |
 | `slv_3p_poi_opening_hours` | DOC | `poi_opening_hours` | poi_id | `poi_opening_hours` |
 | `slv_3p_poi_policy` | DOC | `policies` | poi_id | `poi_policy` — **tắt** (khối luôn null) |
 | `slv_3p_poi_rating` | DOC | `poi_rating` | poi_id | `poi_rating` |
@@ -159,7 +160,7 @@ Luật phân loại tài liệu (luật đầu tiên khớp quyết định):
 | `slv_3p_poi_review` | DOC_ARRAY | `poi_review` | review_id | `poi_review` (bản gốc) |
 | `slv_3p_poi_media` | DOC_ARRAY | `poi_media` | media_dedup_key | `poi_media` |
 
-[SỬA 09/10] Đã xóa khỏi registry và pipeline config: `slv_3p_poi_price`, `slv_3p_poi_raw_data`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`.
+[SỬA 10/10] Đã xóa khỏi registry và pipeline config: `slv_3p_poi_raw_data`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`. `slv_3p_poi_price` được thêm lại.
 
 Cột JSON giữ nguyên khối: `amenity_schema_json`, `ext_attributes_json`, `facilities_json`, `secondary_hours_json`. Mảng 1 tầng để cột JSON: `periods_json`, `types_json`, `subcategory_tags_json`, `weekday_text_json`.
 

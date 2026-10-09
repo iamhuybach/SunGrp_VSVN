@@ -4,7 +4,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DROPPED = (
-    "slv_3p_poi_price",
     "slv_3p_poi_raw_data",
     "slv_3p_poi_content",
     "slv_3p_poi_enrichment",
@@ -22,6 +21,7 @@ EXPECTED = {
     "slv_3p_poi": (21, 15),
     "slv_3p_poi_address": (21, 20),
     "slv_3p_poi_contact": (8, 5),
+    "slv_3p_poi_price": (5, 5),
     "slv_3p_poi_opening_hours": (7, 7),
     "slv_3p_poi_policy": (2, 2),
     "slv_3p_poi_rating": (5, 3),
@@ -54,9 +54,9 @@ def _configs():
 
 def test_registry_shape():
     configs = _configs()
-    assert len(configs) == 9
+    assert len(configs) == 10
     columns = [(table, name, spec) for table in configs for name, spec in table["columns"].items()]
-    assert len(columns) == 93
+    assert len(columns) == 98
     assert sum(1 for _, _, spec in columns if spec.get("active") is False) == 15
     assert [table["target_table"] for table in configs] == list(EXPECTED)
     for table in configs:

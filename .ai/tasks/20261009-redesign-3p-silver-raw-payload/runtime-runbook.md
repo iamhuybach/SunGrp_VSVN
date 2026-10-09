@@ -26,7 +26,9 @@ Ghi lại, chỉ số đếm và version, không ghi payload:
 
 Chạy trong notebook Spark. `%%sql` một câu một cell nếu Fabric không chạy nhiều câu trong một cell.
 
-1. Xóa bảng không còn nguồn và cột không còn trong registry. Cùng nội dung cell `DROP` trong `NB_CREATE_DDL`.
+1. Không `ALTER` và không `DROP COLUMN`. Bảng Delta này không xóa được cột khi chưa bật column mapping, và không bật mapping. Muốn bỏ cột cũ thì `DROP TABLE` cả bảng, extract tạo lại từ registry.
+
+Cell `DELETE` trong `NB_CREATE_DDL` chỉ xóa dòng ctrl của năm bảng đã bỏ. Cell đó không `DROP` bảng silver.
 
 ```sql
 DROP TABLE IF EXISTS lh_vv_silver.dbo.slv_3p_poi_price;
@@ -34,52 +36,10 @@ DROP TABLE IF EXISTS lh_vv_silver.dbo.slv_3p_poi_raw_data;
 DROP TABLE IF EXISTS lh_vv_silver.dbo.slv_3p_poi_content;
 DROP TABLE IF EXISTS lh_vv_silver.dbo.slv_3p_poi_enrichment;
 DROP TABLE IF EXISTS lh_vv_silver.dbo.slv_3p_poi_review_i18n;
-
--- DROP COLUMN cần column mapping mode name. Bật một lần cho hai bảng còn cột cũ.
-ALTER TABLE lh_vv_silver.dbo.slv_3p_poi SET TBLPROPERTIES (
-    'delta.minReaderVersion' = '2',
-    'delta.minWriterVersion' = '5',
-    'delta.columnMapping.mode' = 'name'
-);
-ALTER TABLE lh_vv_silver.dbo.slv_3p_poi_amenity SET TBLPROPERTIES (
-    'delta.minReaderVersion' = '2',
-    'delta.minWriterVersion' = '5',
-    'delta.columnMapping.mode' = 'name'
-);
-
-ALTER TABLE lh_vv_silver.dbo.slv_3p_poi
-DROP COLUMNS (available_langs_json, enrichment_failed_langs_json);
-
-ALTER TABLE lh_vv_silver.dbo.slv_3p_poi_amenity DROP COLUMNS (
-    accessible_seating, is_wheelchair_accessible, has_parking, parking_is_free,
-    has_outdoor_seating, has_wifi, has_ac, has_garden, has_ev_charging,
-    payment_cash, payment_card, payment_debit_card, fnb_dine_in, fnb_takeaway,
-    fnb_delivery, fnb_curbside_pickup, fnb_reservable, fnb_restroom,
-    fnb_breakfast_available, fnb_serves_brunch, fnb_serves_lunch, fnb_serves_dinner,
-    fnb_serves_dessert, fnb_serves_coffee, fnb_serves_alcohol, fnb_serves_vegetarian_food,
-    fnb_good_for_groups, fnb_good_for_families, fnb_good_for_couples, hotel_has_breakfast,
-    hotel_breakfast_included, hotel_free_cancellation, hotel_pets_allowed, hotel_has_pool,
-    hotel_has_spa, hotel_has_gym, hotel_has_bar, hotel_has_restaurant
-);
-
-DELETE FROM lh_vv_ctrl.dbo.ctrl_cdc_state
-WHERE src_schema = 'lh_vv_bronze.dbo'
-  AND src_tbl = 'brz_3rd_crawler_poi_stream'
-  AND trg_tbl IN (
-      'slv_3p_poi_price', 'slv_3p_poi_raw_data', 'slv_3p_poi_content',
-      'slv_3p_poi_enrichment', 'slv_3p_poi_review_i18n'
-  );
-
-DELETE FROM lh_vv_ctrl.dbo.ctrl_cdc_reject
-WHERE src_schema = 'lh_vv_bronze.dbo'
-  AND src_tbl = 'brz_3rd_crawler_poi_stream'
-  AND trg_tbl IN (
-      'slv_3p_poi_price', 'slv_3p_poi_raw_data', 'slv_3p_poi_content',
-      'slv_3p_poi_enrichment', 'slv_3p_poi_review_i18n'
-  );
+DROP TABLE IF EXISTS lh_vv_silver.dbo.slv_3p_poi_amenity;
 ```
 
-`slv_3p_poi_policy` không bị `DROP`. Dòng `ctrl_mng_pipeline_config` không bị `DELETE`.
+`slv_3p_poi_amenity` nằm trong danh sách vì bảng đã tạo lúc registry còn 38 cờ. Xóa bảng, seed registry xong rồi extract sẽ tạo lại với `poi_id`, `amenity_schema_json`, `ext_attributes_json`.
 
 2. Chạy cell `DELETE` trong `NB_CREATE_DDL`. Xóa hẳn dòng của năm bảng, không soft delete:
 
