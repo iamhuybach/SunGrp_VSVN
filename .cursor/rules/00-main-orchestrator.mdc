@@ -41,6 +41,8 @@ Stop and wait for the user when:
 - A round cap is reached.
 - A required choice would materially change scope or architecture.
 
+Every stop ends with the `Turn closeout` sections below.
+
 ## Implementation and verification
 
 - Implement only after required evidence and architecture gates pass.
@@ -57,3 +59,26 @@ Stop and wait for the user when:
 - Write `runtime-runbook.md` in Vietnamese when runtime proof is required, including rerun/idempotency checks, control-log checks, rollback, and forward recovery.
 - Write all finding dispositions and assumptions in Vietnamese in `decision.md`.
 - Only the user commits, merges, accepts risk, and confirms required runtime results.
+
+## Turn closeout
+
+Every final answer for a task turn ends with these four sections in Vietnamese, in this order, with these exact headings. This is mandatory whenever the turn stops for a probe, a runtime runbook, a user decision, risk acceptance, a gate failure, or a round cap.
+
+1. `Đã làm`: what changed, the current `status` and gates in one line, and the files the operator must open, as paths.
+2. `Bạn cần chạy`: one block per operator-run step:
+   - Environment, such as Fabric DEV, and the exact item to run: notebook, pipeline, probe file, or command.
+   - Parameters with exact values.
+   - Numbered steps in run order.
+   - Expected correct result as a pass/fail criterion.
+   - Where to paste sanitized output: an exact path under `evidence/results/`, or the `Kết quả người dùng ghi nhận` section of `runtime-runbook.md`. Restate the limits: at most 50 rows, no personal data, no secrets.
+   - When `runtime-runbook.md` has them, the rerun/idempotency check, the control-log and watermark check, rollback, and forward recovery.
+   Write `Không có.` when there is nothing to run.
+3. `Agent đang chờ`: one concrete request per line, typed as `probe`, `decision`, `accept-risk`, `runtime-result`, or `commit`. A decision lists the options and what Main does for each. A commit request lists the changed files. Write `Không có.` when Main waits for nothing.
+4. `Kết thúc`: when sections 2 and 3 are `Không có.`, or the only open item is `commit`, write `Lượt này đã xong trong repository.` Otherwise name the next `status` and the reply that lets Main resume.
+
+Rules:
+
+- At `waiting_evidence` or `waiting_runtime`, a file path is not an instruction. Write the ordered steps and the paste-back data inline.
+- `runtime-runbook.md` and probe files are the full source. The answer is the condensed list of steps to run now. If the two disagree, fix the file first.
+- Take parameter values from the runbook, probe, notebook parameter cell, or pipeline JSON. If a value is unknown, ask for it in `Agent đang chờ`. Do not guess.
+- Never claim that a Fabric DEV step ran. The operator runs it.
