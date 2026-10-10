@@ -23,6 +23,7 @@ Cursor Main chịu trách nhiệm điều phối và triển khai. Không tự c
 | Chạy external gate hiện tại | Task đã ở `waiting_architecture` hoặc `reviewing`. |
 | Review diff hiện có | Code đã tồn tại và cần deterministic verification cùng independent review đúng định tuyến. |
 | External integration smoke test | Kiểm tra Claude/Codex discovery, authentication, routing, structured output và immutability. |
+| Hướng dẫn vận hành sau khi agent dừng | Agent viết xong artifact nhưng câu trả lời không có bước chạy, yêu cầu cần người dùng làm, hoặc giải thích đủ để vận hành. |
 
 ## 1. Task end-to-end thông thường
 
@@ -244,6 +245,28 @@ Không sửa bất kỳ file nào. Hãy báo:
 7. toàn bộ exact error nếu có.
 
 Smoke test chỉ pass khi cả hai external gate hoàn thành với đúng model/effort, reviewer manifest đầy đủ, risk gate bắt buộc đã chạy, structured output hợp lệ và repository không thay đổi. `EVIDENCE_REQUIRED` là verdict hợp lệ cho synthetic scenario và không tự làm integration smoke test fail.
+```
+
+## 14. Hướng dẫn vận hành sau khi agent dừng
+
+```text
+Hãy sửa cách Main kết thúc một lượt làm việc, để người vận hành không phải hỏi lại cách chạy.
+
+Hiện tượng:
+<mô tả việc agent đã làm xong nhưng câu trả lời thiếu bước chạy, thiếu yêu cầu đầu vào, hoặc thiếu giải thích>
+
+Kết quả cần có ở mỗi câu trả lời cuối:
+- Việc đã làm và file người vận hành cần mở.
+- Việc người vận hành phải tự chạy, nếu có: notebook hoặc pipeline, tham số, thứ tự bước, kết quả đúng, chỗ dán output đã làm sạch.
+- Việc agent đang chờ: probe, quyết định, accept risk, commit. Mỗi mục là một yêu cầu cụ thể.
+- Nếu không cần người vận hành làm gì, ghi rõ lượt này đã xong ở trong repository.
+
+Cách sửa ưu tiên:
+- Sửa hợp đồng kết thúc trong rule always-apply và skill workflow. Skill mới chỉ dùng cho câu hỏi "chạy task này thế nào" sau khi task đã tồn tại.
+- Không chuyển bước Fabric DEV sang agent tự chạy.
+- Giữ `runtime-runbook.md` là bản đầy đủ. Câu trả lời chat là bản rút bước người vận hành cần làm ngay.
+
+Tuân thủ AGENTS.md. Tạo canonical task vì đây là thay đổi agent-system do người dùng yêu cầu. Ghi Grok 4.7 Medium. Phân loại riêng complexity, risk, architecture và evidence. Đọc rule và skill hiện có trước khi thêm file mới. Chạy deterministic verification phù hợp với thay đổi tài liệu hoặc script. Không commit hoặc push.
 ```
 
 ## Các điểm phải dừng
