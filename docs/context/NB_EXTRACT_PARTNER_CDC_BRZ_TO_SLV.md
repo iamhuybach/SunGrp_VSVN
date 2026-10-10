@@ -115,7 +115,7 @@ Luật phân loại:
 | `build_table_events(spec, valid_df, state_df)` | Lọc event của bảng → payload = `before` nếu `op = d`, không thì `after` → parse cột cấp 1 bằng `parse_json_strings` (đường dẫn lồng nhau dùng `get_json_object`) → `_raw__<cột>` → chuyển kiểu (`convert_sql`); cột TOAST: sentinel → NULL. Cờ: `_parse_failed`, `_cn__<cột>` (có ở raw, thành NULL), `_unavailable__<cột TOAST>` (luôn true/false), `_key_null` (khoá NULL / rỗng / JSON hỏng), `_entity_key` (khoá đơn: chuỗi; khoá ghép: nối `\|` theo `key_order`), `_is_stale` (thứ tự event ≤ state), `_applicable`. Payload gốc chỉ giữ cho dòng reject |
 | `table_stats(spec, events)` | 1 job: `input_rows`, `rejected_rows`, `stale_rows`, `applicable_rows`, `upsert_event_rows`, `delete_event_rows`, `entity_rows`, `_cn__*` |
 | `resolve_latest(spec, events)` | Cột TOAST: giá trị của event gần nhất **có cung cấp** giá trị (không sentinel, không event xoá) — bọc `struct` để `last(ignorenulls)` không bỏ NULL thật; `_has_value__<cột>` = false khi cả batch chỉ có sentinel. Event xoá bị loại khỏi bước điền vì `before` (REPLICA IDENTITY DEFAULT) có thể chỉ có khoá. Rồi giữ 1 dòng mới nhất / entity (`ORDER_DESC`) |
-| `build_merge_sql(spec, target, view)` | Khớp + `_cdc_op = d` → `deleted = true`; khớp → cập nhật mọi cột không khoá (TOAST: `CASE WHEN s._has_value__c THEN s.c ELSE t.c END`), `deleted = false`, `_ingested_at = now`, `_source_db`; không khớp và không xoá → INSERT; không khớp + xoá → bỏ qua |
+| `build_merge_sql(spec, target, view, merge_clock)` | Khớp + `_cdc_op = d` → `deleted = true`, `updated_at = merge_clock`; khớp → cập nhật mọi cột không khoá (TOAST giữ CASE), `deleted = false`, `_source_db`, `updated_at = merge_clock`; không khớp và không xoá → INSERT cả `created_at` và `updated_at`; không khớp + xoá → bỏ qua. `created_at` không nằm ở nhánh UPDATE |
 | `merge_into_target(spec, latest, ctx)` | `run_merge` với view `_v_<exec_id[:8]>_<trg_tbl>` |
 | `_run_table(res, valid_df, state_df, ctx)` | Các bước của 1 bảng; cast null + FAIL → `CastNullError` **trước MERGE** (không ghi đích, không ghi state); `dry_run` dừng trước MERGE |
 | `process_table(spec, valid_df, state_df, ctx, wave)` | `process_with_retry` (lib) |
@@ -139,9 +139,9 @@ Luật phân loại:
 
 ## 7. Bảng đích và quy tắc TOAST
 
-- 23 bảng, khoá và số cột: `CTRL_TABLES_CONTEXT.md` §5. Cột kỹ thuật: `deleted`, `_ingested_at`, `_source_db`.
+- 23 bảng, khoá và số cột: `CTRL_TABLES_CONTEXT.md` §5. Cột kỹ thuật: `deleted`, `_source_db`, `created_at`, `updated_at`.
 - 61 cột `is_toast` (giá trị lớn: JSON, text dài). Entity mới mà event đầu chỉ có sentinel → cột đó NULL (Debezium không gửi giá trị, cần snapshot lại).
-- `DECIMAL_BASE64`: `orders.total_payment`, `order_refs.total_payment`, `order_refs.sub_total`. `EPOCH_S_TS`: `business_services.last_verify_at`. Cột ngày `order_item_*` là timestamptz ISO (`NONE`); lấy ngày giờ VN bằng `from_utc_timestamp(..., 'Asia/Ho_Chi_Minh')`.
+- `DECIMAL_BASE64`: `orders.total_payment`, `order_refs.total_payment`, `order_refs.sub_total`. Instant số và ISO lưu kiểu `timestamp`. Nhóm đơn hàng dùng `EPOCH_MS_TS`. Phần còn lại dùng `EPOCH_S_TS`. Cột ngày `order_item_*` đã là ISO dùng `ISO_UTC_TS`. Epoch `0` thành NULL.
 
 ## 8. Số liệu đo (rerun FULL 04/10, exec `de379b89`)
 

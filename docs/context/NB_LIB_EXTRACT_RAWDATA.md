@@ -73,8 +73,8 @@ Bất kỳ lỗi nào trong `body` → run `FAILED`, watermark giữ nguyên, v�
 | Tên | Giá trị / ý nghĩa |
 |---|---|
 | `CTRL_SCHEMA`, `T_PIPELINE_CONFIG`, `T_WATERMARK`, `T_REGISTRY`, `T_LOG_RUN`, `T_LOG_TABLE_RUN`, `T_CDC_STATE`, `T_CDC_REJECT` | `lh_vv_ctrl.dbo` + tên đầy đủ 7 bảng |
-| `TECH_COLUMNS` | Cột kỹ thuật bảng CDC: `deleted` BOOLEAN, `_ingested_at` TIMESTAMP, `_source_db` STRING |
-| `SNAPSHOT_TECH_COLUMNS` | Bảng snapshot: `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at`, `_ingested_at` |
+| `TECH_COLUMNS` | Cột kỹ thuật CDC: `deleted` BOOLEAN, `_source_db` STRING, `created_at` TIMESTAMP, `updated_at` TIMESTAMP |
+| `SNAPSHOT_TECH_COLUMNS` | Snapshot: `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at`, rồi `created_at`, `updated_at`. Ba mốc crawl vẫn TIMESTAMP |
 | `IDENT_RE` | `[A-Za-z][A-Za-z0-9_]*` — không cho bắt đầu bằng `_` (dành cho cột nội bộ) |
 | `JSON_PATH_RE` | `a`, `a.b.c` |
 | `MIN_TS` | 1900-01-01, thay NULL khi so thứ tự |
@@ -120,7 +120,7 @@ Bảng `json_path` của bảng snapshot: `a.b` (trường trong phần tử / k
 | Tên | Mô tả |
 |---|---|
 | `CAST_FN` | `CAST` khi ANSI tắt (Runtime 1.3), `TRY_CAST` khi ANSI bật (Runtime 2.0) |
-| `CONVERT_RULES` | `NONE` = cast; `EPOCH_S_TS` / `EPOCH_MS_TS` / `EPOCH_US_TS` = `timestamp_seconds/millis/micros`; `DATE_DAYS` = `date_add('1970-01-01', n)`; `LOWER_TRIM` = `lower(trim())`; `DECIMAL_BASE64` dựng riêng |
+| `CONVERT_RULES` | `NONE` = cast; `EPOCH_S_TS` / `EPOCH_MS_TS` / `EPOCH_US_TS` = epoch ra `timestamp`, số `0` thành NULL; `ISO_UTC_TS` = chuỗi ISO có múi giờ ra `timestamp`; `DATE_DAYS` = `date`; `LOWER_TRIM` = `lower(trim())`; `DECIMAL_BASE64` dựng riêng |
 | `DERIVED_RULES` | `HASH_MD5_UUID`, `HASH_SHA256`, `HASH_SHA256_PIPE` |
 | `decimal_base64_sql(col, data_type)` | Giải mã decimal Debezium (`decimal.handling.mode = precise`): base64 của số nguyên big-endian bù 2 chưa chia scale → `decimal(p,s)`. Chỉ hàm Spark (không UDF), tới 15 byte; tách 7 byte cuối vì `conv()` chỉ đúng 64 bit. Vd `'CMHohyA='` → 3761298.0000 |
 | `convert_sql(raw_col, data_type, rule)` | Biểu thức SQL chuyển 1 cột chuỗi `_raw__<cột>` sang kiểu đích |

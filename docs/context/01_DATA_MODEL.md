@@ -78,6 +78,8 @@ flowchart LR
 |---|---|---|---|
 | `lh_vv_bronze.dbo.partner_raw_data` | Debezium CDC (connector `dev_cdc` 3.0.0.Final, db `partner`, `commerce`) | `before`, `after`, `source` (JSON chuỗi), `op` (`c` / `r` / `u` / `d` / `t` / `m`), `EventProcessedUtcTime` | Append-only do Eventstream ghi; **không có stats** trong `_delta_log` (20.431 file / 3,2 GB lúc đo 02/10) → không lọc theo thời gian được, phải đọc theo version. 1 event = 1 thay đổi của 1 dòng của 1 bảng Postgres (`source.schema`, `source.table`) |
 | `lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream` | Collector 3rd-party | `event_id`, `source_name`, `source_id`, `crawled_at`, `ingested_date`, `normalized_payload`, `raw_payload`, `language_code` (tất cả STRING) | 1 event = 1 tài liệu đầy đủ (snapshot) lúc crawl. Không có tín hiệu xoá, không TOAST. DDL tương đương bảng raw 3P trước đó |
+
+Mẫu một dòng bronze, chỉ khóa thời điểm, không phải hợp đồng schema. `crawled_at` và `normalized_payload.created_at` là ISO UTC 9 chữ số lẻ, ví dụ `2026-10-08T08:25:03.721627688Z` và `2026-10-08T08:25:03.721621239Z`. `poi_review[].time` cùng dạng, ví dụ `2026-05-08T09:40:17.010285725Z`. `ingested_date` là ngày `2026-10-08`. Không ghi số điện thoại, nội dung review, URL media, `raw_payload`.
 | `lh_vv_bronze.dbo.brz_watermark`, `brz_pipeline_run` | — | — | Thuộc chuỗi NB_00 cũ; luồng mới không đọc / ghi |
 
 ### Cấu trúc `normalized_payload`
@@ -252,7 +254,7 @@ Suy ra từ 1 dòng mẫu, không phải hợp đồng schema. `normalized_paylo
 
 ### 5.1 Partner `slv_pn_*` (23 bảng, `load_mode = CDC`)
 
-Ghi bởi `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. 1 dòng = 1 dòng bảng Postgres (bản mới nhất). Cột lấy từ `ctrl_cfg_schema_registry` (301 cột). Cột kỹ thuật: `deleted` (xoá mềm khi `op = d`), `_ingested_at`, `_source_db`.
+Ghi bởi `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. 1 dòng = 1 dòng bảng Postgres (bản mới nhất). Cột lấy từ `ctrl_cfg_schema_registry` (301 cột). Cột kỹ thuật: `deleted` (xoá mềm khi `op = d`), `_source_db`, `created_at`, `updated_at`. Hai cột audit là `timestamp`. Cột thời điểm nguồn `created_at` / `updated_at` lưu tên `src_created_at` / `src_updated_at`.
 
 | Bảng | Khoá | Số cột | Cột TOAST | Wave |
 |---|---|---|---|---|
@@ -284,7 +286,7 @@ Ghi chú dữ liệu (rerun 04/10): 11 bảng (`products`, 9 bảng `product_*`,
 
 ### 5.2 3rd-party `slv_3p_poi_*` (10 bảng trong registry, 9 active, snapshot)
 
-Ghi bởi `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`. Cột kỹ thuật: `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at`, `_ingested_at`. Không có nhánh xoá; bảng con chỉ upsert, `_last_seen_at` cho biết lần cuối thấy. [SỬA 10/10] Registry 98 cột (83 bật, 15 tắt). L1 chỉ extract 1:1 và cast kiểu. `slv_3p_poi_price` được thêm lại vì 13/53 tài liệu có object `poi_price`. Bốn bảng không còn khối nguồn vẫn bị gỡ khỏi registry.
+Ghi bởi `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`. Cột kỹ thuật: `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at` (ba mốc thời gian vẫn `TIMESTAMP`), `created_at`, `updated_at` (`timestamp`). Không có nhánh xoá; bảng con chỉ upsert, `_last_seen_at` cho biết lần cuối thấy. `created_at` là lúc dòng vào silver, không thay `_first_seen_at`. [SỬA 10/10] Registry 98 cột (83 bật, 15 tắt). L1 chỉ extract 1:1 và cast kiểu. `slv_3p_poi_price` được thêm lại vì 13/53 tài liệu có object `poi_price`. Bốn bảng không còn khối nguồn vẫn bị gỡ khỏi registry.
 
 | Bảng | load_mode | Khối nguồn (`src_object`) | Khoá | Cột (bật) | Số dòng lần FULL 04/10 |
 |---|---|---|---|---|---|

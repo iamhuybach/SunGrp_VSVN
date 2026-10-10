@@ -1,0 +1,87 @@
+schema_version: 1
+task:
+  id: 20261009-normalize-l1-timestamps-audit-columns
+  title: Normalize silver L1 timestamps and audit columns
+  status: implementing
+  owner: main
+  created_at: '2026-10-09'
+  updated_at: '2026-10-10'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - stateful_logic
+  - transaction_boundaries
+  - event_ordering
+  - idempotency
+  - partial_failure
+  - design_tradeoffs
+  - cross_state_impact
+  - runtime_proof_required
+  - data_evidence_required
+  - deep_reasoning_required
+scope:
+  systems:
+  - lh_vv_ctrl.dbo.ctrl_cfg_schema_registry
+  - lh_vv_silver.dbo.slv_pn_*
+  - lh_vv_silver.dbo.slv_3p_poi_*
+  - NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV
+  - NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV
+  - NB_LIB_EXTRACT_RAWDATA
+  - NB_CREATE_DDL
+  files:
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_SETUP_L1_TS_AUDIT.ipynb
+  - notebooks/NB_LIB_EXTRACT_RAWDATA.ipynb
+  - notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb
+  - notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb
+  - docs/context/02_NAMING_CONVENTION.md
+  - docs/context/01_DATA_MODEL.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+  - docs/context/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.md
+  - docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md
+  - docs/context/NB_LIB_EXTRACT_RAWDATA.md
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  - state-correctness-reviewer
+  round: 0
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: ''
+model_policy_exception:
+  approved_on: '2026-10-09'
+  reason: 'User required the Architect to be a Cursor subagent on claude-opus-5-5-medium
+    with medium effort, and forbade the Claude Code CLI. scripts/vv.py run-gate always
+    invokes the Claude Code CLI, so that command must not be used for this task. models.architect.effort
+    stays high because the state validator rejects any other value. The exception
+    applies only after evidence passes.
+
+    '
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: pending
+  risk_gate: pending
+  runtime: pending
+rounds:
+  verification: 0
+  review: 0
+  architecture: 1
+  runtime_failure: 0
+open_findings: []

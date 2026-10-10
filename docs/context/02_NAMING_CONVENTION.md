@@ -76,7 +76,7 @@ Notebook cũ (không đổi tên): `NB_00_POI_PIPELINE_ORCHESTRATOR`, `NB_10…N
 
 | Mẫu | Nghĩa | Ví dụ |
 |---|---|---|
-| `*_at` | Thời điểm, **UTC**, kiểu `TIMESTAMP` (Python ghi `utc_now()` = UTC bỏ tzinfo) | `started_at`, `last_success_at` |
+| `*_at` | Thời điểm UTC, kiểu `TIMESTAMP`. Instant nghiệp vụ và audit của silver L1 cũng là `TIMESTAMP` | `started_at`, `src_created_at`, `created_at` |
 | `*_rows` | Số dòng / event | `input_rows`, `deactivated_rows` |
 | `*_count` | Số đối tượng (bảng, lần) | `tbl_success_count`, `reject_count` |
 | `is_*` / `has_*` | Cờ boolean | `is_active`, `has_required_langs` |
@@ -92,8 +92,8 @@ Notebook cũ (không đổi tên): `NB_00_POI_PIPELINE_ORCHESTRATOR`, `NB_10…N
 
 | Tầng | Cột | Ý nghĩa |
 |---|---|---|
-| Silver L1 partner (CDC) | `deleted` BOOLEAN, `_ingested_at` TIMESTAMP, `_source_db` STRING | Xoá mềm theo `op = d`; lần MERGE gần nhất; `source.db` |
-| Silver L1 3rd-party (snapshot) | `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at`, `_ingested_at` | Tài liệu đang áp dụng; lần đầu / cuối thấy khoá; lần MERGE gần nhất. Không có xoá |
+| Silver L1 partner (CDC) | `deleted` BOOLEAN, `_source_db` STRING, `created_at` TIMESTAMP, `updated_at` TIMESTAMP | Xoá mềm theo `op = d`; `source.db`. `created_at` là lần INSERT đầu. `updated_at` là lần MERGE này, kể cả xoá mềm. Không còn `_ingested_at`. Cột nguồn `created_at` / `updated_at` đặt tên `src_created_at` / `src_updated_at`, kiểu `TIMESTAMP` |
+| Silver L1 3rd-party (snapshot) | `_crawled_at`, `_first_seen_at`, `_last_seen_at`, `created_at`, `updated_at` TIMESTAMP, `_event_id` STRING | `created_at` là lúc dòng vào silver, không thay `_first_seen_at`. `updated_at` là lần MERGE này. Không còn `_ingested_at` |
 | Silver L2 + gold (luồng tính lại) | `row_hash` STRING, `created_at`, `updated_at`, `deleted_at` TIMESTAMP | `row_hash = sha2(to_json(struct(cột nghiệp vụ)), 256)`; `updated_at` chỉ đổi khi hash đổi; `deleted_at` khác NULL = xoá mềm (gold kèm `is_active = false`) |
 
 Không đặt tên cột nghiệp vụ trùng cột kỹ thuật (lib chặn bằng `ConfigError`).
@@ -107,7 +107,8 @@ Bắt đầu bằng `_` để không trùng cột nghiệp vụ.
 | `_raw__<cột>` / `_raw__<cột>__<i>` | Extract | Chuỗi gốc lấy từ JSON trước khi chuyển kiểu / phần thứ i của khoá suy ra |
 | `_b__<trường>` | Extract 3P | Trường cấp 1 của payload sau khi parse 1 lần |
 | `_doc__<cột>` | Extract 3P | Cột của bảng raw (`_doc.<cột>` trong registry) |
-| `_cn__<cột>` | Extract | Cờ: có giá trị ở raw nhưng thành NULL khi chuyển kiểu |
+| `_cn__<cột>` | Extract | Cờ: có giá trị ở raw nhưng thành NULL khi chuyển kiểu. Epoch `0` không bật cờ này |
+| `_unset__<cột>` | Extract | Epoch gốc bằng `0`, được ghi NULL, không tính cast-null |
 | `_unavailable__<cột>` | Extract partner | Cờ: raw là giá trị TOAST thay thế `__debezium_unavailable_value` |
 | `_has_value__<cột>` | Extract partner | Cờ: batch có ít nhất 1 giá trị thật (kể cả NULL thật) cho cột TOAST |
 | `_known__<cột>` | Extract partner | Struct giá trị TOAST gần nhất đã biết (bước điền) |
@@ -123,7 +124,7 @@ Bắt đầu bằng `_` để không trùng cột nghiệp vụ.
 | Trường | Giá trị |
 |---|---|
 | `ctrl_mng_pipeline_config.load_mode` | `CDC` (NULL = CDC) · `DOC` · `DOC_ARRAY` · `LANG` · `LANG_ARRAY` · `RECOMPUTE` (cạnh luồng tính lại) |
-| `ctrl_cfg_schema_registry.convert_rule` | `NONE` · `EPOCH_S_TS` · `EPOCH_MS_TS` · `EPOCH_US_TS` · `DATE_DAYS` · `DECIMAL_BASE64` · `LOWER_TRIM` · khoá suy ra: `HASH_MD5_UUID` · `HASH_SHA256` · `HASH_SHA256_PIPE` |
+| `ctrl_cfg_schema_registry.convert_rule` | `NONE` · `EPOCH_S_TS` · `EPOCH_MS_TS` · `EPOCH_US_TS` · `ISO_UTC_TS` · `DATE_DAYS` · `DECIMAL_BASE64` · `LOWER_TRIM` · khoá suy ra: `HASH_MD5_UUID` · `HASH_SHA256` · `HASH_SHA256_PIPE`. `EPOCH_*` và `ISO_UTC_TS` chỉ đi với `data_type = timestamp`. `DATE_DAYS` vẫn là `date` |
 | `json_path` snapshot | `a.b` · `$` · `_doc.<cột>` · `_root.a.b` · `_langs` · `_lang` · `_pos` · `_align.a` · `p1,p2,...` (chỉ `HASH_*`) |
 | `ctrl_log_run.status` | `RUNNING` · `SUCCESS` · `PARTIAL_FAILED` · `FAILED` · `NO_DATA` · `SKIPPED_CONCURRENT` · `ABANDONED` |
 | `ctrl_log_run.run_mode` | Extract: `INCREMENTAL` · `FULL_RELOAD` · `DRY_RUN`. NB_00: `RUN` · `DRY_RUN` (`PLAN` không ghi log) |

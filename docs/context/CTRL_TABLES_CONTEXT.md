@@ -229,7 +229,7 @@ CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_cfg_schema_registry (
     trg_column          STRING    COMMENT 'Tên cột trong bảng đích',
     json_path           STRING    COMMENT 'CDC: đường dẫn trong JSON before/after. Snapshot: đường dẫn trong phần tử/khối, hoặc $ / _doc.cột / _root.a / _align.a / _lang / _pos / _langs. Nhiều phần p1,p2 chỉ với HASH_*',
     data_type           STRING    COMMENT 'Kiểu Spark của cột đích: string, bigint, int, smallint, boolean, timestamp, decimal(19,4)...',
-    convert_rule        STRING    COMMENT 'Cách chuyển giá trị gốc: NONE | EPOCH_S_TS | EPOCH_MS_TS | EPOCH_US_TS | DATE_DAYS | DECIMAL_BASE64 | LOWER_TRIM. Khoá suy ra (snapshot): HASH_MD5_UUID | HASH_SHA256 | HASH_SHA256_PIPE',
+    convert_rule        STRING    COMMENT 'Cách chuyển giá trị gốc: NONE | EPOCH_S_TS | EPOCH_MS_TS | EPOCH_US_TS | ISO_UTC_TS | DATE_DAYS | DECIMAL_BASE64 | LOWER_TRIM. Khoá suy ra (snapshot): HASH_MD5_UUID | HASH_SHA256 | HASH_SHA256_PIPE',
     is_key              BOOLEAN   COMMENT 'Cột thuộc khoá MERGE',
     key_order           INT       COMMENT 'Thứ tự trong khoá ghép (1, 2...), NULL nếu không phải khoá',
     is_toast            BOOLEAN   COMMENT 'Cột có thể nhận giá trị TOAST thay thế của Debezium (chỉ CDC, snapshot luôn false)',
@@ -253,7 +253,7 @@ COMMENT 'Mapping cột JSON sang bảng đích (CDC partner, snapshot 3rd-party)
 
 ### Dữ liệu hiện có (seed `NB_CREATE_DDL`, cấu hình chốt 04/10 chiều)
 
-**Partner** (`src_tbl = partner_raw_data`, `src_object_schema = public`): 23 bảng, **301 cột**, 61 cột `is_toast`. Rule đặc biệt: `slv_pn_business_services.last_verify_at` = `EPOCH_S_TS`; `slv_pn_orders.total_payment`, `slv_pn_order_refs.total_payment`, `slv_pn_order_refs.sub_total` = `DECIMAL_BASE64` (`decimal(19,4)`); còn lại `NONE`.
+**Partner** (`src_tbl = partner_raw_data`, `src_object_schema = public`): 23 bảng, **301 cột**, 61 cột `is_toast`. Instant epoch và ISO lưu `timestamp`. `EPOCH_MS_TS`: `orders.expire_at`, `orders.src_created_at`, `orders.src_updated_at`, và `src_created_at` / `src_updated_at` của `order_refs` cùng ba bảng `order_item_*`. `EPOCH_S_TS`: mọi instant số còn lại, gồm `last_verify_at`, `validity_from`, `validity_to`. `ISO_UTC_TS`: `usage_date`, `valid_from`, `valid_to` của vé, `check_in_date`, `checkout_date`, `departure_time`, `arrival_time`. Số `0` thành NULL, không tính cast-null. `deleted_at` nguồn vẫn `string` + `NONE`. `DECIMAL_BASE64`: `orders.total_payment`, `order_refs.total_payment`, `order_refs.sub_total`. `json_path` của `src_created_at` / `src_updated_at` vẫn là `created_at` / `updated_at`.
 
 | Bảng | Khoá | Số cột | TOAST |
 |---|---|---|---|
