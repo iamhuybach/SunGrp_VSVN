@@ -1,0 +1,133 @@
+diff --git "a/C:\\Users\\bachnh\\AppData\\Local\\Temp\\vsvn-skills-r1\\extract.md" "b/.cursor\\skills\\vsvn-extract-notebook\\SKILL.md"
+index 10c8138..1c3907e 100644
+--- "a/C:\\Users\\bachnh\\AppData\\Local\\Temp\\vsvn-skills-r1\\extract.md"
++++ "b/.cursor\\skills\\vsvn-extract-notebook\\SKILL.md"
+@@ -45,8 +45,20 @@ Comments, docstrings, and log text are Vietnamese. Identifiers are English. Mark
+ - A new reason value is an enum change. Add it to `docs/context/02_NAMING_CONVENTION.md` §6 and `docs/context/CTRL_TABLES_CONTEXT.md` §9 in the same task.
+ - Build the event columns the library reads (lib §13): `_cdc_ts_ms` BIGINT, `_cdc_lsn` BIGINT or NULL, `_raw_ingested_at` TIMESTAMP, `_is_delete` INT, `_op` STRING or NULL, and later `_entity_key` STRING. `event_order()` does not replace a NULL `_cdc_ts_ms`, so classification must reject rows without it (`MISSING_EVENT_ORDER`).
+ - Set raw payload columns to NULL as soon as no later step reads them. Partner keeps payloads for VALID and REJECTED rows. Third party keeps the payload only for REJECTED rows. Per-table frames keep raw values only on `_key_null` rows.
+-- Profile the read in one aggregate: `groupBy` status, reason, and source object, with a count and the max of the order alias, then `collect()`. Collect only small aggregates (one row per status, reason, and source object or key name), never row-level data. `watermark_to` is the maximum over every row read, including IGNORED and REJECTED.
+-- Reject frames select every `ctrl_cdc_reject` column explicitly. Compute `event_hash = sha2(concat_ws('\u0001', <identity fields with NULL coalesced to ''>), 256)`. The identity fields must be the same each time the same event or element is reread; never include a run id or a processing time. Set `first_run_id = last_run_id = ctx.run_id`, `reject_count = 1`, and `is_resolved = false`.
++
++### Profile
++
++- Profile the read in one grouped aggregate (`groupBy`, then `agg` with a count and the max of the order alias), then `collect()`. `watermark_to` is the maximum over every row read, including IGNORED and REJECTED. Never `limit` this aggregate, because `read_rows` and `watermark_to` need every group.
++- A grouped `collect()` needs a row bound that the code enforces. Group only by `_status`, `_reason`, and columns whose values the code has already restricted to the ctrl config. Before grouping, replace any raw-derived value outside that set with one literal such as `"(other)"`. Partner's `objects_cond(configured)` is the test for a configured source object.
++- A watch list that must name raw-derived values, such as unknown JSON keys, is sorted by count descending and cut with `.limit(<named constant, at most 50>)` before `collect()`. Log a warning when the limit is reached.
++- Known gap on 2026-10-11 (review finding GATE-005, task `20261011-notebook-design-skills`): partner `profile_events` groups by the raw `_src_object_schema` and `_src_object`, which are unbounded for UNCONFIGURED and REJECTED rows. Third-party `profile_docs` groups by the raw `source_name` and collects every unknown top-level key. Do not copy either form into a new source. Changing those functions is a separate task.
++
++### Reject rows
++
++- Reject frames select every `ctrl_cdc_reject` column explicitly. Set `first_run_id = last_run_id = ctx.run_id`, `reject_count = 1`, and `is_resolved = false`.
++- `event_hash` is the MERGE key of `ctrl_cdc_reject` (`merge_rejects`). Two different rejects must never share a hash, and the same rejected event or element must get the same hash on every reread. Never put a run id or a processing time in the identity fields.
++- A new source computes `F.sha2(F.to_json(F.struct(<identity fields>)), 256)`. Give each field a fixed alias and keep the order fixed; renaming or reordering a field changes every hash. Convert timestamps with `unix_micros` and dates with `cast("string")`, as `_hash_expr` in `NB_LIB_TRANSFORM_SLV_GLD` does. JSON quoting keeps field boundaries, and `to_json` writes a NULL field as absent or `null`, never as `""`.
++- Known gap on 2026-10-11 (review finding GATE-001, same task): partner `reject_rows` and third-party `doc_reject_rows` and `element_reject_rows` hash `concat_ws('\u0001', <fields with NULL coalesced to ''>)`. That form gives NULL and `''` the same hash and does not escape the delimiter. Do not copy it. Changing an existing notebook's formula is a migration: rows already in `ctrl_cdc_reject` stop matching, and the next reread inserts new rows instead of raising `reject_count`. That needs architecture.
+ 
+ ## Section B: one table
+ 
+@@ -86,6 +98,7 @@ Latest row and state rows:
+ - Build `tech_expr` for the technical columns, and raise `ConfigError` unless its keys equal the library constant: `TECH_COLUMNS` for CDC, `SNAPSHOT_TECH_COLUMNS` for snapshot. A source that needs other technical columns is a library change.
+ - List INSERT columns explicitly: `spec.columns`, then the technical columns.
+ - Select only the columns the statement reads, then call `run_merge(source, spec.fq_name, lambda target, view: build_merge_sql(...), f"_v_{ctx.exec_id[:8]}_{spec.trg_tbl}")`. Wave threads share one Spark session, so the view name must be unique per run and table.
++- The view name is an internal name. It starts with `_`, so it never passes `is_identifier`, and it is never passed to `is_identifier` or `quote_name`. It is safe because every part is controlled: the `_v_` literal, the first 8 hex characters of the uuid4 `exec_id`, and `spec.trg_tbl`, which `build_table_specs` already checked with `is_identifier`. Never add a part taken from a parameter or from raw data.
+ - Never use `WHEN NOT MATCHED BY SOURCE`. An extract batch holds only the entities that changed, so that clause would delete or soft-delete every other row.
+ - Deletes differ by source. In partner, a matched row with `_cdc_op = 'd'` gets `deleted = true`, and a delete is never inserted. Third party has no delete branch.
+ - Rerun guard on the target: the third-party MERGE updates a matched row only when `(_crawled_at, _event_id)` is not older than the target row. The partner MERGE has no guard and relies on state and the lock (known issue C1). A new source states in its architecture which form it uses. Do not copy the unguarded form as a default.
+@@ -102,6 +115,8 @@ Always pass `ctx.src_tbl`. `ctrl_cdc_state` and `ctrl_cdc_reject` are partitione
+ 
+ The table log has one row per table in scope, with the final `attempt_no`. `.cursor/rules/10-fabric-notebook.mdc` says one row per table attempt. That mismatch is open; do not change either side without a task.
+ 
++`append_rows` retries a blind append inside `with_retry`. After a `Connection reset` or capacity error the append may already have committed, so the table log can hold a duplicate row for the same `(exec_id, trg_schema, trg_tbl, attempt_no)` (open, review finding GATE-003, task `20261011-notebook-design-skills`). Read the table log per grain key, never count its rows as attempts, and never write state or rejects by append.
++
+ Never write `ctrl_mng_watermark` or `ctrl_log_run` from the notebook. `run_controlled` owns both.
+ 
+ ## Main
+@@ -141,9 +156,19 @@ The raise fails the pipeline activity. `SKIPPED_CONCURRENT` raises because an ov
+ 
+ ## Check before handing off
+ 
+-- Run `python scripts/vv.py verify <task-id>`. Its pytest step loads `NB_LIB_EXTRACT_RAWDATA`, both extract notebooks, and `NB_CREATE_DDL` as JSON and checks the L1 timestamp contract (`tests/test_l1_ts_contract.py`, `tests/test_3p_l1_contract.py`). A new extract notebook is not covered; load it with `python -c "import json, sys; json.load(open(sys.argv[1], encoding='utf-8'))" <path>`.
++- Run `python scripts/vv.py verify <task-id>`. Its pytest step reads `NB_LIB_EXTRACT_RAWDATA`, both extract notebooks, and `NB_CREATE_DDL` as JSON and checks the L1 timestamp contract (`tests/test_l1_ts_contract.py`, `tests/test_3p_l1_contract.py`). It does not compile code cells, and it does not cover a new notebook.
++- Compile every Python code cell of each notebook you changed. The command blanks `%` line magics such as `%run`, skips `%%` cells and non-Python cells, and does not execute anything. Run it from the repository root, in PowerShell or Bash:
++
++  ```text
++  python -c "import json,sys;[compile(''.join('\n' if l.startswith('%') else l for l in ''.join(c['source']).splitlines(True)),p+'#cell'+str(i),'exec') for p in sys.argv[1:] for i,c in enumerate(json.load(open(p,encoding='utf-8'))['cells']) if c['cell_type']=='code' and c.get('metadata',{}).get('microsoft',{}).get('language','python')=='python' and not ''.join(c['source']).startswith('%%')];print('compiled',len(sys.argv)-1,'notebooks')" notebooks/<NOTEBOOK>.ipynb
++  ```
++
++  It must print `compiled N notebooks`. A `SyntaxError` names the file and the cell index. `SyntaxWarning` lines are not failures.
+ - The parameter cell still has the `parameters` tag.
+-- The notebook has exactly one `%run NB_LIB_EXTRACT_RAWDATA`, no `spark.conf.set`, no `toPandas()`, no `collect()` on row-level data, and no workspace or lakehouse GUID in code.
++- The notebook has exactly one `%run NB_LIB_EXTRACT_RAWDATA`, no `spark.conf.set`, no `toPandas()`, no `collect()` without an enforced row bound, and no workspace or lakehouse GUID in code.
++- Local checks cannot prove `%run`, Spark, or exit behavior. A new extract notebook, or a change to its parameter, `%run`, Main, or Exit cell, needs runtime proof. Set `classification.runtime_required: true` and write `runtime-runbook.md` with these Fabric DEV runs, which the user executes (see `vsvn-task-workflow`):
++  1. `dry_run = True`. Expect the `%run` to load, the exit value to be JSON with `run_mode` `DRY_RUN`, and no new Delta version on the target or `ctrl_*` tables. A dry run takes no lock and writes no control row.
++  2. A normal run when the raw table has no new version. Expect exit status `NO_DATA`, a `ctrl_log_run` row with the same `exec_id` and status, and a run that finishes without error. Make sure no DEV pipeline run of the same source is active, or the run ends `SKIPPED_CONCURRENT` and raises.
+ 
+ ## Keep this skill current
+ 
+diff --git "a/C:\\Users\\bachnh\\AppData\\Local\\Temp\\vsvn-skills-r1\\library.md" "b/.cursor\\skills\\vsvn-notebook-library\\SKILL.md"
+index 042f85d..ad9dbe3 100644
+--- "a/C:\\Users\\bachnh\\AppData\\Local\\Temp\\vsvn-skills-r1\\library.md"
++++ "b/.cursor\\skills\\vsvn-notebook-library\\SKILL.md"
+@@ -39,8 +39,8 @@ Both libraries follow these rules. Keep them.
+ |---|---|
+ | `TRANSIENT_MARKERS`, `is_transient(e)` | Matches on class name plus message text, including Java errors that arrive through Py4J |
+ | `with_retry(fn, label, attempts=6, base_s=2.0)` | Retries transient errors only; waits `base_s * 2 ** (i - 1) + random.uniform(0, 1)`; re-raises the original error on the last attempt or on a non-transient error |
+-| `IDENT_RE`, `is_identifier`, `is_fq_name`, `quote_name` | `[A-Za-z][A-Za-z0-9_]*` per part; quotes only a name that already passed validation |
+-| `append_rows(table, rows)` | Builds the DataFrame from the table's current schema (missing keys become NULL) and appends inside `with_retry` |
++| `IDENT_RE`, `is_identifier`, `is_fq_name`, `quote_name` | `[A-Za-z][A-Za-z0-9_]*` per part, for external names (schema, table, column). A leading `_` is rejected on purpose: that prefix is reserved for internal columns and temp views. `quote_name` quotes only a name that already passed validation |
++| `append_rows(table, rows)` | Builds the DataFrame from the table's current schema (missing keys become NULL) and appends inside `with_retry`. A retry can append the same rows twice; see "Retries and blind appends" |
+ | `utc_now`, `to_bool`, `split_csv`, `short_error` | UTC without tzinfo; `"1"`, `"true"`, `"yes"`, `"y"` are true; CSV items trimmed and empty ones dropped; `"<Type>: <message>"` cut to `limit` |
+ | `_lock_expired_sql`, lock acquire and release | See "Run lifecycle" |
+ 
+@@ -50,11 +50,26 @@ Business notebooks never get a copy. A new library that needs these primitives c
+ 
+ ## SQL and writes inside a library
+ 
+-- A name placed into SQL text must pass `is_identifier` or `is_fq_name` and is then wrapped with `quote_name`. Values go through `spark.sql(sql, args={...})`. The only other interpolations in the current code are integers passed through `int(...)`, a `src_tbl` checked by `is_identifier`, and a timestamp string checked by `UTC_TS_RE`. A new interpolation needs the same kind of check right before it.
+-- For a MERGE from a DataFrame: `createOrReplaceTempView(<unique name>)`, run the statement, then `spark.catalog.dropTempView` in `finally`. Use the `_v_` names from `02_NAMING_CONVENTION.md` §5.3 with a run-specific part (exec id prefix, tag, or random hex). Wave threads and node notebooks can share one Spark session.
+-- Wrap each control-table write in `with_retry`. Do not add a third retry layer around `with_retry` or `process_with_retry`.
++- An external name placed into SQL text must pass `is_identifier` or `is_fq_name` and is then wrapped with `quote_name`. Values go through `spark.sql(sql, args={...})`. The only other interpolations in the current code are integers passed through `int(...)`, a `src_tbl` checked by `is_identifier`, a timestamp string checked by `UTC_TS_RE`, and temp view names built by the rule below. A new interpolation needs the same kind of check right before it.
++- For a MERGE from a DataFrame: `createOrReplaceTempView(<view>)`, run the statement, then `spark.catalog.dropTempView` in `finally`. Wave threads and node notebooks can share one Spark session, so the view name must be unique per run and target.
++- Temp view names are internal names, not external identifiers. Never pass a view name to `is_identifier` or `quote_name`, and never relax `IDENT_RE` to accept a leading `_`. Build every view name only from:
++  - a prefix from `02_NAMING_CONVENTION.md` §5.3 (`_v_`, `_v_wm_`) or the existing `_v_lock_`;
++  - parts that already passed `is_identifier`, such as `trg_tbl`;
++  - a hex tag cut from a uuid4, such as `exec_id[:8]`, `exec_id.replace("-", "")[:12]`, or `uuid.uuid4().hex[:8]`.
++  The result matches `_v_[A-Za-z0-9_]+` and is used unquoted. Never build a part from a raw parameter, from config text that skipped `is_identifier`, or from a timestamp.
++- A new helper that receives a view name from its caller checks `re.fullmatch(r"_v_[A-Za-z0-9_]+", view)` and raises `ConfigError` otherwise. `run_merge` does not check yet, so its callers must follow the construction rule.
+ - Wave threads write only their own target table. The main thread writes shared control tables after the wave. The exception is per-node `ctrl_log_table_run` rows, which are blind appends.
+ 
++## Retries and blind appends
++
++- Wrap each control-table write in `with_retry`. Do not add a third retry layer around `with_retry` or `process_with_retry`.
++- A retry is safe only when the write is idempotent on its grain key. That means a MERGE on that key, such as `commit_state` by entity, `merge_rejects` by `event_hash`, the extract library's `write_run_log` by `exec_id`, or `merge_edge_wm` by edge. It also covers a conditional UPDATE, such as lock acquire and release or `update_run_log` by `exec_id`.
++- A blind append is not idempotent under retry. Delta conflict errors (`Concurrent*Exception`, `MetadataChangedException`, `ProtocolChangedException`) mean nothing was committed. `Connection reset` and `TooManyRequestsForCapacity`, however, can arrive after the commit succeeded, and the retry then appends the rows again. Current blind appends are `ctrl_log_table_run` in both libraries and the `RUNNING` row of `ctrl_log_run` in `NB_LIB_TRANSFORM_SLV_GLD` (`write_run_log`). A duplicate row with the same grain key is therefore possible (open, review finding GATE-003, task `20261011-notebook-design-skills`, 2026-10-11).
++- Until that gap is fixed under architecture:
++  - Never use a blind append for state, watermark, reject, or lock data, or for any row whose duplicate changes behavior. Write those with a MERGE on the grain key.
++  - Code that reads an append-only log reduces it to one row per grain key (`ctrl_log_table_run`: `exec_id`, `trg_schema`, `trg_tbl`, `attempt_no`), as `node_logs` keeps the latest row per node. It never counts log rows as attempts or runs.
++  - Changing `append_rows`, whether to a MERGE on the grain key or to no retry on ambiguous errors, is a change to both library copies and needs architecture.
++
+ ## Target table DDL
+ 
+ Both libraries create targets the same way. `target_ddl` emits `CREATE TABLE IF NOT EXISTS <quoted name> (...) USING DELTA TBLPROPERTIES ('delta.autoOptimize.optimizeWrite' = 'true', 'delta.autoOptimize.autoCompact' = 'true')`, with no `CLUSTER BY` (Runtime 1.3). `ensure_target`:
+@@ -96,8 +111,20 @@ Known gaps to keep in mind; do not copy them into new code:
+ ## Deploy and check
+ 
+ - Deploy the library before any caller that uses the change (`02_NAMING_CONVENTION.md` §8).
+-- Run `python scripts/vv.py verify <task-id>`. Its pytest step loads `NB_LIB_EXTRACT_RAWDATA` as JSON and checks `utc_ts_text`. No test loads `NB_LIB_TRANSFORM_SLV_GLD`, so check that it still parses with `python -c "import json, sys; json.load(open(sys.argv[1], encoding='utf-8'))" notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb`.
++- Run `python scripts/vv.py verify <task-id>`. Its pytest step reads `NB_LIB_EXTRACT_RAWDATA` as JSON and checks `utc_ts_text`. No test reads `NB_LIB_TRANSFORM_SLV_GLD`, and no test compiles code cells.
++- Compile every Python code cell of the library and of each caller you changed. The command blanks `%` line magics such as `%run`, skips `%%` cells and non-Python cells, and does not execute anything. Run it from the repository root, in PowerShell or Bash:
++
++  ```text
++  python -c "import json,sys;[compile(''.join('\n' if l.startswith('%') else l for l in ''.join(c['source']).splitlines(True)),p+'#cell'+str(i),'exec') for p in sys.argv[1:] for i,c in enumerate(json.load(open(p,encoding='utf-8'))['cells']) if c['cell_type']=='code' and c.get('metadata',{}).get('microsoft',{}).get('language','python')=='python' and not ''.join(c['source']).startswith('%%')];print('compiled',len(sys.argv)-1,'notebooks')" notebooks/<LIBRARY>.ipynb
++  ```
++
++  It must print `compiled N notebooks`. A `SyntaxError` names the file and the cell index. `SyntaxWarning` lines are not failures.
+ - Search both libraries for every shared primitive you changed, and confirm the copies still match.
++- Local checks cannot prove `%run` behavior. A library change needs runtime proof. Set `classification.runtime_required: true` and list in `runtime-runbook.md` one Fabric DEV run per caller, after the library is deployed, in a mode that writes nothing:
++  - `dry_run = True` for each extract notebook;
++  - `p_mode = "PLAN"` for `NB_00_ORCHES_SLV_TO_GLD`;
++  - `p_apply = "false"` for `NB_SETUP_L1_TS_AUDIT`.
++  Each `%run` must load and each notebook must finish with its normal output. A change to the lock, run log, watermark, or MERGE path also needs a run that exercises that path; its architecture names the run. The user executes the runbook (see `vsvn-task-workflow`).
+ - Runtime behavior (Delta versions, history, MERGE metrics, runMultiple) is proven only by a runtime runbook in Fabric DEV (`docs/context/99_PAIN_POINTS.md` §0, lesson 8).
+ 
+ ## Keep this skill current

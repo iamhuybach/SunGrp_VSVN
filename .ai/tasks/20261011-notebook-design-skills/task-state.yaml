@@ -1,0 +1,76 @@
+schema_version: 1
+task:
+  id: 20261011-notebook-design-skills
+  title: Design Cursor skills for Fabric notebook authoring
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-11'
+  updated_at: '2026-10-11'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: false
+  runtime_required: false
+  signals:
+  - design_tradeoffs
+  - deep_reasoning_required
+  - low_probability_high_impact
+scope:
+  systems:
+  - cursor-skills
+  - fabric-notebooks
+  files:
+  - docs/context/02_NAMING_CONVENTION.md
+  - docs/context/
+  - notebooks/
+  - .cursor/rules/10-fabric-notebook.mdc
+  - .cursor/rules/30-sql.mdc
+  - .cursor/skills/vsvn-task-workflow/SKILL.md
+  - .cursor/skills/fabric-runtime-evidence/SKILL.md
+  - .cursor/skills/
+review_plan:
+  required_reviewers:
+  - spark-runtime-reviewer
+  - sql-data-reviewer
+  - state-correctness-reviewer
+  - fabric-pipeline-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+user_approved_exception:
+  approved_on: '2026-10-11'
+  kind: limited-skill-authorship
+  summary: 'AGENTS.md assigns source code to Main and allows Claude Code to write
+    only architecture.md. For this task the user approved a limited exception: Claude
+    Code authors every .cursor/skills/<name>/SKILL.md. Main does not draft, reword,
+    shorten, or add skill prose. Main copies each SKILL_FILE block verbatim after
+    architecture verdict PASS. Codex remains read-only. python scripts/vv.py run-gate
+    at waiting_architecture stays a read-only Claude turn. The runner rejects file
+    edits and persists only architecture.md. scripts/agent_runner.py is not changed.
+    A skill-content P0 or P1 is returned to Claude through a new architecture round;
+    disposition fixed is allowed only after Main copies the new verbatim body.'
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: pass
+  runtime: not_required
+rounds:
+  verification: 2
+  review: 2
+  architecture: 2
+  runtime_failure: 0
+open_findings: []
