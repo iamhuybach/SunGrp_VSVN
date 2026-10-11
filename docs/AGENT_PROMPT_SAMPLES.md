@@ -24,6 +24,8 @@ Cursor Main chịu trách nhiệm điều phối và triển khai. Không tự c
 | Review diff hiện có | Code đã tồn tại và cần deterministic verification cùng independent review đúng định tuyến. |
 | External integration smoke test | Kiểm tra Claude/Codex discovery, authentication, routing, structured output và immutability. |
 | Hướng dẫn vận hành sau khi agent dừng | Agent viết xong artifact nhưng câu trả lời không có bước chạy, yêu cầu cần người dùng làm, hoặc giải thích đủ để vận hành. |
+| Viết skill notebook, Claude Code soạn | Cần skill cho việc thiết kế notebook. Claude Code viết nội dung skill, Codex review, Main chỉ lưu nguyên văn. |
+| Giải thích task agent đã làm | Cần hiểu nghĩa một task, một quyết định, hoặc một đoạn code agent đã viết, kèm ví dụ. |
 
 ## 1. Task end-to-end thông thường
 
@@ -267,6 +269,91 @@ Cách sửa ưu tiên:
 - Giữ `runtime-runbook.md` là bản đầy đủ. Câu trả lời chat là bản rút bước người vận hành cần làm ngay.
 
 Tuân thủ AGENTS.md. Tạo canonical task vì đây là thay đổi agent-system do người dùng yêu cầu. Ghi Grok 4.7 Medium. Phân loại riêng complexity, risk, architecture và evidence. Đọc rule và skill hiện có trước khi thêm file mới. Chạy deterministic verification phù hợp với thay đổi tài liệu hoặc script. Không commit hoặc push.
+```
+
+## 15. Viết skill notebook, Claude Code soạn
+
+```text
+Hãy triển khai yêu cầu sau trong repository này như một task thông thường.
+
+## Yêu cầu
+
+Thiết kế và viết các Cursor skill cho việc thiết kế notebook Microsoft Fabric. Người viết nội dung skill là Claude Code. Codex review nội dung đó. Main điều phối task, ghi state, chạy verify, và chỉ lưu file skill đúng nguyên văn do Claude trả về.
+
+Phạm vi notebook: các vai trò trong `docs/context/02_NAMING_CONVENTION.md`, gồm `NB_LIB_*`, `NB_EXTRACT_*_CDC_BRZ_TO_SLV`, `NB_00_ORCHES_*`, `NB_<UPPER(trg_tbl)>`, `NB_SETUP_*`, `NB_CREATE_DDL`. Đối chiếu `notebooks/` và `docs/context/`.
+
+## Ngoại lệ do người dùng duyệt ngày 2026-10-11
+
+AGENTS.md giao source code cho Main và chỉ cho Claude Code viết `architecture.md`. Người dùng duyệt ngoại lệ có giới hạn cho task này:
+
+- Claude Code là tác giả của mọi file `.cursor/skills/<tên>/SKILL.md` trong task.
+- Main không soạn, không sửa câu chữ, không rút gọn và không bổ sung nội dung skill.
+- Codex vẫn chỉ đọc và review.
+- Ghi ngoại lệ này vào `task-state.yaml` và `decision.md` bằng tiếng Việt trước khi gọi architecture gate.
+
+`python scripts/vv.py run-gate` ở `waiting_architecture` vẫn là lượt Claude read-only. Runner từ chối mọi sửa file và chỉ lưu `architecture.md`. Dùng đúng cơ chế đó. Không đổi `scripts/agent_runner.py` để Claude ghi tự do vào repository.
+
+## Cách giao việc viết skill
+
+1. Architecture gate trả `architecture.md` do Claude viết. Tài liệu chọn skill nào được viết và chứa toàn bộ nội dung từng `SKILL.md` trong một khối riêng, bắt đầu bằng dòng `SKILL_FILE: .cursor/skills/<tên>/SKILL.md`.
+2. Sau verdict `PASS`, Main tạo đúng các path đó và chép nguyên văn từng khối. Main không đổi ký tự nội dung.
+3. Khi review trả P0 hoặc P1 về nội dung skill, Main không sửa skill. Main đưa finding lại cho Claude bằng một lượt architecture mới, rồi chép lại nguyên văn bản Claude trả về.
+4. Skill nào Claude không đưa vào `architecture.md` thì không được tạo.
+
+## Tiêu chí chọn skill
+
+Mỗi skill là một quy tắc lặp đã xuất hiện ở ít nhất hai notebook hoặc hai nguồn extract. Bỏ qua việc chỉ thuộc một notebook.
+
+Skill dành cho Main, Grok 4.7 Medium. Không giao cho skill việc của Architect hay của các reviewer Codex: `spark-runtime-reviewer`, `sql-data-reviewer`, `state-correctness-reviewer`, `fabric-pipeline-reviewer`, `risk-gate`.
+
+Tránh trùng hai skill sẵn có: `.cursor/skills/vsvn-task-workflow/SKILL.md` và `.cursor/skills/fabric-runtime-evidence/SKILL.md`. Rule hiện có nằm ở `.cursor/rules/10-fabric-notebook.mdc` và `.cursor/rules/30-sql.mdc`.
+
+## Tiêu chí nghiệm thu
+
+- `architecture.md` có danh sách skill, lý do từng skill tồn tại, file notebook làm bằng chứng, và phần việc skill không làm.
+- Mỗi skill được chọn có một `SKILL.md` đúng nội dung Claude đã viết.
+- `git diff` của các file skill khớp khối trong `architecture.md`.
+- `python scripts/vv.py verify <task-id>` pass.
+- Review qua `python scripts/vv.py run-gate <task-id>` tại `reviewing`.
+
+## Ràng buộc
+
+- Không viết skill cho pipeline, partner business rule, hay gold sync nếu chưa có quy tắc lặp trong notebook.
+- Không cần probe Fabric DEV cho việc khảo sát notebook trong repository.
+- Không commit, push, merge.
+- Nếu Claude hoặc Codex fallback model, dừng và báo. Không đổi sang model khác.
+
+## Workflow
+
+Tuân thủ AGENTS.md, cộng với ngoại lệ viết skill ở trên.
+
+1. Tạo task: `python scripts/vv.py new notebook-design-skills`.
+2. Ghi Main là Grok 4.7 Medium. Phân loại riêng complexity, risk, architecture, evidence. Đây là thay đổi agent-system do người dùng yêu cầu, không dùng fast lane.
+3. Gọi `python scripts/vv.py run-gate <task-id>` tại `waiting_architecture`.
+4. Chỉ lưu file skill sau khi architecture verdict là `PASS`.
+5. Chạy `python scripts/vv.py verify <task-id>` trước review.
+6. Review gồm reviewer nào mà nội dung skill đụng tới domain của họ. Luôn chạy `risk-gate` vì skill sai sẽ bị Main dùng lại ở nhiều notebook.
+7. Ghi disposition trong `decision.md` bằng tiếng Việt. Với finding nội dung skill, disposition `fixed` chỉ được dùng sau khi Claude đã viết lại và Main đã chép nguyên văn.
+
+Dừng và báo gate lỗi hoặc quyết định cần người dùng. Không commit, push, merge.
+```
+
+## 16. Giải thích task agent đã làm
+
+```text
+Hãy giải thích phần việc sau cho người vận hành. Chỉ giải thích. Không sửa code, không tạo task, không chạy gate.
+
+Phần cần hiểu:
+<task-id, file, quyết định, hoặc câu trong câu trả lời trước mà người vận hành chưa hiểu>
+
+Trả lời bằng tiếng Việt, theo thứ tự này:
+
+1. Nghĩa một câu: việc này làm gì cho dữ liệu hoặc cho người dùng.
+2. Vì sao agent làm như vậy, dựa trên file và dòng trong repository. Nếu lý do không có trong repository, ghi "không thấy trong repository".
+3. Một ví dụ cụ thể với giá trị đầu vào và kết quả đầu ra. Dùng số liệu hoặc khóa đã có trong task. Không bịa dòng dữ liệu.
+4. Việc người vận hành cần làm tiếp, nếu có. Nếu không cần làm gì, ghi "Không cần làm thêm".
+
+Giữ command, path, tên bảng và tên cột bằng tiếng Anh. Không cam kết một bước Fabric DEV đã được chạy nếu log trong task không có kết quả đó. Không commit hoặc push.
 ```
 
 ## Các điểm phải dừng
