@@ -159,6 +159,29 @@ The source-of-truth order is notebook in the repository, then design document, t
 - A value written together with `MISSING_EVIDENCE` is still missing.
 - Never infer a table, column, key, grain, data type, enum value, uniqueness, null rate, format, volume, or business rule. Not stated means missing.
 
+## Template exceptions
+
+These two exceptions are part of the templates. A row that meets one is known for coverage. The exception does not clear a platform check.
+
+- No separate rule table. BRD section 7 allows `rule_home` to be exactly `TEMPLATE_EXCEPTION_NO_RULE_TABLE` when `rule_home_evidence` is `USER_STATED` and `context_ref` cites `USER_INPUT` or an answered question that states there is no separate rule table. That value is a known `rule_home`. Do not assign `MISSING_RULE_HOME` for it. `PC-03` stays `PLATFORM_VIOLATION` because the value does not start with `slv_poi_` or `ref_`.
+- Write-time technical columns. Mapping section 5 allows a blank `src_column_or_json_path` when `trg_column` is `created_at` or `updated_at`, the row `note` states that the value is set at write time, and `evidence_status` includes `USER_STATED` with `context_ref` citing `USER_INPUT` or an answered question. That blank cell does not make the row `MISSING_SOURCE`. `src_id` is not a required mapping cell. A blank `src_id` is never `MISSING_SOURCE`. `PC-09` still applies.
+
+## Out-of-scope legacy physical facts
+
+When BRD scope contains an `OUT` row for old-model physical checks, and an answered question states that those checks are outside the task (`BQ-024`, or the same decision on `MQ-056`), the facts below are closed. Do not assign `MISSING_SOURCE`, `MISSING_GRAIN`, `MISSING_KEY`, `MISSING_EVIDENCE`, or `UNSUPPORTED_CITATION` for them. Do not open a probe. Do not reuse gap IDs `AG-001` to `AG-007`.
+
+Closed facts:
+
+- Schema, grain, key, and columns of `poi_enrichment`.
+- Whether `poi_enrichment.poi_id` matches a language-free identifier, and whether each POI has one current Vietnamese row.
+- Grain, key, and the columns `vietmap_ward` and `vietmap_province` of `poi_address_enrichment_staging`.
+- Whether partner `address` is a JSON object with the keys `full_address`, `ward`, `district`, and `city`.
+- The exact Vietnamese `locale` value.
+- Whether bronze contains `reviewId` or a review-level `source_name`.
+- Whether `slv_3p_poi.language_code` is Vietnamese only.
+
+A `USER_STATED` grain, key, or column note on those old-model rows is known for coverage when the answered question says the legacy notebook is only a field-business reference and is not applied in full. This exception does not clear a platform check on any other row.
+
 ## Analysis procedure
 
 1. Validate the inputs. On `INPUT_INVALID`, write sections 1 and 2 of the analysis and the single "Not written" line in section 8, then stop.
@@ -170,12 +193,12 @@ The source-of-truth order is notebook in the repository, then design document, t
 
 | code | when |
 |---|---|
-| `MAPPED` | All of these hold. The BRD target grain and key are known and equal the Mapping section 4 row with the same `trg_tbl`. At least one BRD section 6 row lists the requirement with a known `src_tbl`. At least one Mapping section 5 row lists the requirement, and every such row has all required cells for its target layer filled and known. The BRD and Mapping source-table sets are equal. Every non-bronze source used has known grain and key. Every `rule_ids` entry has a known statement and a known `rule_home`. Every `id_rule_ids` entry has a known formula. No other code applies |
-| `MISSING_SOURCE` | Any of these holds. No BRD section 6 row lists the requirement. A listed BRD section 6 row has an unknown `src_tbl`. No Mapping section 5 row lists the requirement. A listed Mapping section 5 row lacks a known `src_id` or `src_column_or_json_path` |
-| `MISSING_GRAIN` | The target grain is unknown in BRD section 5 or Mapping section 4, or a non-bronze source used has unknown grain |
-| `MISSING_KEY` | The target key is unknown in BRD section 5 or Mapping section 4, or a non-bronze source used has unknown key |
-| `MISSING_RULE_HOME` | A referenced rule has no known `rule_home` |
-| `MISSING_EVIDENCE` | Any other fact the requirement depends on is missing or `UNSUPPORTED_CITATION`, including a column `data_type`. Also applies when the target is a legacy table and no answered question in either file lists the requirement or the target row in `blocks` |
+| `MAPPED` | All of these hold. The BRD target grain and key are known and equal the Mapping section 4 row with the same `trg_tbl`. At least one BRD section 6 row lists the requirement with a known `src_tbl`. At least one Mapping section 5 row lists the requirement, and every such row has all required cells for its target layer filled and known, counting a template exception in "Template exceptions" and a closed fact in "Out-of-scope legacy physical facts" as filled. `src_id` is not a required cell. The BRD and Mapping source-table sets are equal. Every non-bronze source used has known grain and key, counting a closed old-model grain and key as known. Every `rule_ids` entry has a known statement and a known `rule_home`, including `TEMPLATE_EXCEPTION_NO_RULE_TABLE` when that exception holds. Every `id_rule_ids` entry has a known formula. No other code applies |
+| `MISSING_SOURCE` | Any of these holds. No BRD section 6 row lists the requirement. A listed BRD section 6 row has an unknown `src_tbl`. No Mapping section 5 row lists the requirement. A listed Mapping section 5 row lacks a known `src_column_or_json_path`, unless the write-time technical-column exception in "Template exceptions" applies to that row, or the blank cell is a closed fact in "Out-of-scope legacy physical facts". A blank `src_id` is not `MISSING_SOURCE` |
+| `MISSING_GRAIN` | The target grain is unknown in BRD section 5 or Mapping section 4, or a non-bronze source used has unknown grain. A grain closed by "Out-of-scope legacy physical facts" is known |
+| `MISSING_KEY` | The target key is unknown in BRD section 5 or Mapping section 4, or a non-bronze source used has unknown key. A key closed by "Out-of-scope legacy physical facts" is known |
+| `MISSING_RULE_HOME` | A referenced rule has no known `rule_home`. `TEMPLATE_EXCEPTION_NO_RULE_TABLE` is known when the no-rule-table exception in "Template exceptions" holds |
+| `MISSING_EVIDENCE` | Any other fact the requirement depends on is missing or `UNSUPPORTED_CITATION`, including a column `data_type`, except a fact closed by "Out-of-scope legacy physical facts". Also applies when the target is a legacy table and no answered question in either file lists the requirement or the target row in `blocks` |
 | `CONFLICT` | The BRD and the Mapping disagree on target, grain, key, or source tables, or a fact the requirement depends on is marked `CONFLICT` |
 | `PLATFORM_VIOLATION` | The requirement, its rules, or its mappings fail a platform check |
 
@@ -188,7 +211,7 @@ The source-of-truth order is notebook in the repository, then design document, t
    - each filled row in Mapping sections 6 and 7 and BRD sections 11 and 12;
    - each unanswered question in Mapping section 8 and BRD section 13.
 
-   For each gap, state the missing fact, the IDs it blocks, why the repository cannot answer it, and the resolution type. For `PROBE`, write a pass/fail criterion in words. Do not write probe code.
+   Skip any fact closed by "Out-of-scope legacy physical facts". For each remaining gap, state the missing fact, the IDs it blocks, why the repository cannot answer it, and the resolution type. For `PROBE`, write a pass/fail criterion in words. Do not write probe code.
 5. Choose the status (see "Status").
 6. Write the analysis file and end the turn.
 
@@ -198,7 +221,7 @@ The source-of-truth order is notebook in the repository, then design document, t
 |---|---|---|
 | `PC-01` | The name of each source and target table matches the prefix of its `layer` in the prefix table. A target without any layer prefix is a legacy table: do not mark a violation. Add an `OPEN_QUESTION` gap with `USER_ANSWER` instead | `AGENTS.md` section 9, `docs/context/02_NAMING_CONVENTION.md` section 1 |
 | `PC-02` | No target has `layer` `bronze` | `docs/context/01_DATA_MODEL.md` sections 1 and 2 |
-| `PC-03` | Every rule row has `layer` `silver_l2` or `ref`, and a known `rule_home` starts with `slv_poi_` or `ref_` | `docs/context/01_DATA_MODEL.md` section 2, `AGENTS.md` section 9 |
+| `PC-03` | Every rule row has `layer` `silver_l2` or `ref`, and a known `rule_home` starts with `slv_poi_` or `ref_`. `TEMPLATE_EXCEPTION_NO_RULE_TABLE` is a known home for coverage and is still `PLATFORM_VIOLATION` under this check | `docs/context/01_DATA_MODEL.md` section 2, `AGENTS.md` section 9, `docs/templates/BRD_TEMPLATE.md` section 7 |
 | `PC-04` | Silver L1 mapping rows have blank `rule_ids`, filled `src_object` and `convert_rule`, and no rule lives in a silver L1 table | `docs/context/01_DATA_MODEL.md` section 2 |
 | `PC-05` | Gold mapping rows have blank `rule_ids`, `src_object`, `convert_rule`, and `key_order`. No gold target uses a gold source. No rule lives in a gold table | `docs/context/01_DATA_MODEL.md` section 2 |
 | `PC-06` | No `poi_id` formula or key includes a language column, and no row uses `poi_uid` | `AGENTS.md` section 9 |

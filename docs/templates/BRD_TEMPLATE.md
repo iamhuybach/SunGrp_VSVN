@@ -185,6 +185,7 @@ Bảng cũ không theo tiền tố trên, như `poi_master`, `destination_ward_m
 
 > Rule là quyết định nghiệp vụ: phân loại, chọn nguồn, fallback, lọc. `evidence_status` là nguồn của `statement`.
 > `layer` chỉ nhận `silver_l2` hoặc `ref`. `rule_home` ghi bảng chứa rule hoặc node áp rule. Chưa biết thì để trống, đặt `MISSING_EVIDENCE` ở `rule_home_evidence` và thêm dòng ở mục 11.
+> Ngoại lệ không có bảng rule riêng: khi người dùng chốt rule không nằm ở bảng riêng, `rule_home` ghi đúng `TEMPLATE_EXCEPTION_NO_RULE_TABLE`. `rule_home_evidence` là `USER_STATED` và `context_ref` trỏ `USER_INPUT` hoặc câu hỏi đã trả lời. Giá trị đó là `rule_home` đã biết cho mục phủ sóng. Kiểm tra nền tảng PC-03 vẫn báo vi phạm vì giá trị không bắt đầu bằng `slv_poi_` hoặc `ref_`.
 
 | rule_id | statement | evidence_status | layer | rule_home | rule_home_evidence | name_status | context_ref | note |
 |---|---|---|---|---|---|---|---|---|

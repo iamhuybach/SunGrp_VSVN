@@ -169,7 +169,8 @@ Bảng cũ không theo tiền tố trên, như `poi_master`, `destination_ward_m
 ## 5. Mapping cột
 
 > 1 dòng = 1 cột đích. `req_ids` trỏ tới BRD mục 5. `rule_ids` trỏ tới BRD mục 7. `data_type` là kiểu Spark của cột đích (`docs/context/CTRL_TABLES_CONTEXT.md §5`, cột `data_type`).
-> Ô bắt buộc ở mọi tầng: `req_ids`, `src_id`, `src_column_or_json_path`, `trg_id`, `trg_column`, `data_type`, `is_key`.
+> Ô bắt buộc ở mọi tầng: `req_ids`, `src_column_or_json_path`, `trg_id`, `trg_column`, `data_type`, `is_key`. `src_id` không bắt buộc.
+> Ngoại lệ cột kỹ thuật lúc ghi: khi `trg_column` là `created_at` hoặc `updated_at` và giá trị được gán lúc ghi, `src_column_or_json_path` được để trống. `note` ghi điều này. `evidence_status` phải có `USER_STATED` và `context_ref` trỏ `USER_INPUT` hoặc câu hỏi đã trả lời. Ô trống đó không làm dòng thành thiếu nguồn. Kiểm tra nền tảng PC-09 vẫn áp dụng.
 > Silver L1: bắt buộc thêm `src_object`, `convert_rule`, và `key_order` khi `is_key` là `true`. 1 dòng ứng với 1 dòng của `lh_vv_ctrl.dbo.ctrl_cfg_schema_registry` và theo luật cấu hình ở `docs/context/CTRL_TABLES_CONTEXT.md §5`. `rule_ids` để trống vì silver L1 không có rule nghiệp vụ.
 > Silver L2: `src_object`, `convert_rule`, `key_order` để trống. Rule nghiệp vụ tạo ra giá trị của cột ghi ở `rule_ids`.
 > Gold: `src_object`, `convert_rule`, `key_order`, `rule_ids` để trống, theo "Ràng buộc nền tảng".
