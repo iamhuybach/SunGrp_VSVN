@@ -6,7 +6,7 @@
 - Một `poi_id` thuộc một nguồn. Dòng 3rd-party và dòng partner không dùng chung một biểu thức.
 - `best_time_from_month`, `best_time_to_month` đổi từ `string` sang `int`, và `cost` đổi từ `string` sang `bigint`, vì người dùng chốt giữ số và lấy `costVnd`.
 - `title`, `positive`, `negative`, `response_text` ra khỏi phạm vi.
-- `load_mode` ghi đúng từ `Append` người dùng nêu. Quy ước §6 chưa có giá trị này, nên câu hỏi vẫn mở.
+- `load_mode` giữ tên `APPEND`. Quy ước §6 chưa có giá trị này. Người dùng chấp nhận rủi ro ở `PC-08`.
 - `ward` partner dùng `coalesce(vietmap_ward, address.ward)` đúng notebook `2.1`. Phép gán cuối của `vietmap_district` không thấy, nên `district` partner chỉ lấy `address.district`.
 
 ## Sai lệch so với kiến trúc
@@ -17,6 +17,12 @@
 
 | Finding ID | Severity | Quyết định | Lý do / bằng chứng | Backlog |
 |---|---|---|---|---|
+| `PC-01` | P2 | `accepted-risk` | Giữ schema `lh_vv_gold.enr` và tiền tố `gld_enr_` (`MQ-024`, `BQ-007`). Không đổi về `lh_vv_gold.dbo` và `gld_srv_`. | |
+| `PC-03` | P2 | `accepted-risk` | Không có bảng rule riêng. `rule_home` là `TEMPLATE_EXCEPTION_NO_RULE_TABLE` (`MQ-054`). | |
+| `PC-05` | P1 | `accepted-risk` | Gold đọc `poi_address_enrichment_staging`. Luồng ghi gold áp nghiệp vụ đã chốt và tính `poi_id` partner cùng hash `review_id` trên bảng đích. | |
+| `PC-07` | P2 | `accepted-risk` | Giữ `PL_VV_TRANS_SLV_TO_ENR_15P` và `NB_00_ORCHES_SLV_TO_ENR_15P` (`MQ-028`, `MQ-044`). | |
+| `PC-08` | P2 | `accepted-risk` | Giữ `load_mode` `APPEND`. Partner và 3rd-party append, không join (`MQ-027`, `MQ-058`). | |
+| `PC-09` | P2 | `accepted-risk` | `created_at` và `updated_at` gán mỗi lần ghi. `updated_at` thuộc khoá lịch sử (`MQ-030`, `MQ-039`, `MQ-052`). | |
 
 Giá trị quyết định hợp lệ: `fixed`, `accepted-risk`, `rejected-false-positive`, `backlog`.
 
@@ -53,3 +59,4 @@ Giá trị quyết định hợp lệ: `fixed`, `accepted-risk`, `rejected-false
 - 2026-10-12: người dùng yêu cầu sửa agent để `BQ-024` đóng `AG-001` đến `AG-007`, rồi commit và push `main` nếu không còn vấn đề. Main thêm mục "Out-of-scope legacy physical facts". Claude CLI trên Mapping phiên bản 12 và BRD phiên bản 10 trả `EVIDENCE_REQUIRED`. `AG-001` đến `AG-009` đóng. Còn `AQ-001` (`review_text`), `AQ-002` (`MQ-055` trên `RULE-003` đến `RULE-006`) và `AQ-003` (`ID-005`). Chưa commit, chưa push.
 - 2026-10-12: `review_text` lấy `slv_3p_poi_review.text`. Bỏ `MQ-055`. Partner và 3rd-party append, không join. `source_id` luôn có trên dòng từng nguồn. Bỏ luật bắt buộc `src_id`. Xóa `ID-005`. `notebooks_lgc` chỉ để đối chiếu nghiệp vụ trường, không phải model thiết kế. Mapping phiên bản 13, BRD phiên bản 11.
 - 2026-10-12: Claude CLI trên Mapping phiên bản 13 và BRD phiên bản 11 trả `USER_DECISION`. Không còn gap và không còn câu hỏi. 0/3 `MAPPED` vì còn vi phạm nền tảng đã được người dùng giữ: schema `enr`, không có bảng rule riêng, gold đọc gold và xử lý nghiệp vụ, tên pipeline và orchestrator, `load_mode` `APPEND`, `created_at` và `updated_at` gán mỗi lần ghi.
+- 2026-10-12: người dùng `accept-risk` cho `PC-01`, `PC-03`, `PC-05`, `PC-07`, `PC-08` và `PC-09`. Main ghi `accepted-risk` ở mục xử lý findings. Không sửa Mapping và BRD.
