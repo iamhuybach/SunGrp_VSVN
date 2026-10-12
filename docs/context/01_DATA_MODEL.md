@@ -1,6 +1,6 @@
 # 01 — Data Model mới của Visit Vietnam (POI) trên Microsoft Fabric
 
-> Bộ context dùng chung cho người và agent. Cập nhật: 08/10/2026.
+> Bộ context dùng chung cho người và agent. Cập nhật: 08/10/2026. Sửa phân tầng gold 12/10/2026.
 > Trạng thái số liệu: theo lần chạy gần nhất có log (extract rerun 04/10, gold run 1 ngày 05/10). Số liệu thay đổi theo dữ liệu nguồn; muốn số mới nhất thì chạy script chỉ đọc `CHECK_CTRL_SNAPSHOT.py` (kèm bộ này).
 > Nguồn gốc: `claude/GOLD_POI_FLOW_DESIGN.md`, `claude/POI_3P_EXTRACT_REDESIGN.md`, `claude/PARTNER_EXTRACT_REDESIGN.md`, `notebooks/NB_CREATE_DDL.ipynb`.
 
@@ -24,10 +24,11 @@
 | **Silver L1 — extract** (`lh_vv_silver.dbo.slv_pn_*`, `slv_3p_*`) | Đưa payload về bảng đúng cấu trúc nguồn, chuẩn kiểu, khoá | Parse JSON, chuyển kiểu theo cấu hình, khử trùng event, MERGE theo khoá, xoá mềm (CDC) | Không rule nghiệp vụ, không canonical, không gate |
 | **Silver L2 — tích hợp** (`lh_vv_silver.dbo.slv_poi_*`) | Mọi quyết định nghiệp vụ dùng chung | Định danh, phân loại, chuẩn hoá địa chỉ, chọn tên / mô tả, slug, destination, cờ đủ ngôn ngữ | Không "serving zone" hình dáng theo consumer |
 | **Ref** (`lh_vv_silver.dbo.ref_*`) | Rule dạng dữ liệu, sửa tay | 1 dòng = 1 rule; sửa = commit đổi dữ liệu → luồng tự tính lại | Không rule viết cứng trong code |
-| **Gold** (`lh_vv_gold.dbo.gld_srv_*`) | Chỉ đồng bộ / phơi ra | Join theo khoá, gom, tính `row_hash`, lọc theo cờ silver | Không xử lý nghiệp vụ; gold không đọc gold khác |
+| **Gold** (`lh_vv_gold.dbo.gld_srv_*`) | Phơi dữ liệu cho consumer và xử lý nghiệp vụ riêng của bảng gold đó | Join theo khoá, gom, tính `row_hash`, lọc theo cờ silver, và nghiệp vụ chỉ thuộc bảng gold đó | Không lấy quyết định nghiệp vụ dùng chung; gold không đọc gold khác |
 | **Ctrl** (`lh_vv_ctrl.dbo.ctrl_*`) | Cấu hình + trạng thái + log | Xem `CTRL_TABLES_CONTEXT.md` | — |
 
 Quy tắc phụ:
+- Quyết định nghiệp vụ dùng chung nằm ở silver L2. Nghiệp vụ chỉ phục vụ một bảng gold nằm ở gold. Hai lớp này không đụng nhau.
 - Gold phụ thuộc gold khác → logic đó phải thành bảng silver L2 có nghĩa, dùng lại được.
 - Silver có thể 1–1 với gold nhưng không bắt buộc.
 - Bảng `lh_vv_bronze.partner.*` cũ (đã xử lý, không phải raw) chuyển sang silver (`slv_pn_*`).

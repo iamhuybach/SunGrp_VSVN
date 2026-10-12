@@ -188,7 +188,7 @@ Finding dispositions in `decision.md` are: `fixed`, `accepted-risk`, `rejected-f
 - Bronze, silver, and gold are separate Lakehouses in the same workspace: `lh_vv_bronze`, `lh_vv_silver`, and `lh_vv_gold`.
 - Ingestion: Event Hub -> Eventstream -> bronze. Transformation: Spark SQL/PySpark notebooks. Orchestration: Fabric Data Pipeline.
 - Batch cadence is 10-15 minutes; source-to-serving SLA is 30-60 minutes; silver-to-gold POI runs hourly.
-- Gold is expose/sync only. Cleansing, normalization, enrichment, canonical entities, reusable business rules, and intermediate tables belong in silver.
+- Gold exposes data and may apply business logic that belongs only to that gold table. Shared business decisions, canonical entities, reusable rules, and intermediate tables belong in silver. Gold does not read other gold.
 - Silver prefixes: `slv_pn_` for partner and `slv_3p_` for third party. Gold prefix: `gld_`.
 - The POI identifier is `poi_id`. It never includes language. Do not use `poi_uid`.
 - Third-party `poi_id = uuid_format(md5(concat(source_name, source_id)))` (`HASH_MD5_UUID`).

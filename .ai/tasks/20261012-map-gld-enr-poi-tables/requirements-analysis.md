@@ -1,5 +1,9 @@
 ANALYSIS_STATUS: USER_DECISION
 
+MAIN_CORRECTION 2026-10-12: `poi_address_enrichment_staging` is not a source of this task. It was inferred from the old notebooks. The current model removed `slv_3p_poi_enrichment` (`docs/context/01_DATA_MODEL.md` section 5.2). The old model supplies business meaning only for `gld_enr_poi_info.time_to_spend`, `best_time_type`, `best_time_from_month`, and `best_time_to_month`. It does not supply `cost`, partner address JSON keys, `vietmap_ward`, or `vietmap_province`. `destination_context` uses the current-model columns `slv_3p_poi_address.short_address`, `district`, and `city`. Mapping version 15 and BRD version 13 remove `SRC-006`, `SRC-008`, `DS-004`, and `DS-008`. The analyst body below still names those removed sources and is not the current source list.
+
+## 1. Inputs
+
 # Requirements analysis: 20261012-map-gld-enr-poi-tables
 
 ## 1. Inputs
@@ -89,7 +93,7 @@ Mapped: 0 of 3. All three are blocked only by platform violations.
 | PC-03 | RULE-001, RULE-003, RULE-004, RULE-005, RULE-006 | PLATFORM_VIOLATION | `TEMPLATE_EXCEPTION_NO_RULE_TABLE` does not start with `slv_poi_` or `ref_` (`docs/context/01_DATA_MODEL.md §2`, `docs/templates/BRD_TEMPLATE.md` section 7) |
 | PC-04 | none | PASS | There is no silver L1 target and no silver L1 mapping row |
 | PC-05 | all COL rows | PASS | `rule_ids`, `src_object`, `convert_rule`, and `key_order` are blank on every gold mapping row |
-| PC-05 | COL-014, COL-016, SRC-008, DS-008 | PLATFORM_VIOLATION | The gold target `gld_enr_poi_coordinate` reads the gold source `lh_vv_gold.dbo.poi_address_enrichment_staging`. The rule is "gold không đọc gold khác" (`docs/context/01_DATA_MODEL.md §2`). Closing the physical facts does not clear this check |
+| PC-05 | none | PASS | No remaining source is a gold table. `poi_address_enrichment_staging` was removed in Mapping version 15 (`MQ-060`). The previous row that cited `SRC-008` and `DS-008` is withdrawn |
 | PC-05 | COL-003, COL-008, COL-012 to COL-019, COL-042, COL-043, COL-048, RULE-003, RULE-004, RULE-005, RULE-006 | PLATFORM_VIOLATION | The flow that writes gold applies business logic in these rows: source selection, the `coalesce` fallbacks, sector labels, the duration text, the templated `destination_context`, and the sort, limit, and truncation of `review_json`. The rule is gold "không xử lý nghiệp vụ" (`docs/context/01_DATA_MODEL.md §2`). Appending sources instead of joining them (`MQ-058`) does not change this |
 | PC-05 | COL-001, COL-011, COL-022, ID-001, ID-004 | PLATFORM_VIOLATION | The partner `poi_id` and the new `review_id` hash are computed on gold targets. Identity belongs to silver L2 N1 (`docs/context/01_DATA_MODEL.md §2`, `§6`). `COL-023` is excluded because silver L1 already stores the 3rd-party `poi_id` |
 | PC-06 | ID-001 to ID-004, COL-001, COL-011, COL-023 | PASS | No formula or key contains a language. No row uses `poi_uid`. `ID-005` was removed |

@@ -4,10 +4,10 @@
 
 - Nguồn hiện tại chỉ có tiếng Việt. Ba bảng gold không có cột ngôn ngữ. Enrichment service tạo thêm ngôn ngữ ở task khác.
 - Một `poi_id` thuộc một nguồn. Dòng 3rd-party và dòng partner không dùng chung một biểu thức.
-- `best_time_from_month`, `best_time_to_month` đổi từ `string` sang `int`, và `cost` đổi từ `string` sang `bigint`, vì người dùng chốt giữ số và lấy `costVnd`.
+- `best_time_from_month` và `best_time_to_month` giữ số, kiểu `int`. Nghiệp vụ này thuộc model cũ, cùng với `time_to_spend` và `best_time_type`. `cost` không lấy `costVnd` từ model cũ.
 - `title`, `positive`, `negative`, `response_text` ra khỏi phạm vi.
 - `load_mode` giữ tên `APPEND`. Quy ước §6 chưa có giá trị này. Người dùng chấp nhận rủi ro ở `PC-08`.
-- `ward` partner dùng `coalesce(vietmap_ward, address.ward)` đúng notebook `2.1`. Phép gán cuối của `vietmap_district` không thấy, nên `district` partner chỉ lấy `address.district`.
+- `ward` partner không lấy `vietmap_ward`. Model mới không dùng bảng `poi_address_enrichment_staging` cho ba bảng `gld_enr_*`. Bảng đó bị suy ra từ notebook cũ.
 
 ## Sai lệch so với kiến trúc
 
@@ -19,7 +19,8 @@
 |---|---|---|---|---|
 | `PC-01` | P2 | `accepted-risk` | Giữ schema `lh_vv_gold.enr` và tiền tố `gld_enr_` (`MQ-024`, `BQ-007`). Không đổi về `lh_vv_gold.dbo` và `gld_srv_`. | |
 | `PC-03` | P2 | `accepted-risk` | Không có bảng rule riêng. `rule_home` là `TEMPLATE_EXCEPTION_NO_RULE_TABLE` (`MQ-054`). | |
-| `PC-05` | P1 | `accepted-risk` | Gold đọc `poi_address_enrichment_staging`. Luồng ghi gold áp nghiệp vụ đã chốt và tính `poi_id` partner cùng hash `review_id` trên bảng đích. | |
+| `PC-05` | P1 | `fixed` | Không có gold đọc gold. `poi_address_enrichment_staging` không thuộc model mới của task này. Đã bỏ khỏi Mapping và BRD (`MQ-060`, `BQ-027`). | |
+| `PC-05-logic` | P1 | `rejected-false-positive` | Gold được xử lý nghiệp vụ riêng của bảng gold. `time_to_spend`, `destination_name`, `destination_context` và `review_json` là nghiệp vụ riêng của `gld_enr_poi_info`. Silver giữ quyết định dùng chung. Bốn trường không còn là risk (`docs/context/01_DATA_MODEL.md §2`, sửa 12/10/2026). | |
 | `PC-07` | P2 | `accepted-risk` | Giữ `PL_VV_TRANS_SLV_TO_ENR_15P` và `NB_00_ORCHES_SLV_TO_ENR_15P` (`MQ-028`, `MQ-044`). | |
 | `PC-08` | P2 | `accepted-risk` | Giữ `load_mode` `APPEND`. Partner và 3rd-party append, không join (`MQ-027`, `MQ-058`). | |
 | `PC-09` | P2 | `accepted-risk` | `created_at` và `updated_at` gán mỗi lần ghi. `updated_at` thuộc khoá lịch sử (`MQ-030`, `MQ-039`, `MQ-052`). | |
@@ -59,4 +60,7 @@ Giá trị quyết định hợp lệ: `fixed`, `accepted-risk`, `rejected-false
 - 2026-10-12: người dùng yêu cầu sửa agent để `BQ-024` đóng `AG-001` đến `AG-007`, rồi commit và push `main` nếu không còn vấn đề. Main thêm mục "Out-of-scope legacy physical facts". Claude CLI trên Mapping phiên bản 12 và BRD phiên bản 10 trả `EVIDENCE_REQUIRED`. `AG-001` đến `AG-009` đóng. Còn `AQ-001` (`review_text`), `AQ-002` (`MQ-055` trên `RULE-003` đến `RULE-006`) và `AQ-003` (`ID-005`). Chưa commit, chưa push.
 - 2026-10-12: `review_text` lấy `slv_3p_poi_review.text`. Bỏ `MQ-055`. Partner và 3rd-party append, không join. `source_id` luôn có trên dòng từng nguồn. Bỏ luật bắt buộc `src_id`. Xóa `ID-005`. `notebooks_lgc` chỉ để đối chiếu nghiệp vụ trường, không phải model thiết kế. Mapping phiên bản 13, BRD phiên bản 11.
 - 2026-10-12: Claude CLI trên Mapping phiên bản 13 và BRD phiên bản 11 trả `USER_DECISION`. Không còn gap và không còn câu hỏi. 0/3 `MAPPED` vì còn vi phạm nền tảng đã được người dùng giữ: schema `enr`, không có bảng rule riêng, gold đọc gold và xử lý nghiệp vụ, tên pipeline và orchestrator, `load_mode` `APPEND`, `created_at` và `updated_at` gán mỗi lần ghi.
-- 2026-10-12: người dùng `accept-risk` cho `PC-01`, `PC-03`, `PC-05`, `PC-07`, `PC-08` và `PC-09`. Main ghi `accepted-risk` ở mục xử lý findings. Không sửa Mapping và BRD.
+- 2026-10-12: người dùng xác nhận không có bảng `poi_address_enrichment_staging` trong task này. Bảng đó bị suy ra từ model cũ. Model cũ chỉ còn nghiệp vụ của `time_to_spend`, `best_time_type`, `best_time_from_month`, `best_time_to_month`. `destination_context` dùng `short_address`, `district`, `city` của `slv_3p_poi_address`. Mapping phiên bản 15, BRD phiên bản 13.
+- 2026-10-12: `gld_enr_poi_review` chỉ có 3rd-party, không có partner. Bỏ `source_review_id`. `review_id` copy `slv_3p_poi_review.review_id`, không hash. Mapping phiên bản 16, BRD phiên bản 14.
+- 2026-10-12: `poi_id` partner tính ở silver, bảng `slv_pn_poi`. Cột: `poi_id`, `business_service_id`, `name`, `short_address`, `ward`, `district`, `province_name`. Gold info copy `poi_id`. Gold coordinate copy `poi_id`, `name`, `short_address`, `ward`, `district`, `province_name`. Mapping phiên bản 17, BRD phiên bản 15.
+- 2026-10-12: người dùng sửa nghĩa gold. Gold xử lý nghiệp vụ riêng của bảng gold. Silver giữ quyết định dùng chung. `time_to_spend`, `destination_name`, `destination_context` và `review_json` không còn là risk. `docs/context/01_DATA_MODEL.md` mục 2 đã sửa.

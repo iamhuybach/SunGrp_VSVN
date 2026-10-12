@@ -110,8 +110,8 @@ Bảng cũ không theo tiền tố trên, như `poi_master`, `destination_ward_m
 
 - Chỉ Eventstream ghi bronze, bằng append. Bronze không sửa, không xoá (`docs/context/01_DATA_MODEL.md §1`, `§2`). Yêu cầu không có bảng đích ở bronze.
 - Silver L1 chỉ đưa payload về đúng cấu trúc nguồn và chuyển kiểu theo cấu hình. Silver L1 không có rule nghiệp vụ (`docs/context/01_DATA_MODEL.md §2`).
-- Rule nghiệp vụ chỉ nằm ở silver L2 (`slv_poi_*`) hoặc bảng `ref_*`. 1 dòng của bảng `ref_*` là 1 rule (`docs/context/01_DATA_MODEL.md §2`, `AGENTS.md §9`).
-- Gold chỉ đồng bộ và phơi dữ liệu: join theo khoá, gom, tính `row_hash`, lọc theo cờ silver. Gold không xử lý nghiệp vụ và không đọc gold khác (`docs/context/01_DATA_MODEL.md §2`).
+- Rule nghiệp vụ dùng chung chỉ nằm ở silver L2 (`slv_poi_*`) hoặc bảng `ref_*`. 1 dòng của bảng `ref_*` là 1 rule (`docs/context/01_DATA_MODEL.md §2`, `AGENTS.md §9`).
+- Gold phơi dữ liệu và xử lý nghiệp vụ riêng của bảng gold đó: join theo khoá, gom, tính `row_hash`, lọc theo cờ silver, và biến đổi chỉ dùng cho bảng đó. Gold không đọc gold khác (`docs/context/01_DATA_MODEL.md §2`).
 - Tiền tố bảng khớp tầng theo bảng "Tiền tố bảng theo tầng".
 - `poi_id` không bao giờ chứa ngôn ngữ. Không dùng `poi_uid` (`AGENTS.md §9`).
 - Tên cột nghiệp vụ không trùng cột kỹ thuật của tầng (`docs/context/02_NAMING_CONVENTION.md §5.2`).
@@ -125,7 +125,7 @@ Bảng cũ không theo tiền tố trên, như `poi_master`, `destination_ward_m
 | `brd_id` | `BRD-20261012-map-gld-enr-poi-tables` |
 | `task_id` | `20261012-map-gld-enr-poi-tables` |
 | `mapping_id` | `MAP-20261012-map-gld-enr-poi-tables` |
-| `version` | `11` |
+| `version` | `16` |
 | `doc_status` | `READY_FOR_ANALYSIS` |
 | `owner_role` | `data-platform` |
 | `updated_on` | `2026-10-12` |
@@ -134,7 +134,7 @@ Bảng cũ không theo tiền tố trên, như `poi_master`, `destination_ward_m
 
 Enrichment service cần ba bảng Delta để đọc dữ liệu POI trước khi chuẩn hóa. Nguồn hiện tại chỉ có tiếng Việt. Luồng này gom dữ liệu tiếng Việt để service tạo thêm ngôn ngữ. Dữ liệu service trả về sau khi enrich là một task khác (`BQ-001`).
 
-Ba bảng giữ schema `lh_vv_gold.enr` và tiền tố `gld_enr_` (`BQ-007`). `poi_id` không chứa ngôn ngữ. Dòng 3rd-party và dòng partner mỗi bên dùng công thức `poi_id` của model mới. Khi một bảng dùng cả hai nguồn, các dòng được append, không join (`BQ-026`). Notebook trong `notebooks_lgc` chỉ để đối chiếu hoặc lấy logic nghiệp vụ của trường, không phải model thiết kế (`BQ-024`).
+Ba bảng giữ schema `lh_vv_gold.enr` và tiền tố `gld_enr_` (`BQ-007`). `poi_id` không chứa ngôn ngữ. Khi một bảng dùng cả hai nguồn, các dòng được append, không join (`BQ-026`). Model cũ chỉ cung cấp nghiệp vụ của `time_to_spend`, `best_time_type`, `best_time_from_month` và `best_time_to_month` (`BQ-028`). `destination_context` dùng cột địa chỉ của model mới.
 
 ## 3. Phạm vi
 
@@ -146,7 +146,7 @@ Ba bảng giữ schema `lh_vv_gold.enr` và tiền tố `gld_enr_` (`BQ-007`). `
 | `SCOPE-004` | `OUT` | Đổi tên ba bảng sang `gld_srv_<chủ đề>_<grain>` | `USER_STATED` | `BQ-007` |
 | `SCOPE-005` | `OUT` | Cột `title`, `positive`, `negative`, `response_text` trên `gld_enr_poi_review`, và cột `description` trên `gld_enr_poi_info` | `USER_STATED` | `MQ-003`, `USER_INPUT` |
 | `SCOPE-006` | `OUT` | Dữ liệu enrichment service trả về sau khi xử lý xong | `USER_STATED` | `BQ-001` |
-| `SCOPE-007` | `OUT` | Probe schema, grain, khoá, cột vật lý và phân bố dữ liệu của model cũ: `poi_enrichment`, `poi_address_enrichment_staging`, key JSON `address` của partner, giá trị `locale`, `reviewId` trên bronze, và `language_code` | `USER_STATED` | `BQ-024` |
+| `SCOPE-007` | `OUT` | Suy diễn từ model cũ: bảng `poi_enrichment`, bảng `poi_address_enrichment_staging`, key JSON địa chỉ partner, `vietmap_ward`, `vietmap_province`, và `costVnd` | `USER_STATED` | `BQ-028` |
 
 ## 4. Bên sử dụng dữ liệu
 
@@ -158,21 +158,20 @@ Ba bảng giữ schema `lh_vv_gold.enr` và tiền tố `gld_enr_` (`BQ-007`). `
 
 | req_id | priority | statement | consumer_id | trg_tbl | trg_name_status | grain | grain_evidence | key_columns | key_evidence | rule_ids | id_rule_ids | context_ref | note |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `BR-001` | `MUST` | `gld_enr_poi_info` ghi bằng `APPEND`. 1 dòng lịch sử là (`poi_id`, `updated_at`). Append khi POI tạo mới hoặc có update. Không có soft delete. Không có `description`. Cột mới của POI partner là NULL. Logic trường lấy từ notebook legacy chỉ là tham chiếu nghiệp vụ, không áp dụng 100% | `CSM-001` | `gld_enr_poi_info` | `PROPOSED` | 1 dòng lịch sử append / (`poi_id`, `updated_at`) | `USER_STATED` | `poi_id`, `updated_at` | `USER_STATED` | `RULE-003`, `RULE-004`, `RULE-006` | `ID-003`, `ID-004` | `MQ-039`, `MQ-040`, `MQ-046`, `BQ-024` | `[PROPOSED]` |
-| `BR-002` | `MUST` | `gld_enr_poi_coordinate` ghi bằng `APPEND`. 1 dòng lịch sử là (`poi_id`, `updated_at`). `destination_name` là chuỗi `coalesce(city, state_province)`. Partner của cột này là NULL. Không có soft delete. Địa chỉ partner lấy theo nghiệp vụ notebook cũ, không áp dụng 100% và không probe schema staging | `CSM-001` | `gld_enr_poi_coordinate` | `PROPOSED` | 1 dòng lịch sử append / (`poi_id`, `updated_at`) | `USER_STATED` | `poi_id`, `updated_at` | `USER_STATED` | `RULE-005` | `ID-003`, `ID-004` | `MQ-039`, `MQ-050`, `MQ-046`, `BQ-024` | `[PROPOSED]` |
-| `BR-003` | `MUST` | `gld_enr_poi_review` ghi bằng `APPEND`. 1 dòng lịch sử là (`review_id`, `updated_at`). Chỉ nguồn 3rd-party. Không có soft delete. `review_text` lấy `slv_3p_poi_review.text`. `review_date` và `review_updated_at` cast `time` sang `timestamp` | `CSM-001` | `gld_enr_poi_review` | `PROPOSED` | 1 dòng lịch sử append / (`review_id`, `updated_at`) | `USER_STATED` | `review_id`, `updated_at` | `USER_STATED` | | `ID-001`, `ID-002`, `ID-003` | `MQ-039`, `MQ-045`, `MQ-046`, `BQ-025` | `[PROPOSED]` |
+| `BR-001` | `MUST` | `gld_enr_poi_info` ghi bằng `APPEND`. 1 dòng lịch sử là (`poi_id`, `updated_at`). Append khi POI tạo mới hoặc có update. Không có soft delete. Không có `description`. Cột mới của POI partner là NULL. Partner `poi_id` copy từ `slv_pn_poi`. Model cũ chỉ cho nghiệp vụ `time_to_spend` và ba cột `best_time_*` | `CSM-001` | `gld_enr_poi_info` | `PROPOSED` | 1 dòng lịch sử append / (`poi_id`, `updated_at`) | `USER_STATED` | `poi_id`, `updated_at` | `USER_STATED` | `RULE-003`, `RULE-004`, `RULE-006` | `ID-003`, `ID-004` | `MQ-039`, `MQ-040`, `MQ-063` | `[PROPOSED]` |
+| `BR-002` | `MUST` | `gld_enr_poi_coordinate` ghi bằng `APPEND`. 1 dòng lịch sử là (`poi_id`, `updated_at`). `destination_name` là chuỗi `coalesce(city, state_province)` từ `slv_3p_poi_address`, partner là NULL. Không có soft delete. Partner `poi_id`, `name`, `short_address`, `ward`, `district`, `province_name` copy từ `slv_pn_poi` | `CSM-001` | `gld_enr_poi_coordinate` | `PROPOSED` | 1 dòng lịch sử append / (`poi_id`, `updated_at`) | `USER_STATED` | `poi_id`, `updated_at` | `USER_STATED` | `RULE-005` | `ID-003`, `ID-004` | `MQ-039`, `MQ-050`, `MQ-063` | `[PROPOSED]` |
+| `BR-003` | `MUST` | `gld_enr_poi_review` ghi bằng `APPEND`. 1 dòng lịch sử là (`review_id`, `updated_at`). Chỉ nguồn 3rd-party, không có partner. Không có `source_review_id`. `review_id` copy `slv_3p_poi_review.review_id`, không hash. `review_text` lấy `text`. `review_date` và `review_updated_at` cast `time` sang `timestamp` | `CSM-001` | `gld_enr_poi_review` | `PROPOSED` | 1 dòng lịch sử append / (`review_id`, `updated_at`) | `USER_STATED` | `review_id`, `updated_at` | `USER_STATED` | | `ID-003` | `MQ-039`, `MQ-045`, `MQ-062` | `[PROPOSED]` |
 
 ## 6. Nguồn dữ liệu
 
 | ds_id | req_ids | layer | lakehouse_schema | src_tbl | src_columns | name_status | evidence_status | context_ref | note |
 |---|---|---|---|---|---|---|---|---|---|
-| `DS-001` | `BR-001`, `BR-002`, `BR-003` | `silver_l1` | `lh_vv_silver.dbo` | `slv_3p_poi` | `poi_name`, `types_json`, `business_sector`, `business_category`, `source_name`, `source_id` | `EXISTING` | `CONTEXT_STATED` | `docs/context/01_DATA_MODEL.md §5.2`, `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS_3P` | |
-| `DS-002` | `BR-001`, `BR-002` | `silver_l1` | `lh_vv_silver.dbo` | `slv_pn_business_services` | `id`, `name`, `address` | `EXISTING` | `CONTEXT_STATED` | `docs/context/01_DATA_MODEL.md §5.1`, `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS` | `id` là `business_service_id` trong công thức `poi_id` partner. Bảng review không dùng partner |
-| `DS-003` | `BR-002` | `silver_l1` | `lh_vv_silver.dbo` | `slv_pn_business_service_i18ns` | `name`, `locale` | `EXISTING` | `CONTEXT_STATED` | `docs/context/01_DATA_MODEL.md §5.1`, `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS` | Nghiệp vụ: chỉ lấy locale tiếng Việt cho `name` của coordinate. Không probe giá trị `locale` (`BQ-024`) |
-| `DS-004` | `BR-001` | | `lh_vv_silver.dbo` | `poi_enrichment` | `time_to_spend_minutes`, `best_time_type`, `best_time_from_month`, `best_time_to_month`, `cost_vnd` | `EXISTING` | `USER_STATED` | `BQ-024` | Đối chiếu nghiệp vụ trường `time_to_spend`, `best_time_*`, `cost`. Không phải model thiết kế. Không probe schema |
-| `DS-005` | `BR-001`, `BR-002` | `silver_l1` | `lh_vv_silver.dbo` | `slv_3p_poi_address` | `short_address`, `address_viet_map`, `ward`, `district`, `city`, `state_province`, `lat`, `lng` | `EXISTING` | `CONTEXT_STATED` | `docs/context/01_DATA_MODEL.md §5.2`, `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS_3P` | `destination_name` là `coalesce(city, state_province)` |
-| `DS-008` | `BR-002` | `gold` | `lh_vv_gold.dbo` | `poi_address_enrichment_staging` | `vietmap_ward`, `vietmap_province` | `EXISTING` | `USER_STATED` | `BQ-024` | Đối chiếu nghiệp vụ `ward` và `province_name` của partner. Không phải model thiết kế. Không probe grain, khoá hay cột |
-| `DS-007` | `BR-001`, `BR-003` | `silver_l1` | `lh_vv_silver.dbo` | `slv_3p_poi_review` | `review_id`, `text`, `time`, `published_at`, `rating` | `EXISTING` | `CONTEXT_STATED` | `docs/context/01_DATA_MODEL.md §4`, `§5.2`, `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS_3P` | `review_json` sắp `time` giảm, tối đa 20, `review_text` cắt 350 ký tự. `review_id` theo công thức đã chốt. Không probe `reviewId` trên bronze (`BQ-024`) |
+| `DS-001` | `BR-001`, `BR-002` | `silver_l1` | `lh_vv_silver.dbo` | `slv_3p_poi` | `poi_id`, `poi_name`, `types_json`, `business_sector`, `business_category`, `source_name`, `source_id` | `EXISTING` | `CONTEXT_STATED` | `docs/context/01_DATA_MODEL.md §5.2`, `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS_3P` | Gold copy `poi_id` 3rd-party từ đây. Bảng review không đọc bảng này |
+| `DS-002` | | `silver_l1` | `lh_vv_silver.dbo` | `slv_pn_business_services` | `id`, `name`, `address` | `EXISTING` | `CONTEXT_STATED` | `docs/context/01_DATA_MODEL.md §5.1`, `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS` | Đầu vào của `slv_pn_poi`. `id` là `business_service_id`. Gold không đọc bảng này |
+| `DS-003` | | `silver_l1` | `lh_vv_silver.dbo` | `slv_pn_business_service_i18ns` | `name`, `locale` | `EXISTING` | `CONTEXT_STATED` | `docs/context/01_DATA_MODEL.md §5.1`, `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS` | Đầu vào `name` của `slv_pn_poi`. Gold không đọc bảng này |
+| `DS-013` | `BR-001`, `BR-002` | `silver_l2` | `lh_vv_silver.dbo` | `slv_pn_poi` | `poi_id`, `business_service_id`, `name`, `short_address`, `ward`, `district`, `province_name` | `PROPOSED` | `USER_STATED` | `MQ-063` | `[PROPOSED]` 1 dòng / `poi_id`. Gold info copy `poi_id`. Gold coordinate copy `poi_id`, `name`, `short_address`, `ward`, `district`, `province_name` |
+| `DS-005` | `BR-001`, `BR-002` | `silver_l1` | `lh_vv_silver.dbo` | `slv_3p_poi_address` | `short_address`, `address_viet_map`, `ward`, `district`, `city`, `state_province`, `lat`, `lng` | `EXISTING` | `CONTEXT_STATED` | `docs/context/01_DATA_MODEL.md §4`, `§5.2`, `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS_3P` | `destination_name` là `coalesce(city, state_province)`. `destination_context` dùng `short_address`, `district`, `city` |
+| `DS-007` | `BR-001`, `BR-003` | `silver_l1` | `lh_vv_silver.dbo` | `slv_3p_poi_review` | `review_id`, `poi_id`, `text`, `time`, `published_at`, `rating` | `EXISTING` | `CONTEXT_STATED` | `docs/context/01_DATA_MODEL.md §5.2`, `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS_3P` | `review_id` của bảng review copy cột này, không hash. `review_json` sắp `time` giảm, tối đa 20, `review_text` cắt 350 ký tự |
 | `DS-009` | `BR-001` | `silver_l1` | `lh_vv_silver.dbo` | `slv_3p_poi_contact` | `website_url` | `EXISTING` | `CONTEXT_STATED` | `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS_3P` | |
 | `DS-010` | `BR-001` | `silver_l1` | `lh_vv_silver.dbo` | `slv_3p_poi_rating` | `rating_overall`, `rating_count` | `EXISTING` | `CONTEXT_STATED` | `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS_3P` | Cột đích `rating` lấy `rating_overall`. `userRatingCount` lấy `rating_count` |
 | `DS-011` | `BR-001` | `silver_l1` | `lh_vv_silver.dbo` | `slv_3p_poi_price` | `price_level` | `EXISTING` | `CONTEXT_STATED` | `notebooks/NB_CREATE_DDL.ipynb` `TABLE_CONFIGS_3P` | |
@@ -192,10 +191,8 @@ Ba bảng giữ schema `lh_vv_gold.enr` và tiền tố `gld_enr_` (`BQ-007`). `
 
 | id_rule_id | identifier | formula | applies_to | evidence_status | context_ref | note |
 |---|---|---|---|---|---|---|
-| `ID-001` | `review_id` | `HASH_SHA256(source_name, reviewId)` | `gld_enr_poi_review` | `USER_STATED` | `MQ-020` | Đã chốt. Không dùng hash của NB_20 và không dùng hash của `slv_3p_poi_review` |
-| `ID-002` | `source_review_id` | `reviewId` gốc | `gld_enr_poi_review` | `USER_STATED` | `MQ-021` | Đã chốt. Không hash |
-| `ID-003` | `poi_id` (3rd-party) | `uuid_format(md5(concat(source_name, source_id)))` (`HASH_MD5_UUID`) | Dòng 3rd-party của ba bảng `gld_enr_*`, và `slv_3p_poi_*` | `CONTEXT_STATED, USER_STATED` | `MQ-006`, `AGENTS.md §9`, `docs/context/01_DATA_MODEL.md §8` | Không có ngôn ngữ |
-| `ID-004` | `poi_id` (partner) | `uuid_format(md5('partner_portal' ‖ business_service_id))` | Dòng partner của `gld_enr_poi_info` và `gld_enr_poi_coordinate` | `CONTEXT_STATED, USER_STATED` | `MQ-006`, `MQ-045`, `AGENTS.md §9`, `docs/context/01_DATA_MODEL.md §8` | Không có ngôn ngữ. Bảng review không có nguồn partner. Notebook hiện tại trong `notebooks/` chưa gọi công thức này |
+| `ID-003` | `poi_id` (3rd-party) | `uuid_format(md5(concat(source_name, source_id)))` (`HASH_MD5_UUID`) | Dòng 3rd-party của `gld_enr_poi_info`, `gld_enr_poi_coordinate`, và `slv_3p_poi_*` | `CONTEXT_STATED, USER_STATED` | `MQ-006`, `MQ-062`, `AGENTS.md §9`, `docs/context/01_DATA_MODEL.md §8` | Không có ngôn ngữ. Bảng review copy `slv_3p_poi_review.poi_id`, không hash lại |
+| `ID-004` | `poi_id` (partner) | `uuid_format(md5('partner_portal' ‖ business_service_id))` | `slv_pn_poi` | `CONTEXT_STATED, USER_STATED` | `MQ-006`, `MQ-063`, `AGENTS.md §9`, `docs/context/01_DATA_MODEL.md §8` | Không có ngôn ngữ. Tính ở silver. Gold info và coordinate chỉ copy `poi_id`. Bảng review không có partner |
 
 ## 9. Yêu cầu phi chức năng
 
@@ -207,8 +204,8 @@ Ba bảng giữ schema `lh_vv_gold.enr` và tiền tố `gld_enr_` (`BQ-007`). `
 
 | ac_id | req_ids | criterion | how_to_check | evidence_status | context_ref | note |
 |---|---|---|---|---|---|---|
-| `AC-001` | `BR-001`, `BR-002`, `BR-003` | Mapping có các cột info từ `COL-001`, `COL-003` đến `COL-010`, `COL-035` đến `COL-048`, 11 cột coordinate và 9 cột review. Không còn `description` trên info | Đếm dòng mục 5 và đối chiếu `BR-001` | `USER_STATED` | `USER_INPUT` | |
-| `AC-002` | `BR-001`, `BR-003` | `review_id` là `HASH_SHA256(source_name, reviewId)` và `source_review_id` là `reviewId` gốc | Đọc `ID-001` và `ID-002` | `USER_STATED` | `MQ-020`, `MQ-021` | |
+| `AC-001` | `BR-001`, `BR-002`, `BR-003` | Mapping có các cột info từ `COL-001`, `COL-003` đến `COL-010`, `COL-035` đến `COL-048`, 11 cột coordinate và 8 cột review. Không còn `description` trên info và không còn `source_review_id` trên review | Đếm dòng mục 5 và đối chiếu `BR-001` | `USER_STATED` | `MQ-062` | |
+| `AC-002` | `BR-003` | `review_id` copy `slv_3p_poi_review.review_id`. Không có `source_review_id` | Đọc Mapping `COL-022` và câu trả lời `MQ-062` | `USER_STATED` | `MQ-062` | |
 | `AC-003` | `BR-001`, `BR-002` | `poi_id` 3rd-party và partner không chứa ngôn ngữ, theo `ID-003` và `ID-004` | Đọc Mapping `COL-001` | `USER_STATED` | `MQ-006` | |
 | `AC-004` | `BR-003` | `rating` là số trên thang 5 sao, kiểu `decimal(3,1)` | Đọc Mapping `COL-025` và câu trả lời `MQ-051` | `USER_STATED` | `MQ-051` | |
 
@@ -235,8 +232,8 @@ Không còn mâu thuẫn mở. `BCONF-007` chốt fallback `state_province`. `BC
 | `BQ-005` | `NFR-001` | Nhịp của ba bảng là gì? | `USER_ANSWER` | 15 phút một lần, orchestrator `NB_00_ORCHES_SLV_TO_GLD`. | `2026-10-12` |
 | `BQ-007` | `SCOPE-001`, `SCOPE-004` | Giữ `lh_vv_gold.enr` và `gld_enr_` hay đổi tên? | `USER_ANSWER` | Giữ `lh_vv_gold.enr` và `gld_enr_`. | `2026-10-12` |
 | `BQ-008` | `ID-003`, `ID-004` | `poi_id` dùng công thức nào? | `USER_ANSWER` | 3rd-party không ngôn ngữ và partner không ngôn ngữ, theo model mới. Nguồn chỉ có tiếng Việt. | `2026-10-12` |
-| `BQ-009` | `ID-001` | `review_id` dùng công thức nào? | `USER_ANSWER` | `HASH_SHA256(source_name, reviewId)`. | `2026-10-12` |
-| `BQ-010` | `ID-002` | `source_review_id` là gì? | `USER_ANSWER` | `reviewId` gốc. | `2026-10-12` |
+| `BQ-009` | `BR-003` | `review_id` dùng công thức nào? | `USER_ANSWER` | Câu này bị thay bởi `BQ-029`: copy `slv_3p_poi_review.review_id`, không hash. | `2026-10-12` |
+| `BQ-010` | `BR-003` | `source_review_id` là gì? | `USER_ANSWER` | Câu này bị thay bởi `BQ-029`: bỏ cột `source_review_id`. | `2026-10-12` |
 | `BQ-011` | `COL-009` | `created_at` và `updated_at` theo câu nào trong hai câu đã ghi? | `USER_ANSWER` | Đổi mỗi lần ghi. | `2026-10-12` |
 | `BQ-012` | `COL-013` | Partner lấy `short_address` từ `full_address` hay `street`? | `USER_ANSWER` | `address.full_address`. | `2026-10-12` |
 | `BQ-013` | `COL-016` | 3rd-party lấy `province_name` từ `city` hay `state_province`? | `USER_ANSWER` | `city`. | `2026-10-12` |
@@ -250,6 +247,10 @@ Không còn mâu thuẫn mở. `BCONF-007` chốt fallback `state_province`. `BC
 | `BQ-021` | `COL-044` | `rating` của bảng info lấy `rating_overall` hay cột `rating`? | `USER_ANSWER` | Tên đích giữ `rating`. Nguồn là `slv_3p_poi_rating.rating_overall`. | `2026-10-12` |
 | `BQ-022` | `COL-043`, `COL-047`, `COL-048` | `{address}`, `{province}`, text giờ mở cửa, `Title`, `Positive`, `Negative` và cột sắp review lấy từ đâu? | `USER_ANSWER` | `destination_context` dùng `short_address`, `district`, `city` và `destination_name`. `opening_hours_text` copy 1:1 từ `periods_json`. Dòng review không cần Title, Positive, Negative. | `2026-10-12` |
 | `BQ-023` | `COL-035` | Các cột mới của `gld_enr_poi_info` với dòng partner là NULL hay có nguồn riêng? | `USER_ANSWER` | Không lấy partner. POI partner thì NULL. | `2026-10-12` |
-| `BQ-024` | `SCOPE-007`, `DS-003`, `DS-004`, `DS-007`, `DS-008` | Có probe schema, grain, khoá và phân bố dữ liệu của model cũ không? | `USER_ANSWER` | Không. Các mục đó thuộc model cũ, ngoài phạm vi task. `notebooks_lgc` chỉ để đối chiếu hoặc lấy logic nghiệp vụ của trường, không phải model thiết kế. | `2026-10-12` |
+| `BQ-024` | `DS-003`, `DS-007` | Có probe schema và dữ liệu của model cũ không? | `USER_ANSWER` | Không. Model cũ chỉ cung cấp nghiệp vụ bốn trường ở `BQ-028`. | `2026-10-12` |
 | `BQ-025` | `BR-003`, `COL-027` | Cột chữ review trên `gld_enr_poi_review` tên gì và lấy từ đâu? | `USER_ANSWER` | Giữ tên `review_text`. Lấy từ `slv_3p_poi_review.text`. | `2026-10-12` |
 | `BQ-026` | `BR-001`, `BR-002`, `BR-003` | Khi một bảng đích dùng cả partner và 3rd-party thì hai nguồn join hay append? | `USER_ANSWER` | Append, không join. `source_id` luôn có trên dòng của từng nguồn. Bỏ luật bắt buộc phải có `src_id`. | `2026-10-12` |
+| `BQ-027` | `BR-002`, `COL-014`, `COL-016` | Ba bảng `gld_enr_*` có đọc `poi_address_enrichment_staging` không? | `USER_ANSWER` | Không. Bảng đó không thuộc model mới của task này. Nó bị suy ra từ notebook cũ. | `2026-10-12` |
+| `BQ-028` | `SCOPE-007`, `BR-001`, `BR-002`, `COL-003`, `COL-004`, `COL-005`, `COL-006`, `COL-007`, `COL-043` | Model cũ còn được dùng cho trường nào? | `USER_ANSWER` | Chỉ nghiệp vụ của `time_to_spend`, `best_time_type`, `best_time_from_month`, `best_time_to_month`. `destination_context` dùng cột địa chỉ của model mới. | `2026-10-12` |
+| `BQ-029` | `BR-003`, `COL-022` | `gld_enr_poi_review` lấy `review_id` từ đâu, và còn `source_review_id` không? | `USER_ANSWER` | Chỉ 3rd-party, không có partner. Bỏ `source_review_id`. `review_id` copy `slv_3p_poi_review.review_id`, không hash. | `2026-10-12` |
+| `BQ-030` | `DS-013`, `ID-004`, `COL-001`, `COL-011` | `poi_id` partner tính ở đâu, bảng silver tên gì? | `USER_ANSWER` | Tính ở silver. Bảng tên `slv_pn_poi`. Gold info và coordinate chỉ copy. | `2026-10-12` |
