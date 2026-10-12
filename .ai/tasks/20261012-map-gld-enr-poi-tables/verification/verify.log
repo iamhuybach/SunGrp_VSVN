@@ -1,0 +1,24 @@
+# Verification 2026-10-12 19:32:02 — PASS
+Files (17): docs/AGENT_PROMPT_SAMPLES.md, notebooks_lgc/3rd_data_ingested_orches/NB_00_POI_PIPELINE_ORCHESTRATOR.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_10_BRONZE_TO_SILVER_PREPROCESS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_20_SILVER_POI_COMPONENTS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_30_SILVER_POI_ENTITY_ENRICHMENT.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_40_GOLD_POI_SERVING.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_50_GOLD_POI_AI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_60_POI_DATA_QUALITY.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_VERIFY_DATA.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/1. parsing_bronze_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.1. transform_partner_to_gold_poi_master.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.2. nb_cms_transform.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.3. nb_transform_bronze_userprofile.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/3.1. enrich_partner_poi_via_google_vietmap.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/4. nb_data_enrichment_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/5. nb_prepare_product_for_ingestion.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/6. nb_push_data_to_KB_through_event_hub_partner.ipynb
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+......................                                                   [100%]
+22 passed in 0.47s
+
+## task-state: PASS
+

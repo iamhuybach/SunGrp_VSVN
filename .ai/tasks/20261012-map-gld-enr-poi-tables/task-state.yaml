@@ -2,8 +2,8 @@ schema_version: 1
 task:
   id: 20261012-map-gld-enr-poi-tables
   title: Draft mapping and BRD for gld_enr_poi tables
-  status: user_decision
-  owner: user
+  status: ready_to_merge
+  owner: main
   created_at: '2026-10-12'
   updated_at: '2026-10-12'
 classification:
@@ -43,7 +43,7 @@ models:
 gates:
   evidence: not_required
   architecture: not_required
-  local_verification: pending
+  local_verification: pass
   specialist_review: not_required
   risk_gate: not_required
   runtime: not_required
