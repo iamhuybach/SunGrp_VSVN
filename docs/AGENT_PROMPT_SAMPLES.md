@@ -26,6 +26,10 @@ Cursor Main chịu trách nhiệm điều phối và triển khai. Không tự c
 | Hướng dẫn vận hành sau khi agent dừng | Agent viết xong artifact nhưng câu trả lời không có bước chạy, yêu cầu cần người dùng làm, hoặc giải thích đủ để vận hành. |
 | Viết skill notebook, Claude Code soạn | Cần skill cho việc thiết kế notebook. Claude Code viết nội dung skill, Codex review, Main chỉ lưu nguyên văn. |
 | Giải thích task agent đã làm | Cần hiểu nghĩa một task, một quyết định, hoặc một đoạn code agent đã viết, kèm ví dụ. |
+| Điền Mapping và BRD cho bảng đích | Cần bộ Mapping và BRD theo mẫu VSVN, lấy logic từ nguồn đã chỉ, chưa viết notebook. |
+| Phân tích Mapping và BRD đã điền | Mapping và BRD đã có. Cần `requirements-analyst` đọc và xử lý kết quả phân tích, chưa viết notebook. |
+| Viết code từ bộ yêu cầu đã chốt | Mapping, BRD, decision và requirements-analysis đã có. Cần notebook, DDL và pipeline cho đúng bộ đó. |
+| Codex đánh giá xử lý và tốc độ | Code đã có. Bỏ một bước runtime đã chỉ. Codex đề xuất tối ưu, chưa sửa code. |
 
 ## 1. Task end-to-end thông thường
 
@@ -354,6 +358,180 @@ Trả lời bằng tiếng Việt, theo thứ tự này:
 4. Việc người vận hành cần làm tiếp, nếu có. Nếu không cần làm gì, ghi "Không cần làm thêm".
 
 Giữ command, path, tên bảng và tên cột bằng tiếng Anh. Không cam kết một bước Fabric DEV đã được chạy nếu log trong task không có kết quả đó. Không commit hoặc push.
+```
+
+## 17. Điền Mapping và BRD cho bảng đích
+
+```text
+Hãy lập bộ tài liệu yêu cầu cho các bảng đích sau. Chỉ viết Mapping và Business Requirements Document. Không viết notebook, DDL, pipeline, hay schema.
+
+Bảng đích:
+<tên bảng, schema, cột, kiểu, khóa, ghi chú người dùng đã cho>
+
+Nguồn logic nghiệp vụ:
+<đường dẫn notebook hoặc context người dùng chỉ định>
+
+Mẫu bắt buộc:
+- `docs/templates/MAPPING_TEMPLATE.md` (`VSVN-MAPPING-v1`)
+- `docs/templates/BRD_TEMPLATE.md` (`VSVN-BRD-v1`)
+
+Sao chép thành `docs/requirements/<task_id>/MAPPING.md` và `docs/requirements/<task_id>/BRD.md`. Giữ tên mục, tên cột và quy ước evidence của mẫu. Xóa dòng `[EXAMPLE]`. Prose tiếng Việt. Tên bảng, tên cột và identifier tiếng Anh.
+
+Mỗi cột đích có một dòng mapping. Công thức chỉ được ghi khi tìm thấy trong nguồn đã chỉ hoặc trong `docs/context/`. Ghi `context_ref` tới file và cell. Không thấy công thức thì để trống và đặt `MISSING_EVIDENCE`. Hai nguồn khác nhau thì đặt `CONFLICT` và thêm câu hỏi. Tên hoặc schema chưa có trong repository đặt `PROPOSED`.
+
+`doc_status` để `DRAFT`. Không gọi `requirements-analyst` trong lượt này. Không gọi architecture gate và không gọi review Codex. Không commit hoặc push.
+
+Tuân thủ AGENTS.md. Tạo canonical task, ghi Grok 4.7 Medium, phân loại riêng complexity, risk, architecture và evidence. Phạm vi task dừng ở hai file yêu cầu.
+```
+
+## 18. Phân tích Mapping và BRD đã điền
+
+```text
+Hãy phân tích và xử lý bộ yêu cầu đã điền sau. Không viết notebook, DDL, pipeline, hay schema.
+
+Task:
+<task_id>
+
+File:
+- `docs/requirements/<task_id>/MAPPING.md`
+- `docs/requirements/<task_id>/BRD.md`
+- `.ai/tasks/<task_id>/decision.md`
+
+Người dùng cho phép chuyển `doc_status` từ `DRAFT` sang `READY_FOR_ANALYSIS` khi hai file đã xóa hết dòng `[EXAMPLE]` và câu hỏi mở đã có câu trả lời trong `decision.md`.
+
+Việc Main được làm trên hai file yêu cầu:
+- Xóa dòng `[EXAMPLE]` còn sót.
+- Gán `doc_status` là `READY_FOR_ANALYSIS` và tăng `version`.
+- Không thêm rule, cột, khóa, hay công thức mới.
+
+Sau đó gọi agent `requirements-analyst` tại `.claude/agents/requirements-analyst.md`. Model `claude-opus-5-5`, effort `medium`. Input là `task_id` và hai đường dẫn Mapping, BRD. Agent đó chỉ được viết `.ai/tasks/<task_id>/requirements-analysis.md`. Main không viết file phân tích.
+
+Xử lý `ANALYSIS_STATUS`:
+- `INPUT_INVALID`: sửa đúng lỗi tài liệu được nêu, gọi analyst một lần nữa.
+- `EVIDENCE_REQUIRED` hoặc `USER_DECISION`: dừng và liệt kê từng mục còn thiếu.
+- `COMPLETE`: báo nội dung phân tích đã xong. Không mở implementation trong lượt này.
+
+Không gọi architecture gate. Không gọi review Codex. Không commit hoặc push. Tuân thủ AGENTS.md. Tiếp tục task hiện có, không tạo task mới.
+```
+
+## 19. Viết code từ bộ yêu cầu đã chốt
+
+```text
+Hãy viết full luồng code cho bộ yêu cầu đã chốt sau.
+
+## Nguồn yêu cầu
+
+- `docs/requirements/<task_id>/MAPPING.md`
+- `docs/requirements/<task_id>/BRD.md`
+- `.ai/tasks/<task_id>/decision.md`
+- `.ai/tasks/<task_id>/requirements-analysis.md`
+
+Đây là task implementation mới. Không mở lại task yêu cầu nếu task đó đã `ready_to_merge` và phạm vi chỉ là tài liệu. Mapping và BRD bản mới nhất, cùng `decision.md`, là nguồn rule. Ghi chú sửa ở đầu `requirements-analysis.md` thắng phần analyst bên dưới khi ghi chú nói phần đó đã lỗi thời.
+
+## Đối tượng mục tiêu
+
+- <bảng đích: schema, tên, grain, khóa, cách ghi>
+- <bảng nguồn silver được Mapping mục 3 nêu>
+- <notebook và pl_name được Mapping mục 2 nêu>
+
+## Cách lưu tài liệu
+
+- `architecture.md` chỉ do `python scripts/vv.py run-gate <task-id>` ghi khi status là `waiting_architecture`.
+- Code notebook, DDL, pipeline và seed do Main ghi sau architecture verdict `PASS`.
+- Lệch quy ước nền tảng ghi trong `decision.md` của task mới, bằng tiếng Việt, trước khi sửa code.
+- `runtime-runbook.md` viết bằng tiếng Việt khi cần chạy Fabric DEV.
+- Không sửa bốn file nguồn yêu cầu.
+
+## Tiêu chí nghiệm thu
+
+- Mỗi dòng Mapping mục 5 có biểu thức tương ứng trong notebook đích.
+- Cột và nguồn đã ghi là bỏ khỏi phạm vi không xuất hiện trong DDL.
+- `python scripts/vv.py verify <task-id>` pass.
+- Review `PASS` hoặc không còn P0, P1 mở.
+
+## Ràng buộc đã biết
+
+- <các quyết định người dùng đã chốt, gồm lệch quy ước nền tảng được phép giữ>
+- Không đổi thiết kế về quy ước cũ.
+- Không commit, push, merge.
+
+## Chỉ định Agent
+
+- Main: Cursor, Grok 4.7 Medium. Viết code, task state, `decision.md`, `runtime-runbook.md`.
+- Architect: Claude Code, model `claude-opus-5-5`, effort `high`. Chỉ viết `architecture.md` qua `python scripts/vv.py run-gate <task-id>`.
+- Review: Codex, model `gpt-5.6-sol`, effort `medium`, qua `python scripts/vv.py run-gate <task-id>` tại `reviewing`.
+- Không gọi `requirements-analyst` lại.
+- Không đổi sang model khác khi client fallback.
+
+## Workflow
+
+Tuân thủ AGENTS.md.
+
+1. Tạo task: `python scripts/vv.py new <slug>`.
+2. Ghi Main là Grok 4.7 Medium. Phân loại riêng complexity, risk, architecture và evidence. Architecture là bắt buộc.
+3. Ghi các lệch quy ước vào `decision.md` trước khi gọi architecture gate.
+4. Gọi `python scripts/vv.py run-gate <task-id>` tại `waiting_architecture`.
+5. Main viết code sau verdict `PASS`.
+6. Chạy `python scripts/vv.py verify <task-id>` trước review.
+7. Gọi `python scripts/vv.py run-gate <task-id>` tại `reviewing`. Reviewer gồm domain bị đụng. Chạy `risk-gate` khi risk là high hoặc critical.
+8. Viết `runtime-runbook.md` bằng tiếng Việt khi cần chạy Fabric DEV.
+
+Dừng và báo khi gate lỗi, khi thiếu evidence, hoặc khi còn P0, P1. Không commit hoặc push.
+```
+
+## 20. Codex đánh giá xử lý và tốc độ
+
+```text
+Hãy đánh giá đoạn code hiện tại về xử lý và tốc độ. Chỉ đề xuất. Không sửa notebook, pipeline, DDL, hay schema.
+
+Task:
+<task_id>
+
+Bước runtime được bỏ qua:
+<bước trong runtime-runbook.md mà người dùng cho phép không chạy>
+
+## Đối tượng mục tiêu
+
+- <notebook, pipeline, lib nằm trong scope của task-state.yaml>
+- Capacity Fabric F16 dùng chung.
+
+## Cách lưu tài liệu
+
+- Ghi quyết định bỏ bước runtime vào `decision.md` bằng tiếng Việt.
+- Lưu báo cáo Codex tại `.ai/tasks/<task_id>/reviews/performance-review.md`.
+- Không ghi đè `reviews/round-1.md` hoặc `reviews/round-2.md`.
+- Không sửa `runtime-runbook.md` để xóa bước được bỏ. Ghi trong `decision.md` là bước đó được người dùng cho qua.
+
+## Tiêu chí nghiệm thu
+
+- Báo cáo có model `gpt-5.6-sol` và effort `medium`.
+- Mỗi đề xuất có file, cell hoặc hàm, chi phí hiện tại, và cách đổi.
+- Đề xuất không làm đổi grain, khóa, hay rule đã chốt trong `decision.md`.
+- Không có file code nào đổi trong lượt này.
+
+## Ràng buộc đã biết
+
+- Không gọi `python scripts/vv.py run-gate` cho review nếu `rounds.review` đã là 2.
+- Không đặt `gates.runtime` thành `pass` khi bước bị bỏ chưa chạy.
+- Không chạy notebook hay pipeline trên Fabric.
+- Không commit, push, merge.
+
+## Chỉ định Agent
+
+- Main: Cursor, Grok 4.7 Medium. Điều phối, ghi `decision.md` và lưu báo cáo. Không sửa code.
+- Review: Codex CLI, model `gpt-5.6-sol`, effort `medium`, read-only. Gọi `spark-runtime-reviewer` và `sql-data-reviewer`.
+- Không gọi Architect. Không gọi `requirements-analyst`. Không dùng subagent Cursor thay Codex.
+- Nếu Codex fallback model, dừng và báo.
+
+## Workflow
+
+1. Đọc `task-state.yaml`, `decision.md`, `runtime-runbook.md` và các notebook trong scope.
+2. Ghi waiver của bước runtime được bỏ.
+3. Chạy Codex read-only với `--model gpt-5.6-sol` và `model_reasoning_effort=medium`.
+4. Lưu báo cáo. Liệt kê đề xuất theo mức ảnh hưởng.
+5. Dừng. Không áp đề xuất trong lượt này.
+
+Không commit hoặc push.
 ```
 
 ## Các điểm phải dừng
