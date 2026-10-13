@@ -17,6 +17,7 @@
 | `NB_00_ORCHES_SLV_TO_GLD.md` | Điều phối tính lại: tham số, luồng `orchestrate`, runbook | Khi sửa `NB_00_ORCHES_SLV_TO_GLD` |
 | `NB_LIB_TRANSFORM_SLV_GLD.md` | Thư viện tính lại: cạnh, hộp thư, khoá, ghim, QG, row_hash, MERGE, mọi hàm | Khi sửa lib |
 | `99_PAIN_POINTS.md` | Pain point, root cause, lỗi đã gặp, vấn đề còn mở, bài học | Trước khi đề xuất giải pháp (tránh lặp lỗi cũ) |
+| `3p-google/README.md` | Sample raw/normalized, rule ngành, amenity, và map xã phường | Khi sửa extract 3rd-party hoặc L2 phân loại / địa chỉ |
 
 ## Thứ tự đọc
 

@@ -1,0 +1,152 @@
+# Key tree: `raw_payload` sample (Google Places object)
+
+This tree is not a schema contract. It records keys and JSON types seen in one local sample file, `sample_3rd.txt`, read on 2026-10-13. No values are recorded.
+
+## File layout
+
+- The file holds 3 JSON objects. Line 1 holds objects A and B, concatenated with no separator. A and B have the same `id` and the same types. Line 2 holds object C.
+- A, B, and C have the same set of top-level keys.
+- Where the type differs between objects, both types are listed.
+- `null` means the key is present with JSON null. This is from this one sample only and does not mean the key is always null.
+- Absent means the key does not appear in that element.
+
+## Tree
+
+- `$`: object
+  - `id`: string
+  - `displayName`: string
+  - `formattedAddress`: string
+  - `shortFormattedAddress`: string
+  - `location`: object
+    - `latitude`: number
+    - `longitude`: number
+  - `types`: array of string
+  - `rating`: number
+  - `userRatingCount`: number (integer)
+  - `utcOffsetMinutes`: number (integer)
+  - `priceLevel`: null (A, B, C; this sample only)
+  - `priceRange`: null (A, B, C; this sample only)
+  - `businessStatus`: string
+  - `primaryType`: string
+  - `primaryTypeDisplayName`: object
+    - `text`: string
+    - `languageCode`: string
+  - `googleMapsUri`: string
+  - `internationalPhoneNumber`: null (A, B; this sample only) / string (C)
+  - `nationalPhoneNumber`: null (A, B; this sample only) / string (C)
+  - `websiteUri`: null (A, B; this sample only) / string (C)
+  - `plusCode`: object
+    - `globalCode`: string
+    - `compoundCode`: string
+  - `addressComponents`: array of object
+    - `longText`: string
+    - `shortText`: string
+    - `types`: array of string
+    - `languageCode`: string
+  - `currentOpeningHours`: null (A, B, C; this sample only)
+  - `regularOpeningHours`: null (A, B, C; this sample only)
+  - `regularSecondaryOpeningHours`: array; empty (A, B) / array of object (C)
+    - `openNow`: boolean
+    - `periods`: array of object
+      - `open`: object
+        - `day`: number
+        - `hour`: number
+        - `minute`: number
+      - `close`: object (absent in some elements)
+        - `day`: number
+        - `hour`: number
+        - `minute`: number
+    - `weekdayDescriptions`: array of string
+    - `secondaryHoursType`: string
+    - `nextOpenTime`: string (absent in some elements)
+    - `nextCloseTime`: string (absent in some elements)
+  - `currentSecondaryOpeningHours`: array; empty (A, B) / array of object (C)
+    - `openNow`: boolean
+    - `periods`: array of object
+      - `open`: object
+        - `day`: number
+        - `hour`: number
+        - `minute`: number
+        - `truncated`: boolean (absent in some elements)
+        - `date`: object
+          - `year`: number
+          - `month`: number
+          - `day`: number
+      - `close`: object
+        - `day`: number
+        - `hour`: number
+        - `minute`: number
+        - `truncated`: boolean (absent in some elements)
+        - `date`: object
+          - `year`: number
+          - `month`: number
+          - `day`: number
+    - `weekdayDescriptions`: array of string
+    - `secondaryHoursType`: string
+    - `nextOpenTime`: string (absent in some elements)
+    - `nextCloseTime`: string (absent in some elements)
+  - `photos`: array of object
+    - `name`: string
+    - `widthPx`: number (integer)
+    - `heightPx`: number (integer)
+    - `authorAttributions`: array of object
+      - `displayName`: string
+      - `uri`: string
+      - `photoUri`: string
+    - `flagContentUri`: string
+    - `googleMapsUri`: string
+  - `reviews`: array of object
+    - `name`: string
+    - `relativePublishTimeDescription`: string
+    - `rating`: number
+    - `text`: object
+      - `text`: string
+      - `languageCode`: string
+    - `originalText`: object
+      - `text`: string
+      - `languageCode`: string
+    - `authorAttribution`: object
+      - `displayName`: string
+      - `uri`: string
+      - `photoUri`: string
+    - `publishTime`: string
+    - `flagContentUri`: string
+    - `googleMapsUri`: string
+  - `parkingOptions`: object (A, B) / null (C; this sample only)
+    - `freeStreetParking`: boolean
+  - `paymentOptions`: object (A, B) / null (C; this sample only)
+    - `acceptsCashOnly`: boolean
+  - `accessibilityOptions`: null (A, B; this sample only) / object (C)
+    - `wheelchairAccessibleParking`: boolean
+    - `wheelchairAccessibleEntrance`: boolean
+  - `evChargeOptions`: null (A, B, C; this sample only)
+  - `fuelOptions`: null (A, B, C; this sample only)
+  - `servesCoffee`: boolean (A, B) / null (C; this sample only)
+  - `outdoorSeating`: boolean (A, B) / null (C; this sample only)
+  - `restroom`: boolean (A, B) / null (C; this sample only)
+  - `goodForChildren`: null (A, B; this sample only) / boolean (C)
+  - `servesBreakfast`, `servesBrunch`, `servesLunch`, `servesDinner`, `servesBeer`, `servesWine`, `servesCocktails`, `servesDessert`, `servesVegetarianFood`: null (A, B, C; this sample only)
+  - `allowsDogs`, `goodForGroups`, `goodForWatchingSports`, `liveMusic`, `menuForChildren`: null (A, B, C; this sample only)
+  - `reservable`, `takeout`, `delivery`, `dineIn`, `curbsidePickup`, `pureServiceAreaBusiness`: null (A, B, C; this sample only)
+  - `editorialSummary`, `generativeSummary`, `reviewSummary`: null (A, B, C; this sample only)
+  - `routingSummaries`: array, empty in A, B, C (element type unknown)
+  - `googleMapsLinks`: object
+    - `directionsUri`: string
+    - `placeUri`: string
+    - `writeAReviewUri`: string
+    - `reviewsUri`: string
+    - `photosUri`: string
+
+## Differences from the user cross-check tree of 2026-10-13
+
+The file is followed where the two disagree.
+
+- The file holds 3 objects, not 1 (see File layout).
+- `internationalPhoneNumber`, `nationalPhoneNumber`, `websiteUri`: null in A and B, string in C. The cross-check lists them as null.
+- `accessibilityOptions`: object with 2 boolean keys in C. The cross-check lists it as null.
+- `parkingOptions`, `paymentOptions`: null in C.
+- `servesCoffee`, `outdoorSeating`, `restroom`: null in C.
+- `goodForChildren`: boolean in C. The cross-check lists other `goodFor*` flags as null.
+- `regularSecondaryOpeningHours`, `currentSecondaryOpeningHours`: non-empty arrays of object in C, with the sub-structure shown above.
+- Sub-keys present in the file but not in the cross-check: `photos[].authorAttributions[]` (`displayName`, `uri`, `photoUri`); `reviews[].text` and `reviews[].originalText` are objects (`text`, `languageCode`); `reviews[].authorAttribution` is an object (`displayName`, `uri`, `photoUri`); `googleMapsLinks` keys (`directionsUri`, `placeUri`, `writeAReviewUri`, `reviewsUri`, `photosUri`); `addressComponents[].types` is an array of string.
+- Null keys present in the file but not named in the cross-check: `allowsDogs`, `liveMusic`, `menuForChildren`.

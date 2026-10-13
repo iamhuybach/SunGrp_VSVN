@@ -1,0 +1,1109 @@
+-----------sample_1-----------
+{
+  "source_id": "ChIJIxyu9V8XQjERaiYJjo8af0g",
+  "source": "GOOGLE",
+  "poi_name": "New's Coffee",
+  "poi_name_normalized": "new's coffee",
+  "business_sector": "f_n_b",
+  "business_category": "Café",
+  "subcategory_tags": [
+    "cafe",
+    "food",
+    "point_of_interest",
+    "establishment"
+  ],
+  "types": [
+    "cafe",
+    "food",
+    "point_of_interest",
+    "establishment"
+  ],
+  "operating_status": "operational",
+  "partner_id": null,
+  "slug": null,
+  "slug_history": null,
+  "price_level": null,
+  "star_rating": null,
+  "accommodation_type": null,
+  "country_code": "VN",
+  "language_code": "vi",
+  "created_at": "2026-10-09T06:41:41.021087110Z",
+  "awards": null,
+  "poi_address": {
+    "full_address": "55 Hồ Huân Nghiệp, Ngũ Hành Sơn, Đà Nẵng, Việt Nam",
+    "house_number": "55",
+    "street": "Hồ Huân Nghiệp",
+    "ward": "Ngũ Hành Sơn",
+    "district": "Quận Ngũ Hành Sơn",
+    "city": "Đà Nẵng",
+    "country": "Vietnam",
+    "country_code": "VN",
+    "postal_code": null,
+    "lat": 16.0387865,
+    "lng": 108.23790989999999,
+    "plus_code": "7P8C26QQ+G5",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "address_line1": "55, Hồ Huân Nghiệp, Phường Mỹ An, Quận Ngũ Hành Sơn, Thành phố Đà Nẵng",
+    "address_line2": "55, Hồ Huân Nghiệp, Ngũ Hành Sơn, Đà Nẵng",
+    "state_province": "Đà Nẵng",
+    "short_address": "55, Hồ Huân Nghiệp",
+    "address_google": "55 Hồ Huân Nghiệp, Ngũ Hành Sơn, Đà Nẵng, Việt Nam",
+    "address_viet_map": "20 Mỹ An 17 Phường Ngũ Hành Sơn,Thành phố Đà Nẵng",
+    "vietmap_status": "api_success",
+    "vietmap_message": null
+  },
+  "poi_rating": {
+    "rating_overall": 4.1,
+    "rating_count": 32,
+    "rating_breakdown": null,
+    "sub_ratings": null
+  },
+  "poi_contact": {
+    "phone": null,
+    "phone_raw": null,
+    "website_url": null,
+    "google_maps_url": "https://maps.google.com/?cid=5223923296638674538&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "social_links": null,
+    "delivery_links": null,
+    "booking_links": null
+  },
+  "poi_amenity": {
+    "ext_attributes": {
+      "short_formatted_address": "55 Hồ Huân Nghiệp, Ngũ Hành Sơn",
+      "parking_freeStreetParking": "true",
+      "payment_acceptsCashOnly": "true",
+      "primary_type_display": "Quán cà phê",
+      "gm_place_uri": "https://maps.google.com/?cid=5223923296638674538&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "businessStatus": "OPERATIONAL",
+      "utc_offset_minutes": "420",
+      "gm_photos_uri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a!10e5?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "routing_summaries_count": "0",
+      "googleMapsUri": "https://maps.google.com/?cid=5223923296638674538&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "outdoorSeating": "true",
+      "primaryType": "cafe",
+      "servesCoffee": "true",
+      "google_types": "cafe,food,point_of_interest,establishment",
+      "google_types_count": "4",
+      "gm_write_review_uri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a!12e1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "gm_reviews_uri": "https://www.google.com/maps/place//data=!4m4!3m3!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a!9m1!1b1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "restroom": "true",
+      "reviews_count": "5",
+      "photos_count": "10",
+      "gm_directions_uri": "https://www.google.com/maps/dir//''/data=!4m7!4m6!1m1!4e2!1m2!1m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a!3e0?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA"
+    },
+    "amenity_schema": {
+      "facilities": {
+        "type": "object",
+        "required": "required",
+        "main_cuisine": {
+          "type": "string",
+          "required": "required",
+          "multiple_lang": true,
+          "enum": [
+            "Café"
+          ]
+        },
+        "specialty_tags": {
+          "type": "array",
+          "required": "optional",
+          "item_type": "tag",
+          "multiple_lang": true,
+          "enum": [
+            "Coffee Shop"
+          ]
+        },
+        "space_and_services": {
+          "type": "array",
+          "required": "optional",
+          "item_type": "tag",
+          "multiple_lang": true,
+          "enum": [
+            "Outdoor Seating",
+            "Restroom",
+            "Serves Coffee"
+          ]
+        },
+        "additional_amenities": {
+          "type": "array",
+          "required": "optional",
+          "item_type": "tag",
+          "multiple_lang": true,
+          "enum": []
+        }
+      }
+    }
+  },
+  "poi_amenity_schema": null,
+  "facilities": {
+    "type": "object",
+    "required": "required",
+    "main_cuisine": {
+      "type": "string",
+      "required": "required",
+      "multiple_lang": true,
+      "enum": [
+        "Café"
+      ]
+    },
+    "specialty_tags": {
+      "type": "array",
+      "required": "optional",
+      "item_type": "tag",
+      "multiple_lang": true,
+      "enum": [
+        "Coffee Shop"
+      ]
+    },
+    "space_and_services": {
+      "type": "array",
+      "required": "optional",
+      "item_type": "tag",
+      "multiple_lang": true,
+      "enum": [
+        "Outdoor Seating",
+        "Restroom",
+        "Serves Coffee"
+      ]
+    },
+    "additional_amenities": {
+      "type": "array",
+      "required": "optional",
+      "item_type": "tag",
+      "multiple_lang": true,
+      "enum": []
+    }
+  },
+  "poi_media": [
+    {
+      "media_id": "265e298e425c6ddef66f247e1085246fb1cc7441",
+      "photo_api_uri": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMbY4Hgu60IY70MI1v7PfjebKOj6koY9rKvF-iFmQ9G9Uqij4GIdF0cSAjJE4_XRRNC6Sme2bGRdE02CC0HaEfFuZtgmsc7JTi-HtcRWtmg9xK0SOXGEjiaCN2pXjh3dvDwc9V5K3JzOPFadN19ZuU5fqDho-3VmxMl9JBV8YxTsRap7gbk1juGPFiX65vVrDiJCSadfNYBsk7CPr6IfEahAbUm9hFDZGVzhR2yr7Wor5d2-ueza_DLcKz2OAiMkK-Qcm4cG7bRe-yUs1hRAq3xF3w9N7HNNUXO99-qKsoChskufz7PjWngzwYNrfyKMoYok1eolO8ZWFDTkr5nmoNEmoauCl2d9ZsPQJUe3aAt_Q8XDLgARjOkprfRaARUI3Im-urfk6yrYzVq8471shC9u2A",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMbY4Hgu60IY70MI1v7PfjebKOj6koY9rKvF-iFmQ9G9Uqij4GIdF0cSAjJE4_XRRNC6Sme2bGRdE02CC0HaEfFuZtgmsc7JTi-HtcRWtmg9xK0SOXGEjiaCN2pXjh3dvDwc9V5K3JzOPFadN19ZuU5fqDho-3VmxMl9JBV8YxTsRap7gbk1juGPFiX65vVrDiJCSadfNYBsk7CPr6IfEahAbUm9hFDZGVzhR2yr7Wor5d2-ueza_DLcKz2OAiMkK-Qcm4cG7bRe-yUs1hRAq3xF3w9N7HNNUXO99-qKsoChskufz7PjWngzwYNrfyKMoYok1eolO8ZWFDTkr5nmoNEmoauCl2d9ZsPQJUe3aAt_Q8XDLgARjOkprfRaARUI3Im-urfk6yrYzVq8471shC9u2A/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMbY4Hgu60IY70MI1v7PfjebKOj6koY9rKvF-iFmQ9G9Uqij4GIdF0cSAjJE4_XRRNC6Sme2bGRdE02CC0HaEfFuZtgmsc7JTi-HtcRWtmg9xK0SOXGEjiaCN2pXjh3dvDwc9V5K3JzOPFadN19ZuU5fqDho-3VmxMl9JBV8YxTsRap7gbk1juGPFiX65vVrDiJCSadfNYBsk7CPr6IfEahAbUm9hFDZGVzhR2yr7Wor5d2-ueza_DLcKz2OAiMkK-Qcm4cG7bRe-yUs1hRAq3xF3w9N7HNNUXO99-qKsoChskufz7PjWngzwYNrfyKMoYok1eolO8ZWFDTkr5nmoNEmoauCl2d9ZsPQJUe3aAt_Q8XDLgARjOkprfRaARUI3Im-urfk6yrYzVq8471shC9u2A/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJIxyu9V8XQjERaiYJjo8af0g_265e298e425c6ddef66f247e1085246fb1cc7441.jpg",
+      "media_type": "photo",
+      "category": "exterior",
+      "is_blessed": true,
+      "display_order": 1,
+      "photographer": "Phàm Hạ Phi",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 462240,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "8cc8dc44c60d286adafb6407b71198dd98846ad4",
+      "photo_api_uri": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMapDlafXSmcG0pnGUGZ8DIPQ5q8v5SXS5eohjpQcYzT7QymxNmSuUKEH6G7AVNM--9kALkuvf_bqFW9hu_erpx6Iapc7vEJqPZS_swMKEsaux2p_9p_tlc-lxyWAL35foainM-eTgMLs0ojksKpcga09_VwJ_rLyijPkcickYJKYemmDd9fq_SUpPPPg5GCE66J_a0Egk-T69No05wmW2Qhmt66Sk0CbBEnRKPflmJFRD-Z5oZxAqus-K80tuoeGCj98F6ChYz2FbWwpF5_8i-JUID9SRMHOUHMyIK5BoDw6LQ8iC4OLshLfshk5U2IGxq9clYW0qqa8EMn75u-RnKeYvrNsLKJTE4PxJ5BP4zu8oIRCwE8rwS7A1Y7RrvAKAe5ywjdDF8hd48k78iEpMf-NPpxaY8",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMapDlafXSmcG0pnGUGZ8DIPQ5q8v5SXS5eohjpQcYzT7QymxNmSuUKEH6G7AVNM--9kALkuvf_bqFW9hu_erpx6Iapc7vEJqPZS_swMKEsaux2p_9p_tlc-lxyWAL35foainM-eTgMLs0ojksKpcga09_VwJ_rLyijPkcickYJKYemmDd9fq_SUpPPPg5GCE66J_a0Egk-T69No05wmW2Qhmt66Sk0CbBEnRKPflmJFRD-Z5oZxAqus-K80tuoeGCj98F6ChYz2FbWwpF5_8i-JUID9SRMHOUHMyIK5BoDw6LQ8iC4OLshLfshk5U2IGxq9clYW0qqa8EMn75u-RnKeYvrNsLKJTE4PxJ5BP4zu8oIRCwE8rwS7A1Y7RrvAKAe5ywjdDF8hd48k78iEpMf-NPpxaY8/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMapDlafXSmcG0pnGUGZ8DIPQ5q8v5SXS5eohjpQcYzT7QymxNmSuUKEH6G7AVNM--9kALkuvf_bqFW9hu_erpx6Iapc7vEJqPZS_swMKEsaux2p_9p_tlc-lxyWAL35foainM-eTgMLs0ojksKpcga09_VwJ_rLyijPkcickYJKYemmDd9fq_SUpPPPg5GCE66J_a0Egk-T69No05wmW2Qhmt66Sk0CbBEnRKPflmJFRD-Z5oZxAqus-K80tuoeGCj98F6ChYz2FbWwpF5_8i-JUID9SRMHOUHMyIK5BoDw6LQ8iC4OLshLfshk5U2IGxq9clYW0qqa8EMn75u-RnKeYvrNsLKJTE4PxJ5BP4zu8oIRCwE8rwS7A1Y7RrvAKAe5ywjdDF8hd48k78iEpMf-NPpxaY8/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJIxyu9V8XQjERaiYJjo8af0g_8cc8dc44c60d286adafb6407b71198dd98846ad4.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 2,
+      "photographer": "Nils",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 300789,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "a24a963ed1279cfcf5c6f61f58aaa69e8afb4a0e",
+      "photo_api_uri": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMa7SO2UUynrtV52BJ8ZQ-5MdihJ8f7on4mSeK3ncbWOWRKVNB2cgype_0ft82mnLVhxpV7n763g7y4r3rWtgtJv2LSe3BSPL_glr5hJ_i9sSr14-AwmR7hlA6UNLMmzjG-WnJX1UUQKZtaXGPF6SpfCkJ9I1XzbHQeL-e8wQls5pdmGBr1RnLbiqZ7z-yNgPCLo6pgsBJLl_6JZNo_LYF4PPyl31x5AaNsg3h9Bc-S1PKMQFeHMvTYaGeUM7wq4ZJ4k3EY2e4Ts9rPlowLflAg3trhiAqmyK_3Z1Vq7WvY2fR015Z_taxgrAx4BOOrj7Qfxh9iQcSddK9-9J2MVmbYWv2vEaZ-Fd6pgB2ZWDrkl-DzwsCF3jAL2VyYNt0rqdIOayB4EuO4LJ7lHbSbx40KCVOBtnig",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMa7SO2UUynrtV52BJ8ZQ-5MdihJ8f7on4mSeK3ncbWOWRKVNB2cgype_0ft82mnLVhxpV7n763g7y4r3rWtgtJv2LSe3BSPL_glr5hJ_i9sSr14-AwmR7hlA6UNLMmzjG-WnJX1UUQKZtaXGPF6SpfCkJ9I1XzbHQeL-e8wQls5pdmGBr1RnLbiqZ7z-yNgPCLo6pgsBJLl_6JZNo_LYF4PPyl31x5AaNsg3h9Bc-S1PKMQFeHMvTYaGeUM7wq4ZJ4k3EY2e4Ts9rPlowLflAg3trhiAqmyK_3Z1Vq7WvY2fR015Z_taxgrAx4BOOrj7Qfxh9iQcSddK9-9J2MVmbYWv2vEaZ-Fd6pgB2ZWDrkl-DzwsCF3jAL2VyYNt0rqdIOayB4EuO4LJ7lHbSbx40KCVOBtnig/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMa7SO2UUynrtV52BJ8ZQ-5MdihJ8f7on4mSeK3ncbWOWRKVNB2cgype_0ft82mnLVhxpV7n763g7y4r3rWtgtJv2LSe3BSPL_glr5hJ_i9sSr14-AwmR7hlA6UNLMmzjG-WnJX1UUQKZtaXGPF6SpfCkJ9I1XzbHQeL-e8wQls5pdmGBr1RnLbiqZ7z-yNgPCLo6pgsBJLl_6JZNo_LYF4PPyl31x5AaNsg3h9Bc-S1PKMQFeHMvTYaGeUM7wq4ZJ4k3EY2e4Ts9rPlowLflAg3trhiAqmyK_3Z1Vq7WvY2fR015Z_taxgrAx4BOOrj7Qfxh9iQcSddK9-9J2MVmbYWv2vEaZ-Fd6pgB2ZWDrkl-DzwsCF3jAL2VyYNt0rqdIOayB4EuO4LJ7lHbSbx40KCVOBtnig/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJIxyu9V8XQjERaiYJjo8af0g_a24a963ed1279cfcf5c6f61f58aaa69e8afb4a0e.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 3,
+      "photographer": "Dao Minh Phong",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 420664,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "466e56dead2c8ca7f0b0c56ca8184172ccc9a320",
+      "photo_api_uri": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMbXfsdke2E1CwybZVRGb8RztVMan11uBhyTBSShuRTP2FZUXFycPQgFoPIgY70igHUb97MGbml9VsunZVgnQeFDPrZhqWhdYPgJs4rylCvFJeJr2W9OK3AtIkxmj_eBKa0715xKY2o4cFL65wjNhraYHrFUlmncP_x4bCE7u_g9fkwWYdbzu-j8nd7_kDDGbb6B7AqJPnsXnzthoc0qDdCr1dx-EgzlK4mSLoGgRNJfcCfs7u_s6JI8TcTxRkfkAtYProftIAGgdYBn9Dsgwk5EDzP8xPk8nNmL2nHn1Wvx-SDbngrSvlHefOpj5jBQ5o_rNQxR29EkOpEd-8Ldpsz8QV7gV4KGCHyVPyspZCCDr6zkdRIoHR8wg0-cBBZw4kFUOs6oKavd0n6DBmaLVQw5maId8S0",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMbXfsdke2E1CwybZVRGb8RztVMan11uBhyTBSShuRTP2FZUXFycPQgFoPIgY70igHUb97MGbml9VsunZVgnQeFDPrZhqWhdYPgJs4rylCvFJeJr2W9OK3AtIkxmj_eBKa0715xKY2o4cFL65wjNhraYHrFUlmncP_x4bCE7u_g9fkwWYdbzu-j8nd7_kDDGbb6B7AqJPnsXnzthoc0qDdCr1dx-EgzlK4mSLoGgRNJfcCfs7u_s6JI8TcTxRkfkAtYProftIAGgdYBn9Dsgwk5EDzP8xPk8nNmL2nHn1Wvx-SDbngrSvlHefOpj5jBQ5o_rNQxR29EkOpEd-8Ldpsz8QV7gV4KGCHyVPyspZCCDr6zkdRIoHR8wg0-cBBZw4kFUOs6oKavd0n6DBmaLVQw5maId8S0/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMbXfsdke2E1CwybZVRGb8RztVMan11uBhyTBSShuRTP2FZUXFycPQgFoPIgY70igHUb97MGbml9VsunZVgnQeFDPrZhqWhdYPgJs4rylCvFJeJr2W9OK3AtIkxmj_eBKa0715xKY2o4cFL65wjNhraYHrFUlmncP_x4bCE7u_g9fkwWYdbzu-j8nd7_kDDGbb6B7AqJPnsXnzthoc0qDdCr1dx-EgzlK4mSLoGgRNJfcCfs7u_s6JI8TcTxRkfkAtYProftIAGgdYBn9Dsgwk5EDzP8xPk8nNmL2nHn1Wvx-SDbngrSvlHefOpj5jBQ5o_rNQxR29EkOpEd-8Ldpsz8QV7gV4KGCHyVPyspZCCDr6zkdRIoHR8wg0-cBBZw4kFUOs6oKavd0n6DBmaLVQw5maId8S0/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJIxyu9V8XQjERaiYJjo8af0g_466e56dead2c8ca7f0b0c56ca8184172ccc9a320.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 4,
+      "photographer": "Tuong m",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 315658,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "0b0f6c6ab2e6b45044c8ee2185f8befa8c8cb591",
+      "photo_api_uri": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMawSi_WuvMIdhnBzpiDUWiO2TcwUHT9fDcFt20w6EVAEfnU2gcX2GzMuVRNEsEeXL-psT_G1Cv4sy5pA8Yv3_pT4UKYPF4l_VMHcXNmcmyJrbiWt_QRY1E9tQyK1Vz0TDvxqxeleScwQk5UVBg8q1Xp9gjwWm4I0ld3TNeaSSzXiMJuM1n95YckiIIzfC1OMZjibZQKnKt4VgHe9iyAAULNOJZkUFpddmfBuFUvjYJHzpH2NWrKiLjQW-OA4SZTRZEAuceZhv6-HvFqwUZj9kBFx10RHCKZnb3YK_JH7ddkMzSSrQ9ICnYCKFEgs2Cwv5-DjzpuF2_G4izhT3p7T0GZBm-5XDF9gWf6-_JddAAAP-SK-n61lDQr8bYMFyjcyDk2bonvg9vojklwBWxQlVtL6iV0",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMawSi_WuvMIdhnBzpiDUWiO2TcwUHT9fDcFt20w6EVAEfnU2gcX2GzMuVRNEsEeXL-psT_G1Cv4sy5pA8Yv3_pT4UKYPF4l_VMHcXNmcmyJrbiWt_QRY1E9tQyK1Vz0TDvxqxeleScwQk5UVBg8q1Xp9gjwWm4I0ld3TNeaSSzXiMJuM1n95YckiIIzfC1OMZjibZQKnKt4VgHe9iyAAULNOJZkUFpddmfBuFUvjYJHzpH2NWrKiLjQW-OA4SZTRZEAuceZhv6-HvFqwUZj9kBFx10RHCKZnb3YK_JH7ddkMzSSrQ9ICnYCKFEgs2Cwv5-DjzpuF2_G4izhT3p7T0GZBm-5XDF9gWf6-_JddAAAP-SK-n61lDQr8bYMFyjcyDk2bonvg9vojklwBWxQlVtL6iV0/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMawSi_WuvMIdhnBzpiDUWiO2TcwUHT9fDcFt20w6EVAEfnU2gcX2GzMuVRNEsEeXL-psT_G1Cv4sy5pA8Yv3_pT4UKYPF4l_VMHcXNmcmyJrbiWt_QRY1E9tQyK1Vz0TDvxqxeleScwQk5UVBg8q1Xp9gjwWm4I0ld3TNeaSSzXiMJuM1n95YckiIIzfC1OMZjibZQKnKt4VgHe9iyAAULNOJZkUFpddmfBuFUvjYJHzpH2NWrKiLjQW-OA4SZTRZEAuceZhv6-HvFqwUZj9kBFx10RHCKZnb3YK_JH7ddkMzSSrQ9ICnYCKFEgs2Cwv5-DjzpuF2_G4izhT3p7T0GZBm-5XDF9gWf6-_JddAAAP-SK-n61lDQr8bYMFyjcyDk2bonvg9vojklwBWxQlVtL6iV0/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJIxyu9V8XQjERaiYJjo8af0g_0b0f6c6ab2e6b45044c8ee2185f8befa8c8cb591.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 5,
+      "photographer": "Nguyễn Thành Nghĩa",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 1050562,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    }
+  ],
+  "poi_price": null,
+  "poi_content": null,
+  "poi_review": [
+    {
+      "author_name": "Nghia Nguyen Trung",
+      "rating": 3,
+      "text": "phục vụ tốt, giá rẻ (cà phê đá chỉ 12k). không gian thoáng , nước trà (chè tươi nấu)",
+      "time": "2023-06-25T02:39:56.815578Z",
+      "source": "google"
+    },
+    {
+      "author_name": "Binh Huynh",
+      "rating": 3,
+      "text": "Cà phê rẻ, chỗ ngồi thoáng, phục vụ chu đáo.",
+      "time": "2018-09-11T10:08:03.315843Z",
+      "source": "google"
+    },
+    {
+      "author_name": "Tài Lê",
+      "rating": 5,
+      "text": "View đẹp! Yên tĩnh! Giá siêu sinh viên",
+      "time": "2020-01-10T16:22:38.443609Z",
+      "source": "google"
+    },
+    {
+      "author_name": "David Dai",
+      "rating": 1,
+      "text": "Ăn xong về đau bụng",
+      "time": "2019-04-16T06:38:39.123292Z",
+      "source": "google"
+    },
+    {
+      "author_name": "Hung Phan Tri",
+      "rating": 4,
+      "text": "Lịch sự và yên tỉnh",
+      "time": "2018-11-24T03:38:01.644847109Z",
+      "source": "google"
+    }
+  ],
+  "poi_opening_hours": null,
+  "policies": null,
+  "extra_info": {},
+  "poi_id": "ae9b4b2b-34bd-31bd-9196-fb728496ff7c"
+}
+-----------sample_2-----------
+{
+  "source_id": "ChIJJ3zdG64NQjERgwO4haCMmvY",
+  "source": "GOOGLE",
+  "poi_name": "Little Oasis Hội An",
+  "poi_name_normalized": "little oasis hội an",
+  "business_sector": "accommodation",
+  "business_category": "Hotel",
+  "subcategory_tags": [
+    "hotel",
+    "lodging",
+    "point_of_interest",
+    "establishment"
+  ],
+  "types": [
+    "hotel",
+    "lodging",
+    "point_of_interest",
+    "establishment"
+  ],
+  "operating_status": "operational",
+  "partner_id": null,
+  "slug": null,
+  "slug_history": null,
+  "price_level": null,
+  "star_rating": null,
+  "accommodation_type": null,
+  "country_code": "VN",
+  "language_code": "vi",
+  "created_at": "2026-10-09T06:42:21.874864970Z",
+  "awards": null,
+  "poi_address": {
+    "full_address": "215 Lê Thánh Tông, Hội An Đông, Đà Nẵng 51000, Việt Nam",
+    "house_number": "215",
+    "street": "Lê Thánh Tông",
+    "ward": "Hội An Đông",
+    "district": "Thành phố Hội An",
+    "city": "Đà Nẵng",
+    "country": "Vietnam",
+    "country_code": "VN",
+    "postal_code": "51000",
+    "lat": 15.883081299999999,
+    "lng": 108.3508482,
+    "plus_code": "7P7CV9M2+68",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "address_line1": "215, Lê Thánh Tông, Phường Cẩm Châu, Thành phố Hội An, Tỉnh Quảng Nam",
+    "address_line2": "215, Lê Thánh Tông, Hội An Đông, Đà Nẵng",
+    "state_province": "Đà Nẵng",
+    "short_address": "215, Lê Thánh Tông",
+    "address_google": "215 Lê Thánh Tông, Hội An Đông, Đà Nẵng 51000, Việt Nam",
+    "address_viet_map": "211 Lê Thánh Tông Phường Hội An Đông,Thành phố Đà Nẵng",
+    "vietmap_status": "api_success",
+    "vietmap_message": null
+  },
+  "poi_rating": {
+    "rating_overall": 4.9,
+    "rating_count": 1801,
+    "rating_breakdown": null,
+    "sub_ratings": null
+  },
+  "poi_contact": {
+    "phone": "0235 3866 999",
+    "phone_raw": "+84 235 3866 999",
+    "website_url": "http://littleoasis.com.vn/",
+    "google_maps_url": "https://maps.google.com/?cid=17769669900809798531&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "social_links": null,
+    "delivery_links": null,
+    "booking_links": null
+  },
+  "poi_amenity": {
+    "ext_attributes": {
+      "short_formatted_address": "215 Lê Thánh Tông, Hội An Đông",
+      "accessibility_wheelchairAccessibleParking": "true",
+      "primary_type_display": "Khách sạn",
+      "gm_place_uri": "https://maps.google.com/?cid=17769669900809798531&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "businessStatus": "OPERATIONAL",
+      "utc_offset_minutes": "420",
+      "goodForChildren": "true",
+      "gm_photos_uri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x31420dae1bdd7c27:0xf69a8ca085b80383!10e5?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "websiteUri": "http://littleoasis.com.vn/",
+      "routing_summaries_count": "0",
+      "googleMapsUri": "https://maps.google.com/?cid=17769669900809798531&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "primaryType": "hotel",
+      "nationalPhoneNumber": "0235 3866 999",
+      "accessibility_wheelchairAccessibleEntrance": "true",
+      "google_types": "hotel,lodging,point_of_interest,establishment",
+      "internationalPhoneNumber": "+84 235 3866 999",
+      "google_types_count": "4",
+      "gm_write_review_uri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x31420dae1bdd7c27:0xf69a8ca085b80383!12e1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "gm_reviews_uri": "https://www.google.com/maps/place//data=!4m4!3m3!1s0x31420dae1bdd7c27:0xf69a8ca085b80383!9m1!1b1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "reviews_count": "5",
+      "photos_count": "10",
+      "gm_directions_uri": "https://www.google.com/maps/dir//''/data=!4m7!4m6!1m1!4e2!1m2!1m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383!3e0?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA"
+    },
+    "amenity_schema": {
+      "facilities": {
+        "type": "object",
+        "required": "required",
+        "general_amenities": {
+          "type": "array",
+          "required": "required",
+          "item_type": "tag",
+          "multiple_lang": true,
+          "enum": []
+        },
+        "safety_and_hygiene": {
+          "type": "array",
+          "required": "optional",
+          "item_type": "tag",
+          "multiple_lang": true,
+          "enum": []
+        },
+        "accessibility": {
+          "type": "array",
+          "required": "optional",
+          "item_type": "tag",
+          "multiple_lang": true,
+          "enum": [
+            "Wheelchair Accessible Entrance",
+            "Accessible Parking"
+          ]
+        },
+        "additional_amenities": {
+          "type": "array",
+          "required": "optional",
+          "item_type": "tag",
+          "multiple_lang": true,
+          "enum": []
+        }
+      }
+    }
+  },
+  "poi_amenity_schema": null,
+  "facilities": {
+    "type": "object",
+    "required": "required",
+    "general_amenities": {
+      "type": "array",
+      "required": "required",
+      "item_type": "tag",
+      "multiple_lang": true,
+      "enum": []
+    },
+    "safety_and_hygiene": {
+      "type": "array",
+      "required": "optional",
+      "item_type": "tag",
+      "multiple_lang": true,
+      "enum": []
+    },
+    "accessibility": {
+      "type": "array",
+      "required": "optional",
+      "item_type": "tag",
+      "multiple_lang": true,
+      "enum": [
+        "Wheelchair Accessible Entrance",
+        "Accessible Parking"
+      ]
+    },
+    "additional_amenities": {
+      "type": "array",
+      "required": "optional",
+      "item_type": "tag",
+      "multiple_lang": true,
+      "enum": []
+    }
+  },
+  "poi_media": [
+    {
+      "media_id": "2402985046d52a3ccb5e41d5d730d3ca475577ed",
+      "photo_api_uri": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMZVvGuxc-HzyfubJ-Gp9TXycg47C2ajgDN83Iq8Y49ACoJwQenFuJJ6dw3T5vfSVmnw7LEQRaVVi0NXcWgIQ1TBXMauXnuHu1JYxEl3C-SUaB00z1TQmYFrD6cbAh3XDTDBc8ogzadLOegOfaYR1XuECkRngrWJ-JHztqU6dqvpsUeH5Mp_r3BtA83PW_HauCf4ONZRt9o80Lh5xBKdfOwnR12fwsdp5emVcwTVwM9AVw5dOuuvvRNJFqLzHARzhnTF28iP3UK0fJz8TvIXvBmYFlz1cApPydgbWoXH8TMmSwsSTv9xYPwavoB-Ht61VL4cn40cqSs9tFdd9tD22PguLjbA2gvD9cPk5o-6TM9GlmTssVv6vX55sL1_2UqOXFgCntglRISz7vzdAFM-DJV3uXI",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMZVvGuxc-HzyfubJ-Gp9TXycg47C2ajgDN83Iq8Y49ACoJwQenFuJJ6dw3T5vfSVmnw7LEQRaVVi0NXcWgIQ1TBXMauXnuHu1JYxEl3C-SUaB00z1TQmYFrD6cbAh3XDTDBc8ogzadLOegOfaYR1XuECkRngrWJ-JHztqU6dqvpsUeH5Mp_r3BtA83PW_HauCf4ONZRt9o80Lh5xBKdfOwnR12fwsdp5emVcwTVwM9AVw5dOuuvvRNJFqLzHARzhnTF28iP3UK0fJz8TvIXvBmYFlz1cApPydgbWoXH8TMmSwsSTv9xYPwavoB-Ht61VL4cn40cqSs9tFdd9tD22PguLjbA2gvD9cPk5o-6TM9GlmTssVv6vX55sL1_2UqOXFgCntglRISz7vzdAFM-DJV3uXI/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMZVvGuxc-HzyfubJ-Gp9TXycg47C2ajgDN83Iq8Y49ACoJwQenFuJJ6dw3T5vfSVmnw7LEQRaVVi0NXcWgIQ1TBXMauXnuHu1JYxEl3C-SUaB00z1TQmYFrD6cbAh3XDTDBc8ogzadLOegOfaYR1XuECkRngrWJ-JHztqU6dqvpsUeH5Mp_r3BtA83PW_HauCf4ONZRt9o80Lh5xBKdfOwnR12fwsdp5emVcwTVwM9AVw5dOuuvvRNJFqLzHARzhnTF28iP3UK0fJz8TvIXvBmYFlz1cApPydgbWoXH8TMmSwsSTv9xYPwavoB-Ht61VL4cn40cqSs9tFdd9tD22PguLjbA2gvD9cPk5o-6TM9GlmTssVv6vX55sL1_2UqOXFgCntglRISz7vzdAFM-DJV3uXI/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJJ3zdG64NQjERgwO4haCMmvY_2402985046d52a3ccb5e41d5d730d3ca475577ed.jpg",
+      "media_type": "photo",
+      "category": "exterior",
+      "is_blessed": true,
+      "display_order": 1,
+      "photographer": "Little Oasis . An Eco Friendly Hotel & Spa",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 704139,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "ba623c172efbbe8c3c917ea07d4ff31af283be0a",
+      "photo_api_uri": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMYSVjIvbeoI9x2vwbXv_L1XTU5RxzkOXkSMoZI-8lxTR8Z6YVbETa6keTKol3NCSt9nTVWYCdQiIwwL2oX9GhkUNwCDS-q62uurd0hFJG6u3SiCLov6u3Eji9qaUpdwVFdjx_H3IdXf-QtIRBtD78BKDViMnIz4eeAQSlzRiugGb_kbZTLKIjy5P45rzDxKS0vrf3FWeLQQzj6t8k0CsjEpzJPVoawwN2wegDxTqGHm4PIqXmNEatHe1yIJsGRiZGaiBJn819Oj3LAVQPlybcwVfFyDQtlpU7IrqUHfNhHGydRriH1yrbWnsvcKlXy2JpYXSX180Flb-Pcx9j2wSxI3t_EP-kNqrA-fpuUQYe3_8DwvORJ1cdUYIis2ZRHC2nz_2BrmJj3b2030AOWmq__aUxoA58o",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMYSVjIvbeoI9x2vwbXv_L1XTU5RxzkOXkSMoZI-8lxTR8Z6YVbETa6keTKol3NCSt9nTVWYCdQiIwwL2oX9GhkUNwCDS-q62uurd0hFJG6u3SiCLov6u3Eji9qaUpdwVFdjx_H3IdXf-QtIRBtD78BKDViMnIz4eeAQSlzRiugGb_kbZTLKIjy5P45rzDxKS0vrf3FWeLQQzj6t8k0CsjEpzJPVoawwN2wegDxTqGHm4PIqXmNEatHe1yIJsGRiZGaiBJn819Oj3LAVQPlybcwVfFyDQtlpU7IrqUHfNhHGydRriH1yrbWnsvcKlXy2JpYXSX180Flb-Pcx9j2wSxI3t_EP-kNqrA-fpuUQYe3_8DwvORJ1cdUYIis2ZRHC2nz_2BrmJj3b2030AOWmq__aUxoA58o/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMYSVjIvbeoI9x2vwbXv_L1XTU5RxzkOXkSMoZI-8lxTR8Z6YVbETa6keTKol3NCSt9nTVWYCdQiIwwL2oX9GhkUNwCDS-q62uurd0hFJG6u3SiCLov6u3Eji9qaUpdwVFdjx_H3IdXf-QtIRBtD78BKDViMnIz4eeAQSlzRiugGb_kbZTLKIjy5P45rzDxKS0vrf3FWeLQQzj6t8k0CsjEpzJPVoawwN2wegDxTqGHm4PIqXmNEatHe1yIJsGRiZGaiBJn819Oj3LAVQPlybcwVfFyDQtlpU7IrqUHfNhHGydRriH1yrbWnsvcKlXy2JpYXSX180Flb-Pcx9j2wSxI3t_EP-kNqrA-fpuUQYe3_8DwvORJ1cdUYIis2ZRHC2nz_2BrmJj3b2030AOWmq__aUxoA58o/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJJ3zdG64NQjERgwO4haCMmvY_ba623c172efbbe8c3c917ea07d4ff31af283be0a.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 2,
+      "photographer": "Little Oasis . An Eco Friendly Hotel & Spa",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 374333,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "4608982f1d92d8077bc8f3bc3b6e1902d614eec7",
+      "photo_api_uri": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMa6ztDsO7dqLfv559h0c0P-2b43wMbC6pbO_wl_XPCa6PM-lB_km4UNjJCSMli20vFtr_fxNkZVSEVc8eflMiexlbuOoDVDk3RxSOKr6ouyHvmcl763MDY-pHu5H8t47s7KlYeaVqhEwIaC1V-6RKRCmBN714TutiVs4_heqsdMsF_zjeFRgV2IobpjRIv8lgU-p_1iRd_7-PZPUscSAyr6Q2z4Ys7fNZIqPC9Ru7q9wysDqSkQd-KBd-v4KYJk7N68T6rqasPzVsOthcjsNwFAADgUkj6R3lQgY9v9iaT6iArKOiCJkaY2gxYtTi2hP_Dc7QOI_0yglpcP3NEBjpLFYJeQtz0f1u5Bj1F8Mh_MrmVk94M0coebQaZiwR-XLTPfUwhzUAuPimMnw--A__aFsYjfSk8zIoeF5SjrgsrGTg",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMa6ztDsO7dqLfv559h0c0P-2b43wMbC6pbO_wl_XPCa6PM-lB_km4UNjJCSMli20vFtr_fxNkZVSEVc8eflMiexlbuOoDVDk3RxSOKr6ouyHvmcl763MDY-pHu5H8t47s7KlYeaVqhEwIaC1V-6RKRCmBN714TutiVs4_heqsdMsF_zjeFRgV2IobpjRIv8lgU-p_1iRd_7-PZPUscSAyr6Q2z4Ys7fNZIqPC9Ru7q9wysDqSkQd-KBd-v4KYJk7N68T6rqasPzVsOthcjsNwFAADgUkj6R3lQgY9v9iaT6iArKOiCJkaY2gxYtTi2hP_Dc7QOI_0yglpcP3NEBjpLFYJeQtz0f1u5Bj1F8Mh_MrmVk94M0coebQaZiwR-XLTPfUwhzUAuPimMnw--A__aFsYjfSk8zIoeF5SjrgsrGTg/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMa6ztDsO7dqLfv559h0c0P-2b43wMbC6pbO_wl_XPCa6PM-lB_km4UNjJCSMli20vFtr_fxNkZVSEVc8eflMiexlbuOoDVDk3RxSOKr6ouyHvmcl763MDY-pHu5H8t47s7KlYeaVqhEwIaC1V-6RKRCmBN714TutiVs4_heqsdMsF_zjeFRgV2IobpjRIv8lgU-p_1iRd_7-PZPUscSAyr6Q2z4Ys7fNZIqPC9Ru7q9wysDqSkQd-KBd-v4KYJk7N68T6rqasPzVsOthcjsNwFAADgUkj6R3lQgY9v9iaT6iArKOiCJkaY2gxYtTi2hP_Dc7QOI_0yglpcP3NEBjpLFYJeQtz0f1u5Bj1F8Mh_MrmVk94M0coebQaZiwR-XLTPfUwhzUAuPimMnw--A__aFsYjfSk8zIoeF5SjrgsrGTg/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJJ3zdG64NQjERgwO4haCMmvY_4608982f1d92d8077bc8f3bc3b6e1902d614eec7.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 3,
+      "photographer": "mtjgpadwtpgadm",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 478205,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "760db3a003fe7e15d557f0c20c9e4ceb13943344",
+      "photo_api_uri": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMb6_1wU1P7MAQBG6LNy1RVLfZIlXbM4toFnXC3oqo6JRLeVm5ypVLtlXSWsv3fBmU4I3RijB38y09nV-89lZDfq1mQmWiKxZqE0GnRODJfN3PJh0gb3iiMewv7eb2zxfUNtpXc3gKpdWeCJa7L6uJIPjV5O2JIaRNQrO-i2ATIgI42Vh0Pg_dGqv1rdWhso0-GTUWHVCBvyADb01KXU9A84SVOWJMjeVISFo6sn8QgGl_iSQPRYvxgGgrQoETrS1IR7qUujTy1qCRwGPgCrn7uiHqjnT1BpkoE4Gx8v_blyQ6-YOH5-76hj57J1L8CteVsEeKlt6fmA_7LZjydAw1bd5Pxp7BHp3NZ0Q0YKFsWuCjVluwW2iKHhphSZT_0oSYpWRIMJJAZ-9pNEQa0c-gcmYU8",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMb6_1wU1P7MAQBG6LNy1RVLfZIlXbM4toFnXC3oqo6JRLeVm5ypVLtlXSWsv3fBmU4I3RijB38y09nV-89lZDfq1mQmWiKxZqE0GnRODJfN3PJh0gb3iiMewv7eb2zxfUNtpXc3gKpdWeCJa7L6uJIPjV5O2JIaRNQrO-i2ATIgI42Vh0Pg_dGqv1rdWhso0-GTUWHVCBvyADb01KXU9A84SVOWJMjeVISFo6sn8QgGl_iSQPRYvxgGgrQoETrS1IR7qUujTy1qCRwGPgCrn7uiHqjnT1BpkoE4Gx8v_blyQ6-YOH5-76hj57J1L8CteVsEeKlt6fmA_7LZjydAw1bd5Pxp7BHp3NZ0Q0YKFsWuCjVluwW2iKHhphSZT_0oSYpWRIMJJAZ-9pNEQa0c-gcmYU8/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMb6_1wU1P7MAQBG6LNy1RVLfZIlXbM4toFnXC3oqo6JRLeVm5ypVLtlXSWsv3fBmU4I3RijB38y09nV-89lZDfq1mQmWiKxZqE0GnRODJfN3PJh0gb3iiMewv7eb2zxfUNtpXc3gKpdWeCJa7L6uJIPjV5O2JIaRNQrO-i2ATIgI42Vh0Pg_dGqv1rdWhso0-GTUWHVCBvyADb01KXU9A84SVOWJMjeVISFo6sn8QgGl_iSQPRYvxgGgrQoETrS1IR7qUujTy1qCRwGPgCrn7uiHqjnT1BpkoE4Gx8v_blyQ6-YOH5-76hj57J1L8CteVsEeKlt6fmA_7LZjydAw1bd5Pxp7BHp3NZ0Q0YKFsWuCjVluwW2iKHhphSZT_0oSYpWRIMJJAZ-9pNEQa0c-gcmYU8/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJJ3zdG64NQjERgwO4haCMmvY_760db3a003fe7e15d557f0c20c9e4ceb13943344.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 4,
+      "photographer": "Little Oasis . An Eco Friendly Hotel & Spa",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 320368,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "5cac4f725490b08150582621169536b26fa42439",
+      "photo_api_uri": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMZFTZQl6or_ve665XipmmORbTALAn9SCRn5W6Asrs9q68eek7dmToQb9dPGpx8n8CySQGIab9TVRnWh40_IIQ6waB4nyC12-Xda6YBUaukTQW-c1EK9vG-dNfLGZxBQksdcIYYqN2YrTnZr-dZSP0Xb2TMqMGn5VfIT-XQ44jR0eR-_wnY8dJx9Vn0rc5h1YXAP-ZJLze9iPS3IU5K0FA_r57REhLhambqp_iemoEhqj5a7EjsUGsE9EnMvDYZg5yyMb30x9KwrB13qRrCzfn-MFgf6GLWH5NwW--_cDbT71UtubpzxqzaE7yYX3IfwZJy3S6WZk-oh5MyjzYTIIy7demAW26PydPpO0ph4Y5rBbyevDRN_A5HcNalfs6B-obk3hfvl8FV1uqJbFWu8LVGd6IY",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMZFTZQl6or_ve665XipmmORbTALAn9SCRn5W6Asrs9q68eek7dmToQb9dPGpx8n8CySQGIab9TVRnWh40_IIQ6waB4nyC12-Xda6YBUaukTQW-c1EK9vG-dNfLGZxBQksdcIYYqN2YrTnZr-dZSP0Xb2TMqMGn5VfIT-XQ44jR0eR-_wnY8dJx9Vn0rc5h1YXAP-ZJLze9iPS3IU5K0FA_r57REhLhambqp_iemoEhqj5a7EjsUGsE9EnMvDYZg5yyMb30x9KwrB13qRrCzfn-MFgf6GLWH5NwW--_cDbT71UtubpzxqzaE7yYX3IfwZJy3S6WZk-oh5MyjzYTIIy7demAW26PydPpO0ph4Y5rBbyevDRN_A5HcNalfs6B-obk3hfvl8FV1uqJbFWu8LVGd6IY/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMZFTZQl6or_ve665XipmmORbTALAn9SCRn5W6Asrs9q68eek7dmToQb9dPGpx8n8CySQGIab9TVRnWh40_IIQ6waB4nyC12-Xda6YBUaukTQW-c1EK9vG-dNfLGZxBQksdcIYYqN2YrTnZr-dZSP0Xb2TMqMGn5VfIT-XQ44jR0eR-_wnY8dJx9Vn0rc5h1YXAP-ZJLze9iPS3IU5K0FA_r57REhLhambqp_iemoEhqj5a7EjsUGsE9EnMvDYZg5yyMb30x9KwrB13qRrCzfn-MFgf6GLWH5NwW--_cDbT71UtubpzxqzaE7yYX3IfwZJy3S6WZk-oh5MyjzYTIIy7demAW26PydPpO0ph4Y5rBbyevDRN_A5HcNalfs6B-obk3hfvl8FV1uqJbFWu8LVGd6IY/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJJ3zdG64NQjERgwO4haCMmvY_5cac4f725490b08150582621169536b26fa42439.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 5,
+      "photographer": "Little Oasis . An Eco Friendly Hotel & Spa",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 305341,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    }
+  ],
+  "poi_price": null,
+  "poi_content": null,
+  "poi_review": [
+    {
+      "author_name": "phan ánh",
+      "rating": 5,
+      "text": "Mình vừa có trải nghiệm 2 đêm ở đây và rất rcm nếu có dịp đến hội an hãy ghé nơi đây. Phòng ốc rộng rãi, sạch sẽ . Các anh chị lễ tân rất nhiệt tình, và vui vẻ. Chị lễ tân còn chủ động hỏi và gọi xe miễn phí để gđ mình di chuyển từ khách sạn đến Đà Nẵng. Nếu có dịp quay lại Hội An mình sẽ vẫn chọn đây là điểm lưu trú. ( mình có chụp tên của một chị lễ tân rất nice ở đây)",
+      "time": "2026-07-04T07:22:36.900114733Z",
+      "source": "google"
+    },
+    {
+      "author_name": "A ST",
+      "rating": 5,
+      "text": "I would like to express my heartfelt gratitude to Rose at Little Oasis in Hoi An.\n\nDuring my trip, my phone was suddenly stolen, and I felt shocked, helpless, and overwhelmed.\nRose treated the situation as if it were her own and supported me until the very end.\n\nIn a country where I could not speak the language well, her warm words, sincere eyes, and thoughtful care brought me incredible comfort.\nIn that moment of anxiety and fear, she felt like a light in the darkness.\n\nHer kindness almost brought me to tears, and I will never forget the warmth she showed me.\nBecause of her, Little Oasis will always remain in my heart as more than just a hotel, but a place of true kindness.\nThank you from the bottom of my heart\n\n❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️🥲🥲\n\nTôi muốn gửi lời cảm ơn chân thành và sâu sắc nhất đến Rose tại Little Oasis ở Hội An.\n\nTrong chuyến đi, tôi bất ngờ bị mất điện thoại và cảm thấy vô cùng hoang mang, lo lắng và bất lực.\nRose đã quan tâm và giúp đỡ tôi như thể đó là chuyện của chính cô ấy, luôn ở bên tôi cho đến cuối cùng.\n\nỞ một đất nước mà tôi không thể giao tiếp tốt bằng ngôn ngữ, những lời nói ấm áp, ánh mắt chân thành và sự quan tâm chu đáo của cô ấy đã mang lại cho tôi sự an ủi rất lớn.\nTrong khoảnh khắc đầy lo lắng ấy, cô ấy giống như một ánh sáng giữa bóng tối.\n\nSự tử tế của cô ấy khiến tôi gần như rơi nước mắt và tôi sẽ không bao giờ quên được sự ấm áp đó.\nNhờ có Rose, Little Oasis không chỉ là một khách sạn, mà là một nơi chứa đựng lòng tốt và kỷ niệm đẹp trong trái tim tôi.\nXin chân thành cảm ơn.",
+      "time": "2026-02-21T05:10:29.505603034Z",
+      "source": "google"
+    },
+    {
+      "author_name": "Trí Nguyễn",
+      "rating": 5,
+      "text": "Nhà mình 2 người lớn và 2 bé. Ở Little Oasis 3 ngày 2 đêm.\nCheck in có nước, bánh. Khăn lạnh lau mặt. Hành lý có nhân viên chuyển lên tận phòng.\nChị Rose lễ tân nói giọng nhẹ nhàng, chỉ dẫn tận tình, rất chăm chút khách.\nNhà mình ở mấy ngày thấy toàn khách nước ngoài là chính.\nKhách sạn có 2 bể bơi, 1 cho trẻ, 1 cho người lớn.\nDịch vụ đưa đón miễn phí tới bãi biển và phố cổ\nNói chung không có gì để chê.",
+      "time": "2026-08-11T14:53:03.529929641Z",
+      "source": "google"
+    },
+    {
+      "author_name": "Cẩm Tuyền Huỳnh",
+      "rating": 5,
+      "text": "Phòng và khách sạn rất đẹp, team rất thân thiện và support. Có shuttle bus ra biển và phố cổ miễn phí theo các khung giờ và ăn sáng đa dạng 🥰",
+      "time": "2026-04-19T14:02:53.347533980Z",
+      "source": "google"
+    },
+    {
+      "author_name": "Linh Nguyễn Thùy",
+      "rating": 5,
+      "text": "Khách sạn nằm cách phố cổ Hội An khoảng 2km (đi đường thẳng là tới). Phòng ốc đẹp, thơm và sạch sẽ, nhân viên phục vụ thái độ tốt thân thiện và rất nhiệt tình. Có phòng gym, phòng spa và bể bơi, có lớp học pha cà phê và làm đèn lồng, mọi người",
+      "time": "2026-05-07T07:14:22.658771816Z",
+      "source": "google"
+    }
+  ],
+  "poi_opening_hours": null,
+  "policies": null,
+  "extra_info": {},
+  "poi_id": "776aedf6-8b68-3a02-95d0-1b9314f5fa90"
+}
+-----------sample_3-----------
+{
+  "source_id": "ChIJ9xRei4yrNTERBPHvsvhvP64",
+  "source": "GOOGLE",
+  "poi_name": "Nhà hàng Nhật Bản Takumi - Mai Hắc Đế",
+  "poi_name_normalized": "nhà hàng nhật bản takumi - mai hắc đế",
+  "business_sector": "f_n_b",
+  "business_category": "Japanese",
+  "subcategory_tags": [
+    "japanese_restaurant",
+    "restaurant",
+    "food",
+    "point_of_interest",
+    "establishment"
+  ],
+  "types": [
+    "japanese_restaurant",
+    "restaurant",
+    "food",
+    "point_of_interest",
+    "establishment"
+  ],
+  "operating_status": "operational",
+  "partner_id": null,
+  "slug": null,
+  "slug_history": null,
+  "price_level": 2,
+  "star_rating": null,
+  "accommodation_type": null,
+  "country_code": "VN",
+  "language_code": "vi",
+  "created_at": "2026-10-09T06:35:26.712252067Z",
+  "awards": null,
+  "poi_address": {
+    "full_address": "98 P. Mai Hắc Đế, Hai Bà Trưng, Hà Nội, Việt Nam",
+    "house_number": "98",
+    "street": "Phố Mai Hắc Đế",
+    "ward": "Hai Bà Trưng",
+    "district": "Quận Hai Bà Trưng",
+    "city": "Hà Nội",
+    "country": "Vietnam",
+    "country_code": "VN",
+    "postal_code": null,
+    "lat": 21.0126386,
+    "lng": 105.8508987,
+    "plus_code": "7PH72V72+39",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "address_line1": "98, Phố Mai Hắc Đế, Phường Nguyễn Du, Quận Hai Bà Trưng, Thành phố Hà Nội",
+    "address_line2": "98, Phố Mai Hắc Đế, Hai Bà Trưng, Hà Nội",
+    "state_province": "Hà Nội",
+    "short_address": "98, Phố Mai Hắc Đế",
+    "address_google": "98 P. Mai Hắc Đế, Hai Bà Trưng, Hà Nội, Việt Nam",
+    "address_viet_map": "94 Mai Hắc Đế Phường Hai Bà Trưng,Thành phố Hà Nội",
+    "vietmap_status": "api_success",
+    "vietmap_message": null
+  },
+  "poi_rating": {
+    "rating_overall": 4.4,
+    "rating_count": 410,
+    "rating_breakdown": null,
+    "sub_ratings": null
+  },
+  "poi_contact": {
+    "phone": "0936 868 080",
+    "phone_raw": "+84 936 868 080",
+    "website_url": null,
+    "google_maps_url": "https://maps.google.com/?cid=12555877400076873988&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "social_links": null,
+    "delivery_links": null,
+    "booking_links": null
+  },
+  "poi_amenity": {
+    "ext_attributes": {
+      "menuForChildren": "false",
+      "takeout": "true",
+      "open_now": "true",
+      "googleMapsUri": "https://maps.google.com/?cid=12555877400076873988&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "servesDessert": "true",
+      "outdoorSeating": "false",
+      "primaryType": "japanese_restaurant",
+      "servesCoffee": "true",
+      "google_types_count": "5",
+      "gm_write_review_uri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104!12e1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "photos_count": "10",
+      "gm_directions_uri": "https://www.google.com/maps/dir//''/data=!4m7!4m6!1m1!4e2!1m2!1m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104!3e0?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "weekday_descriptions": "Thứ Hai: 11:00–14:00, 17:30–22:00|Thứ Ba: 11:00–14:00, 17:30–22:00|Thứ Tư: 11:00–14:00, 17:30–22:00|Thứ Năm: 11:00–14:00, 17:30–22:00|Thứ Sáu: 11:00–14:00, 17:30–22:00|Thứ Bảy: 11:00–14:00, 17:30–22:00|Chủ Nhật: 11:00–14:00, 17:30–22:00",
+      "servesBeer": "true",
+      "accessibility_wheelchairAccessibleParking": "false",
+      "servesBreakfast": "false",
+      "allowsDogs": "false",
+      "servesCocktails": "true",
+      "goodForChildren": "true",
+      "gm_photos_uri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104!10e5?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "servesLunch": "true",
+      "payment_acceptsNfc": "true",
+      "liveMusic": "false",
+      "reviews_count": "5",
+      "goodForWatchingSports": "false",
+      "reservable": "true",
+      "parking_freeStreetParking": "true",
+      "accessibility_wheelchairAccessibleSeating": "false",
+      "payment_acceptsCashOnly": "false",
+      "utc_offset_minutes": "420",
+      "servesBrunch": "true",
+      "servesWine": "true",
+      "servesDinner": "true",
+      "goodForGroups": "true",
+      "nationalPhoneNumber": "0936 868 080",
+      "accessibility_wheelchairAccessibleEntrance": "false",
+      "dineIn": "true",
+      "restroom": "true",
+      "payment_acceptsDebitCards": "true",
+      "delivery": "true",
+      "regular_open_now": "true",
+      "short_formatted_address": "98 P. Mai Hắc Đế, Hai Bà Trưng",
+      "parking_valetParking": "true",
+      "payment_acceptsCreditCards": "true",
+      "primary_type_display": "Nhà hàng Nhật Bản",
+      "gm_place_uri": "https://maps.google.com/?cid=12555877400076873988&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+      "businessStatus": "OPERATIONAL",
+      "parking_freeParkingLot": "true",
+      "routing_summaries_count": "0",
+      "google_types": "japanese_restaurant,restaurant,food,point_of_interest,establishment",
+      "internationalPhoneNumber": "+84 936 868 080",
+      "gm_reviews_uri": "https://www.google.com/maps/place//data=!4m4!3m3!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104!9m1!1b1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA"
+    },
+    "amenity_schema": {
+      "facilities": {
+        "type": "object",
+        "required": "required",
+        "main_cuisine": {
+          "type": "string",
+          "required": "required",
+          "multiple_lang": true,
+          "enum": [
+            "Japanese"
+          ]
+        },
+        "specialty_tags": {
+          "type": "array",
+          "required": "optional",
+          "item_type": "tag",
+          "multiple_lang": true,
+          "enum": []
+        },
+        "space_and_services": {
+          "type": "array",
+          "required": "optional",
+          "item_type": "tag",
+          "multiple_lang": true,
+          "enum": [
+            "Car Parking",
+            "Table Service",
+            "Restroom",
+            "Serves Alcohol",
+            "Serves Lunch",
+            "Serves Dinner",
+            "Serves Brunch",
+            "Serves Dessert",
+            "Serves Coffee",
+            "Good for Families",
+            "Good for Groups"
+          ]
+        },
+        "additional_amenities": {
+          "type": "array",
+          "required": "optional",
+          "item_type": "tag",
+          "multiple_lang": true,
+          "enum": [
+            "Credit Card",
+            "E-Wallet"
+          ]
+        }
+      }
+    }
+  },
+  "poi_amenity_schema": null,
+  "facilities": {
+    "type": "object",
+    "required": "required",
+    "main_cuisine": {
+      "type": "string",
+      "required": "required",
+      "multiple_lang": true,
+      "enum": [
+        "Japanese"
+      ]
+    },
+    "specialty_tags": {
+      "type": "array",
+      "required": "optional",
+      "item_type": "tag",
+      "multiple_lang": true,
+      "enum": []
+    },
+    "space_and_services": {
+      "type": "array",
+      "required": "optional",
+      "item_type": "tag",
+      "multiple_lang": true,
+      "enum": [
+        "Car Parking",
+        "Table Service",
+        "Restroom",
+        "Serves Alcohol",
+        "Serves Lunch",
+        "Serves Dinner",
+        "Serves Brunch",
+        "Serves Dessert",
+        "Serves Coffee",
+        "Good for Families",
+        "Good for Groups"
+      ]
+    },
+    "additional_amenities": {
+      "type": "array",
+      "required": "optional",
+      "item_type": "tag",
+      "multiple_lang": true,
+      "enum": [
+        "Credit Card",
+        "E-Wallet"
+      ]
+    }
+  },
+  "poi_media": [
+    {
+      "media_id": "1853ec254a87c3e6c19114209ee4918a54a81d48",
+      "photo_api_uri": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbwIVXDjXo98jLMjKvgmnvBOh1pHFRkvnw1ferxZrQsgr040kOMm64y9xdM-0h3ZKMtWFlpsYNbgFGQ2gVL6Sqcb5pwTxqyShYdbXBjjd6VFeLRsShUdwaI_Xtw10GtfOmEJsGKU7v6uVpyLL9fOGyjTXxprWgEAJ6wYMChs6gqeQRqt6C_V8iTQCA7UlgQR01m_S59ZJYNsxWShfRLKxCNNYkwDLREydcRBpvKqNgPCv4jRU_gZ4OLdAA5OJYaHE_jAqTXhzM4byPyjuaNE1vNDsvWAX4KhRdERDtkzN_mUNvVxWn9_ur7YR_1MO__k5khiDiO1gwlhPZnSZYHVLKJIywEwH5GsjvKvUg7vmVY7Mgv99yBMCz5b3tjI73uugRWYFdvd0w86KYHLQnncJG7YrU",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbwIVXDjXo98jLMjKvgmnvBOh1pHFRkvnw1ferxZrQsgr040kOMm64y9xdM-0h3ZKMtWFlpsYNbgFGQ2gVL6Sqcb5pwTxqyShYdbXBjjd6VFeLRsShUdwaI_Xtw10GtfOmEJsGKU7v6uVpyLL9fOGyjTXxprWgEAJ6wYMChs6gqeQRqt6C_V8iTQCA7UlgQR01m_S59ZJYNsxWShfRLKxCNNYkwDLREydcRBpvKqNgPCv4jRU_gZ4OLdAA5OJYaHE_jAqTXhzM4byPyjuaNE1vNDsvWAX4KhRdERDtkzN_mUNvVxWn9_ur7YR_1MO__k5khiDiO1gwlhPZnSZYHVLKJIywEwH5GsjvKvUg7vmVY7Mgv99yBMCz5b3tjI73uugRWYFdvd0w86KYHLQnncJG7YrU/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbwIVXDjXo98jLMjKvgmnvBOh1pHFRkvnw1ferxZrQsgr040kOMm64y9xdM-0h3ZKMtWFlpsYNbgFGQ2gVL6Sqcb5pwTxqyShYdbXBjjd6VFeLRsShUdwaI_Xtw10GtfOmEJsGKU7v6uVpyLL9fOGyjTXxprWgEAJ6wYMChs6gqeQRqt6C_V8iTQCA7UlgQR01m_S59ZJYNsxWShfRLKxCNNYkwDLREydcRBpvKqNgPCv4jRU_gZ4OLdAA5OJYaHE_jAqTXhzM4byPyjuaNE1vNDsvWAX4KhRdERDtkzN_mUNvVxWn9_ur7YR_1MO__k5khiDiO1gwlhPZnSZYHVLKJIywEwH5GsjvKvUg7vmVY7Mgv99yBMCz5b3tjI73uugRWYFdvd0w86KYHLQnncJG7YrU/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJ9xRei4yrNTERBPHvsvhvP64_1853ec254a87c3e6c19114209ee4918a54a81d48.jpg",
+      "media_type": "photo",
+      "category": "exterior",
+      "is_blessed": true,
+      "display_order": 1,
+      "photographer": "Nhà hàng Nhật Bản Takumi - Mai Hắc Đế",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 329452,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "4842b9f6fe2ef8b9fb94a5a90336038703543303",
+      "photo_api_uri": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMY4RAXV0VXEMSVoqtEKRnwnjkSdUh0XiJM1DZ7fHr77f_UgHZjE3f84SvERDxvdGoEtRODZ8wfX5cqYCMqZDUmhf0FzrZ1GO9WxaFZlFMtVVRtyCBU3HgdraEIxku9nIZ5ayUly7t9dXFL16XjRtJZ_rPJS9VdEpwkofpE6uDtg1gKxqqiJ_CL4sJpRsnDW_k_aIV-7O3loGk70yRhWq1FPLPeryIyJlPlLCFF22kNYUEGKV3aDw4VFVwV9ago2s8_ZrP5neEg2fgpuxa3p6lHFq62nWi2cqFWiGdcOqrH5sNPsIu8HrpAzScYplHgo5DKzwXwM0_vDnqgLW1zidl7H0wM1SAkAA5Rgl9tZ-a3uSTSGYr6Vuxu7OwTPu1A1Tbt3b5iYP5g9ndeRTTR8OcLMrD4",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMY4RAXV0VXEMSVoqtEKRnwnjkSdUh0XiJM1DZ7fHr77f_UgHZjE3f84SvERDxvdGoEtRODZ8wfX5cqYCMqZDUmhf0FzrZ1GO9WxaFZlFMtVVRtyCBU3HgdraEIxku9nIZ5ayUly7t9dXFL16XjRtJZ_rPJS9VdEpwkofpE6uDtg1gKxqqiJ_CL4sJpRsnDW_k_aIV-7O3loGk70yRhWq1FPLPeryIyJlPlLCFF22kNYUEGKV3aDw4VFVwV9ago2s8_ZrP5neEg2fgpuxa3p6lHFq62nWi2cqFWiGdcOqrH5sNPsIu8HrpAzScYplHgo5DKzwXwM0_vDnqgLW1zidl7H0wM1SAkAA5Rgl9tZ-a3uSTSGYr6Vuxu7OwTPu1A1Tbt3b5iYP5g9ndeRTTR8OcLMrD4/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMY4RAXV0VXEMSVoqtEKRnwnjkSdUh0XiJM1DZ7fHr77f_UgHZjE3f84SvERDxvdGoEtRODZ8wfX5cqYCMqZDUmhf0FzrZ1GO9WxaFZlFMtVVRtyCBU3HgdraEIxku9nIZ5ayUly7t9dXFL16XjRtJZ_rPJS9VdEpwkofpE6uDtg1gKxqqiJ_CL4sJpRsnDW_k_aIV-7O3loGk70yRhWq1FPLPeryIyJlPlLCFF22kNYUEGKV3aDw4VFVwV9ago2s8_ZrP5neEg2fgpuxa3p6lHFq62nWi2cqFWiGdcOqrH5sNPsIu8HrpAzScYplHgo5DKzwXwM0_vDnqgLW1zidl7H0wM1SAkAA5Rgl9tZ-a3uSTSGYr6Vuxu7OwTPu1A1Tbt3b5iYP5g9ndeRTTR8OcLMrD4/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJ9xRei4yrNTERBPHvsvhvP64_4842b9f6fe2ef8b9fb94a5a90336038703543303.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 2,
+      "photographer": "Nhà hàng Nhật Bản Takumi - Mai Hắc Đế",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 483521,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "a79c152e9c018e5b28bb0077acd8ceb4cf9578d1",
+      "photo_api_uri": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMaqgaqm2B-SEuQmzK3yPnP8PRDHy2qW3PfsXM-UWnWaDP7rBPmC7ZqpEQDgvnKb6vIFag9i_TJ5aeh4tObzazyQI8BY1HzoShAJPPddHRO0DEphxT96G0zfC033e-eWtYyzxlH3q9LSMps-p1gca8GLVgPV_XpWAAzM3ubQ-36ageFb7wgsVfBj-qObWHI071hMX7CxplZJzI8iHjy5ZZBszTsym8coLLLUN_W-xsGr2L_t_9kn1lCd3Xsv9DOfU-5-M6wmZcyf6eMPkJTPdzyQYUh61DJ1d31JekPY5b820qA6uaPp62H70hBAeFo1po5hP2o9Ika2a-HnMcV0L6xSMKhy7Px_zBy402uWzHPNGxIQqmGicNgqwj3lyAw8dXqe8z41VpfqK5LM7tw_mMj-NzmZajiBJ9S7a6hY-EbBsA",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMaqgaqm2B-SEuQmzK3yPnP8PRDHy2qW3PfsXM-UWnWaDP7rBPmC7ZqpEQDgvnKb6vIFag9i_TJ5aeh4tObzazyQI8BY1HzoShAJPPddHRO0DEphxT96G0zfC033e-eWtYyzxlH3q9LSMps-p1gca8GLVgPV_XpWAAzM3ubQ-36ageFb7wgsVfBj-qObWHI071hMX7CxplZJzI8iHjy5ZZBszTsym8coLLLUN_W-xsGr2L_t_9kn1lCd3Xsv9DOfU-5-M6wmZcyf6eMPkJTPdzyQYUh61DJ1d31JekPY5b820qA6uaPp62H70hBAeFo1po5hP2o9Ika2a-HnMcV0L6xSMKhy7Px_zBy402uWzHPNGxIQqmGicNgqwj3lyAw8dXqe8z41VpfqK5LM7tw_mMj-NzmZajiBJ9S7a6hY-EbBsA/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMaqgaqm2B-SEuQmzK3yPnP8PRDHy2qW3PfsXM-UWnWaDP7rBPmC7ZqpEQDgvnKb6vIFag9i_TJ5aeh4tObzazyQI8BY1HzoShAJPPddHRO0DEphxT96G0zfC033e-eWtYyzxlH3q9LSMps-p1gca8GLVgPV_XpWAAzM3ubQ-36ageFb7wgsVfBj-qObWHI071hMX7CxplZJzI8iHjy5ZZBszTsym8coLLLUN_W-xsGr2L_t_9kn1lCd3Xsv9DOfU-5-M6wmZcyf6eMPkJTPdzyQYUh61DJ1d31JekPY5b820qA6uaPp62H70hBAeFo1po5hP2o9Ika2a-HnMcV0L6xSMKhy7Px_zBy402uWzHPNGxIQqmGicNgqwj3lyAw8dXqe8z41VpfqK5LM7tw_mMj-NzmZajiBJ9S7a6hY-EbBsA/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJ9xRei4yrNTERBPHvsvhvP64_a79c152e9c018e5b28bb0077acd8ceb4cf9578d1.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 3,
+      "photographer": "F Y",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 366118,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "cb9d0e58e29fd7d4ca26a9bb8aed35f623d84d5d",
+      "photo_api_uri": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbOgskE1AyFcg5sdI1XUcaFd2pWPaVoXNYHXCgU-Z6VM5Rp5nOGAu2u9oMkC_kn7fb38IeD4b8rHGtPRffjoLvYOA2hl4YlKcyhl7665YdiKAfYNNcmCDOSuqS80xBrrI_51mm8OaLywgqA5yJEl16ky9auNWOdvJnxOytHZmeOvzyiqtUYslBg8T00U57cDhlNgCni0jOo_ypdcSov862lJKfLMFT-846f3uq5EGhPM-rAAhRkaN2PLGVcrcAkRiONVQ0d6osIy4iRCNVj5Bdgo31rBpaPDB7V3ZbwkRcOKBdk4wURbHz82u6GlLRjpoB3bkYQ7b-n2X1DxvfMI7dy7A60OaINljNMAv2IBjiqLNbXDqRZvLMeOwx54ALVXL2P2CXXKusXUY8ky7jHmmyp-yZM6n6nEK4X7rNLwCEjNA",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbOgskE1AyFcg5sdI1XUcaFd2pWPaVoXNYHXCgU-Z6VM5Rp5nOGAu2u9oMkC_kn7fb38IeD4b8rHGtPRffjoLvYOA2hl4YlKcyhl7665YdiKAfYNNcmCDOSuqS80xBrrI_51mm8OaLywgqA5yJEl16ky9auNWOdvJnxOytHZmeOvzyiqtUYslBg8T00U57cDhlNgCni0jOo_ypdcSov862lJKfLMFT-846f3uq5EGhPM-rAAhRkaN2PLGVcrcAkRiONVQ0d6osIy4iRCNVj5Bdgo31rBpaPDB7V3ZbwkRcOKBdk4wURbHz82u6GlLRjpoB3bkYQ7b-n2X1DxvfMI7dy7A60OaINljNMAv2IBjiqLNbXDqRZvLMeOwx54ALVXL2P2CXXKusXUY8ky7jHmmyp-yZM6n6nEK4X7rNLwCEjNA/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbOgskE1AyFcg5sdI1XUcaFd2pWPaVoXNYHXCgU-Z6VM5Rp5nOGAu2u9oMkC_kn7fb38IeD4b8rHGtPRffjoLvYOA2hl4YlKcyhl7665YdiKAfYNNcmCDOSuqS80xBrrI_51mm8OaLywgqA5yJEl16ky9auNWOdvJnxOytHZmeOvzyiqtUYslBg8T00U57cDhlNgCni0jOo_ypdcSov862lJKfLMFT-846f3uq5EGhPM-rAAhRkaN2PLGVcrcAkRiONVQ0d6osIy4iRCNVj5Bdgo31rBpaPDB7V3ZbwkRcOKBdk4wURbHz82u6GlLRjpoB3bkYQ7b-n2X1DxvfMI7dy7A60OaINljNMAv2IBjiqLNbXDqRZvLMeOwx54ALVXL2P2CXXKusXUY8ky7jHmmyp-yZM6n6nEK4X7rNLwCEjNA/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJ9xRei4yrNTERBPHvsvhvP64_cb9d0e58e29fd7d4ca26a9bb8aed35f623d84d5d.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 4,
+      "photographer": "Phương Anh Đinh",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 595198,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    },
+    {
+      "media_id": "5a84a43ae24bf241f1161ec494513ace05a96d94",
+      "photo_api_uri": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbkUTbX8WBRcm8VmVVsEEkypXHQ4qtrrL0mCSxdrGCR9R5abmBM4wI6jMc5joM0guZBLVq8LcYylVR_1NR8kWgrnC2-Gwm-k7f8FNgEWsKJYonf8hs_KTNvie-WAvWEcJBZJfMYUxyfSS_RiB76vfKQ-YDVBJnE44W5L0J6Lq9Hr-DcLBOXfyNhAclkyd4kyQBvCeT4oUgMTbsUv5uWlLHQm69WN0yKA6bJ97KbB0eOl9w3bEA3dFe8i0HolHGRpuJ087nmmSSh9Zsj9pF_JE4l2X1HthzDo3Mq9o9hMHpFTZwDAnqixdE76DhHcLWV2VMOPtcyXs9wGaEUZzS9QShffpW3e8t-Qmhuf8MleYNGvNhlrLK9T7ShESblZIDd34ImtIstx96kerTZtRHy0lxpZSyTyhg0PXDZEGXPKQGL",
+      "original_url": "https://places.googleapis.com/v1/places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbkUTbX8WBRcm8VmVVsEEkypXHQ4qtrrL0mCSxdrGCR9R5abmBM4wI6jMc5joM0guZBLVq8LcYylVR_1NR8kWgrnC2-Gwm-k7f8FNgEWsKJYonf8hs_KTNvie-WAvWEcJBZJfMYUxyfSS_RiB76vfKQ-YDVBJnE44W5L0J6Lq9Hr-DcLBOXfyNhAclkyd4kyQBvCeT4oUgMTbsUv5uWlLHQm69WN0yKA6bJ97KbB0eOl9w3bEA3dFe8i0HolHGRpuJ087nmmSSh9Zsj9pF_JE4l2X1HthzDo3Mq9o9hMHpFTZwDAnqixdE76DhHcLWV2VMOPtcyXs9wGaEUZzS9QShffpW3e8t-Qmhuf8MleYNGvNhlrLK9T7ShESblZIDd34ImtIstx96kerTZtRHy0lxpZSyTyhg0PXDZEGXPKQGL/media?maxWidthPx=1600",
+      "thumbnail_url": "https://places.googleapis.com/v1/places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbkUTbX8WBRcm8VmVVsEEkypXHQ4qtrrL0mCSxdrGCR9R5abmBM4wI6jMc5joM0guZBLVq8LcYylVR_1NR8kWgrnC2-Gwm-k7f8FNgEWsKJYonf8hs_KTNvie-WAvWEcJBZJfMYUxyfSS_RiB76vfKQ-YDVBJnE44W5L0J6Lq9Hr-DcLBOXfyNhAclkyd4kyQBvCeT4oUgMTbsUv5uWlLHQm69WN0yKA6bJ97KbB0eOl9w3bEA3dFe8i0HolHGRpuJ087nmmSSh9Zsj9pF_JE4l2X1HthzDo3Mq9o9hMHpFTZwDAnqixdE76DhHcLWV2VMOPtcyXs9wGaEUZzS9QShffpW3e8t-Qmhuf8MleYNGvNhlrLK9T7ShESblZIDd34ImtIstx96kerTZtRHy0lxpZSyTyhg0PXDZEGXPKQGL/media?maxWidthPx=400",
+      "blob_url": "https://devvisitvnstsg01.blob.core.windows.net/data-collector/datacollector_media_ChIJ9xRei4yrNTERBPHvsvhvP64_5a84a43ae24bf241f1161ec494513ace05a96d94.jpg",
+      "media_type": "photo",
+      "category": null,
+      "is_blessed": false,
+      "display_order": 5,
+      "photographer": "Thái Thái",
+      "width_px": null,
+      "height_px": null,
+      "file_size_bytes": 446118,
+      "caption": null,
+      "license": "google_maps",
+      "processing_status": "active"
+    }
+  ],
+  "poi_price": {
+    "price_level": 2,
+    "price_min": 200000,
+    "price_max": 800000,
+    "currency": "VND"
+  },
+  "poi_content": null,
+  "poi_review": [
+    {
+      "author_name": "Phương Anh Đinh",
+      "rating": 5,
+      "text": "Đã ăn hầu hết các quán Nhật quanh khu vực này nhưng h mới phát hiện ra Takumi và sẽ cho vào list những quán đồ Nhật ngon. Cá rất tươi, cơm cuộn lươn và tempura cũng ngon. Salad khoai tây cá nhân thấy hơi giống khoai nghiền hehe chưa khoái lắm. Gà và da gà cũng rất tuyệt 😍",
+      "time": "2025-09-03T11:16:04.299082743Z",
+      "source": "google"
+    },
+    {
+      "author_name": "Linh Nguyễn",
+      "rating": 5,
+      "text": "Đi ăn cuối năm bất ngờ được tặng thêm bát mì udon. Đồ ăn ngon, anh chủ niềm nở, nhân viên từ bác bảo vệ đều lịch sự.",
+      "time": "2026-01-02T13:19:48.745831468Z",
+      "source": "google"
+    },
+    {
+      "author_name": "Hong Nhung Ngo",
+      "rating": 3,
+      "text": "Đi ăn takumi vài lần nhưng hôm nay khá thất vọng, sashimi cá nhật cắt miếng to, cảm giác không tươi. Mỳ udon và cơm lươn nhờ nhà hàng chia đôi mà bát để chia bé xíu, nhìn vào bát chỉ thấy mỳ và cơm đầy tràn cả bát nmất thiện cảm thực sự. Mỳ và cơm mang ra sớm, ra hỏi thì nhà hàng bảo chị ko dặn thì bọn em mang ra luôn, dặn thì mới ra muộn. Mình đi ăn quán nhật nhiều lần rồi nhưng service hơn. Điểm cộng duy nhất là bò mềm.",
+      "time": "2026-09-04T11:45:40.862649024Z",
+      "source": "google"
+    },
+    {
+      "author_name": "Thái Thái",
+      "rating": 5,
+      "text": "Bạn ở Hà Nội giới thiệu, thức ăn thật sự tươi ngon và có nhiều món đặc biệt. Giá thực sự hợp lý so với chất lượng. Cá hồi 1 nắng nướng rất lạ và ngon, nên thử. Sashimi bụng cá hồi tươi béo. Bơ từ đậu cũng đặc biệt ngon. So với các quán Nhật khác thì quán này mình đặc biệt thích và sẽ quay lại.",
+      "time": "2024-11-14T16:11:38.176232Z",
+      "source": "google"
+    },
+    {
+      "author_name": "Xuân Trung Lê",
+      "rating": 4,
+      "text": "Xin chào.\nMình có đến và trải nghiệm thử. Với cá nhân mình đồ ăn được phục vụ chỉnh chu, ngon miệng nhưng giá cả có vẻ nhỉnh hơn so với chất lượng dịch vụ mà mình nhận lại được.\n\nNhân viên phục vụ đã cố gắng hỗ trợ tôi tốt nhất có thể và tôi rất trân trọng sự hiếu khách của mọi người, trong đó có cả chú bảo vệ.\n\nKhông khí quán ăn khá ấm cúng, nhạc cũng dễ chịu. Nhưng hơi kiểu buồn chắc do tôi đi một mình.",
+      "time": "2025-04-03T14:01:26.859912Z",
+      "source": "google"
+    }
+  ],
+  "poi_opening_hours": {
+    "open_now": true,
+    "is_24_7": false,
+    "is_temporarily_closed": false,
+    "periods": [
+      {
+        "close_hour": 14,
+        "close_day": 0,
+        "open_hour": 11,
+        "close_minute": 0,
+        "open_minute": 0,
+        "day_of_week": 0
+      },
+      {
+        "close_hour": 22,
+        "close_day": 0,
+        "open_hour": 17,
+        "close_minute": 0,
+        "open_minute": 30,
+        "day_of_week": 0
+      },
+      {
+        "close_hour": 14,
+        "close_day": 1,
+        "open_hour": 11,
+        "close_minute": 0,
+        "open_minute": 0,
+        "day_of_week": 1
+      },
+      {
+        "close_hour": 22,
+        "close_day": 1,
+        "open_hour": 17,
+        "close_minute": 0,
+        "open_minute": 30,
+        "day_of_week": 1
+      },
+      {
+        "close_hour": 14,
+        "close_day": 2,
+        "open_hour": 11,
+        "close_minute": 0,
+        "open_minute": 0,
+        "day_of_week": 2
+      },
+      {
+        "close_hour": 22,
+        "close_day": 2,
+        "open_hour": 17,
+        "close_minute": 0,
+        "open_minute": 30,
+        "day_of_week": 2
+      },
+      {
+        "close_hour": 14,
+        "close_day": 3,
+        "open_hour": 11,
+        "close_minute": 0,
+        "open_minute": 0,
+        "day_of_week": 3
+      },
+      {
+        "close_hour": 22,
+        "close_day": 3,
+        "open_hour": 17,
+        "close_minute": 0,
+        "open_minute": 30,
+        "day_of_week": 3
+      },
+      {
+        "close_hour": 14,
+        "close_day": 4,
+        "open_hour": 11,
+        "close_minute": 0,
+        "open_minute": 0,
+        "day_of_week": 4
+      },
+      {
+        "close_hour": 22,
+        "close_day": 4,
+        "open_hour": 17,
+        "close_minute": 0,
+        "open_minute": 30,
+        "day_of_week": 4
+      },
+      {
+        "close_hour": 14,
+        "close_day": 5,
+        "open_hour": 11,
+        "close_minute": 0,
+        "open_minute": 0,
+        "day_of_week": 5
+      },
+      {
+        "close_hour": 22,
+        "close_day": 5,
+        "open_hour": 17,
+        "close_minute": 0,
+        "open_minute": 30,
+        "day_of_week": 5
+      },
+      {
+        "close_hour": 14,
+        "close_day": 6,
+        "open_hour": 11,
+        "close_minute": 0,
+        "open_minute": 0,
+        "day_of_week": 6
+      },
+      {
+        "close_hour": 22,
+        "close_day": 6,
+        "open_hour": 17,
+        "close_minute": 0,
+        "open_minute": 30,
+        "day_of_week": 6
+      }
+    ],
+    "weekday_text": [
+      "Thứ Hai: 11:00–14:00, 17:30–22:00",
+      "Thứ Ba: 11:00–14:00, 17:30–22:00",
+      "Thứ Tư: 11:00–14:00, 17:30–22:00",
+      "Thứ Năm: 11:00–14:00, 17:30–22:00",
+      "Thứ Sáu: 11:00–14:00, 17:30–22:00",
+      "Thứ Bảy: 11:00–14:00, 17:30–22:00",
+      "Chủ Nhật: 11:00–14:00, 17:30–22:00"
+    ]
+  },
+  "policies": null,
+  "extra_info": {},
+  "poi_id": "0088acdd-c4a2-3850-ab1a-3de5b06c94a3"
+}

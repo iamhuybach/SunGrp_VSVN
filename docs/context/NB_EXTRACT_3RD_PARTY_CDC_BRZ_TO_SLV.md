@@ -58,7 +58,7 @@ Thay phần extract của chuỗi cũ NB_00 → NB_30 (3P):
 
 | Hằng số | Giá trị |
 |---|---|
-| `RAW_PAYLOAD` | `normalized_payload` |
+| `RAW_PAYLOAD` | `raw_payload` |
 | `RAW_EVENT_ID` | `event_id` |
 | `RAW_DOC_ID` | (`source_name`, `source_id`) — bắt buộc; cột đầu lọc theo `sources` |
 | `RAW_LANG` | `language_code` (gộp vào `_langs`) |

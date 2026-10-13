@@ -9,27 +9,18 @@ DROPPED = (
     "slv_3p_poi_enrichment",
     "slv_3p_poi_review_i18n",
 )
-TOP_KEYS = {
-    "accommodation_type", "awards", "business_category", "business_sector", "country_code",
-    "created_at", "extra_info", "facilities", "language_code", "operating_status", "partner_id",
-    "poi_address", "poi_amenity", "poi_amenity_schema", "poi_contact", "poi_content", "poi_id",
-    "poi_media", "poi_name", "poi_name_normalized", "poi_opening_hours", "poi_price", "poi_rating",
-    "poi_review", "policies", "price_level", "raw_data", "slug", "slug_history", "source",
-    "source_id", "star_rating", "subcategory_tags", "types",
-}
 EXPECTED = {
-    "slv_3p_poi": (21, 15),
-    "slv_3p_poi_address": (21, 20),
-    "slv_3p_poi_contact": (8, 5),
-    "slv_3p_poi_price": (5, 5),
-    "slv_3p_poi_opening_hours": (7, 7),
-    "slv_3p_poi_policy": (2, 2),
-    "slv_3p_poi_rating": (5, 3),
-    "slv_3p_poi_amenity": (3, 3),
-    "slv_3p_poi_review": (8, 8),
-    "slv_3p_poi_media": (18, 15),
+    "slv_3p_poi": 10,
+    "slv_3p_poi_address": 12,
+    "slv_3p_poi_contact": 3,
+    "slv_3p_poi_price": 5,
+    "slv_3p_poi_opening_hours": 4,
+    "slv_3p_poi_rating": 3,
+    "slv_3p_poi_amenity": 2,
+    "slv_3p_poi_review": 7,
+    "slv_3p_poi_media": 6,
 }
-FORBIDDEN = {"_lang", "_langs", "_align", "extra_info"}
+FORBIDDEN = {"_lang", "_langs", "_align"}
 
 
 def _notebook(name: str) -> dict:
@@ -54,16 +45,13 @@ def _configs():
 
 def test_registry_shape():
     configs = _configs()
-    assert len(configs) == 10
+    assert len(configs) == 9
     columns = [(table, name, spec) for table in configs for name, spec in table["columns"].items()]
-    assert len(columns) == 98
-    assert sum(1 for _, _, spec in columns if spec.get("active") is False) == 15
+    assert len(columns) == 52
+    assert sum(1 for _, _, spec in columns if spec.get("active") is False) == 0
     assert [table["target_table"] for table in configs] == list(EXPECTED)
     for table in configs:
-        total, active = EXPECTED[table["target_table"]]
-        specs = list(table["columns"].values())
-        assert len(specs) == total
-        assert sum(1 for spec in specs if spec.get("active") is not False) == active
+        assert len(table["columns"]) == EXPECTED[table["target_table"]]
 
 
 def test_keys_and_open_now():
@@ -71,27 +59,30 @@ def test_keys_and_open_now():
     poi = configs["slv_3p_poi"]["columns"]["poi_id"]
     assert poi["rule"] == "HASH_MD5_UUID"
     assert poi["path"] == "_doc.source_name,_doc.source_id"
+    assert configs["slv_3p_poi"]["columns"]["primary_type"]["path"] == "primaryType"
     review = configs["slv_3p_poi_review"]["columns"]["review_id"]
     assert review["rule"] == "HASH_SHA256"
+    assert "publishTime" in review["path"]
     media = configs["slv_3p_poi_media"]["columns"]["media_dedup_key"]
     assert media["rule"] == "HASH_SHA256_PIPE"
-    assert configs["slv_3p_poi_opening_hours"]["columns"]["open_now"]["type"] == "boolean"
-    assert set(configs["slv_3p_poi_amenity"]["columns"]) == {
-        "poi_id", "amenity_schema_json", "ext_attributes_json",
-    }
+    assert configs["slv_3p_poi_opening_hours"]["columns"]["open_now"]["rule"] == "COALESCE"
+    assert set(configs["slv_3p_poi_amenity"]["columns"]) == {"poi_id", "source_flags_json"}
+    flags = configs["slv_3p_poi_amenity"]["columns"]["source_flags_json"]
+    keys = []
+    for member in flags["arg"]["members"]:
+        if "keys" in member:
+            keys.extend(member["keys"])
+        else:
+            keys.append(member["key"])
+    assert [part.strip() for part in flags["path"].split(",")] == keys
 
 
 def test_paths_are_structural():
     for table in _configs():
-        source = table["source_table"].split(".", 1)[0]
-        if source != "$":
-            assert source in TOP_KEYS
-        for name, spec in table["columns"].items():
+        for spec in table["columns"].values():
             for part in spec["path"].split(","):
                 head = part.strip().split(".", 1)[0]
                 assert head not in FORBIDDEN
-                if table["target_table"] == "slv_3p_poi" and head not in {"_doc", "$"}:
-                    assert head in TOP_KEYS, name
 
 
 def test_extract_notebook_has_no_language_contract():
@@ -102,8 +93,9 @@ def test_extract_notebook_has_no_language_contract():
         assert f"{name} " not in text and f"{name}=" not in text
     whole = _text(nb)
     assert 'EXTRACT_MODES = ("DOC", "DOC_ARRAY")' in whole or "EXTRACT_MODES  = (\"DOC\", \"DOC_ARRAY\")" in whole
-    for banned in ("lang_entries", "LANG_MODES", "_lang_entries"):
+    for banned in ("lang_entries", "LANG_MODES", "_lang_entries", "KNOWN_TOP_KEYS", "WATCH_BLOCKS"):
         assert banned not in whole
+    assert 'RAW_PAYLOAD    = "raw_payload"' in whole
 
 
 def test_deactivation_list():
@@ -116,9 +108,10 @@ def test_deactivation_list():
     text = _cell_text(cell)
     for name in DROPPED:
         assert text.count(f"'{name}'") == 2
-    assert "slv_3p_poi_policy" not in text
+    assert text.count("'slv_3p_poi_policy'") == 2
     assert "SET is_active = 0" not in text
     seed = next(c for c in nb["cells"] if "( 1, 'slv_3p_poi'" in _cell_text(c))
     seed_text = _cell_text(seed)
     for name in DROPPED:
         assert name not in seed_text
+    assert "media_id" not in seed_text

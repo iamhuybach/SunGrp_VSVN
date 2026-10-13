@@ -1,0 +1,3469 @@
+-----------sample_1-----------
+{
+  "id": "ChIJIxyu9V8XQjERaiYJjo8af0g",
+  "displayName": "New's Coffee",
+  "formattedAddress": "55 Hồ Huân Nghiệp, Ngũ Hành Sơn, Đà Nẵng, Việt Nam",
+  "location": {
+    "latitude": 16.0387865,
+    "longitude": 108.23790989999999
+  },
+  "types": [
+    "cafe",
+    "food",
+    "point_of_interest",
+    "establishment"
+  ],
+  "rating": 4.1,
+  "userRatingCount": 32,
+  "priceLevel": null,
+  "businessStatus": "OPERATIONAL",
+  "currentOpeningHours": null,
+  "regularOpeningHours": null,
+  "internationalPhoneNumber": null,
+  "websiteUri": null,
+  "photos": [
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMbY4Hgu60IY70MI1v7PfjebKOj6koY9rKvF-iFmQ9G9Uqij4GIdF0cSAjJE4_XRRNC6Sme2bGRdE02CC0HaEfFuZtgmsc7JTi-HtcRWtmg9xK0SOXGEjiaCN2pXjh3dvDwc9V5K3JzOPFadN19ZuU5fqDho-3VmxMl9JBV8YxTsRap7gbk1juGPFiX65vVrDiJCSadfNYBsk7CPr6IfEahAbUm9hFDZGVzhR2yr7Wor5d2-ueza_DLcKz2OAiMkK-Qcm4cG7bRe-yUs1hRAq3xF3w9N7HNNUXO99-qKsoChskufz7PjWngzwYNrfyKMoYok1eolO8ZWFDTkr5nmoNEmoauCl2d9ZsPQJUe3aAt_Q8XDLgARjOkprfRaARUI3Im-urfk6yrYzVq8471shC9u2A",
+      "widthPx": 1080,
+      "heightPx": 1348,
+      "authorAttributions": [
+        {
+          "displayName": "Phàm Hạ Phi",
+          "uri": "https://maps.google.com/maps/contrib/101608689207135056484",
+          "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocK_Q-jIiISYwCqJZMxub0D-Z4vN1qm5ThhZb6KbkoGzr1olzg=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgICcwpyoPA&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgICcwpyoPA!2e10!4m2!3m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMapDlafXSmcG0pnGUGZ8DIPQ5q8v5SXS5eohjpQcYzT7QymxNmSuUKEH6G7AVNM--9kALkuvf_bqFW9hu_erpx6Iapc7vEJqPZS_swMKEsaux2p_9p_tlc-lxyWAL35foainM-eTgMLs0ojksKpcga09_VwJ_rLyijPkcickYJKYemmDd9fq_SUpPPPg5GCE66J_a0Egk-T69No05wmW2Qhmt66Sk0CbBEnRKPflmJFRD-Z5oZxAqus-K80tuoeGCj98F6ChYz2FbWwpF5_8i-JUID9SRMHOUHMyIK5BoDw6LQ8iC4OLshLfshk5U2IGxq9clYW0qqa8EMn75u-RnKeYvrNsLKJTE4PxJ5BP4zu8oIRCwE8rwS7A1Y7RrvAKAe5ywjdDF8hd48k78iEpMf-NPpxaY8",
+      "widthPx": 4032,
+      "heightPx": 3024,
+      "authorAttributions": [
+        {
+          "displayName": "Nils",
+          "uri": "https://maps.google.com/maps/contrib/116476948937462094779",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjXUh_tb0EMyhi9pWJY05beHCVAMj62oEtd_ospCUQ9xeEcrQCgv2g=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgID4_KyWkgE&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgID4_KyWkgE!2e10!4m2!3m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMa7SO2UUynrtV52BJ8ZQ-5MdihJ8f7on4mSeK3ncbWOWRKVNB2cgype_0ft82mnLVhxpV7n763g7y4r3rWtgtJv2LSe3BSPL_glr5hJ_i9sSr14-AwmR7hlA6UNLMmzjG-WnJX1UUQKZtaXGPF6SpfCkJ9I1XzbHQeL-e8wQls5pdmGBr1RnLbiqZ7z-yNgPCLo6pgsBJLl_6JZNo_LYF4PPyl31x5AaNsg3h9Bc-S1PKMQFeHMvTYaGeUM7wq4ZJ4k3EY2e4Ts9rPlowLflAg3trhiAqmyK_3Z1Vq7WvY2fR015Z_taxgrAx4BOOrj7Qfxh9iQcSddK9-9J2MVmbYWv2vEaZ-Fd6pgB2ZWDrkl-DzwsCF3jAL2VyYNt0rqdIOayB4EuO4LJ7lHbSbx40KCVOBtnig",
+      "widthPx": 2048,
+      "heightPx": 1536,
+      "authorAttributions": [
+        {
+          "displayName": "Dao Minh Phong",
+          "uri": "https://maps.google.com/maps/contrib/104963893454839674527",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjX6L13eDuIOHULSXQgA4mQniOchfmoawYQPy5zibmgVFGxIpZlc=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgICklbGt_AE&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgICklbGt_AE!2e10!4m2!3m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMbXfsdke2E1CwybZVRGb8RztVMan11uBhyTBSShuRTP2FZUXFycPQgFoPIgY70igHUb97MGbml9VsunZVgnQeFDPrZhqWhdYPgJs4rylCvFJeJr2W9OK3AtIkxmj_eBKa0715xKY2o4cFL65wjNhraYHrFUlmncP_x4bCE7u_g9fkwWYdbzu-j8nd7_kDDGbb6B7AqJPnsXnzthoc0qDdCr1dx-EgzlK4mSLoGgRNJfcCfs7u_s6JI8TcTxRkfkAtYProftIAGgdYBn9Dsgwk5EDzP8xPk8nNmL2nHn1Wvx-SDbngrSvlHefOpj5jBQ5o_rNQxR29EkOpEd-8Ldpsz8QV7gV4KGCHyVPyspZCCDr6zkdRIoHR8wg0-cBBZw4kFUOs6oKavd0n6DBmaLVQw5maId8S0",
+      "widthPx": 2160,
+      "heightPx": 2160,
+      "authorAttributions": [
+        {
+          "displayName": "Tuong m",
+          "uri": "https://maps.google.com/maps/contrib/114466198296762392932",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjULCtuukBZZwB6QWx0Nv23cb6tAEySiu72XmHZxGgYBZZS1IJE=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIDc5dOgwgE&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIDc5dOgwgE!2e10!4m2!3m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMawSi_WuvMIdhnBzpiDUWiO2TcwUHT9fDcFt20w6EVAEfnU2gcX2GzMuVRNEsEeXL-psT_G1Cv4sy5pA8Yv3_pT4UKYPF4l_VMHcXNmcmyJrbiWt_QRY1E9tQyK1Vz0TDvxqxeleScwQk5UVBg8q1Xp9gjwWm4I0ld3TNeaSSzXiMJuM1n95YckiIIzfC1OMZjibZQKnKt4VgHe9iyAAULNOJZkUFpddmfBuFUvjYJHzpH2NWrKiLjQW-OA4SZTRZEAuceZhv6-HvFqwUZj9kBFx10RHCKZnb3YK_JH7ddkMzSSrQ9ICnYCKFEgs2Cwv5-DjzpuF2_G4izhT3p7T0GZBm-5XDF9gWf6-_JddAAAP-SK-n61lDQr8bYMFyjcyDk2bonvg9vojklwBWxQlVtL6iV0",
+      "widthPx": 3024,
+      "heightPx": 4032,
+      "authorAttributions": [
+        {
+          "displayName": "Nguyễn Thành Nghĩa",
+          "uri": "https://maps.google.com/maps/contrib/110290554782939120684",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVS_BT0Ps5Ey1T02j11m9BQ2yftH0qR6Bea2nnwvypyIG6r3O0=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIC5weLauAE&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIC5weLauAE!2e10!4m2!3m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMYAm_NiAh1FoVIyH0CMY3PMy2P3rMAs13K94DgosA27Elg_70907qAD8CqPMaTacHAaM5UuFRsEqExPxtgnAQalLY89pvpo0003fCA98d2z0FoBHxmSWFhQk013G2VHaq4uDVssMR5xmXfLUWgz0s13KLTEUlS7mNrtAxnOFV4s32fWxHckw7M5RJYrC-chGH0943Beb9vKPI1AuegwuvGYPLMu091R9iNTnfkF_1j6oVuYHvmPQPtf1BD3l8BIxO3eBTHG7NSxx8T26vKHVXZGzAgZJnb5Q31tRPe9H37pcatgFYxP9qYgzwUsl4v89Cq09hjJkr2tGp-88whSVRmAI2iMM6Fbm5vxUk-L_CDIW4ex4lkKEvLvaZJhexQWwC1CcKNa_WUtUiykUM8lxLQOEULIcaU",
+      "widthPx": 1152,
+      "heightPx": 2048,
+      "authorAttributions": [
+        {
+          "displayName": "Đoàn Xuân Tân",
+          "uri": "https://maps.google.com/maps/contrib/111102901172507969557",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWUXIPqZV-IYqnrV_qnVaA4JXIbuQRpxXiHLo3DW3Si_D9J0F4q=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIC41-3r4gE&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIC41-3r4gE!2e10!4m2!3m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMY8WHPlTZhBIYkN5MzXsGA30uz5XXTpp1muBUuNZ4gRBuWzwOCDc1tm3TfkMI0Ajpn86ePbXib0VwLWejs_Z2eNmY-vJJ5SMfYupC_3ULxO4ugASvs8OIIaUYYLoWJcjfxPvy2IJCps0M3JAUQIPKIDwGrA9HWaF0G3mOEj6CjVGWZoWqcPQrOKa10eGXcHsezKxbADIeH5s_-w9ynsa8JOlSGnPuLzYpPSSitP_DEfU4aPJzw1QJZfx7N4vmCELCEdpGZ4fLprxTWCduraO-8UiCm9m-ofS1vWcvO_7iFU_7ENK4Uu5WVlUfiFcvHrsbcW64W4YTgXKDGid_jkJF5vc84aqJq--sHdwbzcMSUzFYPZsqYI-SP9q_pk1l_sZMaSbKOPY_WcFqMCDu-wIJ0Qi0A",
+      "widthPx": 1015,
+      "heightPx": 2030,
+      "authorAttributions": [
+        {
+          "displayName": "Hưng An",
+          "uri": "https://maps.google.com/maps/contrib/109574537011931703955",
+          "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJMFn8a4fqoOmjFYzhRABe_V4Xt5PPwydYekrN-uiX7NZ023Q=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIDUrtf5cg&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIDUrtf5cg!2e10!4m2!3m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMYtAFyQY1J0dfKM1_7GxQ3lUR6923nJqpJQVA2pMU2MmrkLNQaOQMePkfvY3FA7YThX5Pjf2nhxO9vrVCn-3LezXFvOwDsO2Wr3uia6uCvRuq6hHjnm7mUrwQ3KKSWeCvQfuETvpgCXlDwc4fbmeWvqEAWnE-3JWs8ye7eXpGuC6-zX1KjVK7_AEpC6xBhA-EijyDEFUfSHiLgYrUoXye1Fy6i3tqZ9wmFAdsI3pyipk2krnomtaJr0kJAfDsw8Qa0Fkaulsvyr3a3HWq1K7ornOmq4q0uAynkEAlexgi3DbpoopcelFGGijq6mT75y53-lmv3v7_kwG_uG-sJON6QlXa-9obmGmD-wPudkVq8kyJkah4GoMK0zWE4EKoRY_hO35OT1llLrGiPYuO1dDWx2uaBayI0",
+      "widthPx": 4096,
+      "heightPx": 2304,
+      "authorAttributions": [
+        {
+          "displayName": "Do Chi Thinh",
+          "uri": "https://maps.google.com/maps/contrib/107757093970185016823",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjXgQiTMCyQg6QEuBEvAQczYg0XRQ58i6cw4ClmeOI0DrNcQ689Q-Q=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgID4o_ObzQE&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgID4o_ObzQE!2e10!4m2!3m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMb5h_IdF3mn0IPLVE4GAn6cwptGZ6hqT8-nOT2Ug3SMx2Smy1OfN_DgYpQDqBSoNlI1nz5HGMAQYRTpPa26ddTMc7ZGFU0RUHx5awin6EL4dNKjuGCQGeboWZ0PgCyXEoUThoBdIYOSLZOe4uUxrxQhlirfzIF0f5X8LX1wrV2DRfpuggwGPT0r21PXqT_TzqhmN2yPpiE6MD6iPc12hp3Xh_0jYx3Tbrl_r7CA8GbN3FbCIPtamVDtxDCt-7k23iSNX-rwS133vJ7NOK-q2hEQM1rMdaeHugSWdUyEcf_CtT7NU_wsKIMrxFEdSBgkXOhSJ1wxSYCZG1uKH9ImepXxPfMZ1Vg1KKoX63541gpz0igKSoo1uUlUyV5KcJ0wkWDB9N62UT-2FnGUPI6QAQ_oPw",
+      "widthPx": 4096,
+      "heightPx": 2304,
+      "authorAttributions": [
+        {
+          "displayName": "Do Chi Thinh",
+          "uri": "https://maps.google.com/maps/contrib/107757093970185016823",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjXgQiTMCyQg6QEuBEvAQczYg0XRQ58i6cw4ClmeOI0DrNcQ689Q-Q=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgID4o8vaRg&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgID4o8vaRg!2e10!4m2!3m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/photos/Aa-ngMbwWstR6kHp0KXxRkwAOmKaDewLbvlTvId2grfWFcdewhQzz9lN8vXbCGoLiXJx0dFl1gdAIJsd23jSeF4xbevMX7GRSc0ExTn_QblCagp9VEPOC_yn1aK0SDRZ4Dq7y5Rw3QI_4vu0UOErpghxdz-HezADKYhz6eQNsREIyQflRTcZT2Rhj9kNqxLwfMsm88cN8Qtbrh65xC17W7enfhenWf7qYc7uBwXH6Yj0svisnkB7dEEkgJkrdAYqiYmY_biRcbG6SNoS0S80e1-IxKdmD4Y0th6f8xw2G8W-4SmoL43HqQEKlhSTaKOsFpntGjc4f3V2CEIibtYq8GwV5YBeWy1sF6B_1DsocKE2BtUqdktkG9zBdST2NsCJRPNkFM6Q_iwPakQw7EWNfEz6kz0OYQ",
+      "widthPx": 4032,
+      "heightPx": 3024,
+      "authorAttributions": [
+        {
+          "displayName": "Nils",
+          "uri": "https://maps.google.com/maps/contrib/116476948937462094779",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjXUh_tb0EMyhi9pWJY05beHCVAMj62oEtd_ospCUQ9xeEcrQCgv2g=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgID4_KyWRg&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgID4_KyWRg!2e10!4m2!3m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    }
+  ],
+  "parkingOptions": {
+    "freeStreetParking": true
+  },
+  "paymentOptions": {
+    "acceptsCashOnly": true
+  },
+  "accessibilityOptions": null,
+  "addressComponents": [
+    {
+      "longText": "55",
+      "shortText": "55",
+      "types": [
+        "street_number"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Hồ Huân Nghiệp",
+      "shortText": "Hồ Huân Nghiệp",
+      "types": [
+        "route"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Ngũ Hành Sơn",
+      "shortText": "Ngũ Hành Sơn",
+      "types": [
+        "administrative_area_level_2",
+        "political"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Đà Nẵng",
+      "shortText": "Đà Nẵng",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Việt Nam",
+      "shortText": "VN",
+      "types": [
+        "country",
+        "political"
+      ],
+      "languageCode": "vi"
+    }
+  ],
+  "reservable": null,
+  "servesBreakfast": null,
+  "servesBrunch": null,
+  "servesLunch": null,
+  "servesDinner": null,
+  "servesBeer": null,
+  "servesWine": null,
+  "servesCocktails": null,
+  "servesDessert": null,
+  "servesCoffee": true,
+  "servesVegetarianFood": null,
+  "allowsDogs": null,
+  "goodForChildren": null,
+  "goodForGroups": null,
+  "goodForWatchingSports": null,
+  "liveMusic": null,
+  "menuForChildren": null,
+  "outdoorSeating": true,
+  "takeout": null,
+  "delivery": null,
+  "dineIn": null,
+  "curbsidePickup": null,
+  "restroom": true,
+  "pureServiceAreaBusiness": null,
+  "editorialSummary": null,
+  "generativeSummary": null,
+  "reviewSummary": null,
+  "primaryTypeDisplayName": {
+    "text": "Quán cà phê",
+    "languageCode": "vi"
+  },
+  "googleMapsUri": "https://maps.google.com/?cid=5223923296638674538&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "primaryType": "cafe",
+  "nationalPhoneNumber": null,
+  "plusCode": {
+    "globalCode": "7P8C26QQ+G5",
+    "compoundCode": "26QQ+G5 Ngũ Hành Sơn, Đà Nẵng, Việt Nam"
+  },
+  "reviews": [
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/reviews/ChZDSUhNMG9nS0VJQ0FnSUNKcW9XZ1V3EAE",
+      "relativePublishTimeDescription": "3 năm trước",
+      "rating": 3,
+      "text": {
+        "text": "phục vụ tốt, giá rẻ (cà phê đá chỉ 12k). không gian thoáng , nước trà (chè tươi nấu)",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "phục vụ tốt, giá rẻ (cà phê đá chỉ 12k). không gian thoáng , nước trà (chè tươi nấu)",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Nghia Nguyen Trung",
+        "uri": "https://www.google.com/maps/contrib/101651264340527951987/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjUp3ShjGlYQlMwNmaO5tXmGX_JQyOQMhnsG0UAwyxOyydG5rKsK=s128-c0x00000000-cc-rp-mo-ba4"
+      },
+      "publishTime": "2023-06-25T02:39:56.815578Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=ChZDSUhNMG9nS0VJQ0FnSUNKcW9XZ1V3EAE&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChZDSUhNMG9nS0VJQ0FnSUNKcW9XZ1V3EAE!2m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/reviews/ChZDSUhNMG9nS0VJQ0FnSUN3a2JmZ0R3EAE",
+      "relativePublishTimeDescription": "8 năm trước",
+      "rating": 3,
+      "text": {
+        "text": "Cà phê rẻ, chỗ ngồi thoáng, phục vụ chu đáo.",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Cà phê rẻ, chỗ ngồi thoáng, phục vụ chu đáo.",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Binh Huynh",
+        "uri": "https://www.google.com/maps/contrib/105309179097395350499/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjV-XXqPe75Xhw_its2W8I2omVMk_Y_SJt-3tGL-BDrjtLEs22ES=s128-c0x00000000-cc-rp-mo-ba4"
+      },
+      "publishTime": "2018-09-11T10:08:03.315843Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=ChZDSUhNMG9nS0VJQ0FnSUN3a2JmZ0R3EAE&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChZDSUhNMG9nS0VJQ0FnSUN3a2JmZ0R3EAE!2m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/reviews/ChdDSUhNMG9nS0VJQ0FnSURNbzctWGhBRRAB",
+      "relativePublishTimeDescription": "6 năm trước",
+      "rating": 5,
+      "text": {
+        "text": "View đẹp! Yên tĩnh! Giá siêu sinh viên",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "View đẹp! Yên tĩnh! Giá siêu sinh viên",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Tài Lê",
+        "uri": "https://www.google.com/maps/contrib/103866735340040134345/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocLnkTBMTMBnSZtQzf8iBnrZZb2dY7E1Ta5A2eKptToXily2TA=s128-c0x00000000-cc-rp-mo"
+      },
+      "publishTime": "2020-01-10T16:22:38.443609Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=ChdDSUhNMG9nS0VJQ0FnSURNbzctWGhBRRAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChdDSUhNMG9nS0VJQ0FnSURNbzctWGhBRRAB!2m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/reviews/ChZDSUhNMG9nS0VJQ0FnSUNZdVpLbVh3EAE",
+      "relativePublishTimeDescription": "7 năm trước",
+      "rating": 1,
+      "text": {
+        "text": "Ăn xong về đau bụng",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Ăn xong về đau bụng",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "David Dai",
+        "uri": "https://www.google.com/maps/contrib/111612565070266608629/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjW6nj2p7IqZZ-rUpVecaWAC0N_WBRnmLYnyD5mm2GUdZlw7SMJm6Q=s128-c0x00000000-cc-rp-mo-ba5"
+      },
+      "publishTime": "2019-04-16T06:38:39.123292Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=ChZDSUhNMG9nS0VJQ0FnSUNZdVpLbVh3EAE&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChZDSUhNMG9nS0VJQ0FnSUNZdVpLbVh3EAE!2m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    },
+    {
+      "name": "places/ChIJIxyu9V8XQjERaiYJjo8af0g/reviews/ChdDSUhNMG9nS0VJQ0FnSUNJNmJyNXRBRRAB",
+      "relativePublishTimeDescription": "7 năm trước",
+      "rating": 4,
+      "text": {
+        "text": "Lịch sự và yên tỉnh",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Lịch sự và yên tỉnh",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Hung Phan Tri",
+        "uri": "https://www.google.com/maps/contrib/113451714549366696306/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJabwTV8kBNeaZAS-GDjNYrF2F5ZuwPkMHHROLQIUnX70--Rw=s128-c0x00000000-cc-rp-mo-ba3"
+      },
+      "publishTime": "2018-11-24T03:38:01.644847109Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=ChdDSUhNMG9nS0VJQ0FnSUNJNmJyNXRBRRAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChdDSUhNMG9nS0VJQ0FnSUNJNmJyNXRBRRAB!2m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a"
+    }
+  ],
+  "routingSummaries": [],
+  "priceRange": null,
+  "regularSecondaryOpeningHours": [],
+  "currentSecondaryOpeningHours": [],
+  "shortFormattedAddress": "55 Hồ Huân Nghiệp, Ngũ Hành Sơn",
+  "utcOffsetMinutes": 420,
+  "evChargeOptions": null,
+  "fuelOptions": null,
+  "googleMapsLinks": {
+    "directionsUri": "https://www.google.com/maps/dir//''/data=!4m7!4m6!1m1!4e2!1m2!1m1!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a!3e0?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "placeUri": "https://maps.google.com/?cid=5223923296638674538&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "writeAReviewUri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a!12e1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "reviewsUri": "https://www.google.com/maps/place//data=!4m4!3m3!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a!9m1!1b1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "photosUri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x3142175ff5ae1c23:0x487f1a8f8e09266a!10e5?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA"
+  }
+}
+-----------sample_2-----------
+{
+  "id": "ChIJJ3zdG64NQjERgwO4haCMmvY",
+  "displayName": "Little Oasis Hội An",
+  "formattedAddress": "215 Lê Thánh Tông, Hội An Đông, Đà Nẵng 51000, Việt Nam",
+  "location": {
+    "latitude": 15.883081299999999,
+    "longitude": 108.3508482
+  },
+  "types": [
+    "hotel",
+    "lodging",
+    "point_of_interest",
+    "establishment"
+  ],
+  "rating": 4.9,
+  "userRatingCount": 1801,
+  "priceLevel": null,
+  "businessStatus": "OPERATIONAL",
+  "currentOpeningHours": null,
+  "regularOpeningHours": null,
+  "internationalPhoneNumber": "+84 235 3866 999",
+  "websiteUri": "http://littleoasis.com.vn/",
+  "photos": [
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMZVvGuxc-HzyfubJ-Gp9TXycg47C2ajgDN83Iq8Y49ACoJwQenFuJJ6dw3T5vfSVmnw7LEQRaVVi0NXcWgIQ1TBXMauXnuHu1JYxEl3C-SUaB00z1TQmYFrD6cbAh3XDTDBc8ogzadLOegOfaYR1XuECkRngrWJ-JHztqU6dqvpsUeH5Mp_r3BtA83PW_HauCf4ONZRt9o80Lh5xBKdfOwnR12fwsdp5emVcwTVwM9AVw5dOuuvvRNJFqLzHARzhnTF28iP3UK0fJz8TvIXvBmYFlz1cApPydgbWoXH8TMmSwsSTv9xYPwavoB-Ht61VL4cn40cqSs9tFdd9tD22PguLjbA2gvD9cPk5o-6TM9GlmTssVv6vX55sL1_2UqOXFgCntglRISz7vzdAFM-DJV3uXI",
+      "widthPx": 4800,
+      "heightPx": 3200,
+      "authorAttributions": [
+        {
+          "displayName": "Little Oasis . An Eco Friendly Hotel & Spa",
+          "uri": "https://maps.google.com/maps/contrib/110611112306625491460",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVHTwN7ED95ZfFa6TOoz4qfaoXAtAU_d2ceKRNsKb_VEK8XYgM=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIDJ_v2RXw&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIDJ_v2RXw!2e10!4m2!3m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMYSVjIvbeoI9x2vwbXv_L1XTU5RxzkOXkSMoZI-8lxTR8Z6YVbETa6keTKol3NCSt9nTVWYCdQiIwwL2oX9GhkUNwCDS-q62uurd0hFJG6u3SiCLov6u3Eji9qaUpdwVFdjx_H3IdXf-QtIRBtD78BKDViMnIz4eeAQSlzRiugGb_kbZTLKIjy5P45rzDxKS0vrf3FWeLQQzj6t8k0CsjEpzJPVoawwN2wegDxTqGHm4PIqXmNEatHe1yIJsGRiZGaiBJn819Oj3LAVQPlybcwVfFyDQtlpU7IrqUHfNhHGydRriH1yrbWnsvcKlXy2JpYXSX180Flb-Pcx9j2wSxI3t_EP-kNqrA-fpuUQYe3_8DwvORJ1cdUYIis2ZRHC2nz_2BrmJj3b2030AOWmq__aUxoA58o",
+      "widthPx": 4800,
+      "heightPx": 3200,
+      "authorAttributions": [
+        {
+          "displayName": "Little Oasis . An Eco Friendly Hotel & Spa",
+          "uri": "https://maps.google.com/maps/contrib/110611112306625491460",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVHTwN7ED95ZfFa6TOoz4qfaoXAtAU_d2ceKRNsKb_VEK8XYgM=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIDJ_r2mvgE&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIDJ_r2mvgE!2e10!4m2!3m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMa6ztDsO7dqLfv559h0c0P-2b43wMbC6pbO_wl_XPCa6PM-lB_km4UNjJCSMli20vFtr_fxNkZVSEVc8eflMiexlbuOoDVDk3RxSOKr6ouyHvmcl763MDY-pHu5H8t47s7KlYeaVqhEwIaC1V-6RKRCmBN714TutiVs4_heqsdMsF_zjeFRgV2IobpjRIv8lgU-p_1iRd_7-PZPUscSAyr6Q2z4Ys7fNZIqPC9Ru7q9wysDqSkQd-KBd-v4KYJk7N68T6rqasPzVsOthcjsNwFAADgUkj6R3lQgY9v9iaT6iArKOiCJkaY2gxYtTi2hP_Dc7QOI_0yglpcP3NEBjpLFYJeQtz0f1u5Bj1F8Mh_MrmVk94M0coebQaZiwR-XLTPfUwhzUAuPimMnw--A__aFsYjfSk8zIoeF5SjrgsrGTg",
+      "widthPx": 4032,
+      "heightPx": 3024,
+      "authorAttributions": [
+        {
+          "displayName": "mtjgpadwtpgadm",
+          "uri": "https://maps.google.com/maps/contrib/105573654660020168334",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVjdOT2CdALdzvmY68VdOaB9Um3Q8zEms_XMetHoCrzt_0VYis=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIABIhDrNarITzfHQ1WBq12jvSJZ&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIABIhDrNarITzfHQ1WBq12jvSJZ!2e10!4m2!3m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMb6_1wU1P7MAQBG6LNy1RVLfZIlXbM4toFnXC3oqo6JRLeVm5ypVLtlXSWsv3fBmU4I3RijB38y09nV-89lZDfq1mQmWiKxZqE0GnRODJfN3PJh0gb3iiMewv7eb2zxfUNtpXc3gKpdWeCJa7L6uJIPjV5O2JIaRNQrO-i2ATIgI42Vh0Pg_dGqv1rdWhso0-GTUWHVCBvyADb01KXU9A84SVOWJMjeVISFo6sn8QgGl_iSQPRYvxgGgrQoETrS1IR7qUujTy1qCRwGPgCrn7uiHqjnT1BpkoE4Gx8v_blyQ6-YOH5-76hj57J1L8CteVsEeKlt6fmA_7LZjydAw1bd5Pxp7BHp3NZ0Q0YKFsWuCjVluwW2iKHhphSZT_0oSYpWRIMJJAZ-9pNEQa0c-gcmYU8",
+      "widthPx": 4800,
+      "heightPx": 3199,
+      "authorAttributions": [
+        {
+          "displayName": "Little Oasis . An Eco Friendly Hotel & Spa",
+          "uri": "https://maps.google.com/maps/contrib/110611112306625491460",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVHTwN7ED95ZfFa6TOoz4qfaoXAtAU_d2ceKRNsKb_VEK8XYgM=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIDJ_r2WOA&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIDJ_r2WOA!2e10!4m2!3m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMZFTZQl6or_ve665XipmmORbTALAn9SCRn5W6Asrs9q68eek7dmToQb9dPGpx8n8CySQGIab9TVRnWh40_IIQ6waB4nyC12-Xda6YBUaukTQW-c1EK9vG-dNfLGZxBQksdcIYYqN2YrTnZr-dZSP0Xb2TMqMGn5VfIT-XQ44jR0eR-_wnY8dJx9Vn0rc5h1YXAP-ZJLze9iPS3IU5K0FA_r57REhLhambqp_iemoEhqj5a7EjsUGsE9EnMvDYZg5yyMb30x9KwrB13qRrCzfn-MFgf6GLWH5NwW--_cDbT71UtubpzxqzaE7yYX3IfwZJy3S6WZk-oh5MyjzYTIIy7demAW26PydPpO0ph4Y5rBbyevDRN_A5HcNalfs6B-obk3hfvl8FV1uqJbFWu8LVGd6IY",
+      "widthPx": 4800,
+      "heightPx": 3200,
+      "authorAttributions": [
+        {
+          "displayName": "Little Oasis . An Eco Friendly Hotel & Spa",
+          "uri": "https://maps.google.com/maps/contrib/110611112306625491460",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVHTwN7ED95ZfFa6TOoz4qfaoXAtAU_d2ceKRNsKb_VEK8XYgM=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIDJ_r2gPw&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIDJ_r2gPw!2e10!4m2!3m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMYh6OP0aI-gfKo-XvdK1HoQmZYRysRfH58gkBl2rc8qRtCUTDsQDaEqXw4uAEccQun2PZhhIlgYBAYSwvX0OASI4r3ef7xXfj5jBPKdA5UkX3fcRuPKfSNWbRCwMZ48fqBFYb7IgzgxrQQBPQG1hQ9HK1Di5tY3H5UoMQ-x_qWhof2TSuDt0x4LOWW54OQqawU1xepjI-tfsH8t0IgmfZPq4oKA4sh8ANjp2BxHJmwfjtylLRQm5-ayQ3maJRa1z_3H0UgTZbHl0o_MyObqVnmSvUfQs_pc4CP0YihuJcEJV8S9PgCAU4SKGgDH7havABQbrtr3kyEj6XMSMTXgFoMNb5xJsn7QENCuYJZ5oTjzlpG7MOEG7pgN22lVu-AU-ys8tG5JhYLPu_WdOOyMCpoqr6ix6KfF-oHb1_E7M93C7Q",
+      "widthPx": 1920,
+      "heightPx": 2560,
+      "authorAttributions": [
+        {
+          "displayName": "Little Oasis . An Eco Friendly Hotel & Spa",
+          "uri": "https://maps.google.com/maps/contrib/110611112306625491460",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVHTwN7ED95ZfFa6TOoz4qfaoXAtAU_d2ceKRNsKb_VEK8XYgM=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIABIhAxuQYQonJiLg0zWfZfasI9&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIABIhAxuQYQonJiLg0zWfZfasI9!2e10!4m2!3m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMb7QukwChc_XVAhi9hHan7KpOepsatvDdKf_zWjcmSQKKGeMDvw3RvCjRKR8MiQNvG6hqUWv0_QYS6PK2ypjKfOwnuBRgL_SA4LgJYxM-LPP1HA03cIwfbJIlcPmSkTwDbkUD_2fsoWsqZW2x6YVvBi42W_zsQmFwchjRdVPKV_XzD6R7-1C7ebohxLhmvvfD5Lm_y6rod04hTh2EpHh7oAXHt2qCnh7j7Fi8dJkW4owIY2Ybe6yTqJgYeitLEr-PV18BTk9LpOwjEjYJ1QRy1LrNmwBgEEXf33PUMpqIVQGxq8zLJqb0LP36aL6bovQCARfm4tJVyEmi-QSWR0ffMvPdjCpRBHigvuIjJFANMC48mOawbiwB1NCN7QdsUMLl22XNSDD6ipt-22uc87RAxJ6bOE4nY",
+      "widthPx": 2560,
+      "heightPx": 1705,
+      "authorAttributions": [
+        {
+          "displayName": "Little Oasis . An Eco Friendly Hotel & Spa",
+          "uri": "https://maps.google.com/maps/contrib/110611112306625491460",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVHTwN7ED95ZfFa6TOoz4qfaoXAtAU_d2ceKRNsKb_VEK8XYgM=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgICtpfa87QE&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgICtpfa87QE!2e10!4m2!3m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMYOLA8IKf16mX07P9BiNTLqa4dVXljlYJyKv0LHFYBoiuSxgHj8yUqkpJh-TfNA6zV20Xjm6xoyRDZRcSCYyFbpMMYMmyjkTlOZXsTYd-tQvcBusQy9Fs9n0YKNTQ_y5ljmBn7oMFEqvNmcBmH9_cy0WoXAb3bvHEsTZsQM5j5AZfdxmHMwk7DXB39hDPJHMNox90IDNNOwptNSpSMp3bJqIOYUajBC97AoG3YDJaUTUR0WqJuzraiKW4op9euvsDh18Z-xv5N3eV8mkFv_ID08Q3SmFik_BrI9yju2hJ8r109o4VGVRrY1Sur93Cq8jWaR8AwHTS09MVP_mUB-Yndkm8pDslcXvN8Md15EaOLgPJpWlEgINNSf8YGZOeUFur0LemktSpBLHYZ-Q0eJPo4gfpM",
+      "widthPx": 2560,
+      "heightPx": 1705,
+      "authorAttributions": [
+        {
+          "displayName": "Little Oasis . An Eco Friendly Hotel & Spa",
+          "uri": "https://maps.google.com/maps/contrib/110611112306625491460",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVHTwN7ED95ZfFa6TOoz4qfaoXAtAU_d2ceKRNsKb_VEK8XYgM=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgICtpczrWg&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgICtpczrWg!2e10!4m2!3m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMbUzw1QVOoP76FiO6YkNSUXfIXXoSvuPSoubZ4OLZfmSLLdmkPtwuZCM7hqctQgIAfsGpdAF8eTDQIqOORnLLbPgOe4knY9uUYvY3fDq7BK0-O66gwVLn3xedk6907FLikv194vRmP9lMjF1STm56W5e1ATK5tihA9LtuR-SjIZ6VylkAAMjU5-mmbZ9OuRnTlUuuSMzIxOS9IjaPTnH1NF3PTmOy9cYXiEsLA28Vl7Vlz0EoqdxErWS_62ger9XThHecqtAa09q90Z3L5nVUR3KzxJTLyQpyWhHDCpC2KVoVzddogXkuZcOslKQLaSvWTn2SQbUEpyiMeuVfRvHXASGEa64P2RKA-FVWVLUyw7qDzTPBGFL8QY0YGxGNt5DLUJIRJCZgwfstl-yCguuW7tuChRZ4Q",
+      "widthPx": 1920,
+      "heightPx": 2560,
+      "authorAttributions": [
+        {
+          "displayName": "Little Oasis . An Eco Friendly Hotel & Spa",
+          "uri": "https://maps.google.com/maps/contrib/110611112306625491460",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVHTwN7ED95ZfFa6TOoz4qfaoXAtAU_d2ceKRNsKb_VEK8XYgM=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgMDAg4Sz9AE&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgMDAg4Sz9AE!2e10!4m2!3m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/photos/Aa-ngMY-b8hPf9ZILngtCeMvas3PYDWqibTN755LoEb9VJl_ko0_nvYVFhmjU_wu8SovdtGXn1n4hpFV_73n1EhuDss0PuJALmZMqrRJwhEb0fROHWK9P2mw4oyJnD3gcjOMLBSyYRU7GqRFr_3QRnV-_7pp7po8CQg4PLjsgTVOkH5kMuUEFr6W5jnj96221WEvFMnaNg1vr534PlGFh_TFU64wLSJ2IFLpi-KqlvxVPe9BZSIISJFxFOz2Szze-O9RjX7ukhZK2W3dsDdnQHvFosS8oNpQKqXVm8cbOyyPwqj1HO_0xYwqQjfbjFD0yrMztfgEiotNxIG6wTENYzG8Dlf9br99pdJdhpPT4gS17bYM7_YXZmo0PW6XDZJmy8LIQoAtdsincNr4_hTI0lCjBTL9M6w",
+      "widthPx": 4800,
+      "heightPx": 3199,
+      "authorAttributions": [
+        {
+          "displayName": "Little Oasis . An Eco Friendly Hotel & Spa",
+          "uri": "https://maps.google.com/maps/contrib/110611112306625491460",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVHTwN7ED95ZfFa6TOoz4qfaoXAtAU_d2ceKRNsKb_VEK8XYgM=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIDftva7Aw&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIDftva7Aw!2e10!4m2!3m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    }
+  ],
+  "parkingOptions": null,
+  "paymentOptions": null,
+  "accessibilityOptions": {
+    "wheelchairAccessibleParking": true,
+    "wheelchairAccessibleEntrance": true
+  },
+  "addressComponents": [
+    {
+      "longText": "215",
+      "shortText": "215",
+      "types": [
+        "street_number"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Lê Thánh Tông",
+      "shortText": "Lê Thánh Tông",
+      "types": [
+        "route"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Hội An Đông",
+      "shortText": "Hội An Đông",
+      "types": [
+        "administrative_area_level_2",
+        "political"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Đà Nẵng",
+      "shortText": "Đà Nẵng",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Việt Nam",
+      "shortText": "VN",
+      "types": [
+        "country",
+        "political"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "51000",
+      "shortText": "51000",
+      "types": [
+        "postal_code"
+      ],
+      "languageCode": "vi"
+    }
+  ],
+  "reservable": null,
+  "servesBreakfast": null,
+  "servesBrunch": null,
+  "servesLunch": null,
+  "servesDinner": null,
+  "servesBeer": null,
+  "servesWine": null,
+  "servesCocktails": null,
+  "servesDessert": null,
+  "servesCoffee": null,
+  "servesVegetarianFood": null,
+  "allowsDogs": null,
+  "goodForChildren": true,
+  "goodForGroups": null,
+  "goodForWatchingSports": null,
+  "liveMusic": null,
+  "menuForChildren": null,
+  "outdoorSeating": null,
+  "takeout": null,
+  "delivery": null,
+  "dineIn": null,
+  "curbsidePickup": null,
+  "restroom": null,
+  "pureServiceAreaBusiness": null,
+  "editorialSummary": null,
+  "generativeSummary": null,
+  "reviewSummary": null,
+  "primaryTypeDisplayName": {
+    "text": "Khách sạn",
+    "languageCode": "vi"
+  },
+  "googleMapsUri": "https://maps.google.com/?cid=17769669900809798531&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "primaryType": "hotel",
+  "nationalPhoneNumber": "0235 3866 999",
+  "plusCode": {
+    "globalCode": "7P7CV9M2+68",
+    "compoundCode": "V9M2+68 Hội An Đông, Đà Nẵng, Việt Nam"
+  },
+  "reviews": [
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/reviews/Ci9DQUlRQUNvZENodHljRjlvT2tOVVNqRnRYMk5NU2toUllqTTNkV1F4UkMxNWRHYxAB",
+      "relativePublishTimeDescription": "3 tháng trước",
+      "rating": 5,
+      "text": {
+        "text": "Mình vừa có trải nghiệm 2 đêm ở đây và rất rcm nếu có dịp đến hội an hãy ghé nơi đây. Phòng ốc rộng rãi, sạch sẽ . Các anh chị lễ tân rất nhiệt tình, và vui vẻ. Chị lễ tân còn chủ động hỏi và gọi xe miễn phí để gđ mình di chuyển từ khách sạn đến Đà Nẵng. Nếu có dịp quay lại Hội An mình sẽ vẫn chọn đây là điểm lưu trú. ( mình có chụp tên của một chị lễ tân rất nice ở đây)",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Mình vừa có trải nghiệm 2 đêm ở đây và rất rcm nếu có dịp đến hội an hãy ghé nơi đây. Phòng ốc rộng rãi, sạch sẽ . Các anh chị lễ tân rất nhiệt tình, và vui vẻ. Chị lễ tân còn chủ động hỏi và gọi xe miễn phí để gđ mình di chuyển từ khách sạn đến Đà Nẵng. Nếu có dịp quay lại Hội An mình sẽ vẫn chọn đây là điểm lưu trú. ( mình có chụp tên của một chị lễ tân rất nice ở đây)",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "phan ánh",
+        "uri": "https://www.google.com/maps/contrib/115425496731718064771/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWiEIksIM3-deU1yjepVA0hxDTJCOx5xKkncF6ieDsY3jEPdGqe=s128-c0x00000000-cc-rp-mo"
+      },
+      "publishTime": "2026-07-04T07:22:36.900114733Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=Ci9DQUlRQUNvZENodHljRjlvT2tOVVNqRnRYMk5NU2toUllqTTNkV1F4UkMxNWRHYxAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sCi9DQUlRQUNvZENodHljRjlvT2tOVVNqRnRYMk5NU2toUllqTTNkV1F4UkMxNWRHYxAB!2m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/reviews/Ci9DQUlRQUNvZENodHljRjlvT2tjNU5XUTJlR2x6YzI5elpuWnVNMlpHWTNNMk5tYxAB",
+      "relativePublishTimeDescription": "7 tháng trước",
+      "rating": 5,
+      "text": {
+        "text": "I would like to express my heartfelt gratitude to Rose at Little Oasis in Hoi An.\n\nDuring my trip, my phone was suddenly stolen, and I felt shocked, helpless, and overwhelmed.\nRose treated the situation as if it were her own and supported me until the very end.\n\nIn a country where I could not speak the language well, her warm words, sincere eyes, and thoughtful care brought me incredible comfort.\nIn that moment of anxiety and fear, she felt like a light in the darkness.\n\nHer kindness almost brought me to tears, and I will never forget the warmth she showed me.\nBecause of her, Little Oasis will always remain in my heart as more than just a hotel, but a place of true kindness.\nThank you from the bottom of my heart\n\n❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️🥲🥲\n\nTôi muốn gửi lời cảm ơn chân thành và sâu sắc nhất đến Rose tại Little Oasis ở Hội An.\n\nTrong chuyến đi, tôi bất ngờ bị mất điện thoại và cảm thấy vô cùng hoang mang, lo lắng và bất lực.\nRose đã quan tâm và giúp đỡ tôi như thể đó là chuyện của chính cô ấy, luôn ở bên tôi cho đến cuối cùng.\n\nỞ một đất nước mà tôi không thể giao tiếp tốt bằng ngôn ngữ, những lời nói ấm áp, ánh mắt chân thành và sự quan tâm chu đáo của cô ấy đã mang lại cho tôi sự an ủi rất lớn.\nTrong khoảnh khắc đầy lo lắng ấy, cô ấy giống như một ánh sáng giữa bóng tối.\n\nSự tử tế của cô ấy khiến tôi gần như rơi nước mắt và tôi sẽ không bao giờ quên được sự ấm áp đó.\nNhờ có Rose, Little Oasis không chỉ là một khách sạn, mà là một nơi chứa đựng lòng tốt và kỷ niệm đẹp trong trái tim tôi.\nXin chân thành cảm ơn.",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "I would like to express my heartfelt gratitude to Rose at Little Oasis in Hoi An.\n\nDuring my trip, my phone was suddenly stolen, and I felt shocked, helpless, and overwhelmed.\nRose treated the situation as if it were her own and supported me until the very end.\n\nIn a country where I could not speak the language well, her warm words, sincere eyes, and thoughtful care brought me incredible comfort.\nIn that moment of anxiety and fear, she felt like a light in the darkness.\n\nHer kindness almost brought me to tears, and I will never forget the warmth she showed me.\nBecause of her, Little Oasis will always remain in my heart as more than just a hotel, but a place of true kindness.\nThank you from the bottom of my heart\n\n❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️🥲🥲\n\nTôi muốn gửi lời cảm ơn chân thành và sâu sắc nhất đến Rose tại Little Oasis ở Hội An.\n\nTrong chuyến đi, tôi bất ngờ bị mất điện thoại và cảm thấy vô cùng hoang mang, lo lắng và bất lực.\nRose đã quan tâm và giúp đỡ tôi như thể đó là chuyện của chính cô ấy, luôn ở bên tôi cho đến cuối cùng.\n\nỞ một đất nước mà tôi không thể giao tiếp tốt bằng ngôn ngữ, những lời nói ấm áp, ánh mắt chân thành và sự quan tâm chu đáo của cô ấy đã mang lại cho tôi sự an ủi rất lớn.\nTrong khoảnh khắc đầy lo lắng ấy, cô ấy giống như một ánh sáng giữa bóng tối.\n\nSự tử tế của cô ấy khiến tôi gần như rơi nước mắt và tôi sẽ không bao giờ quên được sự ấm áp đó.\nNhờ có Rose, Little Oasis không chỉ là một khách sạn, mà là một nơi chứa đựng lòng tốt và kỷ niệm đẹp trong trái tim tôi.\nXin chân thành cảm ơn.",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "A ST",
+        "uri": "https://www.google.com/maps/contrib/112130577405890562702/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJw26GWLOM5i81CcFxk9VV1sNwI0G4gUu03nGJBWSQmaKPqaA=s128-c0x00000000-cc-rp-mo"
+      },
+      "publishTime": "2026-02-21T05:10:29.505603034Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=Ci9DQUlRQUNvZENodHljRjlvT2tjNU5XUTJlR2x6YzI5elpuWnVNMlpHWTNNMk5tYxAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sCi9DQUlRQUNvZENodHljRjlvT2tjNU5XUTJlR2x6YzI5elpuWnVNMlpHWTNNMk5tYxAB!2m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/reviews/Ci9DQUlRQUNvZENodHljRjlvT2tkMWFYSnFZMjFwV1ROWFNHOXhSV2hNWTFGb2JFRRAB",
+      "relativePublishTimeDescription": "một tháng trước",
+      "rating": 5,
+      "text": {
+        "text": "Nhà mình 2 người lớn và 2 bé. Ở Little Oasis 3 ngày 2 đêm.\nCheck in có nước, bánh. Khăn lạnh lau mặt. Hành lý có nhân viên chuyển lên tận phòng.\nChị Rose lễ tân nói giọng nhẹ nhàng, chỉ dẫn tận tình, rất chăm chút khách.\nNhà mình ở mấy ngày thấy toàn khách nước ngoài là chính.\nKhách sạn có 2 bể bơi, 1 cho trẻ, 1 cho người lớn.\nDịch vụ đưa đón miễn phí tới bãi biển và phố cổ\nNói chung không có gì để chê.",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Nhà mình 2 người lớn và 2 bé. Ở Little Oasis 3 ngày 2 đêm.\nCheck in có nước, bánh. Khăn lạnh lau mặt. Hành lý có nhân viên chuyển lên tận phòng.\nChị Rose lễ tân nói giọng nhẹ nhàng, chỉ dẫn tận tình, rất chăm chút khách.\nNhà mình ở mấy ngày thấy toàn khách nước ngoài là chính.\nKhách sạn có 2 bể bơi, 1 cho trẻ, 1 cho người lớn.\nDịch vụ đưa đón miễn phí tới bãi biển và phố cổ\nNói chung không có gì để chê.",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Trí Nguyễn",
+        "uri": "https://www.google.com/maps/contrib/114937392995136953790/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVoIHQdNckkzT5HOIZQgAa7r0OX2ZbSpjhN9MYhExbKQi_bCr_F=s128-c0x00000000-cc-rp-mo-ba3"
+      },
+      "publishTime": "2026-08-11T14:53:03.529929641Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=Ci9DQUlRQUNvZENodHljRjlvT2tkMWFYSnFZMjFwV1ROWFNHOXhSV2hNWTFGb2JFRRAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sCi9DQUlRQUNvZENodHljRjlvT2tkMWFYSnFZMjFwV1ROWFNHOXhSV2hNWTFGb2JFRRAB!2m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/reviews/Ci9DQUlRQUNvZENodHljRjlvT25OMExWUmtiMFZ3TTBsUVgxRTFZbXRIWm5WcE4xRRAB",
+      "relativePublishTimeDescription": "5 tháng trước",
+      "rating": 5,
+      "text": {
+        "text": "Phòng và khách sạn rất đẹp, team rất thân thiện và support. Có shuttle bus ra biển và phố cổ miễn phí theo các khung giờ và ăn sáng đa dạng 🥰",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Phòng và khách sạn rất đẹp, team rất thân thiện và support. Có shuttle bus ra biển và phố cổ miễn phí theo các khung giờ và ăn sáng đa dạng 🥰",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Cẩm Tuyền Huỳnh",
+        "uri": "https://www.google.com/maps/contrib/110274051303375737122/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWXs_XAEMJv1l-Qr17Wk411ZFNnFQonRpZczeDUl7KFEArpn1_U=s128-c0x00000000-cc-rp-mo-ba3"
+      },
+      "publishTime": "2026-04-19T14:02:53.347533980Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=Ci9DQUlRQUNvZENodHljRjlvT25OMExWUmtiMFZ3TTBsUVgxRTFZbXRIWm5WcE4xRRAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sCi9DQUlRQUNvZENodHljRjlvT25OMExWUmtiMFZ3TTBsUVgxRTFZbXRIWm5WcE4xRRAB!2m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    },
+    {
+      "name": "places/ChIJJ3zdG64NQjERgwO4haCMmvY/reviews/Ci9DQUlRQUNvZENodHljRjlvT21zNFZYaElMVlZoV1Y4MVNIcHJVRUZpUlRCRk9HYxAB",
+      "relativePublishTimeDescription": "5 tháng trước",
+      "rating": 5,
+      "text": {
+        "text": "Khách sạn nằm cách phố cổ Hội An khoảng 2km (đi đường thẳng là tới). Phòng ốc đẹp, thơm và sạch sẽ, nhân viên phục vụ thái độ tốt thân thiện và rất nhiệt tình. Có phòng gym, phòng spa và bể bơi, có lớp học pha cà phê và làm đèn lồng, mọi người",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Khách sạn nằm cách phố cổ Hội An khoảng 2km (đi đường thẳng là tới). Phòng ốc đẹp, thơm và sạch sẽ, nhân viên phục vụ thái độ tốt thân thiện và rất nhiệt tình. Có phòng gym, phòng spa và bể bơi, có lớp học pha cà phê và làm đèn lồng, mọi người",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Linh Nguyễn Thùy",
+        "uri": "https://www.google.com/maps/contrib/108828039006950468940/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVk3tvGfNFK5U-w-hl7jqgJ8QNUwuNlH_4pkgc-zrHLVpXGQS0=s128-c0x00000000-cc-rp-mo"
+      },
+      "publishTime": "2026-05-07T07:14:22.658771816Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=Ci9DQUlRQUNvZENodHljRjlvT21zNFZYaElMVlZoV1Y4MVNIcHJVRUZpUlRCRk9HYxAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sCi9DQUlRQUNvZENodHljRjlvT21zNFZYaElMVlZoV1Y4MVNIcHJVRUZpUlRCRk9HYxAB!2m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383"
+    }
+  ],
+  "routingSummaries": [],
+  "priceRange": null,
+  "regularSecondaryOpeningHours": [
+    {
+      "openNow": false,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 17,
+            "minute": 0
+          },
+          "close": {
+            "day": 0,
+            "hour": 19,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 17,
+            "minute": 0
+          },
+          "close": {
+            "day": 1,
+            "hour": 19,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 15,
+            "minute": 0
+          },
+          "close": {
+            "day": 2,
+            "hour": 19,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 17,
+            "minute": 0
+          },
+          "close": {
+            "day": 3,
+            "hour": 19,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 17,
+            "minute": 0
+          },
+          "close": {
+            "day": 4,
+            "hour": 19,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 17,
+            "minute": 0
+          },
+          "close": {
+            "day": 5,
+            "hour": 19,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 17,
+            "minute": 0
+          },
+          "close": {
+            "day": 6,
+            "hour": 19,
+            "minute": 0
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 17:00–19:00",
+        "Thứ Ba: 15:00–19:00",
+        "Thứ Tư: 17:00–19:00",
+        "Thứ Năm: 17:00–19:00",
+        "Thứ Sáu: 17:00–19:00",
+        "Thứ Bảy: 17:00–19:00",
+        "Chủ Nhật: 17:00–19:00"
+      ],
+      "secondaryHoursType": "HAPPY_HOUR",
+      "nextOpenTime": "2026-10-09T10:00:00Z"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 0,
+            "minute": 0
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: Mở cửa cả ngày",
+        "Thứ Ba: Mở cửa cả ngày",
+        "Thứ Tư: Mở cửa cả ngày",
+        "Thứ Năm: Mở cửa cả ngày",
+        "Thứ Sáu: Mở cửa cả ngày",
+        "Thứ Bảy: Mở cửa cả ngày",
+        "Chủ Nhật: Mở cửa cả ngày"
+      ],
+      "secondaryHoursType": "BREAKFAST"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 11,
+            "minute": 0
+          },
+          "close": {
+            "day": 0,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 11,
+            "minute": 0
+          },
+          "close": {
+            "day": 1,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 11,
+            "minute": 0
+          },
+          "close": {
+            "day": 2,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 11,
+            "minute": 0
+          },
+          "close": {
+            "day": 3,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 11,
+            "minute": 0
+          },
+          "close": {
+            "day": 4,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 11,
+            "minute": 0
+          },
+          "close": {
+            "day": 5,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 11,
+            "minute": 0
+          },
+          "close": {
+            "day": 6,
+            "hour": 23,
+            "minute": 0
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 11:00–23:00",
+        "Thứ Ba: 11:00–23:00",
+        "Thứ Tư: 11:00–23:00",
+        "Thứ Năm: 11:00–23:00",
+        "Thứ Sáu: 11:00–23:00",
+        "Thứ Bảy: 11:00–23:00",
+        "Chủ Nhật: 11:00–23:00"
+      ],
+      "secondaryHoursType": "BRUNCH",
+      "nextCloseTime": "2026-10-09T16:00:00Z"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 0,
+            "minute": 0
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: Mở cửa cả ngày",
+        "Thứ Ba: Mở cửa cả ngày",
+        "Thứ Tư: Mở cửa cả ngày",
+        "Thứ Năm: Mở cửa cả ngày",
+        "Thứ Sáu: Mở cửa cả ngày",
+        "Thứ Bảy: Mở cửa cả ngày",
+        "Chủ Nhật: Mở cửa cả ngày"
+      ],
+      "secondaryHoursType": "ACCESS"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 7,
+            "minute": 0
+          },
+          "close": {
+            "day": 0,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 7,
+            "minute": 0
+          },
+          "close": {
+            "day": 1,
+            "hour": 21,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 7,
+            "minute": 0
+          },
+          "close": {
+            "day": 2,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 7,
+            "minute": 0
+          },
+          "close": {
+            "day": 3,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 7,
+            "minute": 0
+          },
+          "close": {
+            "day": 4,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 7,
+            "minute": 0
+          },
+          "close": {
+            "day": 5,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 7,
+            "minute": 0
+          },
+          "close": {
+            "day": 6,
+            "hour": 23,
+            "minute": 0
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 07:00–21:00",
+        "Thứ Ba: 07:00–23:00",
+        "Thứ Tư: 07:00–23:00",
+        "Thứ Năm: 07:00–23:00",
+        "Thứ Sáu: 07:00–23:00",
+        "Thứ Bảy: 07:00–23:00",
+        "Chủ Nhật: 07:00–23:00"
+      ],
+      "secondaryHoursType": "KITCHEN",
+      "nextCloseTime": "2026-10-09T16:00:00Z"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 0,
+            "minute": 0
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: Mở cửa cả ngày",
+        "Thứ Ba: Mở cửa cả ngày",
+        "Thứ Tư: Mở cửa cả ngày",
+        "Thứ Năm: Mở cửa cả ngày",
+        "Thứ Sáu: Mở cửa cả ngày",
+        "Thứ Bảy: Mở cửa cả ngày",
+        "Chủ Nhật: Mở cửa cả ngày"
+      ],
+      "secondaryHoursType": "SENIOR_HOURS"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 8,
+            "minute": 0
+          },
+          "close": {
+            "day": 0,
+            "hour": 17,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 8,
+            "minute": 0
+          },
+          "close": {
+            "day": 1,
+            "hour": 17,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 8,
+            "minute": 0
+          },
+          "close": {
+            "day": 2,
+            "hour": 17,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 8,
+            "minute": 0
+          },
+          "close": {
+            "day": 3,
+            "hour": 17,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 8,
+            "minute": 0
+          },
+          "close": {
+            "day": 4,
+            "hour": 17,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 8,
+            "minute": 0
+          },
+          "close": {
+            "day": 5,
+            "hour": 17,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 8,
+            "minute": 0
+          },
+          "close": {
+            "day": 6,
+            "hour": 17,
+            "minute": 0
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 08:00–17:00",
+        "Thứ Ba: 08:00–17:00",
+        "Thứ Tư: 08:00–17:00",
+        "Thứ Năm: 08:00–17:00",
+        "Thứ Sáu: 08:00–17:00",
+        "Thứ Bảy: 08:00–17:00",
+        "Chủ Nhật: 08:00–17:00"
+      ],
+      "secondaryHoursType": "ONLINE_SERVICE_HOURS",
+      "nextCloseTime": "2026-10-09T10:00:00Z"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 10,
+            "minute": 30
+          },
+          "close": {
+            "day": 0,
+            "hour": 15,
+            "minute": 30
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 10,
+            "minute": 30
+          },
+          "close": {
+            "day": 1,
+            "hour": 15,
+            "minute": 30
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 10,
+            "minute": 30
+          },
+          "close": {
+            "day": 2,
+            "hour": 15,
+            "minute": 30
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 10,
+            "minute": 30
+          },
+          "close": {
+            "day": 3,
+            "hour": 15,
+            "minute": 30
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 10,
+            "minute": 30
+          },
+          "close": {
+            "day": 4,
+            "hour": 15,
+            "minute": 30
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 10,
+            "minute": 30
+          },
+          "close": {
+            "day": 5,
+            "hour": 15,
+            "minute": 30
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 10,
+            "minute": 30
+          },
+          "close": {
+            "day": 6,
+            "hour": 15,
+            "minute": 30
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 10:30–15:30",
+        "Thứ Ba: 10:30–15:30",
+        "Thứ Tư: 10:30–15:30",
+        "Thứ Năm: 10:30–15:30",
+        "Thứ Sáu: 10:30–15:30",
+        "Thứ Bảy: 10:30–15:30",
+        "Chủ Nhật: 10:30–15:30"
+      ],
+      "secondaryHoursType": "LUNCH",
+      "nextCloseTime": "2026-10-09T08:30:00Z"
+    },
+    {
+      "openNow": false,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 18,
+            "minute": 0
+          },
+          "close": {
+            "day": 0,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 18,
+            "minute": 0
+          },
+          "close": {
+            "day": 1,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 18,
+            "minute": 0
+          },
+          "close": {
+            "day": 2,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 18,
+            "minute": 0
+          },
+          "close": {
+            "day": 3,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 18,
+            "minute": 0
+          },
+          "close": {
+            "day": 4,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 18,
+            "minute": 0
+          },
+          "close": {
+            "day": 5,
+            "hour": 23,
+            "minute": 0
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 18,
+            "minute": 0
+          },
+          "close": {
+            "day": 6,
+            "hour": 23,
+            "minute": 0
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 18:00–23:00",
+        "Thứ Ba: 18:00–23:00",
+        "Thứ Tư: 18:00–23:00",
+        "Thứ Năm: 18:00–23:00",
+        "Thứ Sáu: 18:00–23:00",
+        "Thứ Bảy: 18:00–23:00",
+        "Chủ Nhật: 18:00–23:00"
+      ],
+      "secondaryHoursType": "DINNER",
+      "nextOpenTime": "2026-10-09T11:00:00Z"
+    }
+  ],
+  "currentSecondaryOpeningHours": [
+    {
+      "openNow": false,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          },
+          "close": {
+            "day": 0,
+            "hour": 19,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          },
+          "close": {
+            "day": 1,
+            "hour": 19,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 15,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          },
+          "close": {
+            "day": 2,
+            "hour": 19,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          },
+          "close": {
+            "day": 3,
+            "hour": 19,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          },
+          "close": {
+            "day": 4,
+            "hour": 19,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          },
+          "close": {
+            "day": 5,
+            "hour": 19,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          },
+          "close": {
+            "day": 6,
+            "hour": 19,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 17:00–19:00",
+        "Thứ Ba: 15:00–19:00",
+        "Thứ Tư: 17:00–19:00",
+        "Thứ Năm: 17:00–19:00",
+        "Thứ Sáu: 17:00–19:00",
+        "Thứ Bảy: 17:00–19:00",
+        "Chủ Nhật: 17:00–19:00"
+      ],
+      "secondaryHoursType": "HAPPY_HOUR",
+      "nextOpenTime": "2026-10-09T10:00:00Z"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 5,
+            "hour": 0,
+            "minute": 0,
+            "truncated": true,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          },
+          "close": {
+            "day": 4,
+            "hour": 23,
+            "minute": 59,
+            "truncated": true,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: Mở cửa cả ngày",
+        "Thứ Ba: Mở cửa cả ngày",
+        "Thứ Tư: Mở cửa cả ngày",
+        "Thứ Năm: Mở cửa cả ngày",
+        "Thứ Sáu: Mở cửa cả ngày",
+        "Thứ Bảy: Mở cửa cả ngày",
+        "Chủ Nhật: Mở cửa cả ngày"
+      ],
+      "secondaryHoursType": "BREAKFAST"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 11,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          },
+          "close": {
+            "day": 0,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 11,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          },
+          "close": {
+            "day": 1,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 11,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          },
+          "close": {
+            "day": 2,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 11,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          },
+          "close": {
+            "day": 3,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 11,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          },
+          "close": {
+            "day": 4,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 11,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          },
+          "close": {
+            "day": 5,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 11,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          },
+          "close": {
+            "day": 6,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 11:00–23:00",
+        "Thứ Ba: 11:00–23:00",
+        "Thứ Tư: 11:00–23:00",
+        "Thứ Năm: 11:00–23:00",
+        "Thứ Sáu: 11:00–23:00",
+        "Thứ Bảy: 11:00–23:00",
+        "Chủ Nhật: 11:00–23:00"
+      ],
+      "secondaryHoursType": "BRUNCH",
+      "nextCloseTime": "2026-10-09T16:00:00Z"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 5,
+            "hour": 0,
+            "minute": 0,
+            "truncated": true,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          },
+          "close": {
+            "day": 4,
+            "hour": 23,
+            "minute": 59,
+            "truncated": true,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: Mở cửa cả ngày",
+        "Thứ Ba: Mở cửa cả ngày",
+        "Thứ Tư: Mở cửa cả ngày",
+        "Thứ Năm: Mở cửa cả ngày",
+        "Thứ Sáu: Mở cửa cả ngày",
+        "Thứ Bảy: Mở cửa cả ngày",
+        "Chủ Nhật: Mở cửa cả ngày"
+      ],
+      "secondaryHoursType": "ACCESS"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 7,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          },
+          "close": {
+            "day": 0,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 7,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          },
+          "close": {
+            "day": 1,
+            "hour": 21,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 7,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          },
+          "close": {
+            "day": 2,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 7,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          },
+          "close": {
+            "day": 3,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 7,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          },
+          "close": {
+            "day": 4,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 7,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          },
+          "close": {
+            "day": 5,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 7,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          },
+          "close": {
+            "day": 6,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 07:00–21:00",
+        "Thứ Ba: 07:00–23:00",
+        "Thứ Tư: 07:00–23:00",
+        "Thứ Năm: 07:00–23:00",
+        "Thứ Sáu: 07:00–23:00",
+        "Thứ Bảy: 07:00–23:00",
+        "Chủ Nhật: 07:00–23:00"
+      ],
+      "secondaryHoursType": "KITCHEN",
+      "nextCloseTime": "2026-10-09T16:00:00Z"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 5,
+            "hour": 0,
+            "minute": 0,
+            "truncated": true,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          },
+          "close": {
+            "day": 4,
+            "hour": 23,
+            "minute": 59,
+            "truncated": true,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: Mở cửa cả ngày",
+        "Thứ Ba: Mở cửa cả ngày",
+        "Thứ Tư: Mở cửa cả ngày",
+        "Thứ Năm: Mở cửa cả ngày",
+        "Thứ Sáu: Mở cửa cả ngày",
+        "Thứ Bảy: Mở cửa cả ngày",
+        "Chủ Nhật: Mở cửa cả ngày"
+      ],
+      "secondaryHoursType": "SENIOR_HOURS"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 8,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          },
+          "close": {
+            "day": 0,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 8,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          },
+          "close": {
+            "day": 1,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 8,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          },
+          "close": {
+            "day": 2,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 8,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          },
+          "close": {
+            "day": 3,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 8,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          },
+          "close": {
+            "day": 4,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 8,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          },
+          "close": {
+            "day": 5,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 8,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          },
+          "close": {
+            "day": 6,
+            "hour": 17,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 08:00–17:00",
+        "Thứ Ba: 08:00–17:00",
+        "Thứ Tư: 08:00–17:00",
+        "Thứ Năm: 08:00–17:00",
+        "Thứ Sáu: 08:00–17:00",
+        "Thứ Bảy: 08:00–17:00",
+        "Chủ Nhật: 08:00–17:00"
+      ],
+      "secondaryHoursType": "ONLINE_SERVICE_HOURS",
+      "nextCloseTime": "2026-10-09T10:00:00Z"
+    },
+    {
+      "openNow": true,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 10,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          },
+          "close": {
+            "day": 0,
+            "hour": 15,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 10,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          },
+          "close": {
+            "day": 1,
+            "hour": 15,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 10,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          },
+          "close": {
+            "day": 2,
+            "hour": 15,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 10,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          },
+          "close": {
+            "day": 3,
+            "hour": 15,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 10,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          },
+          "close": {
+            "day": 4,
+            "hour": 15,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 10,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          },
+          "close": {
+            "day": 5,
+            "hour": 15,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 10,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          },
+          "close": {
+            "day": 6,
+            "hour": 15,
+            "minute": 30,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 10:30–15:30",
+        "Thứ Ba: 10:30–15:30",
+        "Thứ Tư: 10:30–15:30",
+        "Thứ Năm: 10:30–15:30",
+        "Thứ Sáu: 10:30–15:30",
+        "Thứ Bảy: 10:30–15:30",
+        "Chủ Nhật: 10:30–15:30"
+      ],
+      "secondaryHoursType": "LUNCH",
+      "nextCloseTime": "2026-10-09T08:30:00Z"
+    },
+    {
+      "openNow": false,
+      "periods": [
+        {
+          "open": {
+            "day": 0,
+            "hour": 18,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          },
+          "close": {
+            "day": 0,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 11
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 1,
+            "hour": 18,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          },
+          "close": {
+            "day": 1,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 12
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 2,
+            "hour": 18,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          },
+          "close": {
+            "day": 2,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 13
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 3,
+            "hour": 18,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          },
+          "close": {
+            "day": 3,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 14
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 4,
+            "hour": 18,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          },
+          "close": {
+            "day": 4,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 15
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 5,
+            "hour": 18,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          },
+          "close": {
+            "day": 5,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 9
+            }
+          }
+        },
+        {
+          "open": {
+            "day": 6,
+            "hour": 18,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          },
+          "close": {
+            "day": 6,
+            "hour": 23,
+            "minute": 0,
+            "date": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            }
+          }
+        }
+      ],
+      "weekdayDescriptions": [
+        "Thứ Hai: 18:00–23:00",
+        "Thứ Ba: 18:00–23:00",
+        "Thứ Tư: 18:00–23:00",
+        "Thứ Năm: 18:00–23:00",
+        "Thứ Sáu: 18:00–23:00",
+        "Thứ Bảy: 18:00–23:00",
+        "Chủ Nhật: 18:00–23:00"
+      ],
+      "secondaryHoursType": "DINNER",
+      "nextOpenTime": "2026-10-09T11:00:00Z"
+    }
+  ],
+  "shortFormattedAddress": "215 Lê Thánh Tông, Hội An Đông",
+  "utcOffsetMinutes": 420,
+  "evChargeOptions": null,
+  "fuelOptions": null,
+  "googleMapsLinks": {
+    "directionsUri": "https://www.google.com/maps/dir//''/data=!4m7!4m6!1m1!4e2!1m2!1m1!1s0x31420dae1bdd7c27:0xf69a8ca085b80383!3e0?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "placeUri": "https://maps.google.com/?cid=17769669900809798531&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "writeAReviewUri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x31420dae1bdd7c27:0xf69a8ca085b80383!12e1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "reviewsUri": "https://www.google.com/maps/place//data=!4m4!3m3!1s0x31420dae1bdd7c27:0xf69a8ca085b80383!9m1!1b1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "photosUri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x31420dae1bdd7c27:0xf69a8ca085b80383!10e5?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA"
+  }
+}
+-----------sample_3-----------
+{
+  "id": "ChIJ9xRei4yrNTERBPHvsvhvP64",
+  "displayName": "Nhà hàng Nhật Bản Takumi - Mai Hắc Đế",
+  "formattedAddress": "98 P. Mai Hắc Đế, Hai Bà Trưng, Hà Nội, Việt Nam",
+  "location": {
+    "latitude": 21.0126386,
+    "longitude": 105.8508987
+  },
+  "types": [
+    "japanese_restaurant",
+    "restaurant",
+    "food",
+    "point_of_interest",
+    "establishment"
+  ],
+  "rating": 4.4,
+  "userRatingCount": 410,
+  "priceLevel": "PRICE_LEVEL_MODERATE",
+  "businessStatus": "OPERATIONAL",
+  "currentOpeningHours": {
+    "openNow": true,
+    "periods": [
+      {
+        "open": {
+          "day": 0,
+          "hour": 11,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 11
+          }
+        },
+        "close": {
+          "day": 0,
+          "hour": 14,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 11
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 0,
+          "hour": 17,
+          "minute": 30,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 11
+          }
+        },
+        "close": {
+          "day": 0,
+          "hour": 22,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 11
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 1,
+          "hour": 11,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 12
+          }
+        },
+        "close": {
+          "day": 1,
+          "hour": 14,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 12
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 1,
+          "hour": 17,
+          "minute": 30,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 12
+          }
+        },
+        "close": {
+          "day": 1,
+          "hour": 22,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 12
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 2,
+          "hour": 11,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 13
+          }
+        },
+        "close": {
+          "day": 2,
+          "hour": 14,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 13
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 2,
+          "hour": 17,
+          "minute": 30,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 13
+          }
+        },
+        "close": {
+          "day": 2,
+          "hour": 22,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 13
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 3,
+          "hour": 11,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 14
+          }
+        },
+        "close": {
+          "day": 3,
+          "hour": 14,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 14
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 3,
+          "hour": 17,
+          "minute": 30,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 14
+          }
+        },
+        "close": {
+          "day": 3,
+          "hour": 22,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 14
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 4,
+          "hour": 11,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 15
+          }
+        },
+        "close": {
+          "day": 4,
+          "hour": 14,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 15
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 4,
+          "hour": 17,
+          "minute": 30,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 15
+          }
+        },
+        "close": {
+          "day": 4,
+          "hour": 22,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 15
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 5,
+          "hour": 11,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 9
+          }
+        },
+        "close": {
+          "day": 5,
+          "hour": 14,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 9
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 5,
+          "hour": 17,
+          "minute": 30,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 9
+          }
+        },
+        "close": {
+          "day": 5,
+          "hour": 22,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 9
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 6,
+          "hour": 11,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 10
+          }
+        },
+        "close": {
+          "day": 6,
+          "hour": 14,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 10
+          }
+        }
+      },
+      {
+        "open": {
+          "day": 6,
+          "hour": 17,
+          "minute": 30,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 10
+          }
+        },
+        "close": {
+          "day": 6,
+          "hour": 22,
+          "minute": 0,
+          "date": {
+            "year": 2026,
+            "month": 10,
+            "day": 10
+          }
+        }
+      }
+    ],
+    "weekdayDescriptions": [
+      "Thứ Hai: 11:00–14:00, 17:30–22:00",
+      "Thứ Ba: 11:00–14:00, 17:30–22:00",
+      "Thứ Tư: 11:00–14:00, 17:30–22:00",
+      "Thứ Năm: 11:00–14:00, 17:30–22:00",
+      "Thứ Sáu: 11:00–14:00, 17:30–22:00",
+      "Thứ Bảy: 11:00–14:00, 17:30–22:00",
+      "Chủ Nhật: 11:00–14:00, 17:30–22:00"
+    ],
+    "nextCloseTime": "2026-10-09T07:00:00Z"
+  },
+  "regularOpeningHours": {
+    "openNow": true,
+    "periods": [
+      {
+        "open": {
+          "day": 0,
+          "hour": 11,
+          "minute": 0
+        },
+        "close": {
+          "day": 0,
+          "hour": 14,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 0,
+          "hour": 17,
+          "minute": 30
+        },
+        "close": {
+          "day": 0,
+          "hour": 22,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 1,
+          "hour": 11,
+          "minute": 0
+        },
+        "close": {
+          "day": 1,
+          "hour": 14,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 1,
+          "hour": 17,
+          "minute": 30
+        },
+        "close": {
+          "day": 1,
+          "hour": 22,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 2,
+          "hour": 11,
+          "minute": 0
+        },
+        "close": {
+          "day": 2,
+          "hour": 14,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 2,
+          "hour": 17,
+          "minute": 30
+        },
+        "close": {
+          "day": 2,
+          "hour": 22,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 3,
+          "hour": 11,
+          "minute": 0
+        },
+        "close": {
+          "day": 3,
+          "hour": 14,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 3,
+          "hour": 17,
+          "minute": 30
+        },
+        "close": {
+          "day": 3,
+          "hour": 22,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 4,
+          "hour": 11,
+          "minute": 0
+        },
+        "close": {
+          "day": 4,
+          "hour": 14,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 4,
+          "hour": 17,
+          "minute": 30
+        },
+        "close": {
+          "day": 4,
+          "hour": 22,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 5,
+          "hour": 11,
+          "minute": 0
+        },
+        "close": {
+          "day": 5,
+          "hour": 14,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 5,
+          "hour": 17,
+          "minute": 30
+        },
+        "close": {
+          "day": 5,
+          "hour": 22,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 6,
+          "hour": 11,
+          "minute": 0
+        },
+        "close": {
+          "day": 6,
+          "hour": 14,
+          "minute": 0
+        }
+      },
+      {
+        "open": {
+          "day": 6,
+          "hour": 17,
+          "minute": 30
+        },
+        "close": {
+          "day": 6,
+          "hour": 22,
+          "minute": 0
+        }
+      }
+    ],
+    "weekdayDescriptions": [
+      "Thứ Hai: 11:00–14:00, 17:30–22:00",
+      "Thứ Ba: 11:00–14:00, 17:30–22:00",
+      "Thứ Tư: 11:00–14:00, 17:30–22:00",
+      "Thứ Năm: 11:00–14:00, 17:30–22:00",
+      "Thứ Sáu: 11:00–14:00, 17:30–22:00",
+      "Thứ Bảy: 11:00–14:00, 17:30–22:00",
+      "Chủ Nhật: 11:00–14:00, 17:30–22:00"
+    ],
+    "nextCloseTime": "2026-10-09T07:00:00Z"
+  },
+  "internationalPhoneNumber": "+84 936 868 080",
+  "websiteUri": null,
+  "photos": [
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbwIVXDjXo98jLMjKvgmnvBOh1pHFRkvnw1ferxZrQsgr040kOMm64y9xdM-0h3ZKMtWFlpsYNbgFGQ2gVL6Sqcb5pwTxqyShYdbXBjjd6VFeLRsShUdwaI_Xtw10GtfOmEJsGKU7v6uVpyLL9fOGyjTXxprWgEAJ6wYMChs6gqeQRqt6C_V8iTQCA7UlgQR01m_S59ZJYNsxWShfRLKxCNNYkwDLREydcRBpvKqNgPCv4jRU_gZ4OLdAA5OJYaHE_jAqTXhzM4byPyjuaNE1vNDsvWAX4KhRdERDtkzN_mUNvVxWn9_ur7YR_1MO__k5khiDiO1gwlhPZnSZYHVLKJIywEwH5GsjvKvUg7vmVY7Mgv99yBMCz5b3tjI73uugRWYFdvd0w86KYHLQnncJG7YrU",
+      "widthPx": 2252,
+      "heightPx": 1500,
+      "authorAttributions": [
+        {
+          "displayName": "Nhà hàng Nhật Bản Takumi - Mai Hắc Đế",
+          "uri": "https://maps.google.com/maps/contrib/116330783696296757939",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVVAaU9VsYQ6QOYcqIK2_rE1kVGHYew1_lJp9msjGgGovYF7w9Z=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIDqrYiaaw&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIDqrYiaaw!2e10!4m2!3m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMY4RAXV0VXEMSVoqtEKRnwnjkSdUh0XiJM1DZ7fHr77f_UgHZjE3f84SvERDxvdGoEtRODZ8wfX5cqYCMqZDUmhf0FzrZ1GO9WxaFZlFMtVVRtyCBU3HgdraEIxku9nIZ5ayUly7t9dXFL16XjRtJZ_rPJS9VdEpwkofpE6uDtg1gKxqqiJ_CL4sJpRsnDW_k_aIV-7O3loGk70yRhWq1FPLPeryIyJlPlLCFF22kNYUEGKV3aDw4VFVwV9ago2s8_ZrP5neEg2fgpuxa3p6lHFq62nWi2cqFWiGdcOqrH5sNPsIu8HrpAzScYplHgo5DKzwXwM0_vDnqgLW1zidl7H0wM1SAkAA5Rgl9tZ-a3uSTSGYr6Vuxu7OwTPu1A1Tbt3b5iYP5g9ndeRTTR8OcLMrD4",
+      "widthPx": 2252,
+      "heightPx": 1500,
+      "authorAttributions": [
+        {
+          "displayName": "Nhà hàng Nhật Bản Takumi - Mai Hắc Đế",
+          "uri": "https://maps.google.com/maps/contrib/116330783696296757939",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVVAaU9VsYQ6QOYcqIK2_rE1kVGHYew1_lJp9msjGgGovYF7w9Z=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIHM0ogKEICAgIDKxfD-Rg&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIHM0ogKEICAgIDKxfD-Rg!2e10!4m2!3m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMaqgaqm2B-SEuQmzK3yPnP8PRDHy2qW3PfsXM-UWnWaDP7rBPmC7ZqpEQDgvnKb6vIFag9i_TJ5aeh4tObzazyQI8BY1HzoShAJPPddHRO0DEphxT96G0zfC033e-eWtYyzxlH3q9LSMps-p1gca8GLVgPV_XpWAAzM3ubQ-36ageFb7wgsVfBj-qObWHI071hMX7CxplZJzI8iHjy5ZZBszTsym8coLLLUN_W-xsGr2L_t_9kn1lCd3Xsv9DOfU-5-M6wmZcyf6eMPkJTPdzyQYUh61DJ1d31JekPY5b820qA6uaPp62H70hBAeFo1po5hP2o9Ika2a-HnMcV0L6xSMKhy7Px_zBy402uWzHPNGxIQqmGicNgqwj3lyAw8dXqe8z41VpfqK5LM7tw_mMj-NzmZajiBJ9S7a6hY-EbBsA",
+      "widthPx": 4032,
+      "heightPx": 3024,
+      "authorAttributions": [
+        {
+          "displayName": "F Y",
+          "uri": "https://maps.google.com/maps/contrib/109880138431992982282",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVGcEMO1YTt27FDp3i7XjnumwF907oq4bZf5BhYP0U9OmYOqHbE=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIABIhBRc87Lpp6WxKIecri-mndt&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIABIhBRc87Lpp6WxKIecri-mndt!2e10!4m2!3m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbOgskE1AyFcg5sdI1XUcaFd2pWPaVoXNYHXCgU-Z6VM5Rp5nOGAu2u9oMkC_kn7fb38IeD4b8rHGtPRffjoLvYOA2hl4YlKcyhl7665YdiKAfYNNcmCDOSuqS80xBrrI_51mm8OaLywgqA5yJEl16ky9auNWOdvJnxOytHZmeOvzyiqtUYslBg8T00U57cDhlNgCni0jOo_ypdcSov862lJKfLMFT-846f3uq5EGhPM-rAAhRkaN2PLGVcrcAkRiONVQ0d6osIy4iRCNVj5Bdgo31rBpaPDB7V3ZbwkRcOKBdk4wURbHz82u6GlLRjpoB3bkYQ7b-n2X1DxvfMI7dy7A60OaINljNMAv2IBjiqLNbXDqRZvLMeOwx54ALVXL2P2CXXKusXUY8ky7jHmmyp-yZM6n6nEK4X7rNLwCEjNA",
+      "widthPx": 3024,
+      "heightPx": 4032,
+      "authorAttributions": [
+        {
+          "displayName": "Phương Anh Đinh",
+          "uri": "https://maps.google.com/maps/contrib/107185925096691947870",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjUDTqeBB9TEyHd_fxwpkY_kMkJl1v9I8dqtUVfxSXgFaqdOOaN8sw=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIABIhB-Z2DYRqJqVLWpLf46BxdH&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIABIhB-Z2DYRqJqVLWpLf46BxdH!2e10!4m2!3m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbkUTbX8WBRcm8VmVVsEEkypXHQ4qtrrL0mCSxdrGCR9R5abmBM4wI6jMc5joM0guZBLVq8LcYylVR_1NR8kWgrnC2-Gwm-k7f8FNgEWsKJYonf8hs_KTNvie-WAvWEcJBZJfMYUxyfSS_RiB76vfKQ-YDVBJnE44W5L0J6Lq9Hr-DcLBOXfyNhAclkyd4kyQBvCeT4oUgMTbsUv5uWlLHQm69WN0yKA6bJ97KbB0eOl9w3bEA3dFe8i0HolHGRpuJ087nmmSSh9Zsj9pF_JE4l2X1HthzDo3Mq9o9hMHpFTZwDAnqixdE76DhHcLWV2VMOPtcyXs9wGaEUZzS9QShffpW3e8t-Qmhuf8MleYNGvNhlrLK9T7ShESblZIDd34ImtIstx96kerTZtRHy0lxpZSyTyhg0PXDZEGXPKQGL",
+      "widthPx": 4800,
+      "heightPx": 3600,
+      "authorAttributions": [
+        {
+          "displayName": "Thái Thái",
+          "uri": "https://maps.google.com/maps/contrib/110837523461122556129",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVVBHMrNa-jpFS4uosOnu-JjWmWDbcSKuQK25vRaNi24qmZr14Rgg=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIABIhAFVYw4sxB3sw_TymZLdZyW&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIABIhAFVYw4sxB3sw_TymZLdZyW!2e10!4m2!3m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMbgtAEoM_3RvuxlFJfO3yIJ7BO2-tNHCgzofDcCbzKA8QI3RNlLHDei-siDwM-c1rGEJc-f-CNupZhNhkZFvnyobuaZtcbQkinLZjVdGitukoHlgwZhU5SDa6-hM6kYJIe2Ssp89kilD6cSZPYjbrFll5RRkJvIldF92AskEX9LUnFvnioeSu8UOZDtZYMEIIlQsjaU24vRFh8EoB8CGmlLwpa1zTNhBNnzPfxb6X3a3Fc4TPG9sg9GjejGekHU9Imlfs5dOfBYJaT128eQGQzjrK1y7zCp20sxtsM75YAelLXRqst__GxhM8DivvckaHNag7y6Ft-sjNKhpE7rRCojqgHztlkHGZRAyg8PWCathYPEXkFMXzu0JXSrRhJZ82aX2n39xRzltxP6KMGrHPUCgUh6PkQHty3eJI5ocVHOQA",
+      "widthPx": 4800,
+      "heightPx": 3600,
+      "authorAttributions": [
+        {
+          "displayName": "Thái Thái",
+          "uri": "https://maps.google.com/maps/contrib/110837523461122556129",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVVBHMrNa-jpFS4uosOnu-JjWmWDbcSKuQK25vRaNi24qmZr14Rgg=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIABIhDhWxFFrxmafj2i1AWTO8V-&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIABIhDhWxFFrxmafj2i1AWTO8V-!2e10!4m2!3m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMaRkPUKXDMbxtaT18HvjgKuwqb9XhN6y47GuNKqsuyEAt4FN8lz0mE9n_Jf_xGg-hC16MPzWdT-SVrr-56_eBAlUQc2JRLER5sSnek_tIYS8P2YNqr906-PhFTn6zE26VolnnRzcdtSy43Wn98ilAkvqBjI4Gkq6kCho8j-ts_8YFqiTvIRN0bhXFQDiFmAaSdBya8VDHx4ei2rwjvLgzD00LPUZVDjMpmlOXpYlpvcBahh0GETdRtY-HRi6SHTaWESUxOsM8UFA5s8AqUy42BxJEZUY5MiI3cMe5S7e_yC9OLS7yoYQ1jhFU2qimVvPYBBZ2sj4P6qdJQhPsh6EAQvq60ptwCybBoAT6qJUCGs-NimlFlnfscISHjcEYmJFOc6G4KF8TOJwZjzcqhDIPkCQOyUck9vUKz1dDg81N3H1g",
+      "widthPx": 3024,
+      "heightPx": 4032,
+      "authorAttributions": [
+        {
+          "displayName": "Phương Anh Đinh",
+          "uri": "https://maps.google.com/maps/contrib/107185925096691947870",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjUDTqeBB9TEyHd_fxwpkY_kMkJl1v9I8dqtUVfxSXgFaqdOOaN8sw=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIABIhAgpO1Tz453hxAFBsA-WCbN&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIABIhAgpO1Tz453hxAFBsA-WCbN!2e10!4m2!3m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMaWzmEfGdtJ4IhODxzV_W4FGGQuopIaptfL5YrRBL4noZzwEVLjaSOSqH8sRQiZdfZAzAKZihj6h-lPuOeu5n5WqNcU0puy-5v7serjLbUW7Cl_VUDUT0Oda0g4dN0K1gA_1FMeAvYjbXGsaP0fcFy-p7g5cyKu64KfIUOK2jhJK7Uf-aQV2nFH3WYgY4o8onKQMFwm8XuFRuU5bCgOpW17yqElklf-NcGYgAU-p-r1TzRyh-FEJZk7e5z9sYVRkMzPJdlFIjUnf8icaSaPZpXorksVxfT8owBxWXf0MeQuWjO4bqKWr8lhJOBHScV5P1_YmbrLsDqprFmI1xfs3HS7rnPDcz7Dn_yhOJAtOzSfZhCDHECRnjWAv0_BBT3tIMUklZyO-4UjFTtne4gW4Jn6UlXKN_j7f73_v-qdYBMNZA",
+      "widthPx": 4032,
+      "heightPx": 3024,
+      "authorAttributions": [
+        {
+          "displayName": "お疲れMax",
+          "uri": "https://maps.google.com/maps/contrib/109202774033513057967",
+          "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocIJxerpu0PR84lE8RaGRvzfgXcYY_gr9DywjyDZqigeF_1mTg=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIABIhAVN9miSknp9oOpIQX_WfYM&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIABIhAVN9miSknp9oOpIQX_WfYM!2e10!4m2!3m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMZbrWCPiIPag9QsNvDrhkGntkcOIwUUiTSXXUbSpMNOE_eugonEhbx713_sMKZSZ1eO_TKn_RkMDDKWBk7MTQan-NRTA-VnGmrCRrwMRmBujogv69ziB1jDNAfO8ei2uswN7nWXWRHFJnLQdEv0Gr4YSDKMsbq8WrZEV5PCB4kMtoRi4CpE7q62oq1PbCnuU4YYkw0KSwwK0Pe9b7fR_vQk8iqlI770SeFAmLOLUqVE7NXj2b7vpWUOy5cNEAckMAlKSfsrebK9fiC7IDbTAu7tsBsiki_TsXVLisq6iTpy8Tg6pJ1mBaYB-AN8p-AMl0GaTP434s9O9YBkRwmX5HdcqFMcpAX0C8uywRwXkxGy3ZatXYDcYKDjl93xmPTHJ3c_k5qVeEbjot3N5rwFb_FEeV9SFIVB1PaxR-0PNJPqkQ",
+      "widthPx": 4080,
+      "heightPx": 3072,
+      "authorAttributions": [
+        {
+          "displayName": "Asean Takahashi",
+          "uri": "https://maps.google.com/maps/contrib/105629833830499565433",
+          "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJApUi9cW0tbfv3TBe3Ppp2F6hpqnWmWoJeF5fISKVcQPTDew=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIABIhBCZup-EmoKc7zgo7dQ4nZH&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIABIhBCZup-EmoKc7zgo7dQ4nZH!2e10!4m2!3m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/photos/Aa-ngMb_sLRst3LpE_zn0d364tLeCWQ_wwdZwBCsRyem9OsKefWtv4TBpfEZ4RpuR25Uk0OKkdMbhBuzIx4t1xfRFdk8H9ZQDlL6_BZDYSd9rvUO0WV3jT_aLlPcJMnAIvDH5UhOC_y1eTNthyjl3A7Fk5i8luNKGplFaKZzsvWhzlc2DSxDzHraq6tYSHCt0XSD7TUg1_TxxCnMA9S9cTAF8uE0tNTTVllwC2WvbWI-BQ4tCwcPQeUBclQfbOr98j52gPw8zqJnxOXMKf9WDV1nBWIwYgeFEW8V5gP-eTtCvCY6Vp_Rx3g2noDqDdvlzdgcHk7XR9bm9PC8aBvcYTonHDVIJo3gDttocQU7BB9t9jC7lHn2Gh0A89p8yyl6nmwibeCQ9g7Nb1xmJPWIqSWT-5nQt8SxqYZ4HGmyNmQ001xD1A",
+      "widthPx": 4080,
+      "heightPx": 2304,
+      "authorAttributions": [
+        {
+          "displayName": "Fabian",
+          "uri": "https://maps.google.com/maps/contrib/114070212237540496448",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVa0OP7u3a86OnVY0ZGXwIKuq6FilM0BwqNJu1wsS4py1Weor0=s100-p-k-no-mo"
+        }
+      ],
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=!1e10!2sCIABIhCCHHPRrUUB2deqNh8_7aXF&t=27&cb_client=maps_api_places.places_api&hl=vi&gl=vi",
+      "googleMapsUri": "https://www.google.com/maps/place//data=!3m4!1e2!3m2!1sCIABIhCCHHPRrUUB2deqNh8_7aXF!2e10!4m2!3m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    }
+  ],
+  "parkingOptions": {
+    "freeParkingLot": true,
+    "freeStreetParking": true,
+    "valetParking": true
+  },
+  "paymentOptions": {
+    "acceptsCreditCards": true,
+    "acceptsDebitCards": true,
+    "acceptsCashOnly": false,
+    "acceptsNfc": true
+  },
+  "accessibilityOptions": {
+    "wheelchairAccessibleParking": false,
+    "wheelchairAccessibleEntrance": false,
+    "wheelchairAccessibleSeating": false
+  },
+  "addressComponents": [
+    {
+      "longText": "98",
+      "shortText": "98",
+      "types": [
+        "street_number"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Phố Mai Hắc Đế",
+      "shortText": "P. Mai Hắc Đế",
+      "types": [
+        "route"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Hai Bà Trưng",
+      "shortText": "Hai Bà Trưng",
+      "types": [
+        "administrative_area_level_2",
+        "political"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Hà Nội",
+      "shortText": "Hà Nội",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ],
+      "languageCode": "vi"
+    },
+    {
+      "longText": "Việt Nam",
+      "shortText": "VN",
+      "types": [
+        "country",
+        "political"
+      ],
+      "languageCode": "vi"
+    }
+  ],
+  "reservable": true,
+  "servesBreakfast": false,
+  "servesBrunch": true,
+  "servesLunch": true,
+  "servesDinner": true,
+  "servesBeer": true,
+  "servesWine": true,
+  "servesCocktails": true,
+  "servesDessert": true,
+  "servesCoffee": true,
+  "servesVegetarianFood": null,
+  "allowsDogs": false,
+  "goodForChildren": true,
+  "goodForGroups": true,
+  "goodForWatchingSports": false,
+  "liveMusic": false,
+  "menuForChildren": false,
+  "outdoorSeating": false,
+  "takeout": true,
+  "delivery": true,
+  "dineIn": true,
+  "curbsidePickup": null,
+  "restroom": true,
+  "pureServiceAreaBusiness": null,
+  "editorialSummary": null,
+  "generativeSummary": null,
+  "reviewSummary": null,
+  "primaryTypeDisplayName": {
+    "text": "Nhà hàng Nhật Bản",
+    "languageCode": "vi"
+  },
+  "googleMapsUri": "https://maps.google.com/?cid=12555877400076873988&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+  "primaryType": "japanese_restaurant",
+  "nationalPhoneNumber": "0936 868 080",
+  "plusCode": {
+    "globalCode": "7PH72V72+39",
+    "compoundCode": "2V72+39 Hai Bà Trưng, Hà Nội, Việt Nam"
+  },
+  "reviews": [
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/reviews/Ci9DQUlRQUNvZENodHljRjlvT2paZk1FOUxTRU5NWnpCNmJ6TnJTbTVGWDNKamQxRRAB",
+      "relativePublishTimeDescription": "một năm trước",
+      "rating": 5,
+      "text": {
+        "text": "Đã ăn hầu hết các quán Nhật quanh khu vực này nhưng h mới phát hiện ra Takumi và sẽ cho vào list những quán đồ Nhật ngon. Cá rất tươi, cơm cuộn lươn và tempura cũng ngon. Salad khoai tây cá nhân thấy hơi giống khoai nghiền hehe chưa khoái lắm. Gà và da gà cũng rất tuyệt 😍",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Đã ăn hầu hết các quán Nhật quanh khu vực này nhưng h mới phát hiện ra Takumi và sẽ cho vào list những quán đồ Nhật ngon. Cá rất tươi, cơm cuộn lươn và tempura cũng ngon. Salad khoai tây cá nhân thấy hơi giống khoai nghiền hehe chưa khoái lắm. Gà và da gà cũng rất tuyệt 😍",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Phương Anh Đinh",
+        "uri": "https://www.google.com/maps/contrib/107185925096691947870/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjUDTqeBB9TEyHd_fxwpkY_kMkJl1v9I8dqtUVfxSXgFaqdOOaN8sw=s128-c0x00000000-cc-rp-mo-ba4"
+      },
+      "publishTime": "2025-09-03T11:16:04.299082743Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=Ci9DQUlRQUNvZENodHljRjlvT2paZk1FOUxTRU5NWnpCNmJ6TnJTbTVGWDNKamQxRRAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sCi9DQUlRQUNvZENodHljRjlvT2paZk1FOUxTRU5NWnpCNmJ6TnJTbTVGWDNKamQxRRAB!2m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/reviews/Ci9DQUlRQUNvZENodHljRjlvT2xweVRVMUVjME5mTkVOUlZXUjJZMDkxZHpacFkxRRAB",
+      "relativePublishTimeDescription": "9 tháng trước",
+      "rating": 5,
+      "text": {
+        "text": "Đi ăn cuối năm bất ngờ được tặng thêm bát mì udon. Đồ ăn ngon, anh chủ niềm nở, nhân viên từ bác bảo vệ đều lịch sự.",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Đi ăn cuối năm bất ngờ được tặng thêm bát mì udon. Đồ ăn ngon, anh chủ niềm nở, nhân viên từ bác bảo vệ đều lịch sự.",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Linh Nguyễn",
+        "uri": "https://www.google.com/maps/contrib/116569180987959220211/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWcKoUbolfr9SygYYflMWXW3aEnyBTj6Mv7-qptbH6i7C-J1oht=s128-c0x00000000-cc-rp-mo-ba4"
+      },
+      "publishTime": "2026-01-02T13:19:48.745831468Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=Ci9DQUlRQUNvZENodHljRjlvT2xweVRVMUVjME5mTkVOUlZXUjJZMDkxZHpacFkxRRAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sCi9DQUlRQUNvZENodHljRjlvT2xweVRVMUVjME5mTkVOUlZXUjJZMDkxZHpacFkxRRAB!2m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/reviews/Ci9DQUlRQUNvZENodHljRjlvT2toclRWSnZNVzV1WkZZNVpEVk1PRWxDTUVWQ1JFRRAB",
+      "relativePublishTimeDescription": "một tháng trước",
+      "rating": 3,
+      "text": {
+        "text": "Đi ăn takumi vài lần nhưng hôm nay khá thất vọng, sashimi cá nhật cắt miếng to, cảm giác không tươi. Mỳ udon và cơm lươn nhờ nhà hàng chia đôi mà bát để chia bé xíu, nhìn vào bát chỉ thấy mỳ và cơm đầy tràn cả bát nmất thiện cảm thực sự. Mỳ và cơm mang ra sớm, ra hỏi thì nhà hàng bảo chị ko dặn thì bọn em mang ra luôn, dặn thì mới ra muộn. Mình đi ăn quán nhật nhiều lần rồi nhưng service hơn. Điểm cộng duy nhất là bò mềm.",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Đi ăn takumi vài lần nhưng hôm nay khá thất vọng, sashimi cá nhật cắt miếng to, cảm giác không tươi. Mỳ udon và cơm lươn nhờ nhà hàng chia đôi mà bát để chia bé xíu, nhìn vào bát chỉ thấy mỳ và cơm đầy tràn cả bát nmất thiện cảm thực sự. Mỳ và cơm mang ra sớm, ra hỏi thì nhà hàng bảo chị ko dặn thì bọn em mang ra luôn, dặn thì mới ra muộn. Mình đi ăn quán nhật nhiều lần rồi nhưng service hơn. Điểm cộng duy nhất là bò mềm.",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Hong Nhung Ngo",
+        "uri": "https://www.google.com/maps/contrib/114438631713989765064/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVkKkVFU-mdjcGtwtoPviUiInvEjV9CjsvJtvFyatGR0HExXtpA=s128-c0x00000000-cc-rp-mo"
+      },
+      "publishTime": "2026-09-04T11:45:40.862649024Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=Ci9DQUlRQUNvZENodHljRjlvT2toclRWSnZNVzV1WkZZNVpEVk1PRWxDTUVWQ1JFRRAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sCi9DQUlRQUNvZENodHljRjlvT2toclRWSnZNVzV1WkZZNVpEVk1PRWxDTUVWQ1JFRRAB!2m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/reviews/ChdDSUhNMG9nS0VJQ0FnSUQzeHRQcXJRRRAB",
+      "relativePublishTimeDescription": "một năm trước",
+      "rating": 5,
+      "text": {
+        "text": "Bạn ở Hà Nội giới thiệu, thức ăn thật sự tươi ngon và có nhiều món đặc biệt. Giá thực sự hợp lý so với chất lượng. Cá hồi 1 nắng nướng rất lạ và ngon, nên thử. Sashimi bụng cá hồi tươi béo. Bơ từ đậu cũng đặc biệt ngon. So với các quán Nhật khác thì quán này mình đặc biệt thích và sẽ quay lại.",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Bạn ở Hà Nội giới thiệu, thức ăn thật sự tươi ngon và có nhiều món đặc biệt. Giá thực sự hợp lý so với chất lượng. Cá hồi 1 nắng nướng rất lạ và ngon, nên thử. Sashimi bụng cá hồi tươi béo. Bơ từ đậu cũng đặc biệt ngon. So với các quán Nhật khác thì quán này mình đặc biệt thích và sẽ quay lại.",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Thái Thái",
+        "uri": "https://www.google.com/maps/contrib/110837523461122556129/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVVBHMrNa-jpFS4uosOnu-JjWmWDbcSKuQK25vRaNi24qmZr14Rgg=s128-c0x00000000-cc-rp-mo-ba8"
+      },
+      "publishTime": "2024-11-14T16:11:38.176232Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=ChdDSUhNMG9nS0VJQ0FnSUQzeHRQcXJRRRAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChdDSUhNMG9nS0VJQ0FnSUQzeHRQcXJRRRAB!2m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    },
+    {
+      "name": "places/ChIJ9xRei4yrNTERBPHvsvhvP64/reviews/ChdDSUhNMG9nS0VJQ0FnTUNJcGYzS2lRRRAB",
+      "relativePublishTimeDescription": "một năm trước",
+      "rating": 4,
+      "text": {
+        "text": "Xin chào.\nMình có đến và trải nghiệm thử. Với cá nhân mình đồ ăn được phục vụ chỉnh chu, ngon miệng nhưng giá cả có vẻ nhỉnh hơn so với chất lượng dịch vụ mà mình nhận lại được.\n\nNhân viên phục vụ đã cố gắng hỗ trợ tôi tốt nhất có thể và tôi rất trân trọng sự hiếu khách của mọi người, trong đó có cả chú bảo vệ.\n\nKhông khí quán ăn khá ấm cúng, nhạc cũng dễ chịu. Nhưng hơi kiểu buồn chắc do tôi đi một mình.",
+        "languageCode": "vi"
+      },
+      "originalText": {
+        "text": "Xin chào.\nMình có đến và trải nghiệm thử. Với cá nhân mình đồ ăn được phục vụ chỉnh chu, ngon miệng nhưng giá cả có vẻ nhỉnh hơn so với chất lượng dịch vụ mà mình nhận lại được.\n\nNhân viên phục vụ đã cố gắng hỗ trợ tôi tốt nhất có thể và tôi rất trân trọng sự hiếu khách của mọi người, trong đó có cả chú bảo vệ.\n\nKhông khí quán ăn khá ấm cúng, nhạc cũng dễ chịu. Nhưng hơi kiểu buồn chắc do tôi đi một mình.",
+        "languageCode": "vi"
+      },
+      "authorAttribution": {
+        "displayName": "Xuân Trung Lê",
+        "uri": "https://www.google.com/maps/contrib/115464272443475106981/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjW0B-O3eNFLAMqCn96YrpWZ6mJVkoC7H7yyE2KQBhg3srUaIsDX=s128-c0x00000000-cc-rp-mo-ba4"
+      },
+      "publishTime": "2025-04-03T14:01:26.859912Z",
+      "flagContentUri": "https://www.google.com/local/content/rap/report?postId=ChdDSUhNMG9nS0VJQ0FnTUNJcGYzS2lRRRAB&d=17924085&t=1&wv=1",
+      "googleMapsUri": "https://www.google.com/maps/reviews/data=!4m6!14m5!1m4!2m3!1sChdDSUhNMG9nS0VJQ0FnTUNJcGYzS2lRRRAB!2m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104"
+    }
+  ],
+  "routingSummaries": [],
+  "priceRange": {
+    "startPrice": {
+      "currencyCode": "VND",
+      "units": "200000"
+    },
+    "endPrice": {
+      "currencyCode": "VND",
+      "units": "800000"
+    }
+  },
+  "regularSecondaryOpeningHours": [],
+  "currentSecondaryOpeningHours": [],
+  "shortFormattedAddress": "98 P. Mai Hắc Đế, Hai Bà Trưng",
+  "utcOffsetMinutes": 420,
+  "evChargeOptions": null,
+  "fuelOptions": null,
+  "googleMapsLinks": {
+    "directionsUri": "https://www.google.com/maps/dir//''/data=!4m7!4m6!1m1!4e2!1m2!1m1!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104!3e0?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "placeUri": "https://maps.google.com/?cid=12555877400076873988&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "writeAReviewUri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104!12e1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "reviewsUri": "https://www.google.com/maps/place//data=!4m4!3m3!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104!9m1!1b1?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA",
+    "photosUri": "https://www.google.com/maps/place//data=!4m3!3m2!1s0x3135ab8c8b5e14f7:0xae3f6ff8b2eff104!10e5?g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA"
+  }
+}

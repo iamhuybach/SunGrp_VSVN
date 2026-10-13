@@ -19,7 +19,6 @@ ISO = {
     ("slv_pn_order_item_hotels", "checkout_date"),
     ("slv_pn_order_item_flights", "departure_time"),
     ("slv_pn_order_item_flights", "arrival_time"),
-    ("slv_3p_poi", "source_created_at"),
     ("slv_3p_poi_review", "published_at"),
 }
 
@@ -82,16 +81,14 @@ def test_partner_epoch_rules_and_rename():
 
 def test_third_party_iso_and_review_key():
     configs = {table["target_table"]: table for table in _third()}
-    created = configs["slv_3p_poi"]["columns"]["source_created_at"]
-    assert created["path"] == "created_at"
-    assert created["type"] == "timestamp" and created["rule"] == "ISO_UTC_TS"
     review = configs["slv_3p_poi_review"]["columns"]
+    assert "source_created_at" not in configs["slv_3p_poi"]["columns"]
     assert review["time"]["type"] == "string"
     assert review["time"].get("rule", "NONE") == "NONE"
-    assert review["published_at"]["path"] == "time"
+    assert review["published_at"]["path"] == "publishTime"
     assert review["published_at"]["rule"] == "ISO_UTC_TS"
     assert review["review_id"]["rule"] == "HASH_SHA256"
-    assert "time" in review["review_id"]["path"]
+    assert "publishTime" in review["review_id"]["path"]
 
 
 def test_l1_notebooks_do_not_write_ingested_at():
