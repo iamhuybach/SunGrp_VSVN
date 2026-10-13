@@ -30,6 +30,7 @@ Cursor Main chịu trách nhiệm điều phối và triển khai. Không tự c
 | Phân tích Mapping và BRD đã điền | Mapping và BRD đã có. Cần `requirements-analyst` đọc và xử lý kết quả phân tích, chưa viết notebook. |
 | Viết code từ bộ yêu cầu đã chốt | Mapping, BRD, decision và requirements-analysis đã có. Cần notebook, DDL và pipeline cho đúng bộ đó. |
 | Codex đánh giá xử lý và tốc độ | Code đã có. Bỏ một bước runtime đã chỉ. Codex đề xuất tối ưu, chưa sửa code. |
+| Rà tác động trước khi đổi model | Nguồn payload hoặc grain đổi. Cần bảng thay đổi silver, config và consumer để người dùng duyệt trước khi sửa code. |
 
 ## 1. Task end-to-end thông thường
 
@@ -530,6 +531,58 @@ Bước runtime được bỏ qua:
 3. Chạy Codex read-only với `--model gpt-5.6-sol` và `model_reasoning_effort=medium`.
 4. Lưu báo cáo. Liệt kê đề xuất theo mức ảnh hưởng.
 5. Dừng. Không áp đề xuất trong lượt này.
+
+Không commit hoặc push.
+```
+
+## 21. Rà tác động trước khi đổi model
+
+```text
+Hãy lập bảng tác động của thay đổi model sau. Chỉ đề xuất. Không sửa notebook, DDL, pipeline, registry seed, hay schema.
+
+Thay đổi:
+<source cũ, source mới, và phạm vi luồng>
+
+Sample:
+<sample người dùng đưa. Chỉ ghi khóa và kiểu JSON vào repository. Không ghi giá trị, review, tên người, URL, hay dữ liệu cá nhân>
+
+## Đối tượng mục tiêu
+
+- <bảng silver, bảng config, notebook extract, consumer đang đọc các cột đó>
+
+## Cách lưu tài liệu
+
+- Tạo task mới. Ghi đề xuất bằng tiếng Việt trong `decision.md`.
+- Ghi cây khóa và kiểu JSON, không ghi giá trị, tại `.ai/tasks/<task-id>/evidence/payload-shape.md`.
+- Không sửa file code. Không sửa Mapping hay BRD của task khác.
+
+## Tiêu chí nghiệm thu
+
+- Mỗi bảng silver và mỗi bảng config có một dòng: giữ, đổi đường dẫn, đổi kiểu, thêm, hoặc gỡ.
+- Mỗi cột không còn trong sample có trạng thái `MISSING_EVIDENCE`, không bị ghi là luôn null.
+- Consumer đang đọc cột bị đổi được liệt kê.
+- Status task là `user_decision`.
+
+## Ràng buộc đã biết
+
+- Một sample không phải hợp đồng schema.
+- Không áp model mới trong lượt này.
+- Không gọi architecture gate và không gọi review Codex.
+- Không commit, push, merge.
+
+## Chỉ định Agent
+
+- Main: Cursor, Grok 4.7 Medium. Tạo task, ghi state, lưu nguyên văn tài liệu do agent được chỉ định trả về. Main không soạn bảng tác động.
+- Người viết bảng tác động: <Claude Code `claude-opus-5-5` effort `medium`, hoặc agent khác người dùng nêu>.
+- Không dùng `python scripts/vv.py run-gate` cho lượt này khi effort yêu cầu khác effort `high` của Architect.
+- Không gọi Codex hay `requirements-analyst` cho đến khi người dùng duyệt đề xuất.
+
+## Workflow
+
+1. Tạo task `python scripts/vv.py new <slug>`. Ghi Grok 4.7 Medium. Phân loại riêng complexity, risk, architecture, evidence.
+2. Gọi đúng agent được chỉ định để đọc notebook, registry và context.
+3. Main lưu nguyên văn cây khóa và bảng tác động.
+4. Dừng ở `user_decision` để người dùng góp ý.
 
 Không commit hoặc push.
 ```
