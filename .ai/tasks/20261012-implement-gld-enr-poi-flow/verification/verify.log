@@ -1,0 +1,132 @@
+# Verification 2026-10-13 07:22:06 — PASS
+Files (28): docs/AGENT_PROMPT_SAMPLES.md, docs/context/CTRL_TABLES_CONTEXT.md, docs/context/NB_LIB_TRANSFORM_SLV_GLD.md, notebooks/NB_00_ORCHES_SLV_TO_ENR_15P.ipynb, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_ENR_POI_COORDINATE.ipynb, notebooks/NB_ENR_POI_INFO.ipynb, notebooks/NB_ENR_POI_REVIEW.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SLV_PN_POI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_00_POI_PIPELINE_ORCHESTRATOR.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_10_BRONZE_TO_SILVER_PREPROCESS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_20_SILVER_POI_COMPONENTS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_30_SILVER_POI_ENTITY_ENRICHMENT.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_40_GOLD_POI_SERVING.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_50_GOLD_POI_AI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_60_POI_DATA_QUALITY.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_VERIFY_DATA.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/1. parsing_bronze_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.1. transform_partner_to_gold_poi_master.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.2. nb_cms_transform.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.3. nb_transform_bronze_userprofile.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/3.1. enrich_partner_poi_via_google_vietmap.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/4. nb_data_enrichment_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/5. nb_prepare_product_for_ingestion.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/6. nb_push_data_to_KB_through_event_hub_partner.ipynb, pipelines/PL_VV_TRANS_SLV_TO_ENR_15P/PL_VV_TRANS_SLV_TO_ENR_15P.json, tests/test_enr_poi_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+..........................                                               [100%]
+26 passed in 0.27s
+
+## task-state: PASS
+
+# Verification 2026-10-13 08:48:48 — PASS
+Files (28): docs/AGENT_PROMPT_SAMPLES.md, docs/context/CTRL_TABLES_CONTEXT.md, docs/context/NB_LIB_TRANSFORM_SLV_GLD.md, notebooks/NB_00_ORCHES_SLV_TO_ENR_15P.ipynb, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_ENR_POI_COORDINATE.ipynb, notebooks/NB_ENR_POI_INFO.ipynb, notebooks/NB_ENR_POI_REVIEW.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SLV_PN_POI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_00_POI_PIPELINE_ORCHESTRATOR.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_10_BRONZE_TO_SILVER_PREPROCESS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_20_SILVER_POI_COMPONENTS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_30_SILVER_POI_ENTITY_ENRICHMENT.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_40_GOLD_POI_SERVING.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_50_GOLD_POI_AI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_60_POI_DATA_QUALITY.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_VERIFY_DATA.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/1. parsing_bronze_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.1. transform_partner_to_gold_poi_master.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.2. nb_cms_transform.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.3. nb_transform_bronze_userprofile.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/3.1. enrich_partner_poi_via_google_vietmap.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/4. nb_data_enrichment_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/5. nb_prepare_product_for_ingestion.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/6. nb_push_data_to_KB_through_event_hub_partner.ipynb, pipelines/PL_VV_TRANS_SLV_TO_ENR_15P/PL_VV_TRANS_SLV_TO_ENR_15P.json, tests/test_enr_poi_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+..........................                                               [100%]
+26 passed in 0.19s
+
+## task-state: PASS
+
+# Verification 2026-10-13 09:00:46 — FAIL
+Files (28): docs/AGENT_PROMPT_SAMPLES.md, docs/context/CTRL_TABLES_CONTEXT.md, docs/context/NB_LIB_TRANSFORM_SLV_GLD.md, notebooks/NB_00_ORCHES_SLV_TO_ENR_15P.ipynb, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_ENR_POI_COORDINATE.ipynb, notebooks/NB_ENR_POI_INFO.ipynb, notebooks/NB_ENR_POI_REVIEW.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SLV_PN_POI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_00_POI_PIPELINE_ORCHESTRATOR.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_10_BRONZE_TO_SILVER_PREPROCESS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_20_SILVER_POI_COMPONENTS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_30_SILVER_POI_ENTITY_ENRICHMENT.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_40_GOLD_POI_SERVING.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_50_GOLD_POI_AI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_60_POI_DATA_QUALITY.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_VERIFY_DATA.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/1. parsing_bronze_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.1. transform_partner_to_gold_poi_master.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.2. nb_cms_transform.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.3. nb_transform_bronze_userprofile.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/3.1. enrich_partner_poi_via_google_vietmap.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/4. nb_data_enrichment_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/5. nb_prepare_product_for_ingestion.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/6. nb_push_data_to_KB_through_event_hub_partner.ipynb, pipelines/PL_VV_TRANS_SLV_TO_ENR_15P/PL_VV_TRANS_SLV_TO_ENR_15P.json, tests/test_enr_poi_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: FAIL
+.......F...................                                              [100%]
+================================== FAILURES ===================================
+___________________________ test_pipeline_timeouts ____________________________
+
+    def test_pipeline_timeouts():
+        doc = json.loads((ROOT / "pipelines" / "PL_VV_TRANS_SLV_TO_ENR_15P" / "PL_VV_TRANS_SLV_TO_ENR_15P.json").read_text(encoding="utf-8"))
+        raw = json.dumps(doc)
+>       assert "PENDING" not in raw
+E       assert 'PENDING' not in '{"$schema":...dsOn": []}]}'
+E         
+E         'PENDING' is contained here:
+E           ches_id, 'PENDING'), empty(pipeline().parameters.workspace_id), contains(pipeline().parameters.workspace_id, 'PENDING'))", "type": "Expression"}, "ifTrueActivities": [{"name": "Fail_Bad_Binding", "type": "Fail", "dependsOn": [], "typeProperties": {"message": "nb_orches_id or workspace_id is empty or a placeholder", "errorCode": "BAD_NOTEBOOK_BINDING"}}]}}, {"name": "NB_00_ORCHES_SLV_TO_ENR_15P", "type": "TridentNotebook", "dependsOn": [{"activity": "Validate_Notebook_Binding", "dependencyConditions": ["Succeeded"]}], "policy": {"timeout": "0.00:32:00", "retry...
+E         
+E         ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests\test_enr_poi_contract.py:110: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_enr_poi_contract.py::test_pipeline_timeouts - assert 'PENDI...
+1 failed, 26 passed in 0.20s
+
+## task-state: PASS
+
+# Verification 2026-10-13 09:01:03 — PASS
+Files (28): docs/AGENT_PROMPT_SAMPLES.md, docs/context/CTRL_TABLES_CONTEXT.md, docs/context/NB_LIB_TRANSFORM_SLV_GLD.md, notebooks/NB_00_ORCHES_SLV_TO_ENR_15P.ipynb, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_ENR_POI_COORDINATE.ipynb, notebooks/NB_ENR_POI_INFO.ipynb, notebooks/NB_ENR_POI_REVIEW.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SLV_PN_POI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_00_POI_PIPELINE_ORCHESTRATOR.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_10_BRONZE_TO_SILVER_PREPROCESS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_20_SILVER_POI_COMPONENTS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_30_SILVER_POI_ENTITY_ENRICHMENT.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_40_GOLD_POI_SERVING.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_50_GOLD_POI_AI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_60_POI_DATA_QUALITY.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_VERIFY_DATA.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/1. parsing_bronze_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.1. transform_partner_to_gold_poi_master.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.2. nb_cms_transform.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.3. nb_transform_bronze_userprofile.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/3.1. enrich_partner_poi_via_google_vietmap.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/4. nb_data_enrichment_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/5. nb_prepare_product_for_ingestion.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/6. nb_push_data_to_KB_through_event_hub_partner.ipynb, pipelines/PL_VV_TRANS_SLV_TO_ENR_15P/PL_VV_TRANS_SLV_TO_ENR_15P.json, tests/test_enr_poi_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+...........................                                              [100%]
+27 passed in 0.14s
+
+## task-state: PASS
+
+# Verification 2026-10-13 09:12:30 — PASS
+Files (28): docs/AGENT_PROMPT_SAMPLES.md, docs/context/CTRL_TABLES_CONTEXT.md, docs/context/NB_LIB_TRANSFORM_SLV_GLD.md, notebooks/NB_00_ORCHES_SLV_TO_ENR_15P.ipynb, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_ENR_POI_COORDINATE.ipynb, notebooks/NB_ENR_POI_INFO.ipynb, notebooks/NB_ENR_POI_REVIEW.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SLV_PN_POI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_00_POI_PIPELINE_ORCHESTRATOR.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_10_BRONZE_TO_SILVER_PREPROCESS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_20_SILVER_POI_COMPONENTS.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_30_SILVER_POI_ENTITY_ENRICHMENT.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_40_GOLD_POI_SERVING.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_50_GOLD_POI_AI.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_60_POI_DATA_QUALITY.ipynb, notebooks_lgc/3rd_data_ingested_orches/NB_VERIFY_DATA.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/1. parsing_bronze_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.1. transform_partner_to_gold_poi_master.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.2. nb_cms_transform.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/2.3. nb_transform_bronze_userprofile.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/3.1. enrich_partner_poi_via_google_vietmap.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/4. nb_data_enrichment_partner.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/5. nb_prepare_product_for_ingestion.ipynb, notebooks_lgc/pl_transform_partner_userprofile_cms/6. nb_push_data_to_KB_through_event_hub_partner.ipynb, pipelines/PL_VV_TRANS_SLV_TO_ENR_15P/PL_VV_TRANS_SLV_TO_ENR_15P.json, tests/test_enr_poi_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+...........................                                              [100%]
+27 passed in 0.23s
+
+## task-state: PASS
+

@@ -1,0 +1,96 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "variables": {},
+  "resources": [
+    {
+      "name": "PL_VV_TRANS_SLV_TO_ENR_15P",
+      "type": "pipelines",
+      "apiVersion": "2018-06-01",
+      "properties": {
+        "activities": [
+          {
+            "name": "Validate_Notebook_Binding",
+            "type": "IfCondition",
+            "dependsOn": [],
+            "typeProperties": {
+              "expression": {
+                "value": "@or(empty(pipeline().parameters.nb_orches_id), contains(pipeline().parameters.nb_orches_id, 'PENDING'), empty(pipeline().parameters.workspace_id), contains(pipeline().parameters.workspace_id, 'PENDING'))",
+                "type": "Expression"
+              },
+              "ifTrueActivities": [
+                {
+                  "name": "Fail_Bad_Binding",
+                  "type": "Fail",
+                  "dependsOn": [],
+                  "typeProperties": {
+                    "message": "nb_orches_id or workspace_id is empty or a placeholder",
+                    "errorCode": "BAD_NOTEBOOK_BINDING"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "NB_00_ORCHES_SLV_TO_ENR_15P",
+            "type": "TridentNotebook",
+            "dependsOn": [
+              {
+                "activity": "Validate_Notebook_Binding",
+                "dependencyConditions": ["Succeeded"]
+              }
+            ],
+            "policy": {
+              "timeout": "0.00:32:00",
+              "retry": 0,
+              "retryIntervalInSeconds": 30,
+              "secureOutput": false,
+              "secureInput": false
+            },
+            "typeProperties": {
+              "notebookId": {
+                "value": "@pipeline().parameters.nb_orches_id",
+                "type": "Expression"
+              },
+              "workspaceId": {
+                "value": "@pipeline().parameters.workspace_id",
+                "type": "Expression"
+              },
+              "parameters": {
+                "p_pl_name": {
+                  "value": {
+                    "value": "@pipeline().Pipeline",
+                    "type": "Expression"
+                  },
+                  "type": "string"
+                },
+                "p_run_id": {
+                  "value": {
+                    "value": "@pipeline().RunId",
+                    "type": "Expression"
+                  },
+                  "type": "string"
+                },
+                "p_mode": {"value": "RUN", "type": "string"},
+                "p_max_parallel": {"value": "2", "type": "string"},
+                "p_node_timeout_min": {"value": "15", "type": "string"},
+                "p_dag_timeout_min": {"value": "25", "type": "string"},
+                "p_lock_timeout_min": {"value": "35", "type": "string"},
+                "p_force_nodes": {"value": "", "type": "string"},
+                "p_history_limit": {"value": "1000", "type": "string"},
+                "p_non_data_ops": {"value": "", "type": "string"}
+              }
+            }
+          }
+        ],
+        "concurrency": 1,
+        "parameters": {
+          "nb_orches_id": {"type": "string"},
+          "workspace_id": {"type": "string"}
+        }
+      },
+      "dependsOn": []
+    }
+  ]
+}

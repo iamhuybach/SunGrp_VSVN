@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_mng_pipeline_config (
 | `trg_schema`, `trg_tbl` | STRING | Bảng silver L1 | Node (silver L2 / gold) |
 | `is_active` | INT | 1 bật / 0 tắt **cả bảng** | 1 bật / 0 tắt cạnh |
 | `priority` | INT | Wave: cùng priority chạy song song (`max_parallel`) | = tầng của node trong DAG (chỉ để đọc; NB_00 tự tính thứ tự từ cạnh) |
-| `load_mode` | STRING | `CDC` (partner; NULL = CDC) · `DOC` · `DOC_ARRAY` · `LANG` · `LANG_ARRAY` (3P). Notebook kiểm tra: partner chỉ nhận `CDC`, 3P chỉ nhận 4 mode snapshot | `RECOMPUTE` |
+| `load_mode` | STRING | `CDC` (partner; NULL = CDC) · `DOC` · `DOC_ARRAY` · `LANG` · `LANG_ARRAY` (3P). Notebook kiểm tra: partner chỉ nhận `CDC`, 3P chỉ nhận 4 mode snapshot | `RECOMPUTE` · `APPEND` (luồng `PL_VV_TRANS_SLV_TO_ENR_15P`, không MERGE) |
 | `align_path` | STRING | `*_ARRAY`: mảng ghép theo vị trí (đọc bằng `json_path` `_align.<trường>`) | NULL |
 | `dedup_order` | STRING | Snapshot: `"<cột> [ASC\|DESC], ..."` chọn 1 dòng khi 1 tài liệu có nhiều dòng cùng khoá (NULL xếp cuối, rồi `_pos`) | NULL |
 

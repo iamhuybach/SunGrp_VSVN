@@ -54,7 +54,7 @@ Vì sao tính lại toàn bộ thay vì incremental: dữ liệu ~19k POI, logic
 | Tên | Giá trị / ý nghĩa |
 |---|---|
 | `T_PIPELINE_CONFIG`, `T_WATERMARK`, `T_LOG_RUN`, `T_LOG_TABLE_RUN` | Bảng ctrl dùng |
-| `EDGE_LOAD_MODE` | `RECOMPUTE` |
+| `EDGE_LOAD_MODE` | `RECOMPUTE`. [THÊM 13/10] `EDGE_LOAD_MODES` thêm `APPEND`. Node APPEND ghi Delta append và marker `userMetadata`, không gọi MERGE |
 | `RUN_MODES` / `NODE_MODES` | `RUN, PLAN, DRY_RUN` / `RUN, DRY_RUN` |
 | `NODE_OK` / `NODE_BAD` | `SUCCESS, NO_DATA` / `FAILED, SKIPPED, NOT_RUN` |
 | `WATERMARK_COLUMN_EDGE` | `commit_ts` |

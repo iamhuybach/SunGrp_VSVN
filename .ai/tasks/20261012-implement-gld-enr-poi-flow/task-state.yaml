@@ -1,0 +1,76 @@
+schema_version: 1
+task:
+  id: 20261012-implement-gld-enr-poi-flow
+  title: Implement append flow for gld_enr_poi tables
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-12'
+  updated_at: '2026-10-13'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - stateful_logic
+  - idempotency
+  - retry_recovery
+  - partial_failure
+  - transaction_boundaries
+  - cross_system
+  - design_tradeoffs
+  - runtime_proof_required
+  - data_evidence_required
+  - deep_reasoning_required
+scope:
+  systems:
+  - silver
+  - gold
+  - ctrl
+  - fabric-pipeline
+  files:
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_00_ORCHES_SLV_TO_ENR_15P.ipynb
+  - notebooks/NB_ENR_POI_INFO.ipynb
+  - notebooks/NB_ENR_POI_COORDINATE.ipynb
+  - notebooks/NB_ENR_POI_REVIEW.ipynb
+  - notebooks/NB_SLV_PN_POI.ipynb
+  - pipelines/PL_VV_TRANS_SLV_TO_ENR_15P/PL_VV_TRANS_SLV_TO_ENR_15P.json
+  - notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb
+  - docs/context/NB_LIB_TRANSFORM_SLV_GLD.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+  - tests/test_enr_poi_contract.py
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  - state-correctness-reviewer
+  - fabric-pipeline-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: pass
+  runtime: pass
+rounds:
+  verification: 0
+  review: 2
+  architecture: 1
+  runtime_failure: 0
+open_findings: []
