@@ -1,0 +1,48 @@
+# Verification 2026-10-14 16:29:04 — PASS
+Files (15): .cursor/rules/00-main-orchestrator.mdc, AGENTS.md, SETUP.md, docs/AGENT_PROMPT_SAMPLES.md, docs/context/01_DATA_MODEL.md, docs/context/3p-google/README.md, docs/context/CTRL_TABLES_CONTEXT.md, docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md, docs/context/NB_LIB_EXTRACT_RAWDATA.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb, notebooks/NB_LIB_EXTRACT_RAWDATA.ipynb, tests/test_3p_l1_contract.py, tests/test_3p_raw_rules.py, tests/test_3p_visibility_sql.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+............................................................             [100%]
+60 passed in 0.44s
+
+## task-state: PASS
+
+# Verification 2026-10-14 17:10:04 — PASS
+Files (11): docs/context/01_DATA_MODEL.md, docs/context/3p-google/README.md, docs/context/CTRL_TABLES_CONTEXT.md, docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md, docs/context/NB_LIB_EXTRACT_RAWDATA.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb, notebooks/NB_LIB_EXTRACT_RAWDATA.ipynb, tests/test_3p_l1_contract.py, tests/test_3p_raw_rules.py, tests/test_3p_visibility_sql.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+.........................................................                [100%]
+57 passed in 1.89s
+
+## task-state: PASS
+

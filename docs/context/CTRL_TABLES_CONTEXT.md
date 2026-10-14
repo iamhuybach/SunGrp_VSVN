@@ -227,9 +227,10 @@ CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_cfg_schema_registry (
     trg_schema          STRING    COMMENT 'Schema bảng đích, vd lh_vv_silver.dbo',
     trg_tbl             STRING    COMMENT 'Bảng đích, khớp ctrl_mng_pipeline_config.trg_tbl',
     trg_column          STRING    COMMENT 'Tên cột trong bảng đích',
-    json_path           STRING    COMMENT 'CDC: đường dẫn trong JSON before/after. Snapshot: đường dẫn trong phần tử/khối, hoặc $ / _doc.cột / _root.a / _align.a / _lang / _pos / _langs. Nhiều phần p1,p2 chỉ với HASH_*',
+    json_path           STRING    COMMENT 'CDC: đường dẫn trong JSON before/after. Snapshot: đường dẫn cấu trúc, không NULL',
     data_type           STRING    COMMENT 'Kiểu Spark của cột đích: string, bigint, int, smallint, boolean, timestamp, decimal(19,4)...',
-    convert_rule        STRING    COMMENT 'Cách chuyển giá trị gốc: NONE | EPOCH_S_TS | EPOCH_MS_TS | EPOCH_US_TS | ISO_UTC_TS | DATE_DAYS | DECIMAL_BASE64 | LOWER_TRIM. Khoá suy ra (snapshot): HASH_MD5_UUID | HASH_SHA256 | HASH_SHA256_PIPE',
+    convert_arg         STRING    COMMENT 'Đối số JSON của rule snapshot; NULL khi rule không có đối số',
+    convert_rule        STRING    COMMENT 'Cách chuyển giá trị gốc; snapshot hỗ trợ thêm ARRAY_AT',
     is_key              BOOLEAN   COMMENT 'Cột thuộc khoá MERGE',
     key_order           INT       COMMENT 'Thứ tự trong khoá ghép (1, 2...), NULL nếu không phải khoá',
     is_toast            BOOLEAN   COMMENT 'Cột có thể nhận giá trị TOAST thay thế của Debezium (chỉ CDC, snapshot luôn false)',
@@ -248,7 +249,7 @@ COMMENT 'Mapping cột JSON sang bảng đích (CDC partner, snapshot 3rd-party)
 | Có ≥ 1 cột khoá, `key_order` không NULL / trùng; `column_order` không NULL / trùng; tên cột không trùng nhau, không trùng cột kỹ thuật | Mọi bảng |
 | `data_type` được Spark xác nhận (`CAST(NULL AS <kiểu>)`); `DECIMAL_BASE64` chỉ cho `decimal(p,s)`; `LOWER_TRIM` / `HASH_*` chỉ cho `string` | Mọi bảng |
 | `HASH_*` cấm ở CDC; `json_path` dạng `a.b` | CDC |
-| `json_path` theo bảng tiền tố (`_lang` chỉ LANG*, `_pos` chỉ *_ARRAY, `_align.*` cần `align_path`, nhiều phần chỉ với `HASH_*`); `is_toast` = false; `src_object` `$` không dùng với *_ARRAY | Snapshot |
+| `json_path` theo bảng tiền tố và không NULL; `ARRAY_AT` cần `convert_arg` `{index,take}`; `is_toast` = false; `src_object` `$` không dùng với *_ARRAY | Snapshot |
 | Cột inactive bị bỏ qua (bảng đích không có cột đó) | Mọi bảng |
 
 ### Dữ liệu hiện có (seed `NB_CREATE_DDL`, cấu hình chốt 04/10 chiều)

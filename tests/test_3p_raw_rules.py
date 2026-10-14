@@ -46,3 +46,29 @@ def test_sql_builders_keep_order():
     )
     assert proj.index("close_hour") < proj.index("ignoreNullFields")
     assert "ignoreNullFields', 'true'" in proj
+
+
+def test_array_at_arg():
+    ns = _block()
+    assert ns["parse_convert_arg"](
+        "ARRAY_AT", '{"index":0,"take":"displayName"}'
+    ) == {"index": 0, "take": "displayName"}
+    for bad in (
+        '{"index":true,"take":"displayName"}',
+        '{"index":64,"take":"displayName"}',
+        '{"index":0,"take":"x;drop"}',
+    ):
+        with pytest.raises(ValueError):
+            ns["parse_convert_arg"]("ARRAY_AT", bad)
+
+
+def test_array_at_sql():
+    ns = _block()
+    sql = ns["array_at_sql"](
+        "_raw__authors",
+        ns["parse_convert_arg"]("ARRAY_AT", '{"index":0,"take":"displayName"}'),
+    )
+    assert "try_element_at" in sql
+    assert "array<string>" in sql
+    assert ", 1)" in sql
+    assert "$.displayName" in sql

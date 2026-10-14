@@ -58,7 +58,7 @@ Thay phần extract của chuỗi cũ NB_00 → NB_30 (3P):
 
 | Hằng số | Giá trị |
 |---|---|
-| `RAW_PAYLOAD` | `raw_payload` |
+| `RAW_PAYLOAD` | `normalized_payload` (raw-shaped document đã sửa, có `photos[].blob_url`) |
 | `RAW_EVENT_ID` | `event_id` |
 | `RAW_DOC_ID` | (`source_name`, `source_id`) — bắt buộc; cột đầu lọc theo `sources` |
 | `RAW_LANG` | `language_code` (gộp vào `_langs`) |
@@ -67,6 +67,10 @@ Thay phần extract của chuỗi cũ NB_00 → NB_30 (3P):
 | `ARRAY_MODES` / `LANG_MODES` | `DOC_ARRAY, LANG_ARRAY` / `LANG, LANG_ARRAY` |
 
 Cột thứ tự = `watermark_column` của dòng watermark (`crawled_at`), không viết cứng. Cột raw khác khai báo trong registry dạng `_doc.<cột>`.
+
+`photographer` dùng rule tổng quát `ARRAY_AT` trên `authorAttributions`.
+`blob_url` đọc trực tiếp field `blob_url` của ảnh. Task này không thêm
+`is_visible`; soft delete để task khác. MERGE không xóa vật lý dòng review.
 
 ## 6. Luồng
 

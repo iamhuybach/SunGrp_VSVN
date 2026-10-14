@@ -1,0 +1,102 @@
+schema_version: 1
+task:
+  id: 20261014-3p-raw-payload-field-corrections
+  title: Correct 3P raw-payload contact, media, and review columns
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-14'
+  updated_at: '2026-10-14'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - design_tradeoffs
+  - stateful_logic
+  - idempotency
+scope:
+  systems:
+  - lh_vv_silver.dbo.slv_3p_poi_contact
+  - lh_vv_silver.dbo.slv_3p_poi_media
+  - lh_vv_silver.dbo.slv_3p_poi_review
+  - lh_vv_ctrl.dbo.ctrl_cfg_schema_registry
+  files:
+  - .ai/tasks/20261014-3p-raw-payload-field-corrections/decision.md
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb
+  - notebooks/NB_LIB_EXTRACT_RAWDATA.ipynb
+  - tests/test_3p_l1_contract.py
+  - tests/test_3p_raw_rules.py
+  - tests/test_3p_visibility_sql.py
+  - docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md
+  - docs/context/NB_LIB_EXTRACT_RAWDATA.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+  - docs/context/01_DATA_MODEL.md
+  - docs/context/3p-google/README.md
+  - .ai/tasks/20261014-3p-raw-payload-field-corrections/runtime-runbook.md
+impact_only:
+- notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb
+- lh_vv_silver.dbo.slv_pn_*
+- gld_enr_*
+- .ai/tasks/20261013-3p-extract-from-raw-payload/task-state.yaml
+review_plan:
+  required_reviewers:
+  - state-correctness-reviewer
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+model_policy_exception:
+  approved_on: '2026-10-14'
+  reason: User approved Claude Code CLI as the proposal author at claude-opus-5-5
+    with medium effort. This is not an Architect turn. Architect remains claude-opus-5-5
+    at high effort and writes only architecture.md through run-gate.
+  proposal_author_runtime: claude-code-cli
+  proposal_author_model: claude-opus-5-5
+  proposal_author_effort: medium
+  architect_model: claude-opus-5-5
+  architect_effort: high
+  do_not_call_during_proposal:
+  - Codex CLI
+  - requirements-analyst
+  architect_gate: After Q-VIS, Architect runs through python scripts/vv.py run-gate.
+  schema_note: models.architect.effort stays high because the state validator rejects
+    any other value. This block is the approved exception for the proposal author
+    only. Do not change .claude/settings.json.
+  invocation_2026_10_14:
+    cli_model: claude-opus-5-5
+    cli_effort: medium
+    structured_model: claude-opus-5-5
+    structured_effort: medium
+    model_usage: claude-opus-5-5
+    documents_saved: true
+    result: saved
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: pass
+  runtime: pass
+rounds:
+  verification: 0
+  review: 2
+  architecture: 2
+  runtime_failure: 0
+open_findings: []
+parent_task: 20261013-3p-extract-from-raw-payload
+exceptions: []

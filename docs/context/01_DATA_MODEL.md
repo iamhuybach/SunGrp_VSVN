@@ -78,7 +78,7 @@ flowchart LR
 | Bảng | Nguồn | Cột chính | Đặc điểm |
 |---|---|---|---|
 | `lh_vv_bronze.dbo.partner_raw_data` | Debezium CDC (connector `dev_cdc` 3.0.0.Final, db `partner`, `commerce`) | `before`, `after`, `source` (JSON chuỗi), `op` (`c` / `r` / `u` / `d` / `t` / `m`), `EventProcessedUtcTime` | Append-only do Eventstream ghi; **không có stats** trong `_delta_log` (20.431 file / 3,2 GB lúc đo 02/10) → không lọc theo thời gian được, phải đọc theo version. 1 event = 1 thay đổi của 1 dòng của 1 bảng Postgres (`source.schema`, `source.table`) |
-| `lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream` | Collector 3rd-party | `event_id`, `source_name`, `source_id`, `crawled_at`, `ingested_date`, `normalized_payload`, `raw_payload`, `language_code` (tất cả STRING) | 1 event = 1 tài liệu đầy đủ (snapshot) lúc crawl. Không có tín hiệu xoá, không TOAST. DDL tương đương bảng raw 3P trước đó |
+| `lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream` | Collector 3rd-party | `event_id`, `source_name`, `source_id`, `crawled_at`, `ingested_date`, `normalized_payload`, `raw_payload`, `language_code` (tất cả STRING) | 1 event = 1 tài liệu đầy đủ (snapshot) lúc crawl. Extract 3P đọc `normalized_payload`; payload này có raw shape và thêm `photos[].blob_url`. Không có tín hiệu xoá, không TOAST |
 
 Mẫu một dòng bronze, chỉ khóa thời điểm, không phải hợp đồng schema. `crawled_at` và `normalized_payload.created_at` là ISO UTC 9 chữ số lẻ, ví dụ `2026-10-08T08:25:03.721627688Z` và `2026-10-08T08:25:03.721621239Z`. `poi_review[].time` cùng dạng, ví dụ `2026-05-08T09:40:17.010285725Z`. `ingested_date` là ngày `2026-10-08`. Không ghi số điện thoại, nội dung review, URL media, `raw_payload`.
 | `lh_vv_bronze.dbo.brz_watermark`, `brz_pipeline_run` | — | — | Thuộc chuỗi NB_00 cũ; luồng mới không đọc / ghi |
@@ -303,6 +303,10 @@ Ghi bởi `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`. Cột kỹ thuật: `_crawled_a
 | `slv_3p_poi_media` | DOC_ARRAY | `poi_media` | `media_dedup_key` (sha256 nối `\|`) | 18 (15) | — |
 
 Đã gỡ khỏi registry: `slv_3p_poi_raw_data`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`.
+
+Cập nhật 2026-10-14: registry L1 hiện có 9 bảng, 55 cột active.
+`slv_3p_poi_contact` thêm `phone`; `slv_3p_poi_media` thêm `blob_url` và
+`photographer`. Task này không thêm `is_visible`.
 
 `poi_id` 3rd-party = `md5(concat(source_name, source_id))` định dạng UUID 8-4-4-4-12 (`HASH_MD5_UUID`). Id của collector giữ ở cột `collector_poi_id`.
 Cột JSON giữ nguyên khối: `amenity_schema_json`, `ext_attributes_json`, `facilities_json`, `secondary_hours_json`; mảng 1 tầng để cột JSON: `periods_json`, `types_json`, `subcategory_tags_json`, `weekday_text_json`.

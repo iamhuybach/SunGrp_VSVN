@@ -1,4 +1,4 @@
-"""Contract of the 3P L1 registry and extract notebook after the raw-payload redesign."""
+"""Contract of the 3P L1 registry and corrected normalized-payload extract."""
 import json
 from pathlib import Path
 
@@ -12,13 +12,13 @@ DROPPED = (
 EXPECTED = {
     "slv_3p_poi": 10,
     "slv_3p_poi_address": 12,
-    "slv_3p_poi_contact": 3,
+    "slv_3p_poi_contact": 4,
     "slv_3p_poi_price": 5,
     "slv_3p_poi_opening_hours": 4,
     "slv_3p_poi_rating": 3,
     "slv_3p_poi_amenity": 2,
     "slv_3p_poi_review": 7,
-    "slv_3p_poi_media": 6,
+    "slv_3p_poi_media": 8,
 }
 FORBIDDEN = {"_lang", "_langs", "_align"}
 
@@ -47,7 +47,7 @@ def test_registry_shape():
     configs = _configs()
     assert len(configs) == 9
     columns = [(table, name, spec) for table in configs for name, spec in table["columns"].items()]
-    assert len(columns) == 52
+    assert len(columns) == 55
     assert sum(1 for _, _, spec in columns if spec.get("active") is False) == 0
     assert [table["target_table"] for table in configs] == list(EXPECTED)
     for table in configs:
@@ -80,7 +80,9 @@ def test_keys_and_open_now():
 def test_paths_are_structural():
     for table in _configs():
         for spec in table["columns"].values():
-            for part in spec["path"].split(","):
+            for part in (spec.get("path") or "").split(","):
+                if not part:
+                    continue
                 head = part.strip().split(".", 1)[0]
                 assert head not in FORBIDDEN
 
@@ -95,7 +97,20 @@ def test_extract_notebook_has_no_language_contract():
     assert 'EXTRACT_MODES = ("DOC", "DOC_ARRAY")' in whole or "EXTRACT_MODES  = (\"DOC\", \"DOC_ARRAY\")" in whole
     for banned in ("lang_entries", "LANG_MODES", "_lang_entries", "KNOWN_TOP_KEYS", "WATCH_BLOCKS"):
         assert banned not in whole
-    assert 'RAW_PAYLOAD    = "raw_payload"' in whole
+    assert 'RAW_PAYLOAD    = "normalized_payload"' in whole
+    assert '"raw_payload"' not in whole
+
+
+def test_corrected_columns():
+    configs = {table["target_table"]: table for table in _configs()}
+    contact = configs["slv_3p_poi_contact"]["columns"]
+    assert contact["phone"] == {"path": "nationalPhoneNumber", "type": "string"}
+    media = configs["slv_3p_poi_media"]["columns"]
+    assert media["blob_url"] == {"path": "blob_url", "type": "string"}
+    assert media["photographer"]["path"] == "authorAttributions"
+    assert media["photographer"]["rule"] == "ARRAY_AT"
+    assert media["photographer"]["arg"] == {"index": 0, "take": "displayName"}
+    assert "is_visible" not in configs["slv_3p_poi_review"]["columns"]
 
 
 def test_deactivation_list():

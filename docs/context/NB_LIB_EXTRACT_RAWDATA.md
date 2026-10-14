@@ -81,7 +81,12 @@ Bất kỳ lỗi nào trong `body` → run `FAILED`, watermark giữ nguyên, v�
 | `LOAD_MODES` / `SNAPSHOT_MODES` | `CDC, DOC, DOC_ARRAY, LANG, LANG_ARRAY` / 4 mode sau |
 | `PATH_SCOPES` | Tiền tố `json_path` đặc biệt: `_doc`, `_root`, `_align`, `_lang`, `_pos`, `_langs` |
 
-Bảng `json_path` của bảng snapshot: `a.b` (trường trong phần tử / khối) · `$` (cả phần tử dạng JSON) · `_doc.<cột raw>` · `_root.a.b` (từ gốc payload) · `_langs` (mảng ngôn ngữ của tài liệu) · `_lang` (LANG*) · `_pos` (*_ARRAY, từ 0) · `_align.a` (phần tử cùng vị trí trong `align_path`, chỉ khi 2 mảng cùng số phần tử) · `p1,p2,...` (chỉ với `HASH_*`).
+Bảng `json_path` của bảng snapshot: `a.b` (trường trong phần tử / khối) · `$` (cả phần tử dạng JSON) · `_doc.<cột raw>` · `_root.a.b` (từ gốc payload) · `_langs` (mảng ngôn ngữ của tài liệu) · `_lang` (LANG*) · `_pos` (*_ARRAY, từ 0) · `_align.a` (phần tử cùng vị trí trong `align_path`, chỉ khi 2 mảng cùng số phần tử) · `p1,p2,...` (chỉ với `HASH_*`). Snapshot không để `json_path` NULL.
+
+Rule snapshot bổ sung:
+
+- `ARRAY_AT`: chọn phần tử mảng theo `convert_arg.index` (0-based), rồi lấy
+  `convert_arg.take`. Mảng sai dạng là cast-null; thiếu phần tử hoặc field trả NULL.
 
 ### §2 common_utils
 

@@ -1,6 +1,8 @@
 # Context Google 3rd-party dùng chung
 
-Các file này là tài liệu nguồn cho extract `raw_payload` và cho lớp L2 sau này. Chúng không phải hợp đồng schema.
+Các file này là tài liệu hình payload Google và cho lớp L2 sau này. Extract hiện
+đọc `normalized_payload` đã có raw shape và thêm `photos[].blob_url`. Chúng không
+phải hợp đồng schema.
 
 | File | Dùng khi |
 |---|---|
