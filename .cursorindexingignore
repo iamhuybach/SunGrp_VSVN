@@ -1,0 +1,7 @@
+notebooks_lgc/
+docs/context/3p-google/*.txt
+.ai/tasks/*/evidence/context/
+.ai/tasks/*/evidence/results/
+.ai/tasks/*/verification/
+.ai/tasks/*/handoffs/
+pipelines/*/manifest.json

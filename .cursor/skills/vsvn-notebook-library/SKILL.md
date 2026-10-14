@@ -18,6 +18,12 @@ description: Add or change code in an NB_LIB_* %run library notebook (NB_LIB_EXT
    In the task, record for each caller which library names it uses and whether the change keeps them working.
 3. Do not remove or rename a public function, class, constant, or parameter that a caller uses. Add a new name and migrate the callers in the same task.
 
+### Read budget
+
+- List cells with `python scripts/vv.py toc notebooks/<name>.ipynb`. Read only the cells in the architecture `Main brief` edit list and the cells they call, with `python scripts/vv.py show notebooks/<name>.ipynb cell:<i>` or `def:<function>`.
+- Read the matching `docs/context/<name>.md` by section with `toc` and `show`, not whole.
+- Search a notebook with `python scripts/vv.py show notebooks/<name>.ipynb grep:<regex>` before opening cells.
+
 ## Library contract
 
 Both libraries follow these rules. Keep them.

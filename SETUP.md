@@ -37,6 +37,7 @@ python scripts/vv.py verify --all
 4. Confirm that the notebook, pipeline, and SQL rules attach to their declared globs.
 5. Confirm that `vsvn-task-workflow` and `fabric-runtime-evidence` appear as project skills.
 6. Record the actual model in each task's `task-state.yaml`. A fallback is a stopped gate, not an implicit substitution.
+7. Start a new chat per phase. Begin each with `python scripts/vv.py context <task-id>`.
 
 The `.cursor/agents/` directory intentionally contains no reviewer definitions.
 
@@ -69,6 +70,8 @@ Review agents never edit files. Main stores the returned consolidated report as 
 
 Copyable Cursor Agent entry prompts for common task types are available in [`docs/AGENT_PROMPT_SAMPLES.md`](docs/AGENT_PROMPT_SAMPLES.md). Choose the closest case, replace its placeholders, and submit it from the repository root with Grok 4.7 Medium selected.
 
+Detailed statuses, classification, routing, budgets, and command contracts are in [`docs/agent-system/WORKFLOW.md`](docs/agent-system/WORKFLOW.md).
+
 ```powershell
 python scripts/vv.py new <slug>
 python scripts/vv.py validate <task-id>
@@ -79,6 +82,13 @@ python scripts/vv.py external-doctor
 python scripts/vv.py external-smoke
 python scripts/vv.py run-gate <task-id>
 python scripts/vv.py verify <task-id>
+python scripts/vv.py toc <path>
+python scripts/vv.py show <path> <anchor> [--max-lines N]
+python scripts/vv.py context <task-id> [--phase P] [--max-lines N]
+python scripts/vv.py materialize <task-id> [--source F] [--write]
+python scripts/vv.py closeout <task-id>
+python scripts/vv.py verify <task-id> --full
+python scripts/vv.py run-author <task-id> --kind proposal|runbook
 ```
 
 There is no Git-index snapshot, `handoff`, or `guard --restore` mechanism. Role permissions, read-only review sandboxes, task-state validation, and normal Git diff review replace that fragile workflow.

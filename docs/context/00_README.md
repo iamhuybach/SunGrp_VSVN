@@ -7,7 +7,7 @@
 
 | File | Nội dung | Khi nào đọc |
 |---|---|---|
-| `01_DATA_MODEL.md` | Mô tả, thông tin, ý nghĩa của Data Model mới: phân tầng, sơ đồ, pipeline, bronze, silver L1 (23 + 14 bảng), ref, định danh, model cũ → mới | Luôn đọc đầu tiên |
+| `01_DATA_MODEL.md` | Mô tả, thông tin, ý nghĩa của Data Model mới: phân tầng, sơ đồ, pipeline, bronze, silver L1 (23 + 14 bảng), ref, định danh, model cũ → mới | Đọc mục cần cho task (bản đồ context trong docs/AGENT_PROMPT_SAMPLES.md) |
 | `02_NAMING_CONVENTION.md` | Quy ước đặt tên (lakehouse, tiền tố bảng, notebook, pipeline, id ctrl, cột, cột nội bộ, enum, tham số) và convention code | Trước khi tạo / đổi tên bất cứ thứ gì, trước khi viết code |
 | `CTRL_TABLES_CONTEXT.md` | 7 bảng ctrl: mô tả, ý nghĩa, DDL, cột, dữ liệu hiện có, thao tác SQL, lịch sử thay đổi | Khi đụng tới cấu hình, watermark, log, state, reject |
 | `CHECK_CTRL_SNAPSHOT.py` | Script **chỉ đọc**: chụp dữ liệu hiện có của 7 bảng ctrl | Khi cần số liệu ctrl thật |
@@ -21,7 +21,7 @@
 
 ## Thứ tự đọc
 
-1. `01_DATA_MODEL.md` → 2. `02_NAMING_CONVENTION.md` → 3. `99_PAIN_POINTS.md` §0 (bài học) → 4. file của phần đang làm.
+Agent: đọc "Tóm tắt 10 dòng" dưới đây, rồi chỉ đọc mục được prompt nêu (`python scripts/vv.py toc` / `show`). Người mới: 01 → 02 → 99 §0 → file của phần đang làm.
 
 ## Tóm tắt 10 dòng
 

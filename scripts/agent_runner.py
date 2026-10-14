@@ -15,6 +15,8 @@ from typing import Any
 
 ARCHITECT_MODEL = "claude-opus-5-5"
 ARCHITECT_EFFORT = "high"
+AUTHOR_MODEL = "claude-opus-5-5"
+AUTHOR_EFFORT = "medium"
 REVIEW_MODEL = "gpt-5.6-sol"
 REVIEW_EFFORT = "medium"
 VERDICTS = {"PASS", "FIX_REQUIRED", "EVIDENCE_REQUIRED", "USER_DECISION"}
@@ -27,6 +29,13 @@ class RunnerError(RuntimeError):
 @dataclass(frozen=True)
 class ArchitectureResult:
     verdict: str
+    document: str
+    executable: Path
+    warnings: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class AuthorResult:
     document: str
     executable: Path
 
@@ -179,10 +188,41 @@ def _architecture_schema() -> dict[str, Any]:
         "properties": {
             "verdict": {"type": "string", "enum": ["PASS", "EVIDENCE_REQUIRED"]},
             "document": {"type": "string", "minLength": 20},
+            "main_brief": {"type": "string", "minLength": 200, "maxLength": 14000},
         },
-        "required": ["verdict", "document"],
+        "required": ["verdict", "document", "main_brief"],
         "additionalProperties": False,
     }
+
+
+def _author_schema() -> dict[str, Any]:
+    return {
+        "type": "object",
+        "properties": {"document": {"type": "string", "minLength": 200}},
+        "required": ["document"],
+        "additionalProperties": False,
+    }
+
+
+def compose_architecture(document: str, brief: str) -> str:
+    """Place the bounded Main brief after the architecture result line."""
+    lines = document.splitlines()
+    result_index = next((index for index, line in enumerate(lines) if line.strip().startswith("RESULT:")), None)
+    if result_index is None:
+        raise RunnerError("Architecture document has no RESULT line.")
+    result_line = lines[result_index].strip()
+    rest = "\n".join([*lines[:result_index], *lines[result_index + 1:]]).strip()
+    brief_lines = [f"#{line}" if line.startswith("## ") else line for line in brief.strip().splitlines()]
+    parts = [result_line, "## Main brief", "\n".join(brief_lines).strip()]
+    if rest:
+        parts.append(rest)
+    return "\n\n".join(parts).rstrip() + "\n"
+
+
+def architecture_warnings(document: str) -> tuple[str, ...]:
+    if re.search(r"(?m)^## Main brief\s*$", document):
+        return ("Architect document already contains a '## Main brief' heading; the runner prepended another brief.",)
+    return ()
 
 
 def run_architecture(repo: Path, prompt: str, timeout_seconds: int = 1800) -> ArchitectureResult:
@@ -195,6 +235,7 @@ def run_architecture(repo: Path, prompt: str, timeout_seconds: int = 1800) -> Ar
 This is a non-interactive, read-only architecture run. Do not edit any file. Return structured JSON matching
 the supplied schema. `document` must be the complete English content for the task's `architecture.md`, and its
 first non-blank line must be exactly `RESULT: PASS` or `RESULT: EVIDENCE_REQUIRED`, matching `verdict`.
+`main_brief` follows the Main brief contract in the prompt; do not repeat it inside `document`.
 Do not wrap the JSON or document in Markdown fences.
 """
     before = _git_snapshot(repo)
@@ -220,12 +261,60 @@ Do not wrap the JSON or document in Markdown fences.
     payload = parse_claude_output(result.stdout)
     verdict = payload.get("verdict")
     document = payload.get("document")
-    if verdict not in {"PASS", "EVIDENCE_REQUIRED"} or not isinstance(document, str):
-        raise RunnerError("Claude architecture result has an invalid verdict or document.")
+    main_brief = payload.get("main_brief")
+    if (
+        verdict not in {"PASS", "EVIDENCE_REQUIRED"}
+        or not isinstance(document, str)
+        or not isinstance(main_brief, str)
+        or not 200 <= len(main_brief) <= 14000
+    ):
+        raise RunnerError("Claude architecture result has an invalid verdict, document, or main_brief.")
     first_line = next((line.strip() for line in document.splitlines() if line.strip()), "")
     if first_line != f"RESULT: {verdict}":
         raise RunnerError(f"architecture.md must begin with 'RESULT: {verdict}'.")
-    return ArchitectureResult(verdict=verdict, document=document.rstrip() + "\n", executable=executable)
+    warnings = architecture_warnings(document)
+    composed = compose_architecture(document, main_brief)
+    return ArchitectureResult(
+        verdict=verdict, document=composed, executable=executable, warnings=warnings,
+    )
+
+
+def run_author(repo: Path, prompt: str, timeout_seconds: int = 1800) -> AuthorResult:
+    executable = discover_executable("claude")
+    schema = _author_schema()
+    automation_contract = """
+
+## Automated execution contract
+
+This is a non-interactive, read-only author run. Do not edit any file. Return structured JSON matching
+the supplied schema. `document` must be the complete requested artifact. Do not wrap the JSON or document
+in Markdown fences.
+"""
+    before = _git_snapshot(repo)
+    command = [
+        str(executable),
+        "-p",
+        "--model", AUTHOR_MODEL,
+        "--effort", AUTHOR_EFFORT,
+        "--output-format", "json",
+        "--json-schema", json.dumps(schema, separators=(",", ":")),
+        "--max-turns", "40",
+        "--permission-mode", "dontAsk",
+        "--permission-prompts", "none",
+        "--tools", "Read,Glob,Grep",
+        "--safe-mode",
+        "--setting-sources", "user",
+        "--no-session-persistence",
+    ]
+    result = _run(command, cwd=repo, input_text=prompt + automation_contract, timeout_seconds=timeout_seconds)
+    _assert_repo_unchanged(repo, before, "Claude Author")
+    if result.returncode:
+        raise _command_failure("Claude Author", result)
+    payload = parse_claude_output(result.stdout)
+    document = payload.get("document")
+    if not isinstance(document, str) or len(document) < 200:
+        raise RunnerError("Claude author result has an invalid document.")
+    return AuthorResult(document=document, executable=executable)
 
 
 def _review_schema(reviewers: list[str]) -> dict[str, Any]:

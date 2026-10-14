@@ -18,6 +18,12 @@ An extract notebook holds only what is specific to one raw source. `NB_LIB_EXTRA
    - The third-party context file still describes `LANG` / `LANG_ARRAY` modes and a `langs` parameter. The notebook accepts only `EXTRACT_MODES = ("DOC", "DOC_ARRAY")`.
 4. If source facts are missing from task evidence (event-order column, key uniqueness, null rates, payload shape), use the `fabric-runtime-evidence` skill. Do not infer them from column names.
 
+### Read budget
+
+- List cells with `python scripts/vv.py toc notebooks/<name>.ipynb`. Read only the cells in the architecture `Main brief` edit list and the cells they call, with `python scripts/vv.py show notebooks/<name>.ipynb cell:<i>` or `def:<function>`.
+- Read the matching `docs/context/<name>.md` by section with `toc` and `show`, not whole.
+- Search a notebook with `python scripts/vv.py show notebooks/<name>.ipynb grep:<regex>` before opening cells.
+
 ## Notebook layout
 
 Keep this cell order. Both notebooks use it.

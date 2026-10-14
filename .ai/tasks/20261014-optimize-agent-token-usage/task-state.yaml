@@ -1,0 +1,93 @@
+schema_version: 1
+task:
+  id: 20261014-optimize-agent-token-usage
+  title: Optimize agent-system token usage
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-14'
+  updated_at: '2026-10-14'
+classification:
+  complexity: high
+  risk_level: medium
+  architecture_required: true
+  evidence_required: false
+  runtime_required: false
+  signals:
+  - design_tradeoffs
+  - cross_state_impact
+  - deep_reasoning_required
+scope:
+  systems:
+  - cursor-main
+  - claude-architect
+  - codex-review
+  - vv-runner
+  files:
+  - scripts/vv.py
+  - scripts/agent_runner.py
+  - tests/test_vv.py
+  - tests/test_vv_context.py
+  - tests/fixtures/sample_notebook.ipynb
+  - .ai/tasks/_template/decision.md
+  - .ai/tasks/_template/resume.md
+  - .ai/tasks/_template/task-state.yaml
+  - .ai/prompts/architect.md
+  - .ai/prompts/author-proposal.md
+  - .ai/prompts/author-runbook.md
+  - AGENTS.md
+  - docs/agent-system/WORKFLOW.md
+  - docs/agent-system/TOKEN_OPTIMIZATION_PLAN.md
+  - .cursor/rules/00-main-orchestrator.mdc
+  - .cursor/skills/vsvn-task-workflow/SKILL.md
+  - .cursor/skills/vsvn-extract-notebook/SKILL.md
+  - .cursor/skills/vsvn-notebook-library/SKILL.md
+  - .cursorindexingignore
+  - .cursorignore
+  - SETUP.md
+  - docs/AGENT_PROMPT_SAMPLES.md
+  - docs/context/00_README.md
+  - docs/templates/BRD_TEMPLATE.md
+  - docs/templates/MAPPING_TEMPLATE.md
+  - docs/requirements/20261012-map-gld-enr-poi-tables/BRD.md
+  - docs/requirements/20261012-map-gld-enr-poi-tables/MAPPING.md
+review_plan:
+  required_reviewers:
+  - state-correctness-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: gpt-5.6-sol
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 2
+  review: 2
+  architecture: 1
+  runtime_failure: 0
+open_findings: []
+exceptions:
+- id: EXC-01
+  kind: model_override
+  role: main
+  model: gpt-5.6-sol
+  effort: medium
+  runtime: codex-cli
+  approved_by: user
+  approved_on: '2026-10-14'
+  scope: Codex implements docs/agent-system/TOKEN_OPTIMIZATION_PLAN.md in place of
+    Cursor Main.

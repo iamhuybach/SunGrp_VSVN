@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import copy
 import datetime as dt
+import hashlib
 import importlib.util
 import json
 import os
@@ -14,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import tomllib
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -124,6 +126,219 @@ def require_yaml() -> None:
         fail("PyYAML is required. Run: python -m pip install -r requirements-dev.txt")
 
 
+@dataclass(frozen=True)
+class Heading:
+    level: int
+    title: str
+    start: int
+    end: int
+
+
+@dataclass(frozen=True)
+class Cell:
+    index: int
+    id: str
+    cell_type: str
+    source: str
+    json_start: int | None
+    json_end: int | None
+
+
+def markdown_toc(text: str) -> list[Heading]:
+    """Return Markdown headings and their inclusive section ranges."""
+    lines = text.splitlines()
+    found: list[tuple[int, str, int]] = []
+    fence: str | None = None
+    for number, line in enumerate(lines, 1):
+        fence_match = re.match(r"^\s*(`{3,}|~{3,})", line)
+        if fence_match:
+            marker = fence_match.group(1)[0]
+            if fence is None:
+                fence = marker
+            elif fence == marker:
+                fence = None
+            continue
+        if fence is not None:
+            continue
+        match = re.match(r"^(#{1,6})\s+(.+?)\s*$", line)
+        if match:
+            title = re.sub(r"\s+#+\s*$", "", match.group(2)).strip()
+            found.append((len(match.group(1)), title, number))
+    headings: list[Heading] = []
+    for index, (level, title, start) in enumerate(found):
+        end = len(lines)
+        for next_level, _, next_start in found[index + 1:]:
+            if next_level <= level:
+                end = next_start - 1
+                break
+        headings.append(Heading(level, title, start, end))
+    return headings
+
+
+def notebook_cells(path: Path) -> list[Cell]:
+    """Load notebook cells and map Fabric-formatted JSON line ranges when possible."""
+    raw = path.read_text(encoding="utf-8-sig")
+    document = json.loads(raw)
+    raw_cells = document.get("cells", [])
+    if not isinstance(raw_cells, list):
+        fail(f"{path.as_posix()} cells must be a list")
+    lines = raw.splitlines()
+    markers = [index for index, line in enumerate(lines) if re.match(r'^   "cell_type": ', line)]
+    ranges: list[tuple[int | None, int | None]] = [(None, None)] * len(raw_cells)
+    if len(markers) == len(raw_cells):
+        starts = [marker for marker in markers]
+        close_index = next(
+            (index for index in range(markers[-1] + 1, len(lines)) if re.match(r"^ ],?\s*$", lines[index])),
+            len(lines),
+        ) if markers else len(lines)
+        mapped: list[tuple[int | None, int | None]] = []
+        for index, start in enumerate(starts):
+            end = starts[index + 1] - 1 if index + 1 < len(starts) else close_index
+            mapped.append((start, end))
+        ranges = mapped
+    result: list[Cell] = []
+    for index, item in enumerate(raw_cells):
+        if not isinstance(item, dict):
+            fail(f"{path.as_posix()} cell {index} must be an object")
+        source_value = item.get("source", [])
+        source = "".join(source_value) if isinstance(source_value, list) else str(source_value)
+        result.append(Cell(
+            index=index,
+            id=str(item.get("id", "<none>")),
+            cell_type=str(item.get("cell_type", "unknown")),
+            source=source,
+            json_start=ranges[index][0],
+            json_end=ranges[index][1],
+        ))
+    return result
+
+
+def _cell_label(cell: Cell) -> str:
+    lines = cell.source.splitlines()
+    if cell.cell_type == "markdown":
+        for line in lines:
+            match = re.match(r"^\s*#{1,6}\s+(.+?)\s*$", line)
+            if match:
+                return match.group(1).strip()[:80]
+    for line in lines:
+        value = line.strip()
+        if value and not value.startswith("#"):
+            return value[:80]
+    return "<empty>"
+
+
+def _cell_defs(cell: Cell) -> list[str]:
+    names: list[str] = []
+    for line in cell.source.splitlines():
+        match = re.match(r"^\s*(?:def|class)\s+(\w+)", line)
+        if match:
+            names.append(match.group(1))
+    return names
+
+
+def _bounded_text(text: str, max_lines: int) -> str:
+    lines = text.splitlines()
+    if len(lines) <= max_lines:
+        return text.rstrip()
+    remaining = len(lines) - max_lines
+    return "\n".join(lines[:max_lines]) + f"\n… truncated: {remaining} more lines; use --max-lines or a narrower anchor"
+
+
+def render_toc(path: Path) -> str:
+    if path.suffix.lower() == ".ipynb":
+        output: list[str] = []
+        for cell in notebook_cells(path):
+            json_range = f"{cell.json_start}-{cell.json_end}" if cell.json_start is not None else "unknown"
+            names = ", ".join(_cell_defs(cell)) or "none"
+            output.append(
+                f"[{cell.index}] {cell.cell_type} id={cell.id} json={json_range} "
+                f"lines={len(cell.source.splitlines())} | {_cell_label(cell)} | defs: {names}"
+            )
+        return "\n".join(output)
+    if path.suffix.lower() == ".md":
+        return "\n".join(
+            f"{'#' * heading.level} {heading.title} | L{heading.start}-L{heading.end}"
+            for heading in markdown_toc(path.read_text(encoding="utf-8"))
+        )
+    fail("toc supports only .md and .ipynb files")
+
+
+def _cell_banner(cell: Cell) -> str:
+    json_range = f"{cell.json_start}-{cell.json_end}" if cell.json_start is not None else "unknown"
+    return f"# --- cell {cell.index} id={cell.id} type={cell.cell_type} json={json_range} ---"
+
+
+def render_show(path: Path, anchor: str, max_lines: int = 400) -> str:
+    if max_lines < 1:
+        fail("--max-lines must be positive")
+    if path.suffix.lower() == ".md":
+        text = path.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        line_match = re.fullmatch(r"L(\d+)-L(\d+)", anchor, re.IGNORECASE)
+        if line_match:
+            start, end = map(int, line_match.groups())
+            if start < 1 or end < start or end > len(lines):
+                fail(f"Invalid line range {anchor!r} for {path.as_posix()}")
+            return _bounded_text("\n".join(lines[start - 1:end]), max_lines)
+        matches = [
+            heading for heading in markdown_toc(text)
+            if heading.title.casefold().startswith(anchor.casefold())
+        ]
+        if not matches:
+            fail(f"No Markdown heading matches {anchor!r}")
+        if len(matches) > 1:
+            candidates = ", ".join(f"{item.title} (L{item.start})" for item in matches)
+            fail(f"Ambiguous Markdown heading {anchor!r}: {candidates}")
+        heading = matches[0]
+        return _bounded_text("\n".join(lines[heading.start - 1:heading.end]), max_lines)
+    if path.suffix.lower() != ".ipynb":
+        fail("show supports only .md and .ipynb files")
+    cells = notebook_cells(path)
+    selected: list[Cell] = []
+    if match := re.fullmatch(r"cell:(\d+)(?:-(\d+))?", anchor, re.IGNORECASE):
+        start = int(match.group(1))
+        end = int(match.group(2) or start)
+        if start < 0 or end < start or end >= len(cells):
+            fail(f"Invalid cell range {anchor!r}")
+        selected = cells[start:end + 1]
+    elif anchor.lower().startswith("id:"):
+        cell_id = anchor[3:]
+        selected = [cell for cell in cells if cell.id == cell_id]
+        if not selected:
+            fail(f"No notebook cell has id {cell_id!r}")
+    elif anchor.lower().startswith("def:"):
+        name = anchor[4:]
+        selected = [
+            cell for cell in cells
+            if re.search(rf"^\s*def\s+{re.escape(name)}\s*\(", cell.source, re.MULTILINE)
+        ]
+        if not selected:
+            fail(f"No notebook cell defines {name!r}")
+    elif anchor.lower().startswith("grep:"):
+        pattern_text = anchor[5:]
+        try:
+            pattern = re.compile(pattern_text)
+        except re.error as exc:
+            fail(f"Invalid grep regex: {exc}")
+        output: list[str] = []
+        seen: set[tuple[int, int]] = set()
+        for cell in cells:
+            source_lines = cell.source.splitlines()
+            for line_index, line in enumerate(source_lines):
+                if not pattern.search(line):
+                    continue
+                for context_index in range(max(0, line_index - 1), min(len(source_lines), line_index + 2)):
+                    key = (cell.index, context_index)
+                    if key not in seen:
+                        output.append(f"cell {cell.index} line {context_index + 1}: {source_lines[context_index]}")
+                        seen.add(key)
+        return _bounded_text("\n".join(output) if output else "no matches", max_lines)
+    else:
+        fail(f"Unsupported notebook anchor: {anchor!r}")
+    rendered = "\n".join(f"{_cell_banner(cell)}\n{cell.source.rstrip()}" for cell in selected)
+    return _bounded_text(rendered, max_lines)
+
+
 def load_state(path: Path) -> dict[str, Any]:
     require_yaml()
     try:
@@ -205,6 +420,63 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
         "main": "grok-4.7", "architect": "claude-opus-5-5",
         "review": "gpt-5.6-sol",
     }
+    exceptions = data.get("exceptions", [])
+    valid_overrides: dict[str, set[str]] = {}
+    if not isinstance(exceptions, list):
+        errors.append("exceptions must be a list")
+        exceptions = []
+    exception_ids: set[str] = set()
+    exception_keys = {
+        "id", "kind", "role", "model", "effort", "runtime",
+        "approved_by", "approved_on", "scope",
+    }
+    for index, exception in enumerate(exceptions):
+        prefix = f"exceptions[{index}]"
+        if not isinstance(exception, dict):
+            errors.append(f"{prefix} must be a mapping")
+            continue
+        missing = exception_keys - set(exception)
+        extra = set(exception) - exception_keys
+        if missing:
+            errors.append(f"{prefix} missing keys: {', '.join(sorted(missing))}")
+        if extra:
+            errors.append(f"{prefix} unknown keys: {', '.join(sorted(extra))}")
+        exception_id = exception.get("id")
+        if not isinstance(exception_id, str) or not exception_id.strip():
+            errors.append(f"{prefix}.id must be a non-empty string")
+        elif exception_id in exception_ids:
+            errors.append(f"{prefix}.id must be unique")
+        else:
+            exception_ids.add(exception_id)
+        if exception.get("kind") != "model_override":
+            errors.append(f"{prefix}.kind must be 'model_override'")
+        role = exception.get("role")
+        if role not in {"main", "architect", "review", "author"}:
+            errors.append(f"{prefix}.role must be main, architect, review, or author")
+        model_name = exception.get("model")
+        if not isinstance(model_name, str) or not model_name.strip():
+            errors.append(f"{prefix}.model must be a non-empty string")
+        if exception.get("effort") not in {"low", "medium", "high"}:
+            errors.append(f"{prefix}.effort must be low, medium, or high")
+        if not isinstance(exception.get("runtime"), str) or not exception.get("runtime", "").strip():
+            errors.append(f"{prefix}.runtime must be a non-empty string")
+        if exception.get("approved_by") != "user":
+            errors.append(f"{prefix}.approved_by must be 'user'")
+        approved_on = exception.get("approved_on")
+        try:
+            if not isinstance(approved_on, str):
+                raise ValueError
+            dt.date.fromisoformat(approved_on)
+        except ValueError:
+            errors.append(f"{prefix}.approved_on must be an ISO date")
+        if not isinstance(exception.get("scope"), str) or not exception.get("scope", "").strip():
+            errors.append(f"{prefix}.scope must be a non-empty string")
+        if (
+            exception.get("kind") == "model_override"
+            and role in {"main", "architect", "review", "author"}
+            and isinstance(model_name, str) and model_name.strip()
+        ):
+            valid_overrides.setdefault(role, set()).add(model_name)
     for role, expected in expected_models.items():
         model = models.get(role)
         if not isinstance(model, dict):
@@ -217,6 +489,31 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
             errors.append(f"models.{role}.effort must be {expected_effort!r}")
         if not isinstance(model.get("actual"), str):
             errors.append(f"models.{role}.actual must be a string")
+    if "author" in models:
+        author = models["author"]
+        if not isinstance(author, dict):
+            errors.append("models.author must be a mapping")
+        else:
+            expected_author_keys = {"expected", "effort", "actual"}
+            missing = expected_author_keys - set(author)
+            extra = set(author) - expected_author_keys
+            if missing:
+                errors.append(f"models.author missing keys: {', '.join(sorted(missing))}")
+            if extra:
+                errors.append(f"models.author unknown keys: {', '.join(sorted(extra))}")
+            if author.get("expected") != "claude-opus-5-5":
+                errors.append("models.author.expected must be 'claude-opus-5-5'")
+            if author.get("effort") != "medium":
+                errors.append("models.author.effort must be 'medium'")
+            author_actual = author.get("actual")
+            if not isinstance(author_actual, str):
+                errors.append("models.author.actual must be a string")
+            elif author_actual and author_actual not in {
+                "claude-opus-5-5", *valid_overrides.get("author", set()),
+            }:
+                errors.append(
+                    "models.author.actual must be 'claude-opus-5-5' or an approved author override"
+                )
 
     required_actual_models = {"main"}
     if gates.get("architecture") == "pass":
@@ -227,7 +524,8 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
         required_actual_models.discard("main")
     for role in required_actual_models:
         model = models.get(role)
-        if isinstance(model, dict) and model.get("actual") != expected_models[role]:
+        allowed_actuals = {expected_models[role], *valid_overrides.get(role, set())}
+        if isinstance(model, dict) and model.get("actual") not in allowed_actuals:
             errors.append(f"models.{role}.actual must confirm {expected_models[role]!r} before this gate/status")
 
     missing_gates = GATE_NAMES - set(gates)
@@ -291,6 +589,233 @@ def validate_task(task_id: str) -> list[str]:
     if not path.is_file():
         return [f"missing {path.as_posix()}"]
     return validate_state_data(load_state(path), task_id)
+
+
+PHASE_BY_STATUS = {
+    "triage": "triage", "waiting_architecture": "triage",
+    "waiting_evidence": "evidence", "reviewing": "review",
+    "waiting_runtime": "runtime", "user_decision": "closeout",
+    "ready_to_merge": "closeout", "blocked": "closeout",
+}
+
+
+def _markdown_section(text: str, title: str) -> str | None:
+    matches = [item for item in markdown_toc(text) if item.title.casefold() == title.casefold()]
+    if not matches:
+        return None
+    lines = text.splitlines()
+    item = matches[0]
+    return "\n".join(lines[item.start - 1:item.end]).rstrip()
+
+
+def _markdown_sections(text: str, titles: list[str]) -> str:
+    return "\n\n".join(section for title in titles if (section := _markdown_section(text, title)))
+
+
+def _context_phase(state: dict[str, Any], requested: str) -> str:
+    if requested != "auto":
+        return requested
+    status = state["task"]["status"]
+    if status in {"implementing", "verifying"}:
+        has_blocker = any(
+            isinstance(item, dict) and item.get("severity") in {"P0", "P1"}
+            for item in state.get("open_findings", [])
+        )
+        return "remediate" if state["rounds"]["review"] > 0 and has_blocker else "implement"
+    return PHASE_BY_STATUS[status]
+
+
+def _template_equivalent(path: Path, task_id: str, created_at: str) -> bool:
+    directory = task_dir(task_id)
+    try:
+        relative = path.relative_to(directory)
+    except ValueError:
+        return False
+    template = TEMPLATE_ROOT / relative
+    if not template.is_file():
+        return False
+    try:
+        expected = template.read_text(encoding="utf-8")
+        expected = expected.replace("{{TASK_ID}}", task_id).replace("{{DATE}}", created_at)
+        return path.read_text(encoding="utf-8") == expected
+    except UnicodeDecodeError:
+        return path.read_bytes() == template.read_bytes()
+
+
+def _state_context(state: dict[str, Any]) -> str:
+    task = state["task"]
+    classification = state["classification"]
+    gates = ", ".join(f"{key}={value}" for key, value in state["gates"].items())
+    rounds = ", ".join(f"{key}={value}" for key, value in state["rounds"].items())
+    findings = ", ".join(
+        f"{item.get('id')} {item.get('severity')}"
+        for item in state.get("open_findings", []) if isinstance(item, dict)
+    ) or "none"
+    exceptions = ", ".join(
+        f"{item.get('id')} {item.get('role')} {item.get('model')} {item.get('effort')} {item.get('approved_on')}"
+        for item in state.get("exceptions", []) if isinstance(item, dict)
+    ) or "none"
+    files = list(state["scope"].get("files", []))
+    file_lines = [f"- {path}" for path in files[:30]]
+    if len(files) > 30:
+        file_lines.append(f"- +{len(files) - 30} more")
+    return "\n".join([
+        f"id: {task['id']}",
+        f"title: {task.get('title', '')}",
+        f"status/owner: {task['status']}/{task['owner']}",
+        f"complexity/risk: {classification['complexity']}/{classification['risk_level']}",
+        "required: " + ", ".join(
+            f"{key}={classification[key]}"
+            for key in ("architecture_required", "evidence_required", "runtime_required")
+        ),
+        f"signals: {', '.join(classification.get('signals', [])) or 'none'}",
+        f"gates: {gates}",
+        f"rounds: {rounds}",
+        f"reviewers: {', '.join(state['review_plan'].get('required_reviewers', [])) or 'none'}",
+        f"open findings: {findings}",
+        f"exceptions: {exceptions}",
+        "scope.files:",
+        *file_lines,
+    ])
+
+
+def _architecture_summary(directory: Path, phase: str) -> str:
+    path = directory / "architecture.md"
+    if not path.is_file():
+        return "missing architecture.md"
+    text = path.read_text(encoding="utf-8")
+    result = next((line for line in text.splitlines() if line.strip().startswith("RESULT:")), "RESULT: missing")
+    if phase not in {"implement", "remediate", "review", "runtime"}:
+        return f"{result}\nsize: {path.stat().st_size} bytes"
+    brief = _markdown_section(text, "Main brief")
+    if brief:
+        return brief
+    toc = render_toc(path)
+    return f"no Main brief\n{toc}"
+
+
+def _evidence_context(directory: Path) -> str:
+    probe_dir = directory / "evidence" / "probes"
+    result_dir = directory / "evidence" / "results"
+    if not probe_dir.is_dir():
+        return "no probes"
+    groups: dict[str, list[Path]] = {}
+    for path in sorted(probe_dir.iterdir()):
+        if path.is_file() and path.name != "README.md":
+            groups.setdefault(path.stem, []).append(path)
+    output: list[str] = []
+    for stem, paths in groups.items():
+        results = sorted(result_dir.glob(f"{stem}.*")) if result_dir.is_dir() else []
+        result = results[0].as_posix() if results else "NO RESULT"
+        output.append(f"- {stem}: {', '.join(path.as_posix() for path in paths)} | result: {result}")
+    return "\n".join(output) or "no probes"
+
+
+def _remediation_context(directory: Path) -> str:
+    review_dir = directory / "reviews"
+    candidates: list[tuple[int, Path]] = []
+    if review_dir.is_dir():
+        for path in review_dir.glob("round-*.md"):
+            match = re.fullmatch(r"round-(\d+)\.md", path.name)
+            if match:
+                candidates.append((int(match.group(1)), path))
+    if not candidates:
+        return "no review rounds"
+    path = max(candidates)[1]
+    lines = path.read_text(encoding="utf-8").splitlines()
+    selected: list[str] = [f"source: {path.as_posix()}"]
+    selected.extend(line for line in lines if re.match(r"^\|", line) and ("Severity" in line or re.search(r"\bP[01]\b", line)))
+    return "\n".join(selected)
+
+
+def _runtime_context(directory: Path) -> str:
+    path = directory / "runtime-runbook.md"
+    if not path.is_file():
+        return "missing runtime-runbook.md"
+    text = path.read_text(encoding="utf-8")
+    result = [render_toc(path)]
+    section = _markdown_section(text, "Kết quả người dùng ghi nhận")
+    if section:
+        result.append(section)
+    return "\n\n".join(result)
+
+
+def _next_context(task_id: str, status: str) -> str:
+    commands = {
+        "triage": f"python scripts/vv.py transition {task_id} <next-status>",
+        "waiting_evidence": f"interpret results, then python scripts/vv.py transition {task_id} <next-status>",
+        "waiting_architecture": f"python scripts/vv.py run-gate {task_id}",
+        "implementing": f"implement, then python scripts/vv.py transition {task_id} verifying",
+        "verifying": f"python scripts/vv.py verify {task_id}",
+        "reviewing": f"python scripts/vv.py run-gate {task_id}",
+        "waiting_runtime": f"python scripts/vv.py closeout {task_id}",
+        "user_decision": "wait for the named user decision",
+        "ready_to_merge": "user commit/merge only",
+        "blocked": "resolve the named blocker",
+    }
+    return commands[status]
+
+
+def build_context(task_id: str, phase: str = "auto", max_lines: int = 400) -> str:
+    directory = task_dir(task_id)
+    state = load_state(directory / "task-state.yaml")
+    selected_phase = _context_phase(state, phase)
+    allowed_phases = {"triage", "evidence", "implement", "remediate", "review", "runtime", "closeout"}
+    if selected_phase not in allowed_phases:
+        fail(f"Unknown context phase: {selected_phase!r}")
+    blocks: list[tuple[str, str]] = [("STATE", _state_context(state))]
+    validation = validate_state_data(state, task_id)
+    blocks.append(("VALIDATION", "PASS" if not validation else "\n".join(f"- {item}" for item in validation)))
+
+    resume = directory / "resume.md"
+    if resume.is_file():
+        text = resume.read_text(encoding="utf-8")
+        created_at = str(state["task"].get("created_at", ""))
+        if "{{" not in text and text.strip() and not _template_equivalent(resume, task_id, created_at):
+            blocks.append(("RESUME", "\n".join(text.splitlines()[:60])))
+
+    request_path = directory / "request.md"
+    request_text = request_path.read_text(encoding="utf-8") if request_path.is_file() else ""
+    request = request_text if selected_phase == "triage" else _markdown_sections(
+        request_text, ["User outcome", "Acceptance criteria", "Constraints"],
+    )
+    blocks.append(("REQUEST", request or "missing request sections"))
+
+    decision_path = directory / "decision.md"
+    decision_text = decision_path.read_text(encoding="utf-8") if decision_path.is_file() else ""
+    ledger = _markdown_section(decision_text, "Quyết định hiện hành")
+    finding_table = _markdown_section(decision_text, "Xử lý findings")
+    if ledger:
+        decisions = "\n\n".join(part for part in (ledger, finding_table) if part)
+    else:
+        decisions = "no ledger\n" + (render_toc(decision_path) if decision_path.is_file() else "missing decision.md")
+    blocks.append(("DECISIONS", decisions))
+    blocks.append(("ARCHITECTURE", _architecture_summary(directory, selected_phase)))
+
+    if selected_phase == "evidence":
+        blocks.append(("EVIDENCE", _evidence_context(directory)))
+    if selected_phase == "remediate":
+        blocks.append(("REMEDIATION", _remediation_context(directory)))
+    if selected_phase in {"runtime", "closeout"}:
+        blocks.append(("RUNTIME", _runtime_context(directory)))
+
+    task_files: list[str] = []
+    created_at = str(state["task"].get("created_at", ""))
+    for path in sorted(item for item in directory.rglob("*") if item.is_file()):
+        relative = path.relative_to(directory).as_posix()
+        labels: list[str] = []
+        if _template_equivalent(path, task_id, created_at):
+            labels.append("placeholder")
+        if path.stat().st_size > 20 * 1024:
+            labels.append("large: use toc/show")
+        suffix = f" | {', '.join(labels)}" if labels else ""
+        task_files.append(f"- {relative} | {path.stat().st_size} bytes{suffix}")
+    blocks.append(("FILES", "\n".join(task_files) or "none"))
+    blocks.append(("NEXT", _next_context(task_id, state["task"]["status"])))
+    output = f"# Context {task_id} | phase={selected_phase}\n\n" + "\n\n".join(
+        f"## {title}\n\n{content}" for title, content in blocks
+    )
+    return _bounded_text(output, max_lines)
 
 
 def cmd_new(args: argparse.Namespace) -> int:
@@ -523,6 +1048,8 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
             write_state(state_path, candidate)
             print(f"ARCHITECTURE {result.verdict}: {architecture.as_posix()}")
             print(f"Executable: {result.executable}")
+            for warning in result.warnings:
+                print(f"WARN: {warning}")
             print(f"Next status: {candidate['task']['status']}")
             return 0
         if status == "reviewing":
@@ -570,6 +1097,55 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
     )
 
 
+def _author_output_path(directory: Path, task_id: str, created_at: str, kind: str) -> tuple[Path, bool]:
+    name = "proposal.md" if kind == "proposal" else "runtime-runbook.md"
+    target = directory / name
+    if not target.exists() or _template_equivalent(target, task_id, created_at):
+        return target, False
+    return target.with_name(f"{target.stem}.new{target.suffix}"), True
+
+
+def cmd_run_author(args: argparse.Namespace) -> int:
+    directory = task_dir(args.task)
+    state_path = directory / "task-state.yaml"
+    state = load_state(state_path)
+    errors = validate_state_data(state, args.task)
+    if errors:
+        fail("Current task state is invalid:\n- " + "\n- ".join(errors))
+    author_input_path = directory / "handoffs" / "author-input.md"
+    if not author_input_path.is_file():
+        fail(f"Author input not found: {author_input_path.as_posix()}")
+    author_input = author_input_path.read_text(encoding="utf-8")
+    line_count = len(author_input.splitlines())
+    if line_count > 60:
+        fail(f"Author input exceeds 60 lines: {line_count}")
+    template_path = Path(".ai/prompts") / f"author-{args.kind}.md"
+    if not template_path.is_file():
+        fail(f"Author prompt template not found: {template_path.as_posix()}")
+    prompt = template_path.read_text(encoding="utf-8").replace("{{TASK_ID}}", args.task)
+    prompt = f"{prompt.rstrip()}\n\n## Author input\n\n{author_input.rstrip()}\n"
+    try:
+        result = agent_runner.run_author(repo_root(), prompt, timeout_seconds=args.timeout)
+    except agent_runner.RunnerError as exc:
+        fail(f"AUTHOR FAIL: {exc}")
+    candidate = copy.deepcopy(state)
+    author = candidate["models"].setdefault(
+        "author", {"expected": agent_runner.AUTHOR_MODEL, "effort": agent_runner.AUTHOR_EFFORT, "actual": ""},
+    )
+    author["actual"] = agent_runner.AUTHOR_MODEL
+    _validate_candidate_state(args.task, candidate)
+    output, collision = _author_output_path(
+        directory, args.task, str(state["task"].get("created_at", "")), args.kind,
+    )
+    output.write_text(result.document, encoding="utf-8")
+    write_state(state_path, candidate)
+    if collision:
+        print(f"NOTICE: Existing artifact preserved; Main must merge {output.as_posix()}.")
+    print(f"AUTHOR OUTPUT: {output.as_posix()}")
+    print(f"Executable: {result.executable}")
+    return 0
+
+
 def changed_files(all_files: bool) -> list[str]:
     if all_files:
         files = set(nul_paths(git("ls-files", "-z").stdout))
@@ -579,6 +1155,215 @@ def changed_files(all_files: bool) -> list[str]:
         files = set(nul_paths(git("ls-files", "-z").stdout))
     files |= set(nul_paths(git("ls-files", "--others", "--exclude-standard", "-z").stdout))
     return sorted(path for path in files if not path.startswith(".ai/") and Path(path).is_file())
+
+
+def parse_file_blocks(data: bytes) -> list[tuple[str, bytes]]:
+    """Extract exact FILE and SKILL_FILE block bodies from a byte stream."""
+    blocks: list[tuple[str, bytes]] = []
+    seen: set[str] = set()
+    current_path: str | None = None
+    expected_end: bytes | None = None
+    body: list[bytes] = []
+    for line in data.splitlines(keepends=True):
+        stripped = line.rstrip(b"\r\n")
+        start = re.fullmatch(rb"(FILE|SKILL_FILE):\s*(.+)", stripped)
+        if start:
+            if current_path is not None:
+                fail(f"Nested file block inside {current_path}")
+            current_path = start.group(2).decode("utf-8").strip()
+            if current_path in seen:
+                fail(f"Duplicate file block: {current_path}")
+            seen.add(current_path)
+            expected_end = b"END_FILE" if start.group(1) == b"FILE" else b"END_SKILL_FILE"
+            body = []
+            continue
+        if current_path is not None:
+            if stripped == expected_end:
+                blocks.append((current_path, b"".join(body)))
+                current_path = None
+                expected_end = None
+                body = []
+                continue
+            if re.fullmatch(rb"(?:FILE|SKILL_FILE):\s*.+", stripped):
+                fail(f"Nested file block inside {current_path}")
+            body.append(line)
+    if current_path is not None:
+        fail(f"Unclosed file block: {current_path}")
+    return blocks
+
+
+def _materialize_target(path_text: str, allowed: set[str]) -> Path:
+    normalized = path_text.replace("\\", "/")
+    path = Path(normalized)
+    if path.is_absolute() or ".." in path.parts or not path.parts:
+        fail(f"Unsafe materialize path: {path_text!r}")
+    if path.parts[0] == ".git" or path.name == "task-state.yaml":
+        fail(f"Prohibited materialize path: {path_text!r}")
+    if normalized not in allowed:
+        fail(f"Materialize path is not listed in scope.files: {normalized}")
+    return path
+
+
+def materialize_blocks(task_id: str, source_name: str, write: bool = False) -> list[str]:
+    directory = task_dir(task_id)
+    if source_name not in {"architecture.md", "proposal.md"}:
+        fail("--source must be architecture.md or proposal.md")
+    source = directory / source_name
+    if not source.is_file():
+        fail(f"Materialize source not found: {source.as_posix()}")
+    state = load_state(directory / "task-state.yaml")
+    allowed = {str(item).replace("\\", "/") for item in state["scope"].get("files", [])}
+    planned: list[tuple[Path, bytes, str, str]] = []
+    output: list[str] = []
+    for path_text, body in parse_file_blocks(source.read_bytes()):
+        target = _materialize_target(path_text, allowed)
+        status = "new" if not target.exists() else ("identical" if target.read_bytes() == body else "changed")
+        digest = hashlib.sha256(body).hexdigest()[:12]
+        planned.append((target, body, status, digest))
+        output.append(f"{target.as_posix()} | {len(body)} | {digest} | {status}")
+    if write and any(status != "identical" for _, _, status, _ in planned):
+        if state.get("task", {}).get("status") != "implementing":
+            fail("materialize --write requires task status 'implementing' before any durable write")
+    if write:
+        for target, body, status, _ in planned:
+            if status == "identical":
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(body)
+    return output
+
+
+def _scoped_status_files(task_id: str, state: dict[str, Any]) -> list[str]:
+    result = git("status", "--porcelain", "--untracked-files=all").stdout.splitlines()
+    paths: list[str] = []
+    task_prefix = f".ai/tasks/{task_id}/"
+    scope = {str(item).replace("\\", "/") for item in state["scope"].get("files", [])}
+    for line in result:
+        if len(line) < 4:
+            continue
+        value = line[3:].strip().strip('"').replace("\\", "/")
+        if " -> " in value:
+            value = value.split(" -> ", 1)[1]
+        if value in scope or value.startswith(task_prefix):
+            paths.append(value)
+    return sorted(set(paths))
+
+
+def _leading_probe_comments(path: Path) -> str:
+    output: list[str] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped and not output:
+            continue
+        if stripped.startswith(("#", "--")) or not stripped:
+            output.append(line)
+            if len(output) >= 15:
+                break
+            continue
+        break
+    return "\n".join(output).rstrip()
+
+
+def build_closeout(task_id: str) -> str:
+    directory = task_dir(task_id)
+    state = load_state(directory / "task-state.yaml")
+    status = state["task"]["status"]
+    gates = ", ".join(f"{key}={value}" for key, value in state["gates"].items())
+    changed = _scoped_status_files(task_id, state)
+    changed_text = "\n".join(f"- {path}" for path in changed) or "- Không có file scoped thay đổi."
+    done = f"status={status}; gates: {gates}\n{changed_text}\n<Main: tóm tắt 1–3 dòng>"
+
+    run_blocks: list[str] = []
+    waits: list[str] = []
+    if status == "waiting_evidence":
+        probe_dir = directory / "evidence" / "probes"
+        result_dir = directory / "evidence" / "results"
+        grouped: dict[str, list[Path]] = {}
+        if probe_dir.is_dir():
+            for path in sorted(probe_dir.iterdir()):
+                if path.is_file() and path.name != "README.md":
+                    grouped.setdefault(path.stem, []).append(path)
+        for stem, paths in grouped.items():
+            if result_dir.is_dir() and any(result_dir.glob(f"{stem}.*")):
+                continue
+            selected = paths[0]
+            comments = _leading_probe_comments(selected)
+            run_blocks.append(
+                f"- Probe: {selected.as_posix()}\n"
+                f"  Type: {selected.suffix.lstrip('.')}\n"
+                f"  Hướng dẫn đầu file:\n{comments or '  <không có comment đầu file>'}\n"
+                f"  Dán kết quả vào: {result_dir.as_posix()}/{stem}.txt\n"
+                "  Tối đa 50 dòng, không dữ liệu cá nhân, không secret."
+            )
+            waits.append(f"probe: {stem}")
+    elif status == "waiting_runtime":
+        runbook = directory / "runtime-runbook.md"
+        if runbook.is_file():
+            text = runbook.read_text(encoding="utf-8")
+            titles = [
+                "Phạm vi và môi trường", "Điều kiện tiên quyết", "Baseline trước khi chạy",
+                "Các bước thực hiện", "Kiểm tra kết quả", "Chạy lại để kiểm tra idempotency",
+                "Kiểm tra log và watermark", "Rollback và forward recovery",
+                "Kết quả người dùng ghi nhận",
+            ]
+            for title in titles:
+                section = _markdown_section(text, title)
+                if section:
+                    run_blocks.append("\n".join(section.splitlines()[:80]))
+        waits.append("runtime-result: ghi kết quả đã làm sạch vào runtime-runbook.md")
+    if status == "user_decision":
+        for finding in state.get("open_findings", []):
+            if isinstance(finding, dict) and finding.get("severity") in {"P0", "P1"}:
+                waits.append(f"decision/accept-risk: {finding.get('id')} ({finding.get('severity')})")
+    if changed:
+        waits.append("commit: " + ", ".join(changed))
+
+    run_text = "\n\n".join(run_blocks) if run_blocks else "Không có."
+    wait_text = "\n".join(f"- {item}" for item in waits) if waits else "Không có."
+    substantive_waits = [item for item in waits if not item.startswith("commit:")]
+    if not substantive_waits:
+        ending = "Lượt này đã xong trong repository."
+    else:
+        need = "; ".join(substantive_waits)
+        ending = f"Trạng thái tiếp theo: {status}. Trả lời: {need}"
+    return (
+        f"## Đã làm\n\n{done}\n\n"
+        f"## Bạn cần chạy\n\n{run_text}\n\n"
+        f"## Agent đang chờ\n\n{wait_text}\n\n"
+        f"## Kết thúc\n\n{ending}"
+    )
+
+
+def cmd_toc(args: argparse.Namespace) -> int:
+    path = Path(args.path)
+    if not path.is_file():
+        fail(f"File not found: {path.as_posix()}")
+    print(render_toc(path))
+    return 0
+
+
+def cmd_show(args: argparse.Namespace) -> int:
+    path = Path(args.path)
+    if not path.is_file():
+        fail(f"File not found: {path.as_posix()}")
+    print(render_show(path, args.anchor, args.max_lines))
+    return 0
+
+
+def cmd_context(args: argparse.Namespace) -> int:
+    print(build_context(args.task, args.phase, args.max_lines))
+    return 0
+
+
+def cmd_materialize(args: argparse.Namespace) -> int:
+    lines = materialize_blocks(args.task, args.source, args.write)
+    print("\n".join(lines) if lines else "No file blocks found.")
+    return 0
+
+
+def cmd_closeout(args: argparse.Namespace) -> int:
+    print(build_closeout(args.task))
+    return 0
 
 
 def has_module(name: str) -> bool:
@@ -646,6 +1431,23 @@ def check_toml(paths: list[str]) -> tuple[str, str]:
     return ("FAIL" if errors else "PASS"), "\n".join(errors)
 
 
+def format_compact_verification(
+    header: str, files: list[str], results: list[tuple[str, str, str]],
+) -> str:
+    lines = [header, f"Files: {len(files)}"]
+    lines.extend(f"- {path}" for path in files[:10])
+    if len(files) > 10:
+        lines.append(f"- +{len(files) - 10} more")
+    for name, status, output in results:
+        lines.append(f"{name}: {status}")
+        if status == "FAIL" and output:
+            output_lines = output.splitlines()
+            lines.extend(output_lines[:40])
+            if len(output_lines) > 40:
+                lines.append(f"… truncated: {len(output_lines) - 40} more lines; open verification/verify.log")
+    return "\n".join(lines)
+
+
 def cmd_verify(args: argparse.Namespace) -> int:
     files = changed_files(args.all)
     python_files = [path for path in files if path.endswith(".py")]
@@ -695,7 +1497,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
     for name, status, output in results:
         lines.extend([f"## {name}: {status}", output, ""] if output else [f"## {name}: {status}", ""])
     report = "\n".join(lines)
-    print(report)
+    print(report if args.full else format_compact_verification(lines[0], files, results))
     if args.task:
         log = task_dir(args.task) / "verification" / "verify.log"
         log.parent.mkdir(parents=True, exist_ok=True)
@@ -787,6 +1589,24 @@ def cmd_doctor(_: argparse.Namespace) -> int:
     old_agents = sorted(Path(".cursor/agents").glob("*.md")) if Path(".cursor/agents").is_dir() else []
     if old_agents:
         errors.append("legacy Cursor reviewers remain: " + ", ".join(path.as_posix() for path in old_agents))
+    agent_file = Path("AGENTS.md")
+    if agent_file.is_file() and agent_file.stat().st_size > 8192:
+        warnings.append(f"instruction budget exceeded: AGENTS.md is {agent_file.stat().st_size} bytes (limit 8192)")
+    always_apply_size = 0
+    for path in Path(".cursor/rules").rglob("*.mdc") if Path(".cursor/rules").is_dir() else []:
+        text = path.read_text(encoding="utf-8")
+        if re.search(r"(?m)^alwaysApply:\s*true\s*$", text):
+            always_apply_size += path.stat().st_size
+    if always_apply_size > 4096:
+        warnings.append(f"instruction budget exceeded: always-apply rules total {always_apply_size} bytes (limit 4096)")
+    for path in Path(".cursor/skills").rglob("SKILL.md") if Path(".cursor/skills").is_dir() else []:
+        if path.stat().st_size > 20480:
+            warnings.append(f"skill budget exceeded: {path.as_posix()} is {path.stat().st_size} bytes (limit 20480)")
+    samples = Path("docs/AGENT_PROMPT_SAMPLES.md")
+    if samples.is_file() and samples.stat().st_size > 25600:
+        warnings.append(f"prompt sample budget exceeded: {samples.as_posix()} is {samples.stat().st_size} bytes (limit 25600)")
+    if not Path(".cursorindexingignore").is_file():
+        warnings.append(".cursorindexingignore is missing")
     for warning in warnings:
         print(f"WARN: {warning}")
     for error in errors:
@@ -817,10 +1637,35 @@ def main() -> int:
     command.add_argument("target", choices=sorted(PROMPTS))
     command.add_argument("--round", type=int, default=1)
     command.set_defaults(function=cmd_prompt)
+    command = subcommands.add_parser("toc", help="show Markdown sections or notebook cells")
+    command.add_argument("path")
+    command.set_defaults(function=cmd_toc)
+    command = subcommands.add_parser("show", help="show one Markdown section or notebook anchor")
+    command.add_argument("path")
+    command.add_argument("anchor")
+    command.add_argument("--max-lines", type=int, default=400)
+    command.set_defaults(function=cmd_show)
+    command = subcommands.add_parser("context", help="build a bounded task context pack")
+    command.add_argument("task")
+    command.add_argument(
+        "--phase", default="auto",
+        choices=("auto", "triage", "evidence", "implement", "remediate", "review", "runtime", "closeout"),
+    )
+    command.add_argument("--max-lines", type=int, default=400)
+    command.set_defaults(function=cmd_context)
+    command = subcommands.add_parser("materialize", help="extract exact file blocks from a task artifact")
+    command.add_argument("task")
+    command.add_argument("--source", default="architecture.md", choices=("architecture.md", "proposal.md"))
+    command.add_argument("--write", action="store_true")
+    command.set_defaults(function=cmd_materialize)
+    command = subcommands.add_parser("closeout", help="build the Vietnamese task closeout skeleton")
+    command.add_argument("task")
+    command.set_defaults(function=cmd_closeout)
     command = subcommands.add_parser("verify", help="run deterministic local verification")
     command.add_argument("task", nargs="?")
     command.add_argument("--all", action="store_true")
     command.add_argument("--allow-missing", action="store_true")
+    command.add_argument("--full", action="store_true")
     command.set_defaults(function=cmd_verify)
     command = subcommands.add_parser("doctor", help="check agent-system installation")
     command.set_defaults(function=cmd_doctor)
@@ -835,6 +1680,11 @@ def main() -> int:
     command.add_argument("--round", type=int, choices=(1, 2))
     command.add_argument("--timeout", type=int, default=1800)
     command.set_defaults(function=cmd_run_gate)
+    command = subcommands.add_parser("run-author", help="run the Claude proposal or runbook author lane")
+    command.add_argument("task")
+    command.add_argument("--kind", required=True, choices=("proposal", "runbook"))
+    command.add_argument("--timeout", type=int, default=1800)
+    command.set_defaults(function=cmd_run_author)
     args = parser.parse_args()
     return args.function(args)
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from argparse import Namespace
 from copy import deepcopy
 from pathlib import Path
 
@@ -82,6 +83,36 @@ def test_claude_structured_output_parsing() -> None:
     assert agent_runner.parse_claude_output(json.dumps(payload))["verdict"] == "PASS"
 
 
+def test_architecture_schema_requires_bounded_main_brief() -> None:
+    schema = agent_runner._architecture_schema()
+    assert "main_brief" in schema["required"]
+    assert schema["properties"]["main_brief"] == {
+        "type": "string", "minLength": 200, "maxLength": 14000,
+    }
+
+
+def test_compose_architecture_places_brief_and_demotes_headings() -> None:
+    document = "RESULT: PASS\n\n# Architecture\n\n## Scope\n\nDetails.\n"
+    brief = "## Decision\n\nProceed.\n\n### Edit list\n\nOne row."
+    composed = agent_runner.compose_architecture(document, brief)
+    assert composed.startswith("RESULT: PASS\n\n## Main brief\n\n### Decision")
+    assert "\n\n# Architecture\n" in composed
+    assert composed.count("RESULT: PASS") == 1
+    assert "\n## Decision\n" not in composed
+
+
+def test_architecture_duplicate_main_brief_warning() -> None:
+    warnings = agent_runner.architecture_warnings("RESULT: PASS\n\n## Main brief\n\nDuplicate.\n")
+    assert len(warnings) == 1
+    assert "already contains" in warnings[0]
+
+
+def test_author_schema_requires_document() -> None:
+    schema = agent_runner._author_schema()
+    assert schema["required"] == ["document"]
+    assert schema["properties"]["document"] == {"type": "string", "minLength": 200}
+
+
 def test_review_schema_uses_supported_reviewer_array_keywords() -> None:
     schema = agent_runner._review_schema(["state-correctness-reviewer"])
     reviewers_run = schema["properties"]["reviewers_run"]
@@ -144,3 +175,86 @@ def test_review_evidence_verdict_routes_to_evidence() -> None:
     assert candidate["gates"]["evidence"] == "evidence_required"
     assert candidate["gates"]["specialist_review"] == "evidence_required"
     assert vv.validate_state_data(candidate, "20261007-test-task") == []
+
+
+def prepare_author_task(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, *, author_input: str | None,
+) -> tuple[str, Path, dict]:
+    data = template_state()
+    task_id = "20261014-author-test"
+    data["task"].update(id=task_id, created_at="2026-10-14", updated_at="2026-10-14")
+    directory = tmp_path / ".ai" / "tasks" / task_id
+    (directory / "handoffs").mkdir(parents=True)
+    (tmp_path / ".ai" / "tasks" / "_template").mkdir(parents=True)
+    (tmp_path / ".ai" / "prompts").mkdir(parents=True)
+    (directory / "task-state.yaml").write_text(
+        yaml.safe_dump(data, sort_keys=False), encoding="utf-8",
+    )
+    if author_input is not None:
+        (directory / "handoffs" / "author-input.md").write_text(author_input, encoding="utf-8")
+    for kind in ("proposal", "runbook"):
+        (tmp_path / ".ai" / "prompts" / f"author-{kind}.md").write_text(
+            f"# {kind} for {{{{TASK_ID}}}}\n", encoding="utf-8",
+        )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(vv, "TASKS_ROOT", Path(".ai/tasks"))
+    monkeypatch.setattr(vv, "TEMPLATE_ROOT", Path(".ai/tasks/_template"))
+    monkeypatch.setattr(vv, "repo_root", lambda: tmp_path)
+    return task_id, directory, data
+
+
+def fake_author_result() -> agent_runner.AuthorResult:
+    return agent_runner.AuthorResult(
+        document="# Tài liệu\n\n" + "Nội dung kiểm thử. " * 20,
+        executable=Path("claude.exe"),
+    )
+
+
+def test_run_author_requires_input(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    task_id, _, _ = prepare_author_task(tmp_path, monkeypatch, author_input=None)
+    with pytest.raises(SystemExit, match="Author input not found"):
+        vv.cmd_run_author(Namespace(task=task_id, kind="proposal", timeout=30))
+
+
+def test_run_author_rejects_long_input(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    task_id, _, _ = prepare_author_task(
+        tmp_path, monkeypatch, author_input="\n".join(f"line {index}" for index in range(61)),
+    )
+    with pytest.raises(SystemExit, match="exceeds 60 lines: 61"):
+        vv.cmd_run_author(Namespace(task=task_id, kind="proposal", timeout=30))
+
+
+def test_run_author_writes_output_and_updates_only_author_model(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    task_id, directory, original = prepare_author_task(tmp_path, monkeypatch, author_input="Use request.md.")
+    state_path = directory / "task-state.yaml"
+    state_without_author = yaml.safe_load(state_path.read_text(encoding="utf-8"))
+    del state_without_author["models"]["author"]
+    state_path.write_text(yaml.safe_dump(state_without_author, sort_keys=False), encoding="utf-8")
+    monkeypatch.setattr(agent_runner, "run_author", lambda *_args, **_kwargs: fake_author_result())
+
+    assert vv.cmd_run_author(Namespace(task=task_id, kind="proposal", timeout=30)) == 0
+
+    assert (directory / "proposal.md").read_text(encoding="utf-8") == fake_author_result().document
+    updated = yaml.safe_load(state_path.read_text(encoding="utf-8"))
+    assert updated["models"]["author"] == {
+        "expected": "claude-opus-5-5", "effort": "medium", "actual": "claude-opus-5-5",
+    }
+    assert updated["task"]["status"] == original["task"]["status"]
+    assert updated["gates"] == original["gates"]
+
+
+def test_run_author_preserves_existing_output_with_new_suffix(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+) -> None:
+    task_id, directory, _ = prepare_author_task(tmp_path, monkeypatch, author_input="Use architecture.md.")
+    existing = "# Existing runbook\n\nKeep this content.\n"
+    (directory / "runtime-runbook.md").write_text(existing, encoding="utf-8")
+    monkeypatch.setattr(agent_runner, "run_author", lambda *_args, **_kwargs: fake_author_result())
+
+    assert vv.cmd_run_author(Namespace(task=task_id, kind="runbook", timeout=30)) == 0
+
+    assert (directory / "runtime-runbook.md").read_text(encoding="utf-8") == existing
+    assert (directory / "runtime-runbook.new.md").read_text(encoding="utf-8") == fake_author_result().document
+    assert "Existing artifact preserved" in capsys.readouterr().out

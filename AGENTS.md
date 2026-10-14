@@ -1,188 +1,57 @@
 # VSVN Agent Constitution
 
-This file is the shared source of truth for Cursor, Claude Code, Codex, and human operators.
-Keep it concise. Put detailed, tool-specific procedures in rules, skills, or specialist-agent files.
+Shared source of truth for Cursor, Claude Code, Codex, and human operators. Keep this file under 8 KB. Procedures live in `docs/agent-system/WORKFLOW.md` (statuses, classification, workflow, review routing, commands), rules, skills, and agent files. Read them only when the current step needs them.
 
 ## 1. Language policy
 
-English is mandatory for:
-
-- Agent definitions, rules, skills, prompts, configuration, and setup documentation.
-- Machine-readable files, keys, enum values, status values, finding IDs, logs, and error codes.
-- Task artifacts, except for `decision.md` and `runtime-runbook.md`.
-- Code identifiers, table names, column names, and database metadata descriptions.
-
-Vietnamese is mandatory for:
-
-- `decision.md` and `runtime-runbook.md` prose.
-- Explanatory comments in source code, notebooks, and SQL scripts.
-- Conversation with the user.
-
-Commands, identifiers, paths, status tokens, and finding IDs remain in English even inside Vietnamese files.
+- English: agent definitions, rules, skills, prompts, configuration, and setup documentation; machine-readable files, keys, enums, statuses, finding IDs, logs, and error codes; task artifacts except the Vietnamese ones below; code identifiers and database metadata.
+- Vietnamese: prose in `decision.md`, `runtime-runbook.md`, and `proposal.md`; explanatory comments in source, notebooks, and SQL; conversation with the user.
+- Commands, identifiers, paths, status tokens, and finding IDs stay in English inside Vietnamese files.
 
 ## 2. Roles and authority
 
 | Role | Runtime | Authority |
 |---|---|---|
-| Main | Cursor, Grok 4.7 Medium | Sole source-code writer. Owns task state, implementation, remediation, decisions, and runtime runbooks. |
-| Architect | Claude Code, Claude Opus 5.5 High | Reads the repository and writes only the current task's `architecture.md`. Never implements. |
-| Review Coordinator | Codex, GPT-5.6 Sol Medium | Runs independent read-only specialist reviews and produces the consolidated review result. Never fixes code. |
-| Specialist Reviewers | Codex custom agents, GPT-5.6 Sol Medium | Read-only review of state correctness, Spark runtime, SQL/data, or Fabric pipelines. |
-| Local Verifier | `python scripts/vv.py verify` | Deterministic validation; no LLM judgment. |
-| External Gate Runner | `python scripts/vv.py run-gate` | Calls the configured Claude or Codex CLI non-interactively, validates structured output and repository immutability, persists the owned artifact, and updates state on behalf of Main. |
-| User | Fabric DEV and Git | Runs probes and runtime runbooks, accepts risk, and commits/merges. |
+| Main | Cursor, Grok 4.7 Medium | Sole source-code writer. Owns task state, implementation, remediation, decisions, `resume.md`, and runtime runbooks. |
+| Architect | Claude Code, Claude Opus 5.5 High | Writes only the current task's `architecture.md`, including the `Main brief`, through the runner. Never implements. |
+| Author | Claude Code, Claude Opus 5.5 Medium | Through `vv.py run-author` only: writes `proposal.md` or `runtime-runbook.md` on Main's request. Never implements. |
+| Review Coordinator and specialists | Codex, GPT-5.6 Sol Medium | Read-only review; the consolidated result goes under `reviews/`. Never fixes code. |
+| Local Verifier | `python scripts/vv.py verify` | Deterministic validation. |
+| External Gate Runner | `python scripts/vv.py run-gate` / `run-author` | Calls the configured CLI non-interactively, validates structured output and repository immutability, persists the owned artifact, and updates state on behalf of Main. |
+| User | Fabric DEV and Git | Runs probes and runbooks, accepts risk, commits and merges. |
 
-The role model is **single code writer plus explicit artifact ownership**, not a universal single writer.
-
-- Main is the only role allowed to edit source code, notebooks, pipelines, schemas, or deployment configuration.
-- Architect may edit only `.ai/tasks/<task-id>/architecture.md`. In automated mode it returns structured document content and the deterministic runner persists that exact content.
-- Codex specialist reviewers are read-only. The consolidated result is captured under the current task's `reviews/` directory by the review runner or Main.
-- Only Main updates `task-state.yaml`.
-- There is no `writer: claude` mode.
+- Single code writer plus explicit artifact ownership. Only Main edits source, notebooks, pipelines, schemas, deployment configuration, and `task-state.yaml`.
+- There is no `writer: claude` mode. A per-task role or model exception exists only as a user-approved `exceptions` entry in `task-state.yaml`, mirrored in `decision.md`.
 
 ## 3. Model policy
 
-- Main: Grok 4.7 with `medium` reasoning in Cursor. The active model must be confirmed in the model picker and recorded in `task-state.yaml`. User approved this effort on 2026-10-09.
-- Architect: Claude Opus 5.5 with `high` effort. Record the actual model in `task-state.yaml`.
-- Review Coordinator and all specialist reviewers: `gpt-5.6-sol` with `medium` reasoning through Codex authenticated with ChatGPT. Record the actual model in `task-state.yaml`. User approved this effort on 2026-10-08 so review uses fewer tokens. Architect stays at `high`.
-- Do not silently substitute models. If a configured model is unavailable or a client falls back, stop the affected gate and report it to the user.
-- Change model versions only after running the repository's agent evaluation suite or recording a user-approved exception.
+- Main: Grok 4.7, `medium` (user approved 2026-10-09). Architect: Claude Opus 5.5, `high`. Review: `gpt-5.6-sol`, `medium` (user approved 2026-10-08). Author: Claude Opus 5.5, `medium`.
+- Record actual models in `task-state.yaml`. Do not silently substitute. On fallback or unavailability, stop the gate and report it.
+- Change models only after the agent evaluation suite or a recorded user-approved exception.
 
-## 4. Canonical task state
+## 4. Context discipline
 
-Every task lives at `.ai/tasks/<YYYYMMDD-slug>/` and has one machine-readable source of truth: `task-state.yaml`.
+1. Start every task step with `python scripts/vv.py context <task-id>`.
+2. Read files over 20 KB by section or cell (`vv.py toc`, `vv.py show`). Read a file whole only when it is small or the step edits most of it.
+3. Do not read `notebooks_lgc/`, `docs/context/3p-google/*.txt`, `.ai/tasks/*/evidence/context/`, `pipelines/*/manifest.json`, or other tasks' artifacts unless the request names them.
+4. Reference context by path and section. Never copy context files into a task.
+5. One chat per phase. End each phase by overwriting `resume.md`.
 
-Allowed task statuses:
+## 5. Gates and severity
 
-```text
-triage
-waiting_evidence
-waiting_architecture
-implementing
-verifying
-reviewing
-waiting_runtime
-user_decision
-ready_to_merge
-blocked
-```
+- Statuses, gate results, transitions, and round caps are defined in `docs/agent-system/WORKFLOW.md` and enforced by `vv.py`.
+- `PASS` is never valid while required evidence is missing or a P0/P1 finding is unresolved.
+- P0: data loss or corruption, irreversible state divergence, or non-idempotent behavior with material impact. P1: runtime failure, broken recovery, locking, or watermark behavior, serious performance risk, or an architecture-rule violation. P2: maintainability, testability, observability, or convention. P3: minor clarity.
+- Finding dispositions in `decision.md`: `fixed`, `accepted-risk`, `rejected-false-positive`, `backlog`.
 
-Allowed gate results:
-
-```text
-pending
-pass
-fix_required
-evidence_required
-user_decision
-not_required
-```
-
-`PASS` is never valid while required evidence is missing or a P0/P1 finding remains unresolved.
-
-## 5. Classification
-
-Classify complexity, risk, architecture needs, and evidence needs separately. Do not use one `risky` boolean as a substitute for all four.
-
-### Complexity signals
-
-Use the following exact values in `task-state.yaml`:
-
-```text
-stateful_logic
-concurrency
-retry_recovery
-partial_failure
-transaction_boundaries
-event_ordering
-idempotency
-distributed_behavior
-cross_system
-design_tradeoffs
-cross_state_impact
-runtime_proof_required
-data_evidence_required
-low_probability_high_impact
-deep_reasoning_required
-```
-
-### Architecture is required when any of these apply
-
-- A table grain, key, state owner, transaction boundary, or commit order changes.
-- Logic moves between bronze, silver, gold, orchestration, or PostgreSQL sync.
-- CDC, watermark, locking, retry/recovery, or partial-failure behavior changes.
-- Pipeline or notebook orchestration structure changes.
-- Multiple viable implementations have material trade-offs.
-- The change spans at least three services or eight source files.
-
-### Evidence is required when any of these apply
-
-- Correctness depends on data distribution, uniqueness, null rates, formats, enums, or actual schemas not already captured in task evidence.
-- Correctness cannot be established by repository inspection and deterministic local checks.
-- A runtime failure indicates a possible data or environment cause.
-
-### Risk levels
-
-- `low`: no behavior change or a narrow, locally provable change.
-- `medium`: bounded behavior change with straightforward rollback and local proof.
-- `high`: stateful logic, concurrency, retry/recovery, event ordering, idempotency, cross-system effects, or runtime-only proof.
-- `critical`: a credible path to data loss, irreversible corruption, broad production outage, or unsafe recovery.
-
-Fast lane is derived, not manually asserted: `complexity=low`, `risk_level=low`, no behavior change, and at most two changed files.
-
-## 6. Workflow
-
-```text
-TRIAGE
-  -> EVIDENCE, when required
-  -> ARCHITECTURE, when required
-  -> IMPLEMENT
-  -> LOCAL VERIFY
-  -> TARGETED REVIEW
-  -> CROSS-SYSTEM GATE, when risk is high or critical
-  -> RUNTIME RUNBOOK, when runtime proof is required
-  -> READY TO MERGE
-```
-
-Rules:
-
-1. Main creates the task and classifies it before implementation.
-2. Evidence precedes architecture when architecture depends on runtime data.
-3. Architect defines invariants, state ownership, failure behavior, transaction boundaries, recovery, and the implementation-level design. Main invokes `python scripts/vv.py run-gate <task-id>` at `waiting_architecture`; the runner must stop on CLI, model, structured-output, or repository-immutability failure.
-4. Main implements the approved architecture. Any deviation is recorded in `decision.md` before code changes continue.
-5. Local verification must pass before LLM review.
-6. At `reviewing`, Main invokes `python scripts/vv.py run-gate <task-id>`. Review Coordinator invokes only relevant specialist reviewers. First-round specialists work independently and do not read each other's findings. The runner rejects an incomplete reviewer manifest or an omitted required risk gate.
-7. Round 2 checks unresolved P0/P1 findings and regressions caused by fixes.
-8. A maximum of two verification/remediation rounds and two review rounds is allowed. Exceeding a cap routes to `user_decision`.
-9. Runtime failures are classified as `code`, `data`, `architecture`, or `unclear`; route respectively to implementation, evidence, architecture, or user decision.
-10. Only the user may accept risk and mark a task ready for merge after required runtime verification.
-
-## 7. Review routing
-
-- `state-correctness-reviewer`: owns state-transition correctness across CDC, MERGE commit order, watermark, locks, retry/recovery, event ordering, partial failure, idempotency, and cross-system state. It reviews crash timelines and durable-state invariants, not SQL statement construction.
-- `spark-runtime-reviewer`: PySpark, Fabric notebook contracts, concurrency, Delta writes, logging, and F16 performance.
-- `sql-data-reviewer`: owns statement-level correctness for Spark SQL, Delta DDL, SQL/Delta MERGE match keys and clauses, MERGE-source uniqueness, deterministic rerun behavior, joins, windows, types, grain, and PostgreSQL SQL. Route it whenever a SQL/Delta MERGE implementation is in scope, including retry scenarios reviewed for state correctness.
-- `fabric-pipeline-reviewer`: pipeline expressions, parameters, pre-check, Switch, dependencies, ForEach concurrency, timeout/retry, failure propagation, and notebook exit contracts.
-- `risk-gate`: cross-system invariants and unresolved high-impact risks after specialist review.
-
-Severity is impact-based:
-
-- P0: data loss/corruption, irreversible state divergence, or non-idempotent behavior with material impact.
-- P1: runtime failure, broken recovery/locking/watermark behavior, serious performance risk, or architecture-rule violation.
-- P2: maintainability, testability, observability, or convention issue.
-- P3: minor clarity or consistency issue.
-
-Finding dispositions in `decision.md` are: `fixed`, `accepted-risk`, `rejected-false-positive`, or `backlog`.
-
-## 8. Data and runtime evidence
+## 6. Data and runtime evidence
 
 - Never infer unknown runtime data characteristics.
-- Main writes probes under `.ai/tasks/<task-id>/evidence/probes/` and the user runs them in Fabric DEV.
-- Results go under `evidence/results/` and must not include personal data. Limit samples to 50 rows.
+- Main writes probes under `.ai/tasks/<task-id>/evidence/probes/`, and the user runs them in Fabric DEV.
+- Results go under `evidence/results/` without personal data. Samples are limited to 50 rows.
 - Reviewers may return `EVIDENCE_REQUIRED` with an exact probe instead of guessing.
-- Runtime evidence is required for changes whose correctness cannot be proven locally.
 
-## 9. VSVN platform invariants
+## 7. VSVN platform invariants
 
 - Microsoft Fabric F16 per environment; capacity is shared with Eventstream, Copy Job, and the SQL analytics endpoint.
 - Bronze, silver, and gold are separate Lakehouses in the same workspace: `lh_vv_bronze`, `lh_vv_silver`, and `lh_vv_gold`.
@@ -198,24 +67,7 @@ Finding dispositions in `decision.md` are: `fixed`, `accepted-risk`, `rejected-f
 - Pipeline pre-check reads `ctrl_mng_pipeline_config` and `ctrl_mng_watermark`, then inspects `_delta_log` through `Files/_delta_src/<table>`. No new data means no Spark startup.
 - Control-table semantics belong in `docs/context/CTRL_TABLES_CONTEXT.md`. If that file is missing or incomplete, changes to `ctrl_*` require evidence and user action.
 
-## 10. Commands
-
-Run from repository root:
-
-```text
-python scripts/vv.py new <slug>
-python scripts/vv.py validate <task-id>
-python scripts/vv.py transition <task-id> <status>
-python scripts/vv.py prompt <task-id> architect
-python scripts/vv.py prompt <task-id> review --round N
-python scripts/vv.py external-doctor
-python scripts/vv.py external-smoke
-python scripts/vv.py run-gate <task-id> [--round N]
-python scripts/vv.py verify <task-id>
-python scripts/vv.py doctor
-```
-
-## 11. Prohibited actions
+## 8. Prohibited actions
 
 - Agents do not commit, push, merge, or rewrite Git history.
 - Do not delete or rename Fabric tables without rollback and forward-recovery steps in `runtime-runbook.md`.

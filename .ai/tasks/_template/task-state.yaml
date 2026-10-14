@@ -32,6 +32,10 @@ models:
     expected: gpt-5.6-sol
     effort: medium
     actual: ""
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ""
 gates:
   evidence: not_required
   architecture: not_required

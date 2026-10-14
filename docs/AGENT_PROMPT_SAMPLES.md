@@ -1,600 +1,280 @@
-# Các prompt mẫu cho VSVN Cursor Agent
+# Các prompt mẫu cho VSVN agent
 
-Sử dụng các prompt này làm điểm bắt đầu cho người vận hành. Mở thư mục gốc của repository trong Cursor Agent, chọn **Grok 4.7 Medium**, sau đó thay tất cả `<placeholder>` trước khi gửi prompt.
+Cách dùng:
 
-Theo yêu cầu của người dùng, nội dung hướng dẫn và prompt mẫu trong tài liệu này được viết bằng tiếng Việt. Command, path, model ID, status, reviewer name, finding ID và các giá trị máy đọc vẫn giữ bằng tiếng Anh.
+1. **Mỗi phase một chat mới** trong Cursor. Chọn **Grok 4.7 Medium**.
+2. Thay mọi `<placeholder>`. Xoá dòng không dùng.
+3. Không cần nhắc lại AGENTS.md, "không commit", "ghi model" hay "dừng khi fallback". Rule always-apply đã áp.
+4. Agent chỉ đọc output của `python scripts/vv.py context <task-id>` và những gì ghi trong mục `Context`. File lớn đọc theo mục hoặc cell bằng `python scripts/vv.py toc <file>` và `python scripts/vv.py show <file> <anchor>`.
+5. Khi agent dừng, xem `Kết thúc`, rồi mở chat mới với mẫu của phase kế tiếp.
 
-Cursor Main chịu trách nhiệm điều phối và triển khai. Không tự chuyển prompt thủ công giữa Cursor, Claude và Codex. Khi task đạt trạng thái `waiting_architecture` hoặc `reviewing`, Main phải gọi `python scripts/vv.py run-gate <task-id>` để agent bên ngoài được cấu hình chạy tự động.
+## Bản đồ context
 
-## Chọn tình huống
+| Phạm vi | File | Đọc thế nào |
+|---|---|---|
+| Partner extract | `notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb`, `docs/context/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.md`, skill `vsvn-extract-notebook` | `toc` rồi `show … cell:<i>` hoặc mục |
+| 3P extract | `notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb`, `docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md`, `docs/context/3p-google/README.md`, skill `vsvn-extract-notebook` | như trên. File `.txt` mẫu chỉ đọc khi prompt nêu |
+| Lib extract | `notebooks/NB_LIB_EXTRACT_RAWDATA.ipynb` (183 KB), `docs/context/NB_LIB_EXTRACT_RAWDATA.md`, skill `vsvn-notebook-library` | luôn theo `cell:` hoặc `def:` |
+| Lib transform, gold enr | `notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb`, `docs/context/NB_LIB_TRANSFORM_SLV_GLD.md`, `notebooks/NB_ENR_*.ipynb`, `notebooks/NB_00_ORCHES_*.ipynb` | theo `def:` và mục 4–5 |
+| DDL, registry | `notebooks/NB_CREATE_DDL.ipynb` (130 KB) | `show … grep:<tên bảng>` trước, rồi `cell:` |
+| Bảng ctrl | `docs/context/CTRL_TABLES_CONTEXT.md` | mục của bảng: §3 config, §4 watermark, §5 registry, §6–§7 log, §8 state, §9 reject |
+| Đặt tên | `docs/context/02_NAMING_CONVENTION.md` | mục 1–8 theo việc |
+| Data model | `docs/context/01_DATA_MODEL.md` | §4 bronze, §5 L1, §6 L2, §7 gold, §8 định danh |
+| Pipeline | `pipelines/<PL>/<PL>.json` | đọc cả file (nhỏ). Không đọc `manifest.json` |
+| Bài học cũ | `docs/context/99_PAIN_POINTS.md` | §0 |
+| Quy trình | `docs/agent-system/WORKFLOW.md` | §Classification, §Review routing khi triage |
 
-| Tình huống | Sử dụng khi |
+Không đọc nếu prompt không nêu: `notebooks_lgc/`, `docs/context/3p-google/*.txt`, `.ai/tasks/*/evidence/context/`, `pipelines/*/manifest.json`, và artifact của task khác.
+
+## Chọn mẫu
+
+| Tình huống | Mẫu |
 |---|---|
-| Task end-to-end thông thường | Không có tình huống cụ thể hơn phù hợp. |
-| Thay đổi nhỏ, cục bộ | Thay đổi có vẻ hẹp, có thể chứng minh cục bộ và giới hạn trong tối đa hai file. |
-| Task cần evidence trước | Tính đúng đắn phụ thuộc vào dữ liệu, schema, format hoặc hành vi môi trường thực tế trên Fabric. |
-| Thay đổi stateful hoặc distributed | Có watermark, retry, ordering, lock, idempotency, transaction boundary hoặc state xuyên hệ thống. |
-| SQL hoặc Delta MERGE | Có thay đổi SQL, DDL, grain, join, window hoặc MERGE semantics. |
-| Spark hoặc Fabric notebook | Có thay đổi PySpark, notebook contract, Delta write, concurrency, logging hoặc hiệu năng F16. |
-| Fabric Data Pipeline | Có thay đổi pipeline expression, dependency, Switch, ForEach, retry, timeout hoặc notebook exit handling. |
-| Thay đổi cross-system rủi ro cao | Có ít nhất ba hệ thống hoặc durable state owner tham gia, hoặc lỗi có thể gây lệch dữ liệu nghiêm trọng. |
-| Điều tra runtime failure | Cần phân loại lỗi DEV/runtime trước khi sửa. |
-| Tiếp tục task hiện có | Đã có thư mục task và `task-state.yaml`. |
-| Chạy external gate hiện tại | Task đã ở `waiting_architecture` hoặc `reviewing`. |
-| Review diff hiện có | Code đã tồn tại và cần deterministic verification cùng independent review đúng định tuyến. |
-| External integration smoke test | Kiểm tra Claude/Codex discovery, authentication, routing, structured output và immutability. |
-| Hướng dẫn vận hành sau khi agent dừng | Agent viết xong artifact nhưng câu trả lời không có bước chạy, yêu cầu cần người dùng làm, hoặc giải thích đủ để vận hành. |
-| Viết skill notebook, Claude Code soạn | Cần skill cho việc thiết kế notebook. Claude Code viết nội dung skill, Codex review, Main chỉ lưu nguyên văn. |
-| Giải thích task agent đã làm | Cần hiểu nghĩa một task, một quyết định, hoặc một đoạn code agent đã viết, kèm ví dụ. |
-| Điền Mapping và BRD cho bảng đích | Cần bộ Mapping và BRD theo mẫu VSVN, lấy logic từ nguồn đã chỉ, chưa viết notebook. |
-| Phân tích Mapping và BRD đã điền | Mapping và BRD đã có. Cần `requirements-analyst` đọc và xử lý kết quả phân tích, chưa viết notebook. |
-| Viết code từ bộ yêu cầu đã chốt | Mapping, BRD, decision và requirements-analysis đã có. Cần notebook, DDL và pipeline cho đúng bộ đó. |
-| Codex đánh giá xử lý và tốc độ | Code đã có. Bỏ một bước runtime đã chỉ. Codex đề xuất tối ưu, chưa sửa code. |
-| Rà tác động trước khi đổi model | Nguồn payload hoặc grain đổi. Cần bảng thay đổi silver, config và consumer để người dùng duyệt trước khi sửa code. |
+| Việc mới bất kỳ (SQL, notebook, pipeline, stateful, cross-system, viết code từ Mapping/BRD) | A1, rồi A3/A4 |
+| Sửa nhỏ, tối đa 2 file, không đổi hành vi | A2 |
+| Đã dán kết quả probe | A3 |
+| Architecture đã PASS, cần viết code | A4 |
+| Review trả FIX_REQUIRED | A5 |
+| Chạy gate đang chờ | A6 |
+| Cần hướng dẫn chạy Fabric DEV | A7 |
+| Đã chạy runbook, dán kết quả | A8 |
+| Lỗi runtime | A9 |
+| Không nhớ task đang ở đâu | A10 |
+| Hỏi giải thích | A11 |
+| Review diff có sẵn, không sửa | A12 |
+| Lập Mapping và BRD | A13 |
+| Phân tích Mapping và BRD | A14 |
+| Đề xuất hoặc rà tác động, chưa sửa code | A15 |
+| Góp ý vào đề xuất | A16 |
+| Codex đánh giá hiệu năng | A17 |
+| Thay đổi agent-system | A18 |
+| Smoke test tích hợp | A19 |
 
-## 1. Task end-to-end thông thường
+## Khung chung
 
 ```text
-Hãy triển khai yêu cầu sau trong repository này.
-
-Yêu cầu:
-<mô tả hành vi cần có>
-
-Bối cảnh nghiệp vụ:
-<mô tả lý do cần thay đổi>
-
+Task: <task-id> | mới: <slug>
+Phase: <triage|evidence|implement|remediate|runtime|closeout|explain|proposal>
+Mục tiêu: <1–3 dòng>
 Tiêu chí nghiệm thu:
-- <tiêu chí 1>
-- <tiêu chí 2>
-
-Ràng buộc đã biết:
-- <ràng buộc hoặc "Không có">
-
-Tuân thủ AGENTS.md và tất cả project rule, skill có liên quan. Tạo canonical task trước khi triển khai, ghi nhận Grok 4.7 Medium là model thực tế của Main, đồng thời phân loại riêng complexity, risk, architecture needs và evidence needs. Không suy đoán các đặc điểm runtime data chưa biết.
-
-Chạy các bước evidence, architecture, local verification, targeted specialist review, risk gate và runtime runbook khi được yêu cầu. Tự động gọi external architecture và review gate bằng `python scripts/vv.py run-gate <task-id>`. Dừng lại và báo chính xác probe cần chạy hoặc quyết định người dùng cần đưa ra nếu gate không thể tiếp tục. Không commit, push, merge hoặc âm thầm thay thế model.
+- <…>
+Context (sau `python scripts/vv.py context <task-id>`):
+- <path> — <mục | cell:<i> | def:<tên>>
+Ràng buộc riêng: <hoặc "Không có">
+Dừng sau phase này, ghi resume.md.
 ```
 
-## 2. Thay đổi nhỏ, cục bộ
+## A1. Việc mới: triage
 
 ```text
-Hãy thực hiện thay đổi nhỏ sau trong repository:
-
-<mô tả thay đổi>
-
+Task mới: <slug>
+Phase: triage
+Yêu cầu: <hành vi cần có>
+Lý do nghiệp vụ: <…>
 Tiêu chí nghiệm thu:
-- <tiêu chí 1>
-- <tiêu chí 2>
-
-Tuân thủ AGENTS.md. Tạo và phân loại canonical task. Chỉ sử dụng fast lane nếu thỏa mãn các tiêu chí dẫn xuất của repository: complexity thấp, risk thấp, không thay đổi behavior và không thay đổi quá hai file. Nếu bất kỳ tiêu chí nào không thỏa mãn, hãy sử dụng workflow thông thường. Chạy deterministic verification và các review mà kết quả phân loại yêu cầu. Không commit hoặc push.
+- <…>
+Miền (giữ dòng đúng): partner extract | 3P extract | lib extract | lib transform/gold | DDL/registry | ctrl | pipeline | agent-system
+Nguồn yêu cầu đã chốt (nếu có): docs/requirements/<task_id>/MAPPING.md, BRD.md; .ai/tasks/<task_id>/decision.md (ledger); requirements-analysis.md
+Context:
+- <path — mục/cell theo Bản đồ context>
+Việc: tạo task, ghi request.md, phân loại theo WORKFLOW.md §Classification và §Review routing.
+- Cần evidence: viết probe nhỏ nhất, dừng ở waiting_evidence.
+- Cần architecture, đủ evidence: chạy python scripts/vv.py run-gate <task-id>, dừng.
+- Đủ điều kiện fast lane: làm theo A2 trong chat này.
 ```
 
-## 3. Task cần evidence trước
+## A2. Sửa nhỏ (fast lane)
 
 ```text
-Hãy điều tra và triển khai thay đổi nhạy cảm với dữ liệu sau:
-
-<mô tả hành vi cần có và các giả định dữ liệu chưa biết>
-
-Môi trường đã biết:
-<DEV workspace, Lakehouse, table, pipeline hoặc notebook name>
-
-Tuân thủ AGENTS.md. Tạo task và phân loại trước khi thay đổi source code. Không đoán data distribution, uniqueness, null rate, format, enum, schema hoặc runtime behavior. Trước tiên kiểm tra evidence đã có trong repository, sau đó viết các probe nhỏ nhất và an toàn dưới thư mục `evidence/probes/` của task rồi chuyển task sang `waiting_evidence`.
-
-Cho tôi biết chính xác cần chạy gì trong Fabric DEV và lưu kết quả đã được làm sạch ở đâu. Giới hạn mẫu tối đa 50 dòng và loại bỏ secret hoặc personal data. Không tiếp tục sang architecture hoặc implementation cho đến khi evidence bắt buộc đã có và được xác thực. Không commit hoặc push.
+Task mới: <slug>
+Phase: triage + implement
+Thay đổi: <…>
+File: <tối đa 2 path>
+Tiêu chí nghiệm thu:
+- <…>
+Context: chỉ 2 file trên (file lớn thì theo cell hoặc mục).
+Việc: tạo task. Chỉ dùng fast lane khi đủ tiêu chí dẫn xuất trong WORKFLOW.md, nếu không thì dừng ở triage như A1. Sửa, chạy python scripts/vv.py verify <task-id>, closeout.
 ```
 
-## 4. Thay đổi stateful hoặc distributed
+## A3. Nạp kết quả evidence
 
 ```text
-Hãy triển khai thay đổi stateful/distributed-system sau:
-
-<mô tả hành vi hiện tại, hành vi mong muốn và các hệ thống tham gia>
-
-Các failure scenario phải xử lý:
-- <retry hoặc crash scenario>
-- <partial-failure scenario>
-- <ordering hoặc concurrency scenario>
-
-Tuân thủ AGENTS.md. Tạo và phân loại task. Xem state ownership, durable write, transaction boundary, commit order, event ordering, idempotency, retry/recovery, lock và watermark advancement là các vấn đề thiết kế bắt buộc phải mô tả rõ. Yêu cầu architecture trừ khi repository evidence chứng minh không cần.
-
-Nếu cần evidence, phải thu thập trước architecture. Tự động gọi Architect khi task ở `waiting_architecture`. Chỉ triển khai sau khi architecture trả kết quả pass, sau đó chạy deterministic verification và định tuyến review tới mọi specialist phù hợp. Bắt buộc chạy `risk-gate` khi risk là high hoặc critical. Tạo runtime runbook bằng tiếng Việt khi cần runtime proof. Không commit hoặc push.
+Task: <task-id>
+Phase: evidence
+Kết quả đã dán: .ai/tasks/<task-id>/evidence/results/<file>
+Context: output context --phase evidence; header của probe tương ứng; file kết quả trên.
+Việc: so từng kết quả với tiêu chí pass/fail của probe. Ghi kết luận vào ledger trong decision.md. Đủ evidence thì chuyển waiting_architecture và chạy run-gate. Thiếu thì viết probe bổ sung và dừng.
 ```
 
-## 5. Thay đổi SQL hoặc Delta MERGE
+## A4. Triển khai theo architecture
 
 ```text
-Hãy triển khai thay đổi SQL/Delta sau:
-
-Đối tượng mục tiêu:
-- <table, view hoặc SQL file>
-
-Hành vi cần có:
-<mô tả thay đổi SQL, DDL, grain, join, window hoặc MERGE>
-
-Key và grain mong đợi:
-<mô tả hoặc ghi rõ cần evidence>
-
-Tuân thủ AGENTS.md và SQL rules. Tạo và phân loại canonical task. Chứng minh hoặc yêu cầu evidence cho source uniqueness, null behavior, key stability, target grain, type compatibility và deterministic rerun. Với MERGE, phải phân tích rõ match key, duplicate source match, clause, retry behavior và crash window.
-
-Tự động gọi architecture nếu grain, key, state ownership, transaction boundary hoặc recovery behavior thay đổi. Sau implementation và local verification, bắt buộc gọi `sql-data-reviewer`; đồng thời gọi `state-correctness-reviewer` khi có retry, watermark, commit order, idempotency hoặc cross-system state. Chạy `risk-gate` khi được yêu cầu. Không commit hoặc push.
+Task: <task-id>
+Phase: implement
+Context:
+- python scripts/vv.py context <task-id> --phase implement (state, resume, ledger, Main brief)
+- Chỉ các anchor trong Edit list của Main brief, đọc bằng vv.py show.
+- Mục architecture đầy đủ: chỉ khi Main brief trỏ tới.
+Việc: sửa theo thứ tự Edit list. Lệch kiến trúc thì ghi decision.md trước khi sửa. Lưu khối FILE bằng python scripts/vv.py materialize <task-id> --write, không gõ lại. Viết test theo brief. Chạy verify; PASS thì chuyển reviewing và chạy run-gate. Dừng.
 ```
 
-## 6. Thay đổi Spark hoặc Fabric notebook
+## A5. Sửa finding review
 
 ```text
-Hãy triển khai thay đổi Spark/Fabric notebook sau:
-
-Notebook hoặc module:
-<path hoặc notebook name>
-
-Hành vi cần có:
-<mô tả transformation hoặc orchestration behavior>
-
-Ràng buộc runtime:
-- Fabric F16 shared capacity
-- <input size, cadence, SLA dự kiến hoặc "Chưa biết; cần evidence">
-
-Tuân thủ AGENTS.md và Fabric notebook rules. Tạo và phân loại task. Giữ nguyên hierarchy NB00 -> NBx0 -> NBxy và xác thực notebook input/output contract, Delta write semantics, concurrency, logging, recovery và hiệu năng F16. Không suy đoán runtime scale hoặc data distribution.
-
-Tự động gọi architecture khi orchestration, state, recovery hoặc trade-off quan trọng thay đổi. Sau implementation và deterministic verification, định tuyến tới `spark-runtime-reviewer`, đồng thời thêm `sql-data-reviewer`, `state-correctness-reviewer` hoặc `fabric-pipeline-reviewer` khi phạm vi của họ xuất hiện. Yêu cầu runtime evidence khi không thể chứng minh cục bộ. Không commit hoặc push.
+Task: <task-id>
+Phase: remediate
+Context: context --phase remediate (P0/P1 của round mới nhất); các dòng file:line mà finding trích dẫn; Main brief.
+Việc: sửa từng P0/P1, ghi disposition trong decision.md, chạy verify. Còn round thì chạy run-gate round kế. Dừng.
 ```
 
-## 7. Thay đổi Fabric Data Pipeline
+## A6. Chạy gate đang chờ
 
 ```text
-Hãy triển khai thay đổi Microsoft Fabric Data Pipeline sau:
-
-Pipeline:
-<pipeline name hoặc JSON path>
-
-Hành vi cần có:
-<mô tả flow mới hoặc cần sửa>
-
-Các activity và contract liên quan:
-- <pre-check, Switch, ForEach, notebook, Copy activity hoặc dependency>
-
-Tuân thủ AGENTS.md và pipeline rules. Tạo và phân loại task. Xác thực expression, parameter, pre-check behavior, Switch routing, dependency, ForEach concurrency, timeout/retry setting, failure propagation và notebook exit contract. Giữ invariant rằng không có dữ liệu mới thì không khởi động Spark, trừ khi architecture đã được phê duyệt thay đổi quy tắc này.
-
-Tự động gọi architecture cho thay đổi orchestration structure, retry/recovery, watermark hoặc partial failure. Sau implementation và deterministic verification, bắt buộc gọi `fabric-pipeline-reviewer` cùng mọi reviewer khác có phạm vi bị ảnh hưởng. Bắt buộc chạy `risk-gate` cho risk high hoặc critical. Không commit hoặc push.
+Task: <task-id>
+Chạy python scripts/vv.py context <task-id>. Chỉ khi status là waiting_architecture hoặc reviewing, chạy python scripts/vv.py run-gate <task-id>. Không sửa source.
+Báo: verdict, reviewer trong manifest, risk-gate, artifact đã lưu, status sau khi chạy, lỗi nguyên văn nếu có.
 ```
 
-## 8. Thay đổi cross-system rủi ro cao
+## A7. Hướng dẫn chạy Fabric DEV
 
 ```text
-Hãy triển khai thay đổi cross-system sau:
-
-Các hệ thống và durable state owner:
-- <system/state owner 1>
-- <system/state owner 2>
-- <system/state owner 3>
-
-Hành vi cần có:
-<mô tả hành vi end-to-end>
-
-Ảnh hưởng nghiêm trọng khi lỗi:
-<mô tả khả năng data loss, corruption, divergence, outage hoặc unsafe recovery>
-
-Tuân thủ AGENTS.md. Tạo task và phân loại riêng complexity, evidence, architecture và risk. Mô hình hóa toàn bộ success path và mọi partial-failure boundary. Định nghĩa rõ durable invariant, commit order, retry behavior, idempotency, reconciliation, rollback và forward recovery.
-
-Evidence phải có trước architecture nếu thiết kế phụ thuộc vào runtime fact. Tự động gọi Architect và không triển khai nếu architecture gate chưa pass. Chạy độc lập tất cả specialist review phù hợp, sau đó chạy `risk-gate`. Không được trả PASS khi thiếu evidence hoặc còn P0/P1 chưa giải quyết. Tạo runtime runbook bằng tiếng Việt và dừng để người dùng chấp thuận trước khi chuyển sang ready-to-merge. Không commit hoặc push.
+Task: <task-id>
+Phase: runtime
+Context: context --phase runtime; Main brief mục Rollout; parameter cell của notebook cần chạy (vv.py show … cell:0).
+Việc:
+- Nếu chưa có runtime-runbook.md: viết handoffs/author-input.md (≤ 60 dòng), chạy python scripts/vv.py run-author <task-id> --kind runbook, rồi đối chiếu tham số với parameter cell.
+Sau đó chạy python scripts/vv.py closeout <task-id> và trả lời đúng 4 mục. Dừng ở waiting_runtime.
 ```
 
-## 9. Điều tra runtime failure
+## A8. Ghi nhận kết quả runtime
 
 ```text
-Hãy điều tra runtime failure sau trước khi quyết định có sửa code hay không:
-
-Thời điểm lỗi và môi trường:
-<timestamp và Fabric DEV environment>
-
-Lỗi quan sát được:
-<exact sanitized error>
-
-Task, pipeline, notebook và table liên quan:
-<identifier>
-
-Thay đổi gần nhất hoặc lần chạy tốt gần nhất:
-<chi tiết hoặc "Chưa biết">
-
-Tuân thủ AGENTS.md. Tạo mới hoặc sử dụng lại canonical task và giữ nguyên evidence được cung cấp. Trước tiên chỉ diagnose; không triển khai speculative fix. Phân loại lỗi là `code`, `data`, `architecture` hoặc `unclear`, kèm bằng chứng từ repository và runtime. Nếu chưa đủ evidence, tạo probe tối thiểu và chính xác rồi chuyển sang `waiting_evidence`. Định tuyến nguyên nhân code, data hoặc architecture đã được xác nhận qua các workflow gate bắt buộc. Không commit hoặc push.
+Task: <task-id>
+Phase: closeout
+Kết quả: <dán ở runtime-runbook.md mục "Kết quả người dùng ghi nhận" | evidence/results/<file>>
+Context: context --phase closeout; chỉ các mục "Kiểm tra kết quả" và "Kiểm tra log và watermark" của runbook.
+Việc: so kết quả với tiêu chí. Đạt thì đặt gates.runtime pass và chuẩn bị ready_to_merge. Không đạt thì phân loại code | data | architecture | unclear theo WORKFLOW.md và chuyển status tương ứng. Closeout.
 ```
 
-## 10. Tiếp tục task hiện có
+## A9. Điều tra lỗi runtime
 
 ```text
-Hãy tiếp tục task `<task-id>` từ canonical state hiện tại.
-
-Đọc và validate `.ai/tasks/<task-id>/task-state.yaml` cùng tất cả task artifact hiện có. Tóm tắt status hiện tại, gate đã hoàn thành, finding chưa giải quyết, evidence còn thiếu và transition hợp lệ tiếp theo. Tiếp tục từ điểm đó mà không tạo lại công việc đã hoàn thành hoặc bỏ qua gate đang failed/pending.
-
-Khi task ở `waiting_architecture` hoặc `reviewing`, tự động gọi `python scripts/vv.py run-gate <task-id>`. Tuân thủ giới hạn hai round, dừng khi model fallback hoặc external gate lỗi, và không commit hoặc push.
+Task: <task-id | mới: <slug>>
+Phase: evidence
+Lỗi (đã làm sạch): <…>
+Thời điểm, môi trường: <…>
+Notebook, pipeline, bảng: <…>
+Lần chạy tốt gần nhất: <… | Chưa biết>
+Context: cell liên quan (vv.py show … grep:<từ khoá lỗi>); bảng ctrl liên quan (CTRL_TABLES_CONTEXT.md đúng mục).
+Việc: chỉ chẩn đoán. Phân loại code | data | architecture | unclear, có bằng chứng. Thiếu evidence thì viết probe nhỏ nhất, dừng ở waiting_evidence. Không sửa code.
 ```
 
-## 11. Chạy external gate hiện tại
+## A10. Tiếp tục task
 
 ```text
-Hãy chạy external gate hiện tại cho task `<task-id>`.
-
-Trước tiên validate task state. Chỉ tiếp tục nếu status là `waiting_architecture` hoặc `reviewing`. Chạy:
-
-python scripts/vv.py run-gate <task-id> [--round <N>]
-
-Không chỉnh sửa source code trong yêu cầu này. Báo cáo CLI và version được phát hiện, model và effort đã cấu hình, gate verdict, các reviewer thực tế được ghi trong manifest, risk-gate status, artifact path đã lưu, task status sau khi chạy và mọi exact error. Xác minh external agent không tạo thay đổi repository ngoài dự kiến. Không commit hoặc push.
+Task: <task-id>
+Chạy python scripts/vv.py context <task-id>. Chỉ dựa vào output đó và resume.md: nêu phase hiện tại, gate còn mở, việc kế tiếp. Nếu phase là evidence, implement hay remediate, làm tiếp theo mẫu A3, A4 hay A5 trong chat này.
 ```
 
-## 12. Review diff hiện có
+## A11. Giải thích (chỉ đọc)
 
 ```text
-Hãy review implementation chưa commit hiện tại thông qua repository workflow mà không thay đổi source code.
-
-Phạm vi hoặc task ID:
-<task-id, changed path hoặc mô tả feature>
-
-Đọc diff và task artifact hiện có. Nếu chưa có canonical task, tạo task mô tả implementation hiện tại nhưng không viết lại code. Phân loại thay đổi, chạy deterministic local verification và không chuyển sang review nếu verification fail. Chỉ định tuyến các specialist reviewer phù hợp nhưng luôn bao gồm mọi reviewer bắt buộc theo AGENTS.md; chạy `risk-gate` khi được yêu cầu.
-
-Sử dụng `python scripts/vv.py run-gate <task-id>` tại trạng thái `reviewing`. Báo cáo finding theo severity kèm file/line evidence và gate verdict cuối cùng. Không remediation finding, commit, push hoặc merge trong yêu cầu này.
+Giải thích cho người vận hành. Không sửa file, không tạo task, không chạy gate.
+Phần cần hiểu: <task-id | file + mục/cell | câu trả lời trước>
+Context: chỉ phần được nêu (vv.py show), ledger của task nếu cần.
+Trả lời theo thứ tự:
+1. Nghĩa một câu.
+2. Vì sao, có file và dòng; không có thì ghi "không thấy trong repository".
+3. Ví dụ đầu vào và đầu ra lấy từ task, không bịa.
+4. Việc cần làm tiếp, hoặc "Không cần làm thêm".
 ```
 
-## 13. External integration smoke test
+## A12. Review diff có sẵn
 
 ```text
-Hãy chạy external integration smoke test ở chế độ read-only của repository:
-
-python scripts/vv.py external-smoke --timeout 600
-
-Không sửa bất kỳ file nào. Hãy báo:
-1. `git status --short` trước và sau;
-2. Claude Architect CLI version, model/effort đã cấu hình và verdict;
-3. Codex Review Coordinator CLI version, model/effort đã cấu hình và verdict;
-4. mọi specialist reviewer được ghi trong manifest;
-5. `risk-gate` có chạy hay không;
-6. kết quả smoke cuối cùng;
-7. toàn bộ exact error nếu có.
-
-Smoke test chỉ pass khi cả hai external gate hoàn thành với đúng model/effort, reviewer manifest đầy đủ, risk gate bắt buộc đã chạy, structured output hợp lệ và repository không thay đổi. `EVIDENCE_REQUIRED` là verdict hợp lệ cho synthetic scenario và không tự làm integration smoke test fail.
+Task: <task-id | mới: <slug>>
+Review implementation chưa commit. Không sửa code.
+Context: git diff --stat; context của task.
+Việc: chưa có task thì tạo task mô tả diff, phân loại, chọn reviewer. Chạy verify; PASS thì chuyển reviewing và chạy run-gate. Báo finding theo severity. Không remediation.
 ```
 
-## 14. Hướng dẫn vận hành sau khi agent dừng
+## A13. Lập Mapping và BRD
 
 ```text
-Hãy sửa cách Main kết thúc một lượt làm việc, để người vận hành không phải hỏi lại cách chạy.
-
-Hiện tượng:
-<mô tả việc agent đã làm xong nhưng câu trả lời thiếu bước chạy, thiếu yêu cầu đầu vào, hoặc thiếu giải thích>
-
-Kết quả cần có ở mỗi câu trả lời cuối:
-- Việc đã làm và file người vận hành cần mở.
-- Việc người vận hành phải tự chạy, nếu có: notebook hoặc pipeline, tham số, thứ tự bước, kết quả đúng, chỗ dán output đã làm sạch.
-- Việc agent đang chờ: probe, quyết định, accept risk, commit. Mỗi mục là một yêu cầu cụ thể.
-- Nếu không cần người vận hành làm gì, ghi rõ lượt này đã xong ở trong repository.
-
-Cách sửa ưu tiên:
-- Sửa hợp đồng kết thúc trong rule always-apply và skill workflow. Skill mới chỉ dùng cho câu hỏi "chạy task này thế nào" sau khi task đã tồn tại.
-- Không chuyển bước Fabric DEV sang agent tự chạy.
-- Giữ `runtime-runbook.md` là bản đầy đủ. Câu trả lời chat là bản rút bước người vận hành cần làm ngay.
-
-Tuân thủ AGENTS.md. Tạo canonical task vì đây là thay đổi agent-system do người dùng yêu cầu. Ghi Grok 4.7 Medium. Phân loại riêng complexity, risk, architecture và evidence. Đọc rule và skill hiện có trước khi thêm file mới. Chạy deterministic verification phù hợp với thay đổi tài liệu hoặc script. Không commit hoặc push.
+Task mới: <slug>
+Phase: triage
+Bảng đích: <schema, tên, cột, kiểu, khoá, ghi chú>
+Nguồn logic: <notebook hoặc mục context>
+Context: docs/templates/MAPPING_TEMPLATE.md, docs/templates/BRD_TEMPLATE.md; nguồn logic theo cell hoặc mục.
+Việc: chép mẫu sang docs/requirements/<task_id>/MAPPING.md và BRD.md, giữ tên mục và tên cột của mẫu, xoá dòng [EXAMPLE]. Công thức chỉ ghi khi có trong nguồn; thiếu thì MISSING_EVIDENCE; mâu thuẫn thì CONFLICT kèm câu hỏi. doc_status = DRAFT. Không gọi analyst, Architect hay Codex.
 ```
 
-## 15. Viết skill notebook, Claude Code soạn
+## A14. Phân tích Mapping và BRD
 
 ```text
-Hãy triển khai yêu cầu sau trong repository này như một task thông thường.
-
-## Yêu cầu
-
-Thiết kế và viết các Cursor skill cho việc thiết kế notebook Microsoft Fabric. Người viết nội dung skill là Claude Code. Codex review nội dung đó. Main điều phối task, ghi state, chạy verify, và chỉ lưu file skill đúng nguyên văn do Claude trả về.
-
-Phạm vi notebook: các vai trò trong `docs/context/02_NAMING_CONVENTION.md`, gồm `NB_LIB_*`, `NB_EXTRACT_*_CDC_BRZ_TO_SLV`, `NB_00_ORCHES_*`, `NB_<UPPER(trg_tbl)>`, `NB_SETUP_*`, `NB_CREATE_DDL`. Đối chiếu `notebooks/` và `docs/context/`.
-
-## Ngoại lệ do người dùng duyệt ngày 2026-10-11
-
-AGENTS.md giao source code cho Main và chỉ cho Claude Code viết `architecture.md`. Người dùng duyệt ngoại lệ có giới hạn cho task này:
-
-- Claude Code là tác giả của mọi file `.cursor/skills/<tên>/SKILL.md` trong task.
-- Main không soạn, không sửa câu chữ, không rút gọn và không bổ sung nội dung skill.
-- Codex vẫn chỉ đọc và review.
-- Ghi ngoại lệ này vào `task-state.yaml` và `decision.md` bằng tiếng Việt trước khi gọi architecture gate.
-
-`python scripts/vv.py run-gate` ở `waiting_architecture` vẫn là lượt Claude read-only. Runner từ chối mọi sửa file và chỉ lưu `architecture.md`. Dùng đúng cơ chế đó. Không đổi `scripts/agent_runner.py` để Claude ghi tự do vào repository.
-
-## Cách giao việc viết skill
-
-1. Architecture gate trả `architecture.md` do Claude viết. Tài liệu chọn skill nào được viết và chứa toàn bộ nội dung từng `SKILL.md` trong một khối riêng, bắt đầu bằng dòng `SKILL_FILE: .cursor/skills/<tên>/SKILL.md`.
-2. Sau verdict `PASS`, Main tạo đúng các path đó và chép nguyên văn từng khối. Main không đổi ký tự nội dung.
-3. Khi review trả P0 hoặc P1 về nội dung skill, Main không sửa skill. Main đưa finding lại cho Claude bằng một lượt architecture mới, rồi chép lại nguyên văn bản Claude trả về.
-4. Skill nào Claude không đưa vào `architecture.md` thì không được tạo.
-
-## Tiêu chí chọn skill
-
-Mỗi skill là một quy tắc lặp đã xuất hiện ở ít nhất hai notebook hoặc hai nguồn extract. Bỏ qua việc chỉ thuộc một notebook.
-
-Skill dành cho Main, Grok 4.7 Medium. Không giao cho skill việc của Architect hay của các reviewer Codex: `spark-runtime-reviewer`, `sql-data-reviewer`, `state-correctness-reviewer`, `fabric-pipeline-reviewer`, `risk-gate`.
-
-Tránh trùng hai skill sẵn có: `.cursor/skills/vsvn-task-workflow/SKILL.md` và `.cursor/skills/fabric-runtime-evidence/SKILL.md`. Rule hiện có nằm ở `.cursor/rules/10-fabric-notebook.mdc` và `.cursor/rules/30-sql.mdc`.
-
-## Tiêu chí nghiệm thu
-
-- `architecture.md` có danh sách skill, lý do từng skill tồn tại, file notebook làm bằng chứng, và phần việc skill không làm.
-- Mỗi skill được chọn có một `SKILL.md` đúng nội dung Claude đã viết.
-- `git diff` của các file skill khớp khối trong `architecture.md`.
-- `python scripts/vv.py verify <task-id>` pass.
-- Review qua `python scripts/vv.py run-gate <task-id>` tại `reviewing`.
-
-## Ràng buộc
-
-- Không viết skill cho pipeline, partner business rule, hay gold sync nếu chưa có quy tắc lặp trong notebook.
-- Không cần probe Fabric DEV cho việc khảo sát notebook trong repository.
-- Không commit, push, merge.
-- Nếu Claude hoặc Codex fallback model, dừng và báo. Không đổi sang model khác.
-
-## Workflow
-
-Tuân thủ AGENTS.md, cộng với ngoại lệ viết skill ở trên.
-
-1. Tạo task: `python scripts/vv.py new notebook-design-skills`.
-2. Ghi Main là Grok 4.7 Medium. Phân loại riêng complexity, risk, architecture, evidence. Đây là thay đổi agent-system do người dùng yêu cầu, không dùng fast lane.
-3. Gọi `python scripts/vv.py run-gate <task-id>` tại `waiting_architecture`.
-4. Chỉ lưu file skill sau khi architecture verdict là `PASS`.
-5. Chạy `python scripts/vv.py verify <task-id>` trước review.
-6. Review gồm reviewer nào mà nội dung skill đụng tới domain của họ. Luôn chạy `risk-gate` vì skill sai sẽ bị Main dùng lại ở nhiều notebook.
-7. Ghi disposition trong `decision.md` bằng tiếng Việt. Với finding nội dung skill, disposition `fixed` chỉ được dùng sau khi Claude đã viết lại và Main đã chép nguyên văn.
-
-Dừng và báo gate lỗi hoặc quyết định cần người dùng. Không commit, push, merge.
+Task: <task_id>
+Phase: proposal
+File: docs/requirements/<task_id>/MAPPING.md, BRD.md; ledger trong decision.md.
+Việc: được xoá dòng [EXAMPLE] còn sót, đặt doc_status = READY_FOR_ANALYSIS và tăng version; không thêm rule, cột hay khoá. Gọi agent requirements-analyst (.claude/agents/requirements-analyst.md); agent đó tự viết requirements-analysis.md.
+- INPUT_INVALID: sửa đúng lỗi, gọi lại một lần.
+- EVIDENCE_REQUIRED hoặc USER_DECISION: dừng, liệt kê từng mục.
+- COMPLETE: báo xong. Không mở implementation.
 ```
 
-## 16. Giải thích task agent đã làm
+## A15. Đề xuất hoặc rà tác động (chưa sửa code)
 
 ```text
-Hãy giải thích phần việc sau cho người vận hành. Chỉ giải thích. Không sửa code, không tạo task, không chạy gate.
-
-Phần cần hiểu:
-<task-id, file, quyết định, hoặc câu trong câu trả lời trước mà người vận hành chưa hiểu>
-
-Trả lời bằng tiếng Việt, theo thứ tự này:
-
-1. Nghĩa một câu: việc này làm gì cho dữ liệu hoặc cho người dùng.
-2. Vì sao agent làm như vậy, dựa trên file và dòng trong repository. Nếu lý do không có trong repository, ghi "không thấy trong repository".
-3. Một ví dụ cụ thể với giá trị đầu vào và kết quả đầu ra. Dùng số liệu hoặc khóa đã có trong task. Không bịa dòng dữ liệu.
-4. Việc người vận hành cần làm tiếp, nếu có. Nếu không cần làm gì, ghi "Không cần làm thêm".
-
-Giữ command, path, tên bảng và tên cột bằng tiếng Anh. Không cam kết một bước Fabric DEV đã được chạy nếu log trong task không có kết quả đó. Không commit hoặc push.
+Task mới: <slug>
+Phase: proposal
+Thay đổi: <source cũ → mới, phạm vi luồng>
+Sample (chỉ khoá và kiểu JSON, không giá trị): <…>
+Đối tượng: <bảng silver, config, notebook, consumer>
+Context: <mục và cell theo Bản đồ context>
+Việc: tạo task. Phân loại theo deliverable: chỉ đề xuất, không đổi hành vi, nên không architecture và không review.
+- Viết handoffs/author-input.md (≤ 60 dòng): yêu cầu nguyên văn, file và mục được đọc, ràng buộc. Chạy python scripts/vv.py run-author <task-id> --kind proposal. Main không tự soạn đề xuất.
+Cây khoá ghi ở evidence/payload-shape.md, không ghi giá trị. Cột không có trong sample ghi MISSING_EVIDENCE. Cập nhật ledger. Dừng ở user_decision.
 ```
 
-## 17. Điền Mapping và BRD cho bảng đích
+## A16. Góp ý vào đề xuất
 
 ```text
-Hãy lập bộ tài liệu yêu cầu cho các bảng đích sau. Chỉ viết Mapping và Business Requirements Document. Không viết notebook, DDL, pipeline, hay schema.
-
-Bảng đích:
-<tên bảng, schema, cột, kiểu, khóa, ghi chú người dùng đã cho>
-
-Nguồn logic nghiệp vụ:
-<đường dẫn notebook hoặc context người dùng chỉ định>
-
-Mẫu bắt buộc:
-- `docs/templates/MAPPING_TEMPLATE.md` (`VSVN-MAPPING-v1`)
-- `docs/templates/BRD_TEMPLATE.md` (`VSVN-BRD-v1`)
-
-Sao chép thành `docs/requirements/<task_id>/MAPPING.md` và `docs/requirements/<task_id>/BRD.md`. Giữ tên mục, tên cột và quy ước evidence của mẫu. Xóa dòng `[EXAMPLE]`. Prose tiếng Việt. Tên bảng, tên cột và identifier tiếng Anh.
-
-Mỗi cột đích có một dòng mapping. Công thức chỉ được ghi khi tìm thấy trong nguồn đã chỉ hoặc trong `docs/context/`. Ghi `context_ref` tới file và cell. Không thấy công thức thì để trống và đặt `MISSING_EVIDENCE`. Hai nguồn khác nhau thì đặt `CONFLICT` và thêm câu hỏi. Tên hoặc schema chưa có trong repository đặt `PROPOSED`.
-
-`doc_status` để `DRAFT`. Không gọi `requirements-analyst` trong lượt này. Không gọi architecture gate và không gọi review Codex. Không commit hoặc push.
-
-Tuân thủ AGENTS.md. Tạo canonical task, ghi Grok 4.7 Medium, phân loại riêng complexity, risk, architecture và evidence. Phạm vi task dừng ở hai file yêu cầu.
+Task: <task-id> (nếu task đã ready_to_merge: tạo task mới và dẫn chiếu)
+Phase: proposal
+Góp ý: <bảng, cột, giá trị người dùng vừa chốt>
+Context: ledger trong decision.md; proposal.md đúng mục bị góp ý.
+Việc:
+- author-input.md gồm góp ý nguyên văn và các mục bị thay. Chạy run-author --kind proposal; bản mới ghi ra proposal.new.md thì Main gộp đúng các dòng bị góp ý.
+Góp ý mới thắng dòng cũ cùng cột. Không tự đặt json_path khi người dùng chưa nêu field. Cập nhật ledger. Dừng.
 ```
 
-## 18. Phân tích Mapping và BRD đã điền
+## A17. Codex đánh giá xử lý và tốc độ
 
 ```text
-Hãy phân tích và xử lý bộ yêu cầu đã điền sau. Không viết notebook, DDL, pipeline, hay schema.
-
-Task:
-<task_id>
-
-File:
-- `docs/requirements/<task_id>/MAPPING.md`
-- `docs/requirements/<task_id>/BRD.md`
-- `.ai/tasks/<task_id>/decision.md`
-
-Người dùng cho phép chuyển `doc_status` từ `DRAFT` sang `READY_FOR_ANALYSIS` khi hai file đã xóa hết dòng `[EXAMPLE]` và câu hỏi mở đã có câu trả lời trong `decision.md`.
-
-Việc Main được làm trên hai file yêu cầu:
-- Xóa dòng `[EXAMPLE]` còn sót.
-- Gán `doc_status` là `READY_FOR_ANALYSIS` và tăng `version`.
-- Không thêm rule, cột, khóa, hay công thức mới.
-
-Sau đó gọi agent `requirements-analyst` tại `.claude/agents/requirements-analyst.md`. Model `claude-opus-5-5`, effort `medium`. Input là `task_id` và hai đường dẫn Mapping, BRD. Agent đó chỉ được viết `.ai/tasks/<task_id>/requirements-analysis.md`. Main không viết file phân tích.
-
-Xử lý `ANALYSIS_STATUS`:
-- `INPUT_INVALID`: sửa đúng lỗi tài liệu được nêu, gọi analyst một lần nữa.
-- `EVIDENCE_REQUIRED` hoặc `USER_DECISION`: dừng và liệt kê từng mục còn thiếu.
-- `COMPLETE`: báo nội dung phân tích đã xong. Không mở implementation trong lượt này.
-
-Không gọi architecture gate. Không gọi review Codex. Không commit hoặc push. Tuân thủ AGENTS.md. Tiếp tục task hiện có, không tạo task mới.
+Task: <task_id>
+Bước runtime được bỏ qua: <…>
+Context: context của task; các notebook trong scope theo def hoặc cell.
+Việc: ghi waiver vào decision.md. Chạy Codex read-only (--model gpt-5.6-sol, model_reasoning_effort=medium) với spark-runtime-reviewer và sql-data-reviewer. Lưu báo cáo tại reviews/performance-review.md. Mỗi đề xuất có file, cell, chi phí hiện tại và cách đổi; không đổi grain, khoá hay rule đã chốt. Không gọi run-gate khi rounds.review = 2. Không sửa code.
 ```
 
-## 19. Viết code từ bộ yêu cầu đã chốt
+## A18. Thay đổi agent-system (rule, skill, prompt, vv.py)
 
 ```text
-Hãy viết full luồng code cho bộ yêu cầu đã chốt sau.
-
-## Nguồn yêu cầu
-
-- `docs/requirements/<task_id>/MAPPING.md`
-- `docs/requirements/<task_id>/BRD.md`
-- `.ai/tasks/<task_id>/decision.md`
-- `.ai/tasks/<task_id>/requirements-analysis.md`
-
-Đây là task implementation mới. Không mở lại task yêu cầu nếu task đó đã `ready_to_merge` và phạm vi chỉ là tài liệu. Mapping và BRD bản mới nhất, cùng `decision.md`, là nguồn rule. Ghi chú sửa ở đầu `requirements-analysis.md` thắng phần analyst bên dưới khi ghi chú nói phần đó đã lỗi thời.
-
-## Đối tượng mục tiêu
-
-- <bảng đích: schema, tên, grain, khóa, cách ghi>
-- <bảng nguồn silver được Mapping mục 3 nêu>
-- <notebook và pl_name được Mapping mục 2 nêu>
-
-## Cách lưu tài liệu
-
-- `architecture.md` chỉ do `python scripts/vv.py run-gate <task-id>` ghi khi status là `waiting_architecture`.
-- Code notebook, DDL, pipeline và seed do Main ghi sau architecture verdict `PASS`.
-- Lệch quy ước nền tảng ghi trong `decision.md` của task mới, bằng tiếng Việt, trước khi sửa code.
-- `runtime-runbook.md` viết bằng tiếng Việt khi cần chạy Fabric DEV.
-- Không sửa bốn file nguồn yêu cầu.
-
-## Tiêu chí nghiệm thu
-
-- Mỗi dòng Mapping mục 5 có biểu thức tương ứng trong notebook đích.
-- Cột và nguồn đã ghi là bỏ khỏi phạm vi không xuất hiện trong DDL.
-- `python scripts/vv.py verify <task-id>` pass.
-- Review `PASS` hoặc không còn P0, P1 mở.
-
-## Ràng buộc đã biết
-
-- <các quyết định người dùng đã chốt, gồm lệch quy ước nền tảng được phép giữ>
-- Không đổi thiết kế về quy ước cũ.
-- Không commit, push, merge.
-
-## Chỉ định Agent
-
-- Main: Cursor, Grok 4.7 Medium. Viết code, task state, `decision.md`, `runtime-runbook.md`.
-- Architect: Claude Code, model `claude-opus-5-5`, effort `high`. Chỉ viết `architecture.md` qua `python scripts/vv.py run-gate <task-id>`.
-- Review: Codex, model `gpt-5.6-sol`, effort `medium`, qua `python scripts/vv.py run-gate <task-id>` tại `reviewing`.
-- Không gọi `requirements-analyst` lại.
-- Không đổi sang model khác khi client fallback.
-
-## Workflow
-
-Tuân thủ AGENTS.md.
-
-1. Tạo task: `python scripts/vv.py new <slug>`.
-2. Ghi Main là Grok 4.7 Medium. Phân loại riêng complexity, risk, architecture và evidence. Architecture là bắt buộc.
-3. Ghi các lệch quy ước vào `decision.md` trước khi gọi architecture gate.
-4. Gọi `python scripts/vv.py run-gate <task-id>` tại `waiting_architecture`.
-5. Main viết code sau verdict `PASS`.
-6. Chạy `python scripts/vv.py verify <task-id>` trước review.
-7. Gọi `python scripts/vv.py run-gate <task-id>` tại `reviewing`. Reviewer gồm domain bị đụng. Chạy `risk-gate` khi risk là high hoặc critical.
-8. Viết `runtime-runbook.md` bằng tiếng Việt khi cần chạy Fabric DEV.
-
-Dừng và báo khi gate lỗi, khi thiếu evidence, hoặc khi còn P0, P1. Không commit hoặc push.
+Thay đổi agent-system: <mô tả>
+Người thiết kế: Claude Code claude-opus-5-5 high (architecture.md, hoặc tài liệu kế hoạch người dùng chỉ định).
+Người thực hiện: <Main Grok | Codex, ghi exceptions model_override role main>.
+Review: Codex qua run-gate.
+Context: chỉ file agent-system bị đổi; WORKFLOW.md đúng mục.
+Việc: tạo task, ghi exception đã duyệt vào task-state.yaml và decision.md. Nếu file nội dung nằm trong khối FILE của architecture, lưu bằng python scripts/vv.py materialize <task-id> --write, không chép tay. Chạy verify và doctor; doctor không được có WARN về budget. Dừng trước commit.
 ```
 
-## 20. Codex đánh giá xử lý và tốc độ
+## A19. Smoke test tích hợp
 
 ```text
-Hãy đánh giá đoạn code hiện tại về xử lý và tốc độ. Chỉ đề xuất. Không sửa notebook, pipeline, DDL, hay schema.
-
-Task:
-<task_id>
-
-Bước runtime được bỏ qua:
-<bước trong runtime-runbook.md mà người dùng cho phép không chạy>
-
-## Đối tượng mục tiêu
-
-- <notebook, pipeline, lib nằm trong scope của task-state.yaml>
-- Capacity Fabric F16 dùng chung.
-
-## Cách lưu tài liệu
-
-- Ghi quyết định bỏ bước runtime vào `decision.md` bằng tiếng Việt.
-- Lưu báo cáo Codex tại `.ai/tasks/<task_id>/reviews/performance-review.md`.
-- Không ghi đè `reviews/round-1.md` hoặc `reviews/round-2.md`.
-- Không sửa `runtime-runbook.md` để xóa bước được bỏ. Ghi trong `decision.md` là bước đó được người dùng cho qua.
-
-## Tiêu chí nghiệm thu
-
-- Báo cáo có model `gpt-5.6-sol` và effort `medium`.
-- Mỗi đề xuất có file, cell hoặc hàm, chi phí hiện tại, và cách đổi.
-- Đề xuất không làm đổi grain, khóa, hay rule đã chốt trong `decision.md`.
-- Không có file code nào đổi trong lượt này.
-
-## Ràng buộc đã biết
-
-- Không gọi `python scripts/vv.py run-gate` cho review nếu `rounds.review` đã là 2.
-- Không đặt `gates.runtime` thành `pass` khi bước bị bỏ chưa chạy.
-- Không chạy notebook hay pipeline trên Fabric.
-- Không commit, push, merge.
-
-## Chỉ định Agent
-
-- Main: Cursor, Grok 4.7 Medium. Điều phối, ghi `decision.md` và lưu báo cáo. Không sửa code.
-- Review: Codex CLI, model `gpt-5.6-sol`, effort `medium`, read-only. Gọi `spark-runtime-reviewer` và `sql-data-reviewer`.
-- Không gọi Architect. Không gọi `requirements-analyst`. Không dùng subagent Cursor thay Codex.
-- Nếu Codex fallback model, dừng và báo.
-
-## Workflow
-
-1. Đọc `task-state.yaml`, `decision.md`, `runtime-runbook.md` và các notebook trong scope.
-2. Ghi waiver của bước runtime được bỏ.
-3. Chạy Codex read-only với `--model gpt-5.6-sol` và `model_reasoning_effort=medium`.
-4. Lưu báo cáo. Liệt kê đề xuất theo mức ảnh hưởng.
-5. Dừng. Không áp đề xuất trong lượt này.
-
-Không commit hoặc push.
+Chạy python scripts/vv.py external-smoke --timeout 600. Không sửa file.
+Báo: git status --short trước và sau; version CLI, model và effort của Claude và Codex; verdict; reviewer trong manifest; risk-gate; lỗi nguyên văn.
+EVIDENCE_REQUIRED cho kịch bản giả lập vẫn hợp lệ.
 ```
 
-## 21. Rà tác động trước khi đổi model
+## Điểm phải dừng
 
-```text
-Hãy lập bảng tác động của thay đổi model sau. Chỉ đề xuất. Không sửa notebook, DDL, pipeline, registry seed, hay schema.
-
-Thay đổi:
-<source cũ, source mới, và phạm vi luồng>
-
-Sample:
-<sample người dùng đưa. Chỉ ghi khóa và kiểu JSON vào repository. Không ghi giá trị, review, tên người, URL, hay dữ liệu cá nhân>
-
-## Đối tượng mục tiêu
-
-- <bảng silver, bảng config, notebook extract, consumer đang đọc các cột đó>
-
-## Cách lưu tài liệu
-
-- Tạo task mới. Ghi đề xuất bằng tiếng Việt trong `decision.md`.
-- Ghi cây khóa và kiểu JSON, không ghi giá trị, tại `.ai/tasks/<task-id>/evidence/payload-shape.md`.
-- Không sửa file code. Không sửa Mapping hay BRD của task khác.
-
-## Tiêu chí nghiệm thu
-
-- Mỗi bảng silver và mỗi bảng config có một dòng: giữ, đổi đường dẫn, đổi kiểu, thêm, hoặc gỡ.
-- Mỗi cột không còn trong sample có trạng thái `MISSING_EVIDENCE`, không bị ghi là luôn null.
-- Consumer đang đọc cột bị đổi được liệt kê.
-- Status task là `user_decision`.
-
-## Ràng buộc đã biết
-
-- Một sample không phải hợp đồng schema.
-- Không áp model mới trong lượt này.
-- Không gọi architecture gate và không gọi review Codex.
-- Không commit, push, merge.
-
-## Chỉ định Agent
-
-- Main: Cursor, Grok 4.7 Medium. Tạo task, ghi state, lưu nguyên văn tài liệu do agent được chỉ định trả về. Main không soạn bảng tác động.
-- Người viết bảng tác động: <Claude Code `claude-opus-5-5` effort `medium`, hoặc agent khác người dùng nêu>.
-- Không dùng `python scripts/vv.py run-gate` cho lượt này khi effort yêu cầu khác effort `high` của Architect.
-- Không gọi Codex hay `requirements-analyst` cho đến khi người dùng duyệt đề xuất.
-
-## Workflow
-
-1. Tạo task `python scripts/vv.py new <slug>`. Ghi Grok 4.7 Medium. Phân loại riêng complexity, risk, architecture, evidence.
-2. Gọi đúng agent được chỉ định để đọc notebook, registry và context.
-3. Main lưu nguyên văn cây khóa và bảng tác động.
-4. Dừng ở `user_decision` để người dùng góp ý.
-
-Không commit hoặc push.
-```
-
-## Các điểm phải dừng
-
-Agent phải dừng và yêu cầu người dùng hành động khi:
-
-- Cần Fabric DEV evidence hoặc runtime execution.
-- Model hoặc CLI không khả dụng hay âm thầm fallback.
-- Structured output hoặc repository immutability validation fail.
-- Cần risk decision, disposition `accepted-risk`, commit, push, merge hoặc production action.
-- Vượt quá giới hạn verification hoặc review round.
-
-Các điểm dừng này là kết quả hợp lệ của workflow, không phải quyền bỏ qua gate.
+Cần Fabric DEV, model hoặc CLI không khả dụng hay fallback, structured output hoặc immutability fail, cần quyết định hay accept-risk, hoặc vượt round cap. Đây là kết quả hợp lệ của workflow, không phải quyền bỏ qua gate.

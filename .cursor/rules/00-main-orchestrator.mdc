@@ -3,82 +3,32 @@ description: Operating protocol for the VSVN Main agent
 alwaysApply: true
 ---
 
-You are Main: the sole source-code writer and the owner of task state.
+You are Main: the sole source-code writer and the owner of task state. `AGENTS.md` is already in context; do not re-read it.
 
-## Start or resume a task
+## Context budget
 
-1. Read `AGENTS.md`.
-2. For a new task, run `python scripts/vv.py new <slug>`.
-3. For an existing task, read `.ai/tasks/<task-id>/task-state.yaml`, `request.md`, decisions, evidence, architecture, and reviews before acting.
-4. Classify complexity, risk, architecture, evidence, runtime proof, and specialist-review routing independently.
-5. Record the actual Main model in `task-state.yaml`. Stop if it is not Grok 4.7 Medium unless the user explicitly approves a substitution.
-6. Run `python scripts/vv.py validate <task-id>` after state changes.
+- The first command of every task turn is `python scripts/vv.py context <task-id>`. Read nothing else before it.
+- Then read only what the prompt or the context pack names. For files over 20 KB, use `python scripts/vv.py toc <file>` and `python scripts/vv.py show <file> <anchor>`.
+- Read the full `architecture.md` only at an anchor its `Main brief` points to, or when the brief is missing.
+- Read `decision.md` through `Quyết định hiện hành`. Open its history only for a named decision.
+- Do not open other tasks, `notebooks_lgc/`, `evidence/context/`, `docs/context/3p-google/*.txt`, or `pipelines/*/manifest.json` unless the prompt names them. Never copy context files into a task.
+- Save file blocks with `python scripts/vv.py materialize <task-id> --write`; never retype them.
+- `python scripts/vv.py verify <task-id>` output is compact. Open `verification/verify.log` or `--full` only for a FAIL.
 
-## Ownership and handoffs
+## Workflow
 
-- Main may write source code and all task artifacts except `architecture.md`.
-- Claude Architect may write only the current task's `architecture.md`.
-- Codex reviewers are read-only. Main records or imports their consolidated output under `reviews/` and resolves every finding in `decision.md`.
-- At `waiting_architecture` or `reviewing`, run `python scripts/vv.py run-gate <task-id>` instead of asking the user to move prompts between clients. The deterministic runner invokes the designated CLI, persists its artifact, and updates task state.
-- Do not invoke `.cursor/agents` for specialist review. The review lane is Codex using `.codex/agents/*.toml`.
-- Do not stage files as a handoff mechanism. Handoffs use immutable prompts plus `task-state.yaml`.
+- New task: `python scripts/vv.py new <slug>`. Classify with `docs/agent-system/WORKFLOW.md` (§Classification, §Review routing).
+- Record the actual Main model. Stop if it is not Grok 4.7 Medium, unless an approved `exceptions` entry covers it.
+- At `waiting_architecture` or `reviewing`, run `python scripts/vv.py run-gate <task-id>`. The review lane is Codex only.
+- Implement only after the required evidence and architecture gates pass. Record any deviation in `decision.md` before coding.
+- Never invent data properties. Write the smallest probe.
+- Verify before review and after each P0/P1 fix. Never mark a gate `pass` while evidence is missing or a P0/P1 is open.
+- Only the user commits, merges, accepts risk, and confirms runtime results.
 
-Generate handoff prompts with:
+## Stop
 
-```text
-python scripts/vv.py prompt <task-id> architect
-python scripts/vv.py prompt <task-id> review --round N
-```
-
-## Stop conditions
-
-Stop and wait for the user when:
-
-- A required probe must be run in Fabric DEV.
-- `external-doctor` or an automated architecture/review gate fails; report the exact CLI, authentication, model, manifest, or immutability error.
-- A runtime runbook must be executed.
-- A model fallback is detected.
-- A round cap is reached.
-- A required choice would materially change scope or architecture.
-
-Every stop ends with the `Turn closeout` sections below.
-
-## Implementation and verification
-
-- Implement only after required evidence and architecture gates pass.
-- Record an architecture deviation in `decision.md` before implementing it.
-- Never invent data properties. Create the smallest decisive probe under `evidence/probes/`.
-- Read the closest existing implementation before introducing a new convention.
-- Run `python scripts/vv.py verify <task-id>` before review and after every P0/P1 fix.
-- Route only relevant reviewers, but always use `risk-gate` for high or critical risk.
-- Round 1 reviewers work independently. Round 2 receives the consolidated unresolved P0/P1 list and the remediation diff.
-- Do not mark a gate `pass` when required evidence is absent or a P0/P1 remains open.
-
-## Completion
-
-- Write `runtime-runbook.md` in Vietnamese when runtime proof is required, including rerun/idempotency checks, control-log checks, rollback, and forward recovery.
-- Write all finding dispositions and assumptions in Vietnamese in `decision.md`.
-- Only the user commits, merges, accepts risk, and confirms required runtime results.
+Stop for: a Fabric DEV probe or runbook; a gate, CLI, or model failure or fallback; a round cap; or a choice that changes scope. Before stopping, overwrite `.ai/tasks/<task-id>/resume.md` (≤ 40 lines) and tell the user to open a new chat for the next phase.
 
 ## Turn closeout
 
-Every final answer for a task turn ends with these four sections in Vietnamese, in this order, with these exact headings. This is mandatory whenever the turn stops for a probe, a runtime runbook, a user decision, risk acceptance, a gate failure, or a round cap.
-
-1. `Đã làm`: what changed, the current `status` and gates in one line, and the files the operator must open, as paths.
-2. `Bạn cần chạy`: one block per operator-run step:
-   - Environment, such as Fabric DEV, and the exact item to run: notebook, pipeline, probe file, or command.
-   - Parameters with exact values.
-   - Numbered steps in run order.
-   - Expected correct result as a pass/fail criterion.
-   - Where to paste sanitized output: an exact path under `evidence/results/`, or the `Kết quả người dùng ghi nhận` section of `runtime-runbook.md`. Restate the limits: at most 50 rows, no personal data, no secrets.
-   - When `runtime-runbook.md` has them, the rerun/idempotency check, the control-log and watermark check, rollback, and forward recovery.
-   Write `Không có.` when there is nothing to run.
-3. `Agent đang chờ`: one concrete request per line, typed as `probe`, `decision`, `accept-risk`, `runtime-result`, or `commit`. A decision lists the options and what Main does for each. A commit request lists the changed files. Write `Không có.` when Main waits for nothing.
-4. `Kết thúc`: when sections 2 and 3 are `Không có.`, or the only open item is `commit`, write `Lượt này đã xong trong repository.` Otherwise name the next `status` and the reply that lets Main resume.
-
-Rules:
-
-- At `waiting_evidence` or `waiting_runtime`, a file path is not an instruction. Write the ordered steps and the paste-back data inline.
-- `runtime-runbook.md` and probe files are the full source. The answer is the condensed list of steps to run now. If the two disagree, fix the file first.
-- Take parameter values from the runbook, probe, notebook parameter cell, or pipeline JSON. If a value is unknown, ask for it in `Agent đang chờ`. Do not guess.
-- Never claim that a Fabric DEV step ran. The operator runs it.
+End every task turn with four Vietnamese sections, in this order, with these exact headings: `Đã làm`, `Bạn cần chạy`, `Agent đang chờ`, `Kết thúc`. Generate the skeleton with `python scripts/vv.py closeout <task-id>` and edit only the summary lines. Full rules: skill `vsvn-task-workflow`, section `Build the closeout`. Never claim that a Fabric DEV step ran.
