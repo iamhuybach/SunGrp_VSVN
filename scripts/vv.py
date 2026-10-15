@@ -37,6 +37,9 @@ TASKS_ROOT = Path(".ai/tasks")
 TEMPLATE_ROOT = TASKS_ROOT / "_template"
 TASK_ID_RE = re.compile(r"^\d{8}-[a-z0-9]+(?:-[a-z0-9]+)*$")
 PROMPTS = {"architect": "architect.md", "review": "review.md"}
+ARCHITECT_TOC_MAX_LINES = 150
+REVIEW_CARRY_MAX_LINES = 250
+FINDING_ID_RE = re.compile(r"\b[A-Z][A-Z0-9]*-\d{2,}\b")
 STATUSES = {
     "triage", "waiting_evidence", "waiting_architecture", "implementing",
     "verifying", "reviewing", "waiting_runtime", "user_decision",
@@ -885,6 +888,149 @@ def cmd_transition(args: argparse.Namespace) -> int:
     return 0
 
 
+def _architect_appendix(task_id: str, state: dict[str, Any]) -> str:
+    parts = [
+        "## Generated context pack",
+        "",
+        "`vv.py` generated this block. Do not re-read the task state, request, decision ledger, or task file list it covers.",
+        "",
+        build_context(task_id, phase="triage"),
+    ]
+    tocs: list[str] = []
+    for value in state["scope"].get("files", []):
+        path = Path(str(value).replace("\\", "/"))
+        if path.suffix.lower() not in {".md", ".ipynb"} or not path.is_file() or path.stat().st_size <= 20 * 1024:
+            continue
+        try:
+            toc = render_toc(path)
+        except (SystemExit, ValueError):
+            continue
+        tocs.append(
+            f"### {path.as_posix()} ({path.stat().st_size} bytes)\n\n"
+            f"{_bounded_text(toc, ARCHITECT_TOC_MAX_LINES)}"
+        )
+    if tocs:
+        parts.extend([
+            "",
+            "## Large scope files",
+            "",
+            "Read these narrowly: `Read` with `offset`/`limit` for a Markdown line range; `Grep` with context for a "
+            "notebook function name or cell id.",
+            "",
+            "\n\n".join(tocs),
+        ])
+    return "\n".join(parts)
+
+
+def _review_files(task_id: str, state: dict[str, Any]) -> list[str]:
+    task_prefix = f".ai/tasks/{task_id}/"
+    return [path for path in _scoped_status_files(task_id, state) if not path.startswith(task_prefix)]
+
+
+def _file_digest(path: str) -> str | None:
+    target = Path(path)
+    return hashlib.sha256(target.read_bytes()).hexdigest() if target.is_file() else None
+
+
+def _finding_excerpts(text: str, finding_ids: list[str]) -> list[str]:
+    """Return the headed sections or list/table rows that mention each finding ID."""
+    lines = text.splitlines()
+    headings = markdown_toc(text)
+    excerpts: list[str] = []
+    emitted_headers: set[int] = set()
+    for finding_id in finding_ids:
+        pattern = re.compile(rf"(?<![\w-]){re.escape(finding_id)}(?![\w-])")
+        heading = next((item for item in headings if pattern.search(item.title)), None)
+        if heading:
+            excerpts.append("\n".join(lines[heading.start - 1:heading.end]).rstrip())
+            continue
+        rows = [index for index, line in enumerate(lines) if line.lstrip().startswith(("|", "-", "*")) and pattern.search(line)]
+        if not rows:
+            excerpts.append(f"- {finding_id}: no details found")
+        for index in rows:
+            start = index
+            while start > 0 and lines[start - 1].lstrip().startswith("|"):
+                start -= 1
+            if lines[index].lstrip().startswith("|") and start < index - 1 and start not in emitted_headers:
+                emitted_headers.add(start)
+                excerpts.append("\n".join(lines[start:start + 2]))
+            excerpts.append(lines[index])
+    return excerpts
+
+
+def _review_appendix(task_id: str, state: dict[str, Any], round_number: int) -> str:
+    directory = task_dir(task_id)
+    previous = round_number - 1
+    snapshot_path = directory / "reviews" / f"round-{previous}.json"
+    report_path = directory / "reviews" / f"round-{previous}.md"
+    snapshot: dict[str, Any] = {}
+    if snapshot_path.is_file():
+        try:
+            loaded = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            loaded = {}
+        snapshot = loaded if isinstance(loaded, dict) else {}
+    report = report_path.read_text(encoding="utf-8") if report_path.is_file() else ""
+
+    finding_ids: list[str] = []
+    for item in [*snapshot.get("findings", []), *state.get("open_findings", [])]:
+        if isinstance(item, dict) and item.get("severity") in {"P0", "P1"} and str(item.get("id")) not in finding_ids:
+            finding_ids.append(str(item.get("id")))
+    if not finding_ids:
+        for line in report.splitlines():
+            if re.search(r"\bP[01]\b", line):
+                finding_ids.extend(item for item in FINDING_ID_RE.findall(line) if item not in finding_ids)
+
+    if finding_ids and report:
+        findings = "\n".join(_finding_excerpts(report, finding_ids))
+    elif finding_ids:
+        findings = "\n".join(f"- {item}: missing {report_path.as_posix()}" for item in finding_ids)
+    else:
+        findings = "none recorded"
+
+    decision_path = directory / "decision.md"
+    decision_text = decision_path.read_text(encoding="utf-8") if decision_path.is_file() else ""
+    section = _markdown_section(decision_text, "Xử lý findings") or ""
+    dispositions = "\n".join(_finding_excerpts(section, finding_ids)) if section and finding_ids else ""
+
+    files = snapshot.get("files")
+    if isinstance(files, dict):
+        changed: list[str] = []
+        for path in sorted(set(files) | set(_review_files(task_id, state))):
+            current = _file_digest(path)
+            if path not in files:
+                changed.append(f"- {path} | entered the diff after round {previous}")
+            elif current != files[path]:
+                label = "deleted" if current is None else "re-created" if files[path] is None else "modified"
+                changed.append(f"- {path} | {label}")
+        changed_text = "\n".join(changed) or f"none: no scoped file changed since round {previous}"
+    else:
+        changed_text = (
+            f"No round-{previous} snapshot ({snapshot_path.as_posix()}). Review the full implementation diff, "
+            "including untracked files from `git status --untracked-files=all`."
+        )
+
+    output = "\n".join([
+        f"## Round {previous} carry-over",
+        "",
+        f"`vv.py` generated this block. Use it instead of opening past review files. Re-check each round-{previous} "
+        "P0/P1 against its disposition, then review only the changed files below for regressions caused by the fixes.",
+        "",
+        f"### Round {previous} P0/P1 findings",
+        "",
+        findings,
+        "",
+        "### Dispositions in decision.md",
+        "",
+        dispositions or "missing: no `Xử lý findings` row mentions these IDs",
+        "",
+        f"### Files changed since round {previous}",
+        "",
+        changed_text,
+    ])
+    return _bounded_text(output, REVIEW_CARRY_MAX_LINES)
+
+
 def render_prompt(task_id: str, target: str, round_number: int = 1) -> tuple[Path, str]:
     directory = task_dir(task_id)
     template = Path(".ai/prompts") / PROMPTS[target]
@@ -894,6 +1040,12 @@ def render_prompt(task_id: str, target: str, round_number: int = 1) -> tuple[Pat
         fail("Review round must be 1 or 2.")
     text = template.read_text(encoding="utf-8")
     text = text.replace("{{TASK_ID}}", task_id).replace("{{ROUND}}", str(round_number))
+    if target == "architect":
+        state = load_state(directory / "task-state.yaml")
+        text = text.rstrip() + "\n\n" + _architect_appendix(task_id, state) + "\n"
+    elif round_number >= 2:
+        state = load_state(directory / "task-state.yaml")
+        text = text.rstrip() + "\n\n" + _review_appendix(task_id, state, round_number) + "\n"
     name = "architect.md" if target == "architect" else f"review-round-{round_number}.md"
     output = directory / "handoffs" / name
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -1073,6 +1225,7 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
             handoff, prompt = render_prompt(args.task, "review", round_number)
             reviewers = list(state["review_plan"]["required_reviewers"])
             risk_required = state["classification"]["risk_level"] in {"high", "critical"}
+            reviewed_files = {path: _file_digest(path) for path in _review_files(args.task, state)}
             print(f"Running Codex review from {handoff.as_posix()}...")
             result = agent_runner.run_review(
                 repo_root(), prompt, reviewers, risk_required, timeout_seconds=args.timeout,
@@ -1082,6 +1235,13 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
             review_path = directory / "reviews" / f"round-{round_number}.md"
             review_path.parent.mkdir(parents=True, exist_ok=True)
             review_path.write_text(result.report, encoding="utf-8")
+            snapshot = {
+                "round": round_number,
+                "verdict": result.verdict,
+                "findings": [dict(item) for item in result.findings],
+                "files": reviewed_files,
+            }
+            review_path.with_suffix(".json").write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8")
             write_state(state_path, candidate)
             print(f"REVIEW {result.verdict}: {review_path.as_posix()}")
             print(f"Reviewers: {', '.join(result.reviewers_run) or 'none'}")

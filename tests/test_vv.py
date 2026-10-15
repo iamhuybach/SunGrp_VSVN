@@ -258,3 +258,32 @@ def test_run_author_preserves_existing_output_with_new_suffix(
     assert (directory / "runtime-runbook.md").read_text(encoding="utf-8") == existing
     assert (directory / "runtime-runbook.new.md").read_text(encoding="utf-8") == fake_author_result().document
     assert "Existing artifact preserved" in capsys.readouterr().out
+
+
+def test_run_gate_review_writes_round_snapshot(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    task_id, directory, data = prepare_author_task(tmp_path, monkeypatch, author_input=None)
+    data["task"].update(status="reviewing", owner="review")
+    data["models"]["main"]["actual"] = "grok-4.7"
+    data["review_plan"]["required_reviewers"] = ["sql-data-reviewer"]
+    data["gates"].update(local_verification="pass", specialist_review="pending")
+    (directory / "task-state.yaml").write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    (tmp_path / ".ai" / "prompts" / "review.md").write_text("# Review {{TASK_ID}}\n", encoding="utf-8")
+    (tmp_path / "src.py").write_text("x = 1\n", encoding="utf-8")
+    monkeypatch.setattr(vv, "_review_files", lambda *_: ["src.py"])
+    result = agent_runner.ReviewResult(
+        verdict="FIX_REQUIRED",
+        report="# Review\n",
+        reviewers_run=("sql-data-reviewer",),
+        risk_gate_run=False,
+        findings=({"id": "SQL-001", "severity": "P1"},),
+        executable=Path("codex.exe"),
+    )
+    monkeypatch.setattr(agent_runner, "run_review", lambda *_args, **_kwargs: result)
+
+    assert vv.cmd_run_gate(Namespace(task=task_id, round=None, timeout=30)) == 0
+
+    snapshot = json.loads((directory / "reviews" / "round-1.json").read_text(encoding="utf-8"))
+    assert snapshot["round"] == 1
+    assert snapshot["verdict"] == "FIX_REQUIRED"
+    assert snapshot["findings"] == [{"id": "SQL-001", "severity": "P1"}]
+    assert snapshot["files"] == {"src.py": vv._file_digest("src.py")}

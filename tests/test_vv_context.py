@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
 
 import pytest
@@ -292,3 +293,119 @@ def test_compact_verify_formatting() -> None:
     assert "ruff: PASS" in output
     assert "pytest: FAIL" in output
     assert "truncated: 5 more lines" in output
+
+
+def write_prompts(root: Path) -> None:
+    prompts = root / ".ai" / "prompts"
+    prompts.mkdir(parents=True)
+    (prompts / "architect.md").write_text("# Architect {{TASK_ID}}\n", encoding="utf-8")
+    (prompts / "review.md").write_text("# Review {{TASK_ID}} round {{ROUND}}\n", encoding="utf-8")
+
+
+def test_architect_prompt_embeds_context_pack_and_large_file_toc(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = state()
+    data["task"].update(status="waiting_architecture", owner="architect")
+    data["scope"]["files"] = ["docs/big.md", "docs/small.md", "docs/missing.md"]
+    task_id = write_task(tmp_path, data)
+    write_prompts(tmp_path)
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "big.md").write_text("# Big\n\n## Part\n\n" + "x" * 21_000 + "\n", encoding="utf-8")
+    (tmp_path / "docs" / "small.md").write_text("# Small\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    path, text = vv.render_prompt(task_id, "architect")
+
+    assert text.startswith(f"# Architect {task_id}\n\n## Generated context pack")
+    assert "phase=triage" in text
+    assert "## Scope\n\nScope." in text
+    assert "### docs/big.md" in text
+    assert "## Part | L3-L5" in text
+    assert "docs/small.md (" not in text
+    assert path.read_text(encoding="utf-8") == text
+
+
+def test_review_round_one_prompt_has_no_carry_over(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    task_id = write_task(tmp_path, state())
+    write_prompts(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    _, text = vv.render_prompt(task_id, "review", 1)
+    assert text == f"# Review {task_id} round 1\n"
+
+
+def test_review_round_two_carries_findings_dispositions_and_changed_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = state()
+    data["task"].update(status="reviewing", owner="review")
+    data["scope"]["files"] = ["src/a.py", "src/b.py", "src/c.py"]
+    task_id = write_task(tmp_path, data)
+    write_prompts(tmp_path)
+    directory = tmp_path / ".ai" / "tasks" / task_id
+    reviews = directory / "reviews"
+    reviews.mkdir()
+    (reviews / "round-1.md").write_text(
+        "## Gate verdict\n\n| ID | Severity | Failure |\n|---|---|---|\n"
+        "| GATE-001 | P1 | Breaks rerun. |\n| GATE-002 | P2 | Style. |\n\n"
+        "### GATE-003 — P0 — Loses events\n\n- Evidence: x.\n\n### GATE-004 — P2 — Naming\n",
+        encoding="utf-8",
+    )
+    decision = directory / "decision.md"
+    decision.write_text(
+        decision.read_text(encoding="utf-8")
+        + "| GATE-001 | P1 | fixed |\n| GATE-003 | P0 | accepted-risk |\n| GATE-009 | P1 | backlog |\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "src").mkdir()
+    for name in ("a.py", "b.py", "c.py"):
+        (tmp_path / "src" / name).write_text(f"{name} v1\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    snapshot = {
+        "round": 1,
+        "verdict": "FIX_REQUIRED",
+        "findings": [
+            {"id": "GATE-001", "severity": "P1"}, {"id": "GATE-002", "severity": "P2"},
+            {"id": "GATE-003", "severity": "P0"},
+        ],
+        "files": {"src/a.py": vv._file_digest("src/a.py"), "src/b.py": vv._file_digest("src/b.py")},
+    }
+    (reviews / "round-1.json").write_text(json.dumps(snapshot), encoding="utf-8")
+    (tmp_path / "src" / "a.py").write_text("a.py v2\n", encoding="utf-8")
+    monkeypatch.setattr(vv, "_scoped_status_files", lambda *_: ["src/a.py", "src/b.py", "src/c.py"])
+
+    _, text = vv.render_prompt(task_id, "review", 2)
+
+    carry = text.split("## Round 1 carry-over", 1)[1]
+    findings, rest = carry.split("### Dispositions in decision.md", 1)
+    dispositions, changed = rest.split("### Files changed since round 1", 1)
+    assert "| ID | Severity | Failure |" in findings
+    assert "| GATE-001 | P1 | Breaks rerun. |" in findings
+    assert "### GATE-003 — P0 — Loses events" in findings and "- Evidence: x." in findings
+    assert "GATE-002" not in findings and "GATE-004" not in findings
+    assert "| GATE-001 | P1 | fixed |" in dispositions
+    assert "| GATE-003 | P0 | accepted-risk |" in dispositions
+    assert "GATE-009" not in dispositions
+    assert "- src/a.py | modified" in changed
+    assert "- src/c.py | entered the diff after round 1" in changed
+    assert "src/b.py" not in changed
+
+
+def test_review_round_two_without_snapshot_falls_back_to_report_and_full_diff(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data = state()
+    data["task"].update(status="reviewing", owner="review")
+    task_id = write_task(tmp_path, data)
+    write_prompts(tmp_path)
+    reviews = tmp_path / ".ai" / "tasks" / task_id / "reviews"
+    reviews.mkdir()
+    (reviews / "round-1.md").write_text("- SQL-007 P1 wrong merge key\n- SQL-008 P3 typo\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(vv, "_scoped_status_files", lambda *_: [])
+
+    _, text = vv.render_prompt(task_id, "review", 2)
+
+    assert "- SQL-007 P1 wrong merge key" in text
+    assert "SQL-008" not in text
+    assert "No round-1 snapshot" in text
