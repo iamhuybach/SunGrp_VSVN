@@ -1,0 +1,22 @@
+# Verification 2026-10-14 15:50:22 — PASS
+Files (4): .cursor/rules/00-main-orchestrator.mdc, AGENTS.md, SETUP.md, docs/AGENT_PROMPT_SAMPLES.md
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+.....................................................                    [100%]
+53 passed in 2.05s
+
+## task-state: PASS

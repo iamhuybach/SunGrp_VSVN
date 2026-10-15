@@ -1,0 +1,70 @@
+schema_version: 1
+task:
+  id: 20261014-switch-cursor-main-to-gpt-5-6-sol
+  title: Temporarily use GPT-5.6 Sol Medium as Cursor Main
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-14'
+  updated_at: '2026-10-14'
+classification:
+  complexity: medium
+  risk_level: medium
+  architecture_required: false
+  evidence_required: false
+  runtime_required: false
+  signals:
+  - cross_state_impact
+scope:
+  systems:
+  - cursor-main
+  - vv-task-state
+  files:
+  - AGENTS.md
+  - .cursor/rules/00-main-orchestrator.mdc
+  - SETUP.md
+  - docs/AGENT_PROMPT_SAMPLES.md
+review_plan:
+  required_reviewers:
+  - state-correctness-reviewer
+  round: 1
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: gpt-5.6-sol
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: not_required
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 1
+  review: 1
+  architecture: 0
+  runtime_failure: 0
+open_findings: []
+exceptions:
+- id: EXC-MAIN-GPT-20261014
+  kind: model_override
+  role: main
+  model: gpt-5.6-sol
+  effort: medium
+  runtime: cursor-agent
+  approved_by: user
+  approved_on: '2026-10-14'
+  scope: Use GPT-5.6 Sol Medium as Cursor Main for all new or resumed work until the
+    user explicitly revokes this override.
