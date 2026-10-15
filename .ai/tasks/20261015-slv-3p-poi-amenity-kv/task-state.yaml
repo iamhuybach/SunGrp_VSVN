@@ -1,0 +1,71 @@
+schema_version: 1
+task:
+  id: 20261015-slv-3p-poi-amenity-kv
+  title: Explode 3P amenity enums into a silver key-value table
+  status: blocked
+  owner: main
+  created_at: '2026-10-15'
+  updated_at: '2026-10-15'
+classification:
+  complexity: high
+  risk_level: medium
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - idempotency
+  - design_tradeoffs
+  - data_evidence_required
+  - runtime_proof_required
+  - deep_reasoning_required
+scope:
+  systems:
+  - fabric-silver
+  - spark
+  files:
+  - .ai/tasks/20261015-slv-3p-poi-amenity-kv/request.md
+  - .ai/tasks/20261015-slv-3p-poi-amenity-kv/decision.md
+  - .ai/tasks/20261015-slv-3p-poi-amenity-kv/evidence/plan.md
+  - .ai/tasks/20261015-slv-3p-poi-amenity-kv/evidence/probes/P01_amenity_json_keys.py
+  - .ai/tasks/20261015-slv-3p-poi-amenity-kv/evidence/probes/P02_amenity_enum_groups.py
+  - .ai/tasks/20261015-slv-3p-poi-amenity-kv/resume.md
+  - notebooks/NB_SLV_3P_POI_AMENITY_KV.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+  - tests/test_3p_amenity_kv_contract.py
+  - .ai/tasks/20261015-slv-3p-poi-amenity-kv/runtime-runbook.md
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  - state-correctness-reviewer
+  round: 0
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: ''
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pending
+  specialist_review: pending
+  risk_gate: not_required
+  runtime: pending
+rounds:
+  verification: 0
+  review: 0
+  architecture: 1
+  runtime_failure: 0
+open_findings: []
