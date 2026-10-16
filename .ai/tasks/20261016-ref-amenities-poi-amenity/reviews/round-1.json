@@ -1,0 +1,17 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "SPARK-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/01_DATA_MODEL.md": "51169adf02cbe2c76732846b9258738d4c68b9ff6a2c73596139008163101e2c",
+    "docs/context/CTRL_TABLES_CONTEXT.md": "1835dd1e901c6a8cb4a979e05414cbc199dc5368c8fa136b47cbca6b1e276bc7",
+    "notebooks/NB_SETUP_POI_AMENITY.ipynb": "b8036668c6bb3391e8fdaeddb66516df025d36c6e6841f9f71268e2854c8d578",
+    "notebooks/NB_SLV_POI_AMENITY.ipynb": "19b9484c50d76fd55516882cd98e70d07e130c2d0ac85b965193eda701948aee",
+    "tests/test_poi_amenity_contract.py": "f661df14d7a739d2cfd64fd10b856a1d6d46955333e076155c2ff84740880194"
+  }
+}

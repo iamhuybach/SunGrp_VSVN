@@ -311,7 +311,7 @@ Cập nhật 2026-10-14: registry L1 hiện có 9 bảng, 55 cột active.
 `poi_id` 3rd-party = `md5(concat(source_name, source_id))` định dạng UUID 8-4-4-4-12 (`HASH_MD5_UUID`). Id của collector giữ ở cột `collector_poi_id`.
 Cột JSON giữ nguyên khối: `amenity_schema_json`, `ext_attributes_json`, `facilities_json`, `secondary_hours_json`; mảng 1 tầng để cột JSON: `periods_json`, `types_json`, `subcategory_tags_json`, `weekday_text_json`.
 
-## 6. Silver L2 — tích hợp POI (6 node)
+## 6. Silver L2 — tích hợp POI (7 node)
 
 Mọi bảng tính lại toàn bộ rồi MERGE theo `row_hash`; cột kỹ thuật `row_hash`, `created_at`, `updated_at`, `deleted_at` (xoá mềm khi dòng biến mất khỏi kết quả).
 
@@ -323,6 +323,7 @@ Mọi bảng tính lại toàn bộ rồi MERGE theo `row_hash`; cột kỹ thu�
 | N4 | `slv_poi_localization` | (`poi_id`, `lang`) | N1, `slv_3p_poi`, `slv_pn_business_services`, `slv_pn_business_service_i18ns`, `ref_lang_policy`, `ref_source` | [SỬA 09/10] Tên 3P từ `slv_3p_poi.poi_name` theo `language_code`. Mô tả 3P = NULL. Fallback tên vẫn ở L2, không copy mô tả. Notebook node chưa có trong repo | 57.200 |
 | N5 | `slv_poi_destination` | (`poi_id`, `destination_id`) | N3, `lh_vv_gold.dbo.destination_ward_mapping`, `ref_destination_special_rule`, `cms_destination` | (ward, province) → destination; rule đặc biệt (Phú Quốc); tên → `MAX(documentId)`; ≥ 2 destination → id nhỏ nhất là `DIRECT` / `is_primary`; chuỗi cha → `ANCESTOR` (`depth`) | 22.298 |
 | N6 | `slv_poi_entity` | `poi_id` | `slv_3p_poi`, `ref_dictionary_place_type` | Chỉ dòng `source_name = google`. Category từ `primary_type`, rồi phần tử `types_json` đầu tiên khớp, rồi `other` / `other` / NULL. `created_at` / `updated_at` là vòng đời dòng entity (lib), không lấy mốc L1. Pipeline `PL_VV_TRANS_SLV_TO_SLV_1H`, chưa schedule, chạy tay. | — |
+| N7 | `slv_poi_amenity` | (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`) | `slv_3p_poi_amenity`, `slv_poi_entity`, `ref_dictionary_amenities` | Khớp `source_flags_json` với điều kiện google `path = true/false`. `business_sector` lấy từ `slv_poi_entity`. Không có `business_category`. Pipeline `PL_VV_TRANS_SLV_TO_SLV_1H`, chưa schedule, chạy tay. | — |
 
 Hai ngoại lệ tạm (silver đọc gold): N3 đọc `poi_address_enrichment_staging`, N5 đọc `destination_ward_mapping`. Hướng xử lý: chuyển xuống silver (`slv_poi_address_enrichment`, `ref_destination_ward`) — chỉ đổi dòng config cạnh, không sửa code node.
 
@@ -336,6 +337,7 @@ Hai ngoại lệ tạm (silver đọc gold): N3 đọc `poi_address_enrichment_s
 | `ref_destination_special_rule` | `rule_id` | `source_name`, `ward_norm`, `token_position`, `token_strip_regex`, `addr_token`, `match_rule` | `PQ_AN_THOI`, `PQ_DUONG_DONG` (google) | Rule Phú Quốc viết cứng ở NB_40 |
 | `ref_poi_legacy_id` | `legacy_poi_id` | `lang`, `source_name`, `source_id`, `harvested_at` | Thu hoạch 1 lần từ `poi_master` cũ | Không đoán lại công thức `poi_id` cũ có lang |
 | `ref_dictionary_place_type` | (`source_name`, `place_type`) | `business_sector`, `business_category`, `business_category_vi`, `is_active` | 356 dòng: 297 `google` + 59 `partner`, seed insert-only từ `mapping_place_type.md` | Từ điển place type dùng chung partner và google |
+| `ref_dictionary_amenities` | (`source_name`, `business_sector`, `amenity_group`, `amenity_raw`, `amenity`) | `amenity_vi`, `is_active`, `updated_at` | 152 dòng: 78 `google` + 74 `partner`, seed insert-only từ `mapping_amenities.md` | Flag Google thành amenity hiển thị theo nhóm |
 
 Sửa 1 dòng ref = 1 commit đổi dữ liệu → lần chạy 1H sau tự tính lại node đọc ref đó và hậu duệ. Setup chỉ chèn dòng chưa có (không ghi đè sửa tay).
 

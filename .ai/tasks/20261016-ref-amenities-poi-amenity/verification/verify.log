@@ -1,0 +1,106 @@
+# Verification 2026-10-16 11:33:24 — FAIL
+Files (6): docs/context/01_DATA_MODEL.md, docs/context/3p-google/mapping_amenities.md, docs/context/CTRL_TABLES_CONTEXT.md, notebooks/NB_SETUP_POI_AMENITY.ipynb, notebooks/NB_SLV_POI_AMENITY.ipynb, tests/test_poi_amenity_contract.py
+
+## ruff: FAIL
+[1m[91mB023[0m[1m Function definition does not bind loop variable `cols`[0m
+  [1m[94m--> [0mtests\test_poi_amenity_contract.py:94:21
+   [1m[94m|[0m
+[1m[94m93[0m [1m[94m|[0m         def get(role):
+[1m[94m94[0m [1m[94m|[0m             index = cols.get(role)
+   [1m[94m|[0m                     [1m[91m^^^^[0m
+[1m[94m95[0m [1m[94m|[0m             return cells[index] if index is not None and index < len(cells) else None
+   [1m[94m|[0m
+
+[1m[91mB023[0m[1m Function definition does not bind loop variable `cells`[0m
+  [1m[94m--> [0mtests\test_poi_amenity_contract.py:95:20
+   [1m[94m|[0m
+[1m[94m93[0m [1m[94m|[0m         def get(role):
+[1m[94m94[0m [1m[94m|[0m             index = cols.get(role)
+[1m[94m95[0m [1m[94m|[0m             return cells[index] if index is not None and index < len(cells) else None
+   [1m[94m|[0m                    [1m[91m^^^^^[0m
+[1m[94m96[0m [1m[94m|[0m
+[1m[94m97[0m [1m[94m|[0m         partner, google, en, vi = get("partner"), get("google"), get("en"), get("vi")
+   [1m[94m|[0m
+
+[1m[91mB023[0m[1m Function definition does not bind loop variable `cells`[0m
+  [1m[94m--> [0mtests\test_poi_amenity_contract.py:95:70
+   [1m[94m|[0m
+[1m[94m93[0m [1m[94m|[0m         def get(role):
+[1m[94m94[0m [1m[94m|[0m             index = cols.get(role)
+[1m[94m95[0m [1m[94m|[0m             return cells[index] if index is not None and index < len(cells) else None
+   [1m[94m|[0m                                                                      [1m[91m^^^^^[0m
+[1m[94m96[0m [1m[94m|[0m
+[1m[94m97[0m [1m[94m|[0m         partner, google, en, vi = get("partner"), get("google"), get("en"), get("vi")
+   [1m[94m|[0m
+
+Found 3 errors.
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 88%]
+.........                                                                [100%]
+81 passed in 0.64s
+
+## task-state: PASS
+
+# Verification 2026-10-16 11:33:38 — PASS
+Files (6): docs/context/01_DATA_MODEL.md, docs/context/3p-google/mapping_amenities.md, docs/context/CTRL_TABLES_CONTEXT.md, notebooks/NB_SETUP_POI_AMENITY.ipynb, notebooks/NB_SLV_POI_AMENITY.ipynb, tests/test_poi_amenity_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 88%]
+.........                                                                [100%]
+81 passed in 1.01s
+
+## task-state: PASS
+
+# Verification 2026-10-16 13:27:26 — PASS
+Files (6): docs/context/01_DATA_MODEL.md, docs/context/3p-google/mapping_amenities.md, docs/context/CTRL_TABLES_CONTEXT.md, notebooks/NB_SETUP_POI_AMENITY.ipynb, notebooks/NB_SLV_POI_AMENITY.ipynb, tests/test_poi_amenity_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 88%]
+.........                                                                [100%]
+81 passed in 1.19s
+
+## task-state: PASS
+

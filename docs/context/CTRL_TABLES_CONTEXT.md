@@ -119,6 +119,14 @@ Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (ch�
 
 Seed bằng `NB_SETUP_POI_ENTITY` (`p_apply` mặc định `false`). Chạy lại không nhân đôi cạnh. Cạnh cùng `pl_name` + `src_tbl` + `trg_tbl`, kể cả schema lệch hoặc cột trạng thái NULL, được MERGE về `lh_vv_silver.dbo`, `is_active = 1`, `priority = 1`, `RECOMPUTE`. Pipeline active khác đang giữ `slv_poi_entity` thì fail. Chưa có JSON pipeline trong repo.
 
+**`slv_poi_amenity`** trong cùng pipeline (`trg_tbl = slv_poi_amenity`, `nb_name` NULL nên lib lấy `NB_SLV_POI_AMENITY`). Seed cạnh bằng `NB_SETUP_POI_AMENITY`. Điều kiện tiên quyết: đã có 2 cạnh active `trg_tbl = slv_poi_entity`.
+
+| src_tbl | src_schema |
+|---|---|
+| `slv_3p_poi_amenity` | `lh_vv_silver.dbo` |
+| `slv_poi_entity` | `lh_vv_silver.dbo` |
+| `ref_dictionary_amenities` | `lh_vv_silver.dbo` |
+
 ### Thao tác thường gặp
 
 ```sql

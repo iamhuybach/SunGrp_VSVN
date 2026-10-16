@@ -1,0 +1,64 @@
+schema_version: 1
+task:
+  id: 20261016-ref-amenities-poi-amenity
+  title: Dictionary amenities and slv_poi_amenity
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-16'
+  updated_at: '2026-10-16'
+classification:
+  complexity: medium
+  risk_level: medium
+  architecture_required: true
+  evidence_required: false
+  runtime_required: true
+  signals:
+  - design_tradeoffs
+  - idempotency
+  - transaction_boundaries
+scope:
+  systems:
+  - silver
+  - ddl
+  files:
+  - notebooks/NB_SETUP_POI_AMENITY.ipynb
+  - notebooks/NB_SLV_POI_AMENITY.ipynb
+  - tests/test_poi_amenity_contract.py
+  - docs/context/01_DATA_MODEL.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: pass
+rounds:
+  verification: 0
+  review: 2
+  architecture: 1
+  runtime_failure: 0
+open_findings: []
+exceptions: []
