@@ -1,0 +1,22 @@
+{
+  "round": 2,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "SQL-001",
+      "severity": "P1"
+    },
+    {
+      "id": "STATE-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/01_DATA_MODEL.md": "732889c1c0b76abfac3e94b162b9131068747d7985e55d6ea10077d457c73e24",
+    "docs/context/3p-google/mapping_place_type.md": "f96b9d8dff66f39911408892d28b9dc94cd7e0f2c77b91c006ade3349d7975cc",
+    "docs/context/CTRL_TABLES_CONTEXT.md": "1f2ba1519f4ff710f33e65d183af596308638008274aee2476e1713cfd390110",
+    "notebooks/NB_SETUP_POI_ENTITY.ipynb": "989f157eb674ac39ceea56d2da590cd67c3f95449ca172899ae40157f061cf5c",
+    "notebooks/NB_SLV_POI_ENTITY.ipynb": "c51f0c58991a225176af8b991aacef937e1c564699ce6889beba04e2cc247a1f",
+    "tests/test_poi_entity_contract.py": "91b8c68446847db1f7fa78c16549fd01436635a6107605388b6c5ef7847a0b0b"
+  }
+}

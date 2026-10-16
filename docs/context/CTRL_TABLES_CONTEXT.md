@@ -110,6 +110,15 @@ Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (ch�
 | `slv_3p_poi_enrichment` | LANG | | | 1 |
 | `slv_3p_poi_review_i18n` | LANG_ARRAY | `poi_review` | | 1 |
 
+**`PL_VV_TRANS_SLV_TO_SLV_1H` — chưa schedule, chạy tay** (`load_mode = RECOMPUTE`, `trg_schema = lh_vv_silver.dbo`, `trg_tbl = slv_poi_entity`, `is_active = 1`, `priority = 1`, `nb_name` NULL nên lib lấy `NB_SLV_POI_ENTITY`):
+
+| src_tbl | src_schema |
+|---|---|
+| `slv_3p_poi` | `lh_vv_silver.dbo` |
+| `ref_dictionary_place_type` | `lh_vv_silver.dbo` |
+
+Seed bằng `NB_SETUP_POI_ENTITY` (`p_apply` mặc định `false`). Chạy lại không nhân đôi cạnh. Cạnh cùng `pl_name` + `src_tbl` + `trg_tbl`, kể cả schema lệch hoặc cột trạng thái NULL, được MERGE về `lh_vv_silver.dbo`, `is_active = 1`, `priority = 1`, `RECOMPUTE`. Pipeline active khác đang giữ `slv_poi_entity` thì fail. Chưa có JSON pipeline trong repo.
+
 ### Thao tác thường gặp
 
 ```sql

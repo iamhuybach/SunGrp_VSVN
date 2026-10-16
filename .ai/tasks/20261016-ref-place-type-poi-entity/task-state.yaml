@@ -1,0 +1,63 @@
+schema_version: 1
+task:
+  id: 20261016-ref-place-type-poi-entity
+  title: Place-type dictionary and Google POI entity
+  status: user_decision
+  owner: user
+  created_at: '2026-10-16'
+  updated_at: '2026-10-16'
+classification:
+  complexity: medium
+  risk_level: medium
+  architecture_required: true
+  evidence_required: false
+  runtime_required: false
+  signals:
+  - design_tradeoffs
+  - idempotency
+scope:
+  systems:
+  - lh_vv_silver
+  files:
+  - notebooks/NB_SETUP_POI_ENTITY.ipynb
+  - notebooks/NB_SLV_POI_ENTITY.ipynb
+  - tests/test_poi_entity_contract.py
+  - docs/context/01_DATA_MODEL.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+  - docs/context/3p-google/mapping_place_type.md
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  - state-correctness-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 0
+  review: 2
+  architecture: 1
+  runtime_failure: 0
+open_findings: []
