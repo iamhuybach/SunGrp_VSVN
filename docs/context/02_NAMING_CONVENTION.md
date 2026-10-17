@@ -36,7 +36,8 @@ Quy tắc:
 | `NB_00_ORCHES_<TỪ>_TO_<ĐẾN>` | Điều phối dùng chung, chọn luồng bằng tham số `p_pl_name` | `NB_00_ORCHES_SLV_TO_GLD` |
 | `NB_<UPPER(trg_tbl)>` | Notebook node: 1 notebook = 1 bảng đích. Tên suy ra từ `trg_tbl` (hoặc cột tuỳ chọn `nb_name` ở `pipeline_config`) | — |
 | `NB_SETUP_<LUỒNG>` | Chạy tay 1 lần: thêm cột ctrl, tạo + seed ref, cạnh, watermark. Mặc định chỉ in (`p_apply = false`) | — |
-| `NB_CREATE_DDL` | DDL + seed 7 bảng ctrl + `TABLE_CONFIGS` / `TABLE_CONFIGS_3P` | — |
+| `NB_SETUP_INITIAL_DDL` | Dựng 1 lần môi trường trống: DDL đầy đủ + seed cấu hình, chỉ thêm. Mặc định chỉ in (`p_apply = false`). Xem §2.1 | — |
+| `NB_CREATE_DDL` | Patch DDL / seed cho môi trường đã có bảng. Mỗi yêu cầu mới = 1 cell ở cuối. Xem §2.1 | — |
 | `CHECK_<CHỦ ĐỀ>_<DDMM>.py` | Script **chỉ đọc**, dán vào 1 cell, gửi lại output | `CHECK_PIN_EXTRACT_0510.py` |
 | `DIAG_<CHỦ ĐỀ>_<DDMM>.py` | Chẩn đoán chỉ đọc (truy nguyên nhân) | `DIAG_GOLD_GAPS_0510.py` |
 | `VERIFY_<CHỦ ĐỀ>_<DDMM>.py` / `PREVIEW_…` | Đối chiếu cấu hình ↔ payload thật, chỉ đọc | `VERIFY_3P_CONFIG_0410.py` |
@@ -44,6 +45,23 @@ Quy tắc:
 | `<CHỦ ĐỀ>_REDESIGN.md`, `<…>_DESIGN.md`, `REVIEW_…_<DDMM>.md`, `PATCH_…_<DDMM>.md` | Tài liệu thiết kế / review / bản vá | `GOLD_POI_FLOW_DESIGN.md` |
 
 Notebook cũ (không đổi tên): `NB_00_POI_PIPELINE_ORCHESTRATOR`, `NB_10…NB_60` (3P cũ), `1. parsing_bronze_partner`, `2.1 transform_partner_to_gold_poi_master`, `2.2 nb_cms_transform`, `3.1 …`, `4. …`, `5. nb_prepare_product_for_ingestion`, `6. …`.
+
+### 2.1 Hai notebook DDL: dựng môi trường trống và patch
+
+| Notebook | Chứa gì | Chạy ở đâu |
+|---|---|---|
+| `NB_SETUP_INITIAL_DDL` | Định nghĩa đầy đủ hiện hành: `CREATE TABLE IF NOT EXISTS` mọi bảng có DDL trong repo (cột thêm sau đã gộp vào `TABLE_SPECS`) và seed cấu hình (`pipeline_config`, watermark nguồn, registry, ref). Chỉ `MERGE … WHEN NOT MATCHED THEN INSERT`, không sửa dòng đã có | Môi trường chưa có bảng. Chạy lại không nhân đôi dòng |
+| `NB_CREATE_DDL` | Cell cũ giữ làm lịch sử. Mỗi yêu cầu mới thêm cell patch ở cuối, chỉ chứa thay đổi đó | Môi trường đang có bảng |
+
+Luật cho mọi yêu cầu DDL hoặc `INSERT` cấu hình mới (agent bắt buộc):
+1. Sửa cả hai notebook trong cùng task.
+2. `NB_SETUP_INITIAL_DDL`: sửa định nghĩa tại chỗ (cột vào `TABLE_SPECS`, dòng vào danh sách seed). Không thêm `ALTER`, `UPDATE`, `DELETE`, `DROP`, overwrite.
+3. `NB_CREATE_DDL`: thêm 1 markdown `[THÊM dd/mm] <task-id>` và 1 cell code ở cuối. Cell tự chứa, chạy lại không đổi kết quả: `ALTER TABLE … ADD COLUMNS` chỉ khi cột chưa có; dòng cấu hình bằng `MERGE` / `INSERT … WHERE NOT EXISTS` theo khoá logic; `UPDATE` phải có điều kiện giá trị đang khác. Kiểm tra sau patch chỉ xét phần patch thêm, không so toàn bộ schema. Ví dụ: cột `nb_name` (cell `enrddlpy` có `ALTER` khi chưa có cột; `NB_SETUP_INITIAL_DDL` có `nb_name` trong CREATE).
+4. Không sửa, không xoá cell cũ của `NB_CREATE_DDL`; không đưa lại cell `DROP` đã bỏ. Ngoại lệ: `TABLE_CONFIGS` / `TABLE_CONFIGS_3P` là trạng thái đầy đủ của registry theo nguồn. Sửa giống hệt ở cả hai notebook, rồi chạy lại cell seed registry của nguồn đó trong `NB_CREATE_DDL`.
+5. Không `DROP` bảng đã có dữ liệu ở cả hai notebook. Cột thêm vào bảng đã có phải cho phép NULL.
+6. Seed lấy từ định nghĩa trong repo, không `INSERT … SELECT` từ bảng Fabric đang chạy.
+7. Bảng do lib tự tạo khi chạy (`slv_pn_*`, `slv_3p_poi*` theo registry; node L2 / gold qua `ensure_target`) không có DDL ở hai notebook. Ngoại lệ: `slv_poi_amenity`, `slv_poi_entity` có DDL trong `NB_SETUP_INITIAL_DDL`, cột phải giống hệt cột `ensure_target` tạo (cột build + `TECH_COLUMNS`). Đổi cột build hoặc đổi registry `slv_3p_poi` thì sửa `TABLE_SPECS` cùng task; môi trường đã có bảng thì `ensure_target` tự thêm cột, không cần cell patch.
+8. Khối seed `BEGIN_PLACE_TYPE_SEED` / `BEGIN_AMENITY_SEED` giữ giống hệt giữa `NB_SETUP_POI_*` và `NB_SETUP_INITIAL_DDL`. `tests/test_initial_ddl_contract.py` kiểm tra hai notebook khớp nguồn; thêm bảng mới thì cập nhật nguồn của test.
 
 ## 3. Pipeline
 

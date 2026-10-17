@@ -1,16 +1,16 @@
 # CTRL_TABLES_CONTEXT — 7 bảng control `lh_vv_ctrl.dbo`
 
 > Nguồn sự thật cho bảng ctrl của Visit Vietnam. Cập nhật: **08/10/2026** (thay bản 04/10 trong project: 5 cột log mới, dòng cạnh / dòng khoá của luồng tính lại).
-> DDL + seed 2 nguồn extract: `notebooks/NB_CREATE_DDL.ipynb`.
+> DDL + seed đầy đủ cho môi trường trống: `notebooks/NB_SETUP_INITIAL_DDL.ipynb`. Patch cho môi trường đã có bảng: `notebooks/NB_CREATE_DDL.ipynb` (`02_NAMING_CONVENTION.md` §2.1).
 > **Dữ liệu ở mục "Dữ liệu hiện có" là theo log / kết quả đã gửi về tới 05/10**, không phải đọc trực tiếp hôm nay. Lấy số mới nhất: chạy `CHECK_CTRL_SNAPSHOT.py` (chỉ đọc, kèm bộ này) và gửi lại output.
 
 ## 1. Tổng quan
 
 | # | Bảng | Nhóm | Grain / khoá logic | Ghi bởi | Đọc bởi |
 |---|---|---|---|---|---|
-| 1 | `ctrl_mng_pipeline_config` | Cấu hình | 1 dòng / (`pl_name`, `src_schema`, `src_tbl`, `trg_schema`, `trg_tbl`) | Tay / `NB_CREATE_DDL` | Pre-check FL_00, 2 notebook extract, NB_00 |
+| 1 | `ctrl_mng_pipeline_config` | Cấu hình | 1 dòng / (`pl_name`, `src_schema`, `src_tbl`, `trg_schema`, `trg_tbl`) | Tay / `NB_SETUP_INITIAL_DDL` / `NB_CREATE_DDL` | Pre-check FL_00, 2 notebook extract, NB_00 |
 | 2 | `ctrl_mng_watermark` | Trạng thái | 1 dòng / `watermark_id` | Notebook extract, NB_00 (cạnh + khoá), node chạy tay (chỉ khoá) | Pre-check FL_00, extract, NB_00, node |
-| 3 | `ctrl_cfg_schema_registry` | Cấu hình | 1 dòng / (`src_schema`, `src_tbl`, `trg_schema`, `trg_tbl`, `trg_column`) | Tay (cell seed trong `NB_CREATE_DDL`) | 2 notebook extract |
+| 3 | `ctrl_cfg_schema_registry` | Cấu hình | 1 dòng / (`src_schema`, `src_tbl`, `trg_schema`, `trg_tbl`, `trg_column`) | Tay (seed `NB_SETUP_INITIAL_DDL`, cell seed `NB_CREATE_DDL`) | 2 notebook extract |
 | 4 | `ctrl_log_run` | Log | 1 dòng / `exec_id` | Extract (MERGE theo `exec_id`), NB_00 (append + UPDATE) | Vận hành, extract (run RUNNING quá hạn), NB_00 (ghim theo batch extract, lát cắt luồng khác) |
 | 5 | `ctrl_log_table_run` | Log | 1 dòng / (`exec_id`, `trg_schema`, `trg_tbl`, `attempt_no`) | Extract (append cuối run), node (append mỗi lần chạy) | Vận hành, NB_00 (kết quả node) |
 | 6 | `ctrl_cdc_state` | Trạng thái extract | 1 dòng / (`trg_schema`, `trg_tbl`, `entity_key`) | Extract (MERGE, không lùi) | Extract (lọc event đã áp dụng) |
@@ -65,9 +65,10 @@ CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_mng_pipeline_config (
     priority    INT,
     load_mode   STRING  COMMENT 'CDC (Debezium, partner) | DOC | DOC_ARRAY | LANG | LANG_ARRAY (snapshot, 3rd-party). NULL = CDC',
     align_path  STRING  COMMENT 'DOC_ARRAY / LANG_ARRAY: mảng tính từ gốc payload ghép theo vị trí, đọc bằng json_path _align.<trường>',
-    dedup_order STRING  COMMENT 'Snapshot: chọn 1 dòng khi 1 tài liệu có nhiều dòng cùng khoá, vd is_original DESC, created_at DESC'
+    dedup_order STRING  COMMENT 'Snapshot: chọn 1 dòng khi 1 tài liệu có nhiều dòng cùng khoá, vd is_original DESC, created_at DESC',
+    nb_name     STRING
 ) USING DELTA;
--- Tuỳ chọn (chưa tạo): nb_name STRING — notebook của node khi khác NB_<UPPER(trg_tbl)>; lib gold tự nhận nếu có cột
+-- [THÊM 13/10] nb_name: notebook của node khi khác NB_<UPPER(trg_tbl)>; NULL = suy từ trg_tbl. Môi trường cũ: ALTER ở cell enrddlpy
 ```
 
 ### Cột
@@ -549,6 +550,7 @@ FROM lh_vv_ctrl.dbo.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 OR
 | 04/10 | `pipeline_config` + `load_mode`, `align_path`, `dedup_order`; 14 bảng 3P; `ctrl_cdc_state` / `ctrl_cdc_reject` `PARTITIONED BY (src_tbl)`; registry 3P 182 cột (36 tắt), `policy` tắt, content khoá + `content_type`; tạo lại toàn bộ ctrl + silver 2 luồng (`RERUN_ALL_0410.sql`) |
 | 05/10 | `ctrl_log_run.output_versions_json`; `ctrl_log_table_run` + `src_versions_json`, `trg_version`, `deactivated_rows`, `qg_json`. Notebook trong repo chưa ghi `LOCK_EXPIRES_AT` và chưa cho lùi dấu đã đọc khi cùng table id |
 | 08/10 | Chuyển 7 bảng sang `lh_vv_ctrl.dbo`, seed mới từ repo (không copy vị trí cũ), đổi danh tính nguồn 3P sang `brz_3rd_crawler_poi_stream` / `wm_transform_brz_3rd_crawler_poi_stream`, bỏ cell DROP trong `NB_CREATE_DDL`, không seed cạnh gold |
+| 16/10 | Tách `NB_SETUP_INITIAL_DDL` (dựng môi trường trống, chỉ thêm; gồm `slv_poi_amenity`, `slv_poi_entity`) khỏi `NB_CREATE_DDL` (patch) |
 
 ## 11. Việc còn lại liên quan ctrl
 

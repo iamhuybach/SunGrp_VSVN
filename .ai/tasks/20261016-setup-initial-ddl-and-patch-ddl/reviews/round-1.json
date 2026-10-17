@@ -1,0 +1,17 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "GATE-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "AGENTS.md": "a8cefe93e4efcb244ba930c658fd0b584b80c28aa7b80b30443b50f5b42713d7",
+    "docs/context/02_NAMING_CONVENTION.md": "a1f87bf94e1b7f8fc448fc6c48fbb750cf13932824e8fe6bd3801dab588eb13c",
+    "docs/context/CTRL_TABLES_CONTEXT.md": "3c7e6a6b0106372c19828369a8b15044963eea22761f2f160bc69448d39644d8",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "b23f84408f4c9c425206e99ae2e95c75f5accb75f7349ec0d21d231b5bb950ab",
+    "tests/test_initial_ddl_contract.py": "2ed9b208df2d7ce94618d51ffbb376a00419bb19b50a4b5487db263ef75765d7"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "round": 2,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "AGENTS.md": "a8cefe93e4efcb244ba930c658fd0b584b80c28aa7b80b30443b50f5b42713d7",
+    "docs/context/02_NAMING_CONVENTION.md": "a1f87bf94e1b7f8fc448fc6c48fbb750cf13932824e8fe6bd3801dab588eb13c",
+    "docs/context/CTRL_TABLES_CONTEXT.md": "3c7e6a6b0106372c19828369a8b15044963eea22761f2f160bc69448d39644d8",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "6aa7c566f5b42a16c439accd3bcd9c7dbb240ac3ff05921fe26419491724d998",
+    "tests/test_initial_ddl_contract.py": "316bc58c0ee1edad8b3dc1cc682028485d31f4e19046382133eb38219a59a8a3"
+  }
+}
