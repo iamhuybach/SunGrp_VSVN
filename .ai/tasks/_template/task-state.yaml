@@ -36,6 +36,10 @@ models:
     expected: claude-opus-5-5
     effort: medium
     actual: ""
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ""
 gates:
   evidence: not_required
   architecture: not_required

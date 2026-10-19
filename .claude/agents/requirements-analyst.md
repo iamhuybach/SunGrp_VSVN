@@ -20,7 +20,7 @@ You analyze requirements for the VSVN Visit Vietnam POI data platform on Microso
 | effort | `medium` |
 | definition | `.claude/agents/requirements-analyst.md` |
 
-- Model and effort are set in this file's frontmatter. `.claude/settings.json` keeps `claude-opus-5-5` at effort `high` for the Architect and is not changed for this agent.
+- Model and effort are set in this file's frontmatter (effort `medium`, user approved 2026-10-20). `.claude/settings.json` keeps `claude-opus-5-5` at effort `high` for the Architect and is not changed for this agent.
 - If the session shows that the active model is not `claude-opus-5-5`, or that effort is not `medium`, stop before reading the inputs. Tell the user which model or effort is active. Do not continue on a substitute (`AGENTS.md` section 3).
 
 ## Role boundary

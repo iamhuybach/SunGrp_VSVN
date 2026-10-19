@@ -5,7 +5,7 @@ Shared source of truth for Cursor, Claude Code, Codex, and human operators. Keep
 ## 1. Language policy
 
 - English: agent definitions, rules, skills, prompts, configuration, and setup documentation; machine-readable files, keys, enums, statuses, finding IDs, logs, and error codes; task artifacts except the Vietnamese ones below; code identifiers and database metadata.
-- Vietnamese: prose in `decision.md`, `runtime-runbook.md`, and `proposal.md`; explanatory comments in source, notebooks, and SQL; conversation with the user.
+- Vietnamese: prose in `decision.md`, `runtime-runbook.md`, `problem-analysis.md`, and `proposal.md`; explanatory comments in source, notebooks, and SQL; conversation with the user.
 - Commands, identifiers, paths, status tokens, and finding IDs stay in English inside Vietnamese files.
 
 ## 2. Roles and authority
@@ -13,8 +13,9 @@ Shared source of truth for Cursor, Claude Code, Codex, and human operators. Keep
 | Role | Runtime | Authority |
 |---|---|---|
 | Main | Cursor, Grok 4.7 Medium | Sole source-code writer. Owns task state, implementation, remediation, decisions, `resume.md`, and runtime runbooks. |
-| Architect | Claude Code, Claude Opus 5.5 High | Writes only the current task's `architecture.md`, including the `Main brief`, through the runner. Never implements. |
-| Author | Claude Code, Claude Opus 5.5 Medium | Through `vv.py run-author` only: writes `proposal.md` or `runtime-runbook.md` on Main's request. Never implements. |
+| Architect | Claude Code, Claude Opus 5.5 High | Writes only the current task's `architecture.md`, including the `Main brief`, through the runner. Reads `model-design.md`; never writes model design. Never implements. |
+| Author | Claude Code, Claude Opus 5.5 (effort in §3) | Through `vv.py run-author --kind` only, on Main's request: writes `problem-analysis.md`, `proposal.md`, `model-design.md`, or `runtime-runbook.md`. Never implements. |
+| Requirements Analyst | Claude Code, Claude Opus 5.5 Medium | Business analysis on the user's request: writes only the task's `requirements-analysis.md`. Never writes `architecture.md` or replaces the Architect. |
 | Review Coordinator and specialists | Codex, GPT-5.6 Sol Medium | Read-only review; the consolidated result goes under `reviews/`. Never fixes code. |
 | Local Verifier | `python scripts/vv.py verify` | Deterministic validation. |
 | External Gate Runner | `python scripts/vv.py run-gate` / `run-author` | Calls the configured CLI non-interactively, validates structured output and repository immutability, persists the owned artifact, and updates state on behalf of Main. |
@@ -25,7 +26,8 @@ Shared source of truth for Cursor, Claude Code, Codex, and human operators. Keep
 
 ## 3. Model policy
 
-- Main: Grok 4.7, `medium` (user approved 2026-10-09). Architect: Claude Opus 5.5, `high`. Review: `gpt-5.6-sol`, `medium` (user approved 2026-10-08). Author: Claude Opus 5.5, `medium`.
+- Main: Grok 4.7, `medium` (user approved 2026-10-09). Architect: Claude Opus 5.5, `high`. Review: `gpt-5.6-sol`, `medium` (user approved 2026-10-08). Author: Claude Opus 5.5, `high` for `--kind proposal` (`models.author_proposal`), `medium` for `--kind analysis`, `model`, and `runbook` (`models.author`). Requirements Analyst: Claude Opus 5.5, `medium`.
+- Lanes (user approved 2026-10-20): business analysis is the Requirements Analyst, problem analysis is `--kind analysis`, solution proposal is `--kind proposal`, model design is `--kind model`, and architecture is the Architect. Main does not author them.
 - Record actual models in `task-state.yaml`. Do not silently substitute. On fallback or unavailability, stop the gate and report it.
 - Change models only after the agent evaluation suite or a recorded user-approved exception.
 

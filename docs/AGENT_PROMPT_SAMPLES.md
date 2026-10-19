@@ -79,7 +79,7 @@ Context:
 - <path — mục/cell theo Bản đồ context>
 Việc: tạo task, ghi request.md, phân loại theo WORKFLOW.md §Classification và §Review routing.
 - Cần evidence: viết probe nhỏ nhất, dừng ở waiting_evidence.
-- Cần architecture, đủ evidence: chạy python scripts/vv.py run-gate <task-id>, dừng.
+- Cần architecture, đủ evidence: nếu đổi bảng, cột, grain hoặc khoá thì thêm signal data_model_change, viết handoffs/author-input.md và chạy python scripts/vv.py run-author <task-id> --kind model (effort medium) trước; rồi chạy python scripts/vv.py run-gate <task-id> (Architect effort high), dừng.
 - Đủ điều kiện fast lane: làm theo A2 trong chat này.
 ```
 
@@ -142,7 +142,7 @@ Task: <task-id>
 Phase: runtime
 Context: context --phase runtime; Main brief mục Rollout; parameter cell của notebook cần chạy (vv.py show … cell:0).
 Việc:
-- Nếu chưa có runtime-runbook.md: viết handoffs/author-input.md (≤ 60 dòng), chạy python scripts/vv.py run-author <task-id> --kind runbook, rồi đối chiếu tham số với parameter cell.
+- Nếu chưa có runtime-runbook.md: viết handoffs/author-input.md (≤ 60 dòng), chạy python scripts/vv.py run-author <task-id> --kind runbook (effort medium), rồi đối chiếu tham số với parameter cell.
 Sau đó chạy python scripts/vv.py closeout <task-id> và trả lời đúng 4 mục. Dừng ở waiting_runtime.
 ```
 
@@ -206,7 +206,7 @@ Phase: triage
 Bảng đích: <schema, tên, cột, kiểu, khoá, ghi chú>
 Nguồn logic: <notebook hoặc mục context>
 Context: docs/templates/MAPPING_TEMPLATE.md, docs/templates/BRD_TEMPLATE.md; nguồn logic theo cell hoặc mục.
-Việc: chép mẫu sang docs/requirements/<task_id>/MAPPING.md và BRD.md, giữ tên mục và tên cột của mẫu, xoá dòng [EXAMPLE]. Công thức chỉ ghi khi có trong nguồn; thiếu thì MISSING_EVIDENCE; mâu thuẫn thì CONFLICT kèm câu hỏi. doc_status = DRAFT. Không gọi analyst, Architect hay Codex.
+Việc: chép mẫu sang docs/requirements/<task_id>/MAPPING.md và BRD.md, giữ tên mục và tên cột của mẫu, xoá dòng [EXAMPLE]. Công thức chỉ ghi khi có trong nguồn; thiếu thì MISSING_EVIDENCE; mâu thuẫn thì CONFLICT kèm câu hỏi. doc_status = DRAFT. Không gọi analyst, Architect hay Codex. Phân tích nghiệp vụ làm ở A14 (requirements-analyst, claude-opus-5-5, effort medium).
 ```
 
 ## A14. Phân tích Mapping và BRD
@@ -215,7 +215,7 @@ Việc: chép mẫu sang docs/requirements/<task_id>/MAPPING.md và BRD.md, gi�
 Task: <task_id>
 Phase: proposal
 File: docs/requirements/<task_id>/MAPPING.md, BRD.md; ledger trong decision.md.
-Việc: được xoá dòng [EXAMPLE] còn sót, đặt doc_status = READY_FOR_ANALYSIS và tăng version; không thêm rule, cột hay khoá. Gọi agent requirements-analyst (.claude/agents/requirements-analyst.md); agent đó tự viết requirements-analysis.md.
+Việc: được xoá dòng [EXAMPLE] còn sót, đặt doc_status = READY_FOR_ANALYSIS và tăng version; không thêm rule, cột hay khoá. Gọi agent requirements-analyst (.claude/agents/requirements-analyst.md, claude-opus-5-5, effort medium, phân tích nghiệp vụ); agent đó tự viết requirements-analysis.md.
 - INPUT_INVALID: sửa đúng lỗi, gọi lại một lần.
 - EVIDENCE_REQUIRED hoặc USER_DECISION: dừng, liệt kê từng mục.
 - COMPLETE: báo xong. Không mở implementation.
@@ -231,7 +231,7 @@ Sample (chỉ khoá và kiểu JSON, không giá trị): <…>
 Đối tượng: <bảng silver, config, notebook, consumer>
 Context: <mục và cell theo Bản đồ context>
 Việc: tạo task. Phân loại theo deliverable: chỉ đề xuất, không đổi hành vi, nên không architecture và không review.
-- Viết handoffs/author-input.md (≤ 60 dòng): yêu cầu nguyên văn, file và mục được đọc, ràng buộc. Chạy python scripts/vv.py run-author <task-id> --kind proposal. Main không tự soạn đề xuất.
+- Viết handoffs/author-input.md (≤ 60 dòng): yêu cầu nguyên văn, file và mục được đọc, ràng buộc. Chạy python scripts/vv.py run-author <task-id> --kind analysis (claude-opus-5-5, effort medium: phân tích bài toán → problem-analysis.md), rồi viết lại author-input.md và chạy --kind proposal (effort high: đề xuất giải pháp → proposal.md). Main không tự phân tích bài toán hay soạn đề xuất.
 Cây khoá ghi ở evidence/payload-shape.md, không ghi giá trị. Cột không có trong sample ghi MISSING_EVIDENCE. Cập nhật ledger. Dừng ở user_decision.
 ```
 
@@ -243,7 +243,7 @@ Phase: proposal
 Góp ý: <bảng, cột, giá trị người dùng vừa chốt>
 Context: ledger trong decision.md; proposal.md đúng mục bị góp ý.
 Việc:
-- author-input.md gồm góp ý nguyên văn và các mục bị thay. Chạy run-author --kind proposal; bản mới ghi ra proposal.new.md thì Main gộp đúng các dòng bị góp ý.
+- author-input.md gồm góp ý nguyên văn và các mục bị thay. Góp ý về hiện trạng hoặc nguyên nhân: chạy run-author --kind analysis (effort medium) trước. Chạy run-author --kind proposal (effort high); bản mới ghi ra proposal.new.md thì Main gộp đúng các dòng bị góp ý. Đề xuất đã chốt mà đổi bảng, cột, grain hoặc khoá: chạy run-author --kind model (effort medium) → model-design.md trước architecture.
 Góp ý mới thắng dòng cũ cùng cột. Không tự đặt json_path khi người dùng chưa nêu field. Cập nhật ledger. Dừng.
 ```
 

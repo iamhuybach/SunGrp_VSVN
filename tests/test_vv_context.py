@@ -230,6 +230,49 @@ def test_optional_author_model_validation() -> None:
     assert vv.validate_state_data(approved, data["task"]["id"]) == []
 
 
+def test_optional_author_proposal_model_validation() -> None:
+    data = state()
+    data["models"]["author_proposal"] = {
+        "expected": "claude-opus-5-5", "effort": "high", "actual": "",
+    }
+    assert vv.validate_state_data(data, data["task"]["id"]) == []
+    invalid = copy.deepcopy(data)
+    invalid["models"]["author_proposal"]["effort"] = "medium"
+    assert any(
+        "models.author_proposal.effort" in item
+        for item in vv.validate_state_data(invalid, data["task"]["id"])
+    )
+
+    author_only = copy.deepcopy(data)
+    author_only["models"]["author_proposal"]["actual"] = "approved-author-model"
+    author_only["exceptions"] = [{
+        "id": "EXC-AUTHOR", "kind": "model_override", "role": "author",
+        "model": "approved-author-model", "effort": "high", "runtime": "claude-cli",
+        "approved_by": "user", "approved_on": "2026-10-14", "scope": "Author fallback test.",
+    }]
+    assert any(
+        "models.author_proposal.actual" in item
+        for item in vv.validate_state_data(author_only, data["task"]["id"])
+    )
+
+    approved = copy.deepcopy(author_only)
+    approved["exceptions"][0]["role"] = "author_proposal"
+    assert vv.validate_state_data(approved, data["task"]["id"]) == []
+
+
+def test_data_model_change_signal_is_valid() -> None:
+    data = state()
+    data["classification"]["signals"] = ["data_model_change"]
+    assert vv.validate_state_data(data, data["task"]["id"]) == []
+
+
+def test_author_lane_effort_error_reported_once() -> None:
+    data = state()
+    data["models"]["author"] = {"expected": "claude-opus-5-5", "effort": "high", "actual": ""}
+    errors = vv.validate_state_data(data, data["task"]["id"])
+    assert sum("models.author.effort" in item for item in errors) == 1
+
+
 def test_materialize_write_requires_implementing_before_any_write(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from argparse import Namespace
 from copy import deepcopy
 from pathlib import Path
@@ -192,7 +193,7 @@ def prepare_author_task(
     )
     if author_input is not None:
         (directory / "handoffs" / "author-input.md").write_text(author_input, encoding="utf-8")
-    for kind in ("proposal", "runbook"):
+    for kind in agent_runner.AUTHOR_KIND_LANES:
         (tmp_path / ".ai" / "prompts" / f"author-{kind}.md").write_text(
             f"# {kind} for {{{{TASK_ID}}}}\n", encoding="utf-8",
         )
@@ -224,25 +225,165 @@ def test_run_author_rejects_long_input(tmp_path: Path, monkeypatch: pytest.Monke
         vv.cmd_run_author(Namespace(task=task_id, kind="proposal", timeout=30))
 
 
-def test_run_author_writes_output_and_updates_only_author_model(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+@pytest.mark.parametrize(
+    ("kind", "key", "effort", "filename"),
+    [
+        ("analysis", "author", "medium", "problem-analysis.md"),
+        ("model", "author", "medium", "model-design.md"),
+        ("proposal", "author_proposal", "high", "proposal.md"),
+        ("runbook", "author", "medium", "runtime-runbook.md"),
+    ],
+    ids=["analysis", "model", "proposal", "runbook"],
+)
+def test_run_author_records_lane_by_kind(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    kind: str,
+    key: str,
+    effort: str,
+    filename: str,
 ) -> None:
     task_id, directory, original = prepare_author_task(tmp_path, monkeypatch, author_input="Use request.md.")
     state_path = directory / "task-state.yaml"
-    state_without_author = yaml.safe_load(state_path.read_text(encoding="utf-8"))
-    del state_without_author["models"]["author"]
-    state_path.write_text(yaml.safe_dump(state_without_author, sort_keys=False), encoding="utf-8")
+    written = yaml.safe_load(state_path.read_text(encoding="utf-8"))
+    del written["models"][key]
+    state_path.write_text(yaml.safe_dump(written, sort_keys=False), encoding="utf-8")
+    other_key = "author" if key == "author_proposal" else "author_proposal"
     monkeypatch.setattr(agent_runner, "run_author", lambda *_args, **_kwargs: fake_author_result())
 
-    assert vv.cmd_run_author(Namespace(task=task_id, kind="proposal", timeout=30)) == 0
+    assert vv.cmd_run_author(Namespace(task=task_id, kind=kind, timeout=30)) == 0
 
-    assert (directory / "proposal.md").read_text(encoding="utf-8") == fake_author_result().document
+    assert (directory / filename).read_text(encoding="utf-8") == fake_author_result().document
     updated = yaml.safe_load(state_path.read_text(encoding="utf-8"))
-    assert updated["models"]["author"] == {
-        "expected": "claude-opus-5-5", "effort": "medium", "actual": "claude-opus-5-5",
+    assert updated["models"][key] == {
+        "expected": "claude-opus-5-5", "effort": effort, "actual": "claude-opus-5-5",
     }
+    assert updated["models"][other_key] == original["models"][other_key]
+    assert updated["models"][other_key]["actual"] == ""
     assert updated["task"]["status"] == original["task"]["status"]
     assert updated["gates"] == original["gates"]
+    assert f"effort {effort}" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    ("kind", "effort"),
+    [("analysis", "medium"), ("model", "medium"), ("proposal", "high"), ("runbook", "medium")],
+)
+def test_run_author_effort_follows_kind(
+    monkeypatch: pytest.MonkeyPatch, kind: str, effort: str,
+) -> None:
+    monkeypatch.setattr(agent_runner, "discover_executable", lambda _name: Path("claude.exe"))
+    monkeypatch.setattr(agent_runner, "_git_snapshot", lambda _repo: b"")
+    captured: dict[str, list[str]] = {}
+
+    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        captured["command"] = command
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps({"structured_output": {"document": "x" * 200}}),
+            stderr="",
+        )
+
+    monkeypatch.setattr(agent_runner, "_run", fake_run)
+    agent_runner.run_author(Path("."), "prompt", kind)
+    command = captured["command"]
+    assert command[command.index("--effort") + 1] == effort
+
+
+def test_run_author_rejects_unknown_kind(monkeypatch: pytest.MonkeyPatch) -> None:
+    def unreachable(*_args: object, **_kwargs: object) -> Path:
+        raise AssertionError("discover_executable must not run")
+
+    monkeypatch.setattr(agent_runner, "discover_executable", unreachable)
+    with pytest.raises(agent_runner.RunnerError, match="Unknown author kind"):
+        agent_runner.run_author(Path("."), "p", "design")
+
+
+def test_template_author_lanes() -> None:
+    models = template_state()["models"]
+    assert models["author"]["effort"] == "medium"
+    assert models["author_proposal"]["effort"] == "high"
+    assert vv.validate_state_data(template_state(), "20261007-test-task") == []
+
+
+def test_requirements_analyst_effort_medium() -> None:
+    text = Path(".claude/agents/requirements-analyst.md").read_text(encoding="utf-8")
+    frontmatter = text.split("---", 2)[1]
+    assert "model: claude-opus-5-5" in frontmatter
+    assert "effort: medium" in frontmatter
+    assert "Never write `architecture.md`" in text
+    assert "never replaces the Architect" in text
+
+
+def test_author_kind_lanes_and_prompts() -> None:
+    assert agent_runner.AUTHOR_EFFORTS == {
+        "analysis": "medium", "model": "medium", "proposal": "high", "runbook": "medium",
+    }
+    assert agent_runner.AUTHOR_LANE_EFFORTS == {"author": "medium", "author_proposal": "high"}
+    assert set(vv.AUTHOR_OUTPUTS) == set(agent_runner.AUTHOR_KIND_LANES)
+    for kind in agent_runner.AUTHOR_KIND_LANES:
+        assert Path(f".ai/prompts/author-{kind}.md").is_file()
+
+
+def test_architect_effort_stays_high() -> None:
+    assert agent_runner.ARCHITECT_EFFORT == "high"
+    settings = json.loads(Path(".claude/settings.json").read_text(encoding="utf-8"))
+    assert settings.get("effortLevel") == "high"
+
+
+def test_prompts_split_analysis_proposal_and_model_design() -> None:
+    architect = Path(".ai/prompts/architect.md").read_text(encoding="utf-8")
+    assert "effort `high`" in architect
+    assert "model-design.md" in architect and "--kind model" in architect
+    assert "You own model design" not in architect
+    proposal = Path(".ai/prompts/author-proposal.md").read_text(encoding="utf-8")
+    assert "effort `high`" in proposal and "## Phân tích bài toán" not in proposal
+    for kind in ("analysis", "model"):
+        text = Path(f".ai/prompts/author-{kind}.md").read_text(encoding="utf-8")
+        assert "effort `medium`" in text and "architecture.md" in text
+
+
+def _architecture_task(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[str, Path]:
+    task_id, directory, data = prepare_author_task(tmp_path, monkeypatch, author_input=None)
+    data["task"].update(status="waiting_architecture", owner="architect")
+    data["classification"]["architecture_required"] = True
+    data["classification"]["signals"] = ["data_model_change"]
+    data["gates"]["architecture"] = "pending"
+    data["models"]["main"]["actual"] = "grok-4.7"
+    (directory / "task-state.yaml").write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    return task_id, directory
+
+
+def test_run_gate_requires_model_design_for_data_model_change(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    task_id, directory = _architecture_task(tmp_path, monkeypatch)
+    before = (directory / "task-state.yaml").read_bytes()
+
+    def unreachable(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("Architect must not run")
+
+    monkeypatch.setattr(agent_runner, "run_architecture", unreachable)
+    with pytest.raises(SystemExit, match="model-design.md"):
+        vv.cmd_run_gate(Namespace(task=task_id, round=None, timeout=30))
+    assert (directory / "task-state.yaml").read_bytes() == before
+
+
+def test_run_gate_runs_architect_when_model_design_exists(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    task_id, directory = _architecture_task(tmp_path, monkeypatch)
+    (directory / "model-design.md").write_text("# Model design\n\n## Scope\n", encoding="utf-8")
+    monkeypatch.setattr(vv, "render_prompt", lambda *_args: (Path("handoff.md"), "prompt"))
+    monkeypatch.setattr(agent_runner, "run_architecture", lambda *_args, **_kwargs: agent_runner.ArchitectureResult(
+        verdict="PASS", document="RESULT: PASS\n\n## Main brief\n", executable=Path("claude.exe"),
+    ))
+    assert vv.cmd_run_gate(Namespace(task=task_id, round=None, timeout=30)) == 0
+    updated = yaml.safe_load((directory / "task-state.yaml").read_text(encoding="utf-8"))
+    assert updated["task"]["status"] == "implementing"
+    assert updated["rounds"]["architecture"] == 1
 
 
 def test_run_author_preserves_existing_output_with_new_suffix(

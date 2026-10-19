@@ -1,0 +1,19 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    ".ai/prompts/architect.md": "c31eb54177db59de61e4d3a249cbf7f3f551cafbd9fd6dbcdd084166f2ad6a5e",
+    ".ai/prompts/author-proposal.md": "cc0b69cdb19b5828329cc7199ca5d9b79999ac134506922a7273f401e17cd0ef",
+    ".ai/prompts/author-runbook.md": "5119016a0d459a51a09100b67c093b11bac20a557c39a264012069d500ed2e66",
+    ".ai/tasks/_template/task-state.yaml": "2c8da7a7f87ec9c217cb435686b6f69f0b1e2ff644c5b429333dd034a387ce97",
+    ".claude/agents/requirements-analyst.md": "1d45a54ea2ddb653aced8569a5cb2936d6d9a78d095ddf17a88a72ca945898e2",
+    "AGENTS.md": "d21196ff77ba2c28d3e94e623f9345a26e107e42bd6f9058f185e1d9a17fe8a0",
+    "docs/AGENT_PROMPT_SAMPLES.md": "bcec5ced08228a8e499f2f54c171820a10a3e1c841f3f44a8aa2eb92e43f45af",
+    "docs/agent-system/WORKFLOW.md": "0ecb02f758b4600c43f7584114c08a261dda88b4b8c173268b63af7b1f09f63c",
+    "scripts/agent_runner.py": "48d0c2cf77145ef6647aaaea3f120d2911db6d00cf0bc37f69866944116b674a",
+    "scripts/vv.py": "b8eb8d924326b50a2ebfecf8654d05a0d1a478b1b1a2f2be084234c2d98fe842",
+    "tests/test_vv.py": "46e5a6ad2a2c667dc19dfd09d78f94ad529aa2221e2bb6c1c0514dc0d1a7c359",
+    "tests/test_vv_context.py": "ed6e6cc7ef7371677849153bf72adc75743fb793d34497993410eb62bac470a2"
+  }
+}

@@ -56,9 +56,12 @@ design_tradeoffs
 cross_state_impact
 runtime_proof_required
 data_evidence_required
+data_model_change
 low_probability_high_impact
 deep_reasoning_required
 ```
+
+`data_model_change`: the task changes a table, column, grain, or key. `run-gate` then requires a non-empty `model-design.md` (`run-author --kind model`) before it calls the Architect.
 
 ### Architecture is required when any of these apply
 
@@ -149,7 +152,7 @@ python scripts/vv.py context <task-id> [--phase P] [--max-lines N]
 python scripts/vv.py materialize <task-id> [--source F] [--write]
 python scripts/vv.py closeout <task-id>
 python scripts/vv.py verify <task-id> --full
-python scripts/vv.py run-author <task-id> --kind proposal|runbook
+python scripts/vv.py run-author <task-id> --kind analysis|proposal|model|runbook
 ```
 
 ## Phases and context budgets
@@ -172,5 +175,7 @@ python scripts/vv.py run-author <task-id> --kind proposal|runbook
 | `decision.md` → `## Quyết định hiện hành` (new ledger) | Main | Vietnamese | Directly after `# Quyết định`. Table `ID \| Chủ đề \| Quyết định hiện hành \| Nguồn (mục) \| Ngày`. A superseded row is edited in place; details are appended under `## Lịch sử quyết định`. |
 | `task-state.yaml` → `exceptions` (new, optional) | Main | English | Typed list (SOL-09). Replaces free-form `model_policy_exception` blocks for new tasks. |
 | `reviews/round-N.json` | Review runner | Machine-readable | Written by `run-gate` after each review round: verdict, findings, and SHA-256 of the scoped non-task files reviewed. Round 2 uses it to embed the round-1 P0/P1 carry-over and the files changed since round 1. Never edited by hand. |
-| `proposal.md` | Author lane, through the runner | Vietnamese | Proposal for the user. `decision.md` ledger rows point to it. |
-| `handoffs/author-input.md` | Main | English, user comments verbatim | At most 60 lines: user comments verbatim, files and anchors the author may read, constraints. |
+| `problem-analysis.md` | Author lane `models.author` (`claude-opus-5-5`, effort `medium`), `run-author --kind analysis` | Vietnamese | Problem analysis: problem, cited current state, gap or cause, affected objects, questions. Input to the proposal. |
+| `proposal.md` | Proposal author lane `models.author_proposal` (`claude-opus-5-5`, effort `high`), `run-author --kind proposal` | Vietnamese | Solution proposal for the user; cites `problem-analysis.md`. `decision.md` ledger rows point to it. |
+| `model-design.md` | Author lane `models.author` (`claude-opus-5-5`, effort `medium`), `run-author --kind model` | English | Model design: entities, grain, keys, columns, lineage. Input to the Architect, who never writes it. Required before `run-gate` when signal `data_model_change` is set. |
+| `handoffs/author-input.md` | Main | English, user comments verbatim | At most 60 lines: user comments verbatim, files and anchors the author may read, constraints. Overwritten before each `run-author` kind. |

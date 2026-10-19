@@ -1,0 +1,85 @@
+schema_version: 1
+task:
+  id: 20261019-agent-system-claude-opus-design
+  title: Split Claude effort for analysis and model design
+  status: user_decision
+  owner: user
+  created_at: '2026-10-19'
+  updated_at: '2026-10-20'
+classification:
+  complexity: medium
+  risk_level: medium
+  architecture_required: true
+  evidence_required: false
+  runtime_required: false
+  signals:
+  - design_tradeoffs
+  - cross_system
+scope:
+  systems:
+  - agent-system
+  files:
+  - AGENTS.md
+  - .claude/agents/requirements-analyst.md
+  - .claude/settings.json
+  - .cursor/rules/00-main-orchestrator.mdc
+  - .cursor/skills/vsvn-task-workflow/SKILL.md
+  - .ai/prompts/architect.md
+  - .ai/prompts/author-analysis.md
+  - .ai/prompts/author-model.md
+  - .ai/prompts/author-proposal.md
+  - .ai/prompts/author-runbook.md
+  - .ai/tasks/_template/task-state.yaml
+  - docs/agent-system/WORKFLOW.md
+  - docs/AGENT_PROMPT_SAMPLES.md
+  - scripts/agent_runner.py
+  - scripts/vv.py
+  - tests/test_vv.py
+  - tests/test_vv_context.py
+review_plan:
+  required_reviewers: []
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+exceptions:
+- id: EX-20261019-CLAUDE-DESIGN-HIGH
+  kind: model_override
+  role: author
+  model: claude-opus-5-5
+  effort: medium
+  runtime: Claude Code
+  approved_by: user
+  approved_on: '2026-10-20'
+  scope: User revised this on 2026-10-20. Architecture and solution proposal stay
+    Claude Code claude-opus-5-5 effort high. Business analysis, problem analysis,
+    and model design run on Claude Code claude-opus-5-5 effort medium. Runbook author
+    stays medium. requirements-analyst does not write architecture.md and does not
+    replace the Architect.
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: not_required
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 1
+  review: 2
+  architecture: 2
+  runtime_failure: 0
+open_findings: []

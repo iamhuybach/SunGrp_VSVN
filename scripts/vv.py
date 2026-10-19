@@ -53,13 +53,19 @@ SIGNALS = {
     "stateful_logic", "concurrency", "retry_recovery", "partial_failure",
     "transaction_boundaries", "event_ordering", "idempotency",
     "distributed_behavior", "cross_system", "design_tradeoffs",
-    "cross_state_impact", "runtime_proof_required", "data_evidence_required",
+    "cross_state_impact",     "runtime_proof_required", "data_evidence_required", "data_model_change",
     "low_probability_high_impact", "deep_reasoning_required",
 }
 REVIEWERS = {
     "state-correctness-reviewer", "spark-runtime-reviewer",
     "sql-data-reviewer", "fabric-pipeline-reviewer",
 }
+AUTHOR_LANES = agent_runner.AUTHOR_KIND_LANES
+AUTHOR_OUTPUTS = {
+    "analysis": "problem-analysis.md", "model": "model-design.md",
+    "proposal": "proposal.md", "runbook": "runtime-runbook.md",
+}
+EXCEPTION_ROLES = {"main", "architect", "review", "author", "author_proposal"}
 GATE_NAMES = {
     "evidence", "architecture", "local_verification", "specialist_review",
     "risk_gate", "runtime",
@@ -454,8 +460,8 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
         if exception.get("kind") != "model_override":
             errors.append(f"{prefix}.kind must be 'model_override'")
         role = exception.get("role")
-        if role not in {"main", "architect", "review", "author"}:
-            errors.append(f"{prefix}.role must be main, architect, review, or author")
+        if role not in EXCEPTION_ROLES:
+            errors.append(f"{prefix}.role must be one of {sorted(EXCEPTION_ROLES)}")
         model_name = exception.get("model")
         if not isinstance(model_name, str) or not model_name.strip():
             errors.append(f"{prefix}.model must be a non-empty string")
@@ -476,7 +482,7 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
             errors.append(f"{prefix}.scope must be a non-empty string")
         if (
             exception.get("kind") == "model_override"
-            and role in {"main", "architect", "review", "author"}
+            and role in EXCEPTION_ROLES
             and isinstance(model_name, str) and model_name.strip()
         ):
             valid_overrides.setdefault(role, set()).add(model_name)
@@ -492,31 +498,33 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
             errors.append(f"models.{role}.effort must be {expected_effort!r}")
         if not isinstance(model.get("actual"), str):
             errors.append(f"models.{role}.actual must be a string")
-    if "author" in models:
-        author = models["author"]
+    for key, effort in agent_runner.AUTHOR_LANE_EFFORTS.items():
+        if key not in models:
+            continue
+        author = models[key]
         if not isinstance(author, dict):
-            errors.append("models.author must be a mapping")
-        else:
-            expected_author_keys = {"expected", "effort", "actual"}
-            missing = expected_author_keys - set(author)
-            extra = set(author) - expected_author_keys
-            if missing:
-                errors.append(f"models.author missing keys: {', '.join(sorted(missing))}")
-            if extra:
-                errors.append(f"models.author unknown keys: {', '.join(sorted(extra))}")
-            if author.get("expected") != "claude-opus-5-5":
-                errors.append("models.author.expected must be 'claude-opus-5-5'")
-            if author.get("effort") != "medium":
-                errors.append("models.author.effort must be 'medium'")
-            author_actual = author.get("actual")
-            if not isinstance(author_actual, str):
-                errors.append("models.author.actual must be a string")
-            elif author_actual and author_actual not in {
-                "claude-opus-5-5", *valid_overrides.get("author", set()),
-            }:
-                errors.append(
-                    "models.author.actual must be 'claude-opus-5-5' or an approved author override"
-                )
+            errors.append(f"models.{key} must be a mapping")
+            continue
+        expected_author_keys = {"expected", "effort", "actual"}
+        missing = expected_author_keys - set(author)
+        extra = set(author) - expected_author_keys
+        if missing:
+            errors.append(f"models.{key} missing keys: {', '.join(sorted(missing))}")
+        if extra:
+            errors.append(f"models.{key} unknown keys: {', '.join(sorted(extra))}")
+        if author.get("expected") != agent_runner.AUTHOR_MODEL:
+            errors.append(f"models.{key}.expected must be {agent_runner.AUTHOR_MODEL!r}")
+        if author.get("effort") != effort:
+            errors.append(f"models.{key}.effort must be {effort!r}")
+        author_actual = author.get("actual")
+        if not isinstance(author_actual, str):
+            errors.append(f"models.{key}.actual must be a string")
+        elif author_actual and author_actual not in {
+            agent_runner.AUTHOR_MODEL, *valid_overrides.get(key, set()),
+        }:
+            errors.append(
+                f"models.{key}.actual must be {agent_runner.AUTHOR_MODEL!r} or an approved {key} override"
+            )
 
     required_actual_models = {"main"}
     if gates.get("architecture") == "pass":
@@ -1190,6 +1198,13 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
                 write_state(state_path, candidate)
                 print("Architecture round cap reached; routed task to user_decision.")
                 return 0
+            if "data_model_change" in state["classification"].get("signals", []):
+                design = directory / "model-design.md"
+                if not design.is_file() or not design.read_text(encoding="utf-8").strip():
+                    fail(
+                        "Signal data_model_change requires model-design.md before the Architect runs. "
+                        f"Run: python scripts/vv.py run-author {args.task} --kind model"
+                    )
             handoff, prompt = render_prompt(args.task, "architect")
             print(f"Running Claude Architect from {handoff.as_posix()}...")
             result = agent_runner.run_architecture(repo_root(), prompt, timeout_seconds=args.timeout)
@@ -1258,7 +1273,7 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
 
 
 def _author_output_path(directory: Path, task_id: str, created_at: str, kind: str) -> tuple[Path, bool]:
-    name = "proposal.md" if kind == "proposal" else "runtime-runbook.md"
+    name = AUTHOR_OUTPUTS[kind]
     target = directory / name
     if not target.exists() or _template_equivalent(target, task_id, created_at):
         return target, False
@@ -1284,13 +1299,15 @@ def cmd_run_author(args: argparse.Namespace) -> int:
         fail(f"Author prompt template not found: {template_path.as_posix()}")
     prompt = template_path.read_text(encoding="utf-8").replace("{{TASK_ID}}", args.task)
     prompt = f"{prompt.rstrip()}\n\n## Author input\n\n{author_input.rstrip()}\n"
+    key = AUTHOR_LANES[args.kind]
+    effort = agent_runner.AUTHOR_EFFORTS[args.kind]
     try:
-        result = agent_runner.run_author(repo_root(), prompt, timeout_seconds=args.timeout)
+        result = agent_runner.run_author(repo_root(), prompt, args.kind, timeout_seconds=args.timeout)
     except agent_runner.RunnerError as exc:
         fail(f"AUTHOR FAIL: {exc}")
     candidate = copy.deepcopy(state)
     author = candidate["models"].setdefault(
-        "author", {"expected": agent_runner.AUTHOR_MODEL, "effort": agent_runner.AUTHOR_EFFORT, "actual": ""},
+        key, {"expected": agent_runner.AUTHOR_MODEL, "effort": effort, "actual": ""},
     )
     author["actual"] = agent_runner.AUTHOR_MODEL
     _validate_candidate_state(args.task, candidate)
@@ -1302,6 +1319,8 @@ def cmd_run_author(args: argparse.Namespace) -> int:
     if collision:
         print(f"NOTICE: Existing artifact preserved; Main must merge {output.as_posix()}.")
     print(f"AUTHOR OUTPUT: {output.as_posix()}")
+    print(f"Model: {agent_runner.AUTHOR_MODEL} effort {effort}")
+    print(f"Lane: models.{key}")
     print(f"Executable: {result.executable}")
     return 0
 
@@ -1357,7 +1376,8 @@ def _materialize_target(path_text: str, allowed: set[str]) -> Path:
     path = Path(normalized)
     if path.is_absolute() or ".." in path.parts or not path.parts:
         fail(f"Unsafe materialize path: {path_text!r}")
-    if path.parts[0] == ".git" or path.name == "task-state.yaml":
+    template_state = path.parts[:3] == (".ai", "tasks", "_template") and path.name == "task-state.yaml"
+    if path.parts[0] == ".git" or (path.name == "task-state.yaml" and not template_state):
         fail(f"Prohibited materialize path: {path_text!r}")
     if normalized not in allowed:
         fail(f"Materialize path is not listed in scope.files: {normalized}")
@@ -1842,7 +1862,7 @@ def main() -> int:
     command.set_defaults(function=cmd_run_gate)
     command = subcommands.add_parser("run-author", help="run the Claude proposal or runbook author lane")
     command.add_argument("task")
-    command.add_argument("--kind", required=True, choices=("proposal", "runbook"))
+    command.add_argument("--kind", required=True, choices=tuple(AUTHOR_LANES))
     command.add_argument("--timeout", type=int, default=1800)
     command.set_defaults(function=cmd_run_author)
     args = parser.parse_args()

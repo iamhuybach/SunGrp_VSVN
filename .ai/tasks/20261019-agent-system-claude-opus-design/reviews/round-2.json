@@ -1,0 +1,21 @@
+{
+  "round": 2,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    ".ai/prompts/architect.md": "f04459a58d5a479dc7344105f80528e90989df7e52e79a330d22f907ca4ffa81",
+    ".ai/prompts/author-analysis.md": "74e7adb8f38c102dabc9ba4fde74919026ada33348e0fc8234d13265cd73b9b5",
+    ".ai/prompts/author-model.md": "ec63862476ce03d1668ecfd02f904e484fcd1ab3175e67cd989b55a08c95a0b6",
+    ".ai/prompts/author-proposal.md": "2ae45f0c55b82c95d8dea0e76c5c4c66405fe24406a420c37aa75e1eae16d75d",
+    ".ai/prompts/author-runbook.md": "5119016a0d459a51a09100b67c093b11bac20a557c39a264012069d500ed2e66",
+    ".ai/tasks/_template/task-state.yaml": "2c8da7a7f87ec9c217cb435686b6f69f0b1e2ff644c5b429333dd034a387ce97",
+    ".claude/agents/requirements-analyst.md": "6fb60032b48bed4a28ead0e1be980ab2a41e772f716f0eaae51788f40f18e59b",
+    "AGENTS.md": "5eebd7b74a09be3545baeb0fe5622f006623498b12ffdf11c2fe50e022ee6655",
+    "docs/AGENT_PROMPT_SAMPLES.md": "f001681bf93ce13f1013f37c69d4ae880c4d545cf5e02b483b6dea0cddc548b7",
+    "docs/agent-system/WORKFLOW.md": "bb18125967aa7bd0773b8f91f43a1ef6c02505cf5722488846c56b6b68cf643e",
+    "scripts/agent_runner.py": "03ff72a167773762394b6a96d59494495b3526a77559dac3602067fd78b2d60a",
+    "scripts/vv.py": "acc28d8610a31618d589d1901303c6e6f7adf151a9097aa9321db5f706550e86",
+    "tests/test_vv.py": "8e44cb7839a958ec75bc921617c6e4551e5c85e56c7216d44d659c4c1dd3a2bc",
+    "tests/test_vv_context.py": "a74c089ca148912189d8dc717f8e6414b227bf74d7688d6918953a133c06405e"
+  }
+}

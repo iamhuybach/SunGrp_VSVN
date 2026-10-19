@@ -16,7 +16,11 @@ from typing import Any
 ARCHITECT_MODEL = "claude-opus-5-5"
 ARCHITECT_EFFORT = "high"
 AUTHOR_MODEL = "claude-opus-5-5"
-AUTHOR_EFFORT = "medium"
+AUTHOR_LANE_EFFORTS = {"author": "medium", "author_proposal": "high"}
+AUTHOR_KIND_LANES = {
+    "analysis": "author", "model": "author", "proposal": "author_proposal", "runbook": "author",
+}
+AUTHOR_EFFORTS = {kind: AUTHOR_LANE_EFFORTS[lane] for kind, lane in AUTHOR_KIND_LANES.items()}
 REVIEW_MODEL = "gpt-5.6-sol"
 REVIEW_EFFORT = "medium"
 VERDICTS = {"PASS", "FIX_REQUIRED", "EVIDENCE_REQUIRED", "USER_DECISION"}
@@ -279,7 +283,9 @@ Do not wrap the JSON or document in Markdown fences.
     )
 
 
-def run_author(repo: Path, prompt: str, timeout_seconds: int = 1800) -> AuthorResult:
+def run_author(repo: Path, prompt: str, kind: str, timeout_seconds: int = 1800) -> AuthorResult:
+    if kind not in AUTHOR_EFFORTS:
+        raise RunnerError(f"Unknown author kind: {kind}")
     executable = discover_executable("claude")
     schema = _author_schema()
     automation_contract = """
@@ -295,7 +301,7 @@ in Markdown fences.
         str(executable),
         "-p",
         "--model", AUTHOR_MODEL,
-        "--effort", AUTHOR_EFFORT,
+        "--effort", AUTHOR_EFFORTS[kind],
         "--output-format", "json",
         "--json-schema", json.dumps(schema, separators=(",", ":")),
         "--max-turns", "40",
