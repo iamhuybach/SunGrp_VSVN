@@ -174,9 +174,21 @@ def test_setup_contract():
     seed = src[src.index("MERGE INTO lh_vv_silver.dbo.ref_dictionary_place_type"):src.index("inserted=")]
     assert "WHEN NOT MATCHED" in seed
     assert "WHEN MATCHED" not in seed
-    edges = src[src.index("def _write_edges"):src.index("with_retry(_write_edges")]
+    edges = src[src.index("# BEGIN_EDGE_PRECHECK"):src.index("with_retry(_write_edges")]
+    merge_at = edges.index("MERGE INTO")
+    pre = edges[:merge_at]
     match_on = edges[edges.index("ON t.pl_name"):edges.index("WHEN MATCHED")]
-    assert "src_schema" not in match_on and "trg_schema" not in match_on
+    assert "t.src_schema = s.src_schema" in match_on and "t.trg_schema = s.trg_schema" in match_on
+    for token in (
+        "cạnh active không đúng",
+        "còn cạnh active ngoài cạnh chuẩn",
+        "slv_poi_entity: còn",
+        "slv_poi_amenity: còn cạnh active slv_poi_entity",
+        "src_schema = 'lh_vv_silver.dbo'",
+        "trg_schema = 'lh_vv_silver.dbo'",
+    ):
+        assert token in pre
+    assert "'slv_poi_amenity'" in edges and "'slv_3p_poi_amenity'" in edges
     assert "<=>" in edges
     assert "src_schema = 'lh_vv_silver.dbo'" in edges
     assert "trg_schema = 'lh_vv_silver.dbo'" in edges
@@ -201,6 +213,78 @@ def test_setup_contract():
     assert "is_active = 0" in edges
     assert "acquire_flow_lock" in src
     assert "finally:" in src[src.index("acquire_flow_lock"):src.index("release_flow_lock")]
+
+
+def _edge_precheck(notebook: str):
+    text = _nb(notebook)
+    start = text.index("# BEGIN_EDGE_PRECHECK")
+    end = text.index("# END_EDGE_PRECHECK")
+    ns: dict = {}
+    exec(text[start:end], ns)  # noqa: S102
+    return ns["setup_edge_issues"]
+
+
+def _edge(src_tbl, trg_tbl, **overrides):
+    row = {
+        "pl_name": "PL_VV_TRANS_SLV_TO_SLV_1H",
+        "src_schema": "lh_vv_silver.dbo",
+        "src_tbl": src_tbl,
+        "trg_schema": "lh_vv_silver.dbo",
+        "trg_tbl": trg_tbl,
+        "is_active": 1,
+    }
+    row.update(overrides)
+    return row
+
+
+_ENTITY_UPSERTS = {
+    ("slv_3p_poi", "slv_poi_entity_non_enrich"),
+    ("slv_3p_poi_address", "slv_poi_entity_non_enrich"),
+    ("ref_dictionary_place_type", "slv_poi_entity_non_enrich"),
+    ("slv_pn_business_services", "slv_poi_entity_non_enrich"),
+    ("slv_pn_business_service_i18ns", "slv_poi_entity_non_enrich"),
+    ("slv_3p_poi_amenity", "slv_poi_amenity"),
+    ("slv_poi_entity_non_enrich", "slv_poi_amenity"),
+    ("ref_dictionary_amenities", "slv_poi_amenity"),
+}
+_ENTITY_RETIRES = {
+    ("slv_3p_poi", "slv_poi_entity"),
+    ("ref_dictionary_place_type", "slv_poi_entity"),
+    ("slv_poi_entity", "slv_poi_amenity"),
+}
+_AMENITY_UPSERTS = {
+    ("slv_3p_poi_amenity", "slv_poi_amenity"),
+    ("slv_poi_entity_non_enrich", "slv_poi_amenity"),
+    ("ref_dictionary_amenities", "slv_poi_amenity"),
+}
+_AMENITY_RETIRES = {("slv_poi_entity", "slv_poi_amenity")}
+
+
+def test_edge_precheck_blocks_are_identical():
+    entity = _nb("NB_SETUP_POI_ENTITY.ipynb")
+    amenity = _nb("NB_SETUP_POI_AMENITY.ipynb")
+    def block(text):
+        return text[text.index("# BEGIN_EDGE_PRECHECK"):text.index("# END_EDGE_PRECHECK")]
+    assert block(entity) == block(amenity)
+
+
+def test_legacy_retire_and_foreign_schema_do_not_block():
+    check = _edge_precheck("NB_SETUP_POI_ENTITY.ipynb")
+    legacy = [_edge("slv_poi_entity", "slv_poi_amenity")]
+    assert check(legacy, _ENTITY_UPSERTS, _ENTITY_RETIRES) == []
+    assert check(legacy, _AMENITY_UPSERTS, _AMENITY_RETIRES) == []
+    other_owner = [_edge("slv_poi_entity", "slv_poi_amenity", pl_name="OTHER")]
+    blocked = check(other_owner, _ENTITY_UPSERTS, _ENTITY_RETIRES)
+    assert any("còn cạnh active ngoài cạnh chuẩn" in item for item in blocked)
+    wrong_schema = [_edge("slv_poi_entity", "slv_poi_amenity", src_schema="other.dbo")]
+    assert check(wrong_schema, _ENTITY_UPSERTS, _ENTITY_RETIRES) == []
+    foreign = [_edge(
+        "slv_3p_poi", "slv_poi_entity", src_schema="other.dbo", trg_schema="other.dbo",
+    )]
+    assert check(foreign, _ENTITY_UPSERTS, _ENTITY_RETIRES) == []
+    unexpected = [_edge("other_src", "slv_poi_entity")]
+    stale = check(unexpected, _ENTITY_UPSERTS, _ENTITY_RETIRES)
+    assert any(item.startswith("slv_poi_entity: còn") for item in stale)
 
 
 def _assign(source: str, name: str):
@@ -231,6 +315,17 @@ def test_partner_json_first():
     assert first(None, "main_category") == (None, ns["JSON_NULL"])
     assert first("{", "main_category") == (None, ns["JSON_INVALID"])
     assert first('{"other": "Hotel"}', "main_category") == (None, ns["JSON_NO_VALUE"])
+
+
+def test_partner_json_depth():
+    first, ns = _partner_json()
+    limit = ns["MAX_JSON_DEPTH"]
+    ok = '{"k":' * (limit - 1) + '{"main_category": "Hotel"}' + "}" * (limit - 1)
+    assert first(ok, "main_category") == ("Hotel", "OK")
+    too_deep = '{"k":' * limit + '{"main_category": "Hotel"}' + "}" * limit
+    assert first(too_deep, "main_category") == (None, ns["JSON_INVALID"])
+    bomb = "[" * 3000 + "]" * 3000
+    assert first(bomb, "main_category") == (None, ns["JSON_INVALID"])
 
 
 def test_category_groups_seed():

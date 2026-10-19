@@ -21,6 +21,13 @@
 | A7 | Backfill category_group | Chỉ dòng `category_group IS NULL`. Seed MERGE vẫn insert-only. | architecture.md §3 | 2026-10-19 |
 | A8 | main_category | Duyệt JSON bằng Python thuần trong UDF Spark. | architecture.md §3 | 2026-10-19 |
 | D9 | Hoà khi nhiều nhóm | Đồng ý. Other là phần còn lại. Nhiều nhóm, hoặc bước 1 ra nhiều business_category, thì QualityGateError. Bước 2 lấy distinct `category_group` của dòng google active cùng `business_category`, bỏ qua Other. 0 nhóm có tên ra Other. 1 nhóm ra nhóm đó. | Người dùng, 2026-10-19 | 2026-10-19 |
+| A9 | Cutover cạnh | Một MERGE trong `NB_SETUP_POI_ENTITY` commit cả cạnh entity (UPSERT 5, RETIRE 2) và amenity (UPSERT 3, RETIRE 1). `NB_SETUP_POI_AMENITY` MERGE lại cạnh amenity sau khi đã có 5 cạnh entity. | GATE-001; lệch architecture.md §8.5 §9 | 2026-10-19 |
+| A10 | Kiểm tra trước MERGE | Predicate trùng khoá, owner, cạnh thừa và cạnh mà MERGE không retire chạy dưới flow lock, trước MERGE. | GATE-002; lệch architecture.md §8.5 | 2026-10-19 |
+| A11 | JSON không đệ quy | `first_child_value` duyệt bằng stack, đúng thứ tự tài liệu. Sâu hơn 64 mức, hoặc `RecursionError` khi `json.loads`, trả `JSON_INVALID`. | GATE-003; A8; lệch architecture.md §8.1 | 2026-10-19 |
+| A12 | Khoá cạnh gồm schema | Nguồn MERGE, `ON` và predicate kiểm tra gồm `src_schema` và `trg_schema`. | GATE-004; lệch architecture.md §8.5 | 2026-10-19 |
+| R1 | Không review round 3 | Chấp nhận rủi ro. STATE-001 và SQL-001 đã sửa và verify local. Không chạy review round 3 vì vượt cap. `specialist_review` và `risk_gate` giữ `fix_required` đến sau runtime, khi người dùng tự đánh dấu sẵn sàng merge. | Người dùng, 2026-10-19 | 2026-10-19 |
+| V6 | Idempotency chạy tay | Chấp nhận exit `SUCCESS` và log `NEW_EDGE` khi chạy tay notebook node. Watermark cạnh chỉ tiến qua `NB_00`. Lần `p_force=true` MERGE ra version 2 vì nguồn Google sau DROP còn 41 dòng. | Người dùng, 2026-10-19 | 2026-10-19 |
+| V7 | Amenity sau DROP L1 | Chấp nhận 43 dòng `slv_poi_amenity` bị xoá mềm. Exec `c611cee0-f4c8-4cb6-9e22-df69e48f8c15`, nguồn 54, insert 0, update 0, version 2. Nguyên nhân là 16 POI Google không còn trong tập entity đang sống. | Người dùng, 2026-10-19 | 2026-10-19 |
 
 Sửa dòng tại chỗ khi quyết định đổi. Chi tiết ghi thêm ở `## Lịch sử quyết định`.
 
@@ -31,12 +38,21 @@ Sửa dòng tại chỗ khi quyết định đổi. Chi tiết ghi thêm ở `##
 
 ## Sai lệch so với kiến trúc
 
-- Không có.
+- A9: một commit Delta trong `NB_SETUP_POI_ENTITY` ghi cả hai bộ cạnh. §8.5 và §9 tách hai MERGE và coi khoảng giữa là an toàn vì mỗi notebook giữ khoá lúc ghi. Nhả khoá giữa hai notebook vẫn để `NB_00` thấy hai thế hệ cạnh.
+- A10: không còn `raise` sau khi MERGE đã commit. §8.5 kiểm tra `ok` / `extra` / `stale` sau MERGE.
+- A11: thay hàm đệ quy §8.1 bằng stack. A8 giữ nguyên, vẫn là Python thuần trong UDF. Quá độ sâu không làm hỏng executor.
+- A12: `ON` §8.5 chỉ có `pl_name`, `src_tbl`, `trg_tbl`. Cạnh cùng tên ở schema khác không bị rewrite hoặc retire.
 
 ## Xử lý findings
 
 | Finding ID | Severity | Quyết định | Lý do / bằng chứng | Backlog |
 |---|---|---|---|---|
+| GATE-001 | P1 | fixed | A9. Một MERGE commit cạnh entity và amenity. | |
+| GATE-002 | P1 | fixed | A10. Kiểm tra dưới flow lock, trước MERGE. | |
+| GATE-003 | P1 | fixed | A11. Duyệt lặp, sâu tối đa 64, lỗi parse thành `JSON_INVALID`. | |
+| GATE-004 | P1 | fixed | A12. Khoá MERGE và predicate gồm `src_schema`, `trg_schema`. | |
+| STATE-001 | P1 | fixed | `setup_edge_issues` cho đúng bộ RETIRE (`slv_poi_entity` → `slv_poi_amenity`, flow SLV_1H, schema silver) đi vào MERGE. Owner khác hoặc nguồn lạ vẫn chặn. | |
+| SQL-001 | P1 | fixed | Stale và extra chỉ đếm dòng có cả `src_schema` và `trg_schema` là `lh_vv_silver.dbo`. | |
 
 Giá trị quyết định hợp lệ: `fixed`, `accepted-risk`, `rejected-false-positive`, `backlog`.
 
@@ -47,6 +63,7 @@ Giá trị quyết định hợp lệ: `fixed`, `accepted-risk`, `rejected-false
 - 2026-10-19: D3 chốt hai bước lookup ref_dictionary_place_type. Bước 1 không ghi source_name.
 - D5, D6, D7, D8 lấy nguyên văn từ yêu cầu.
 - 2026-10-19: D9 nguyên văn: `Đồng ý. Other là phần còn lại. Nhiều nhóm, hoặc bước 1 ra nhiều business_category, thì QualityGateError`. Other không tính là một nhóm khi đếm.
+- 2026-10-19: R1 nguyên văn: `Chấp nhận rủi ro.` Không review round 3.
 
 ## Lịch sử quyết định
 
@@ -94,3 +111,13 @@ Partner, lấy từ registry, không suy JSON:
 - 2026-10-19 — `tests/test_3p_l1_contract.py` cũng khoá 55 cột registry. Sửa thành 53, `slv_3p_poi` 9 cột, `slv_3p_poi_address` 11 cột. Edit list không nêu file này; suite local không xanh nếu để nguyên.
 - 2026-10-19 — Comment cũ trong `TABLE_CONFIGS_3P` vẫn liệt kê `subcategory_tags_json` như cột JSON đang dùng. Cell seed 3P vẫn ghi `55 cột`. Đã sửa cả hai cho khớp registry 53 cột. Khoá cột trong dict đã bị gỡ từ trước.
 - 2026-10-19 — Fabric DEV, người dùng chạy. Registry 9 bảng, 53 cột, 0 cột tắt (`slv_3p_poi` 9, `slv_3p_poi_address` 11). `category_group` khớp seed: google 297, partner 59 toàn `Other`, không thấy nhóm NULL. `NB_SETUP_POI_ENTITY` `p_apply=true`: inserted=0, drift=0, edges_inserted=5, edges_retired=2. `NB_SETUP_POI_AMENITY` `p_apply=true`: inserted=0, drift=6, edges_inserted=1, edges_retired=1. drift amenity là `amenity_vi` hoặc `is_active` lệch seed; MERGE insert-only không ghi đè. Cạnh đã chuyển. Chi tiết ở `evidence/results/setup-dev.txt`. Chưa chạy node entity.
+- 2026-10-19 — A9 đến A12, trước khi sửa GATE-001..004. Seq amenity trong MERGE chung là 6, 7, 8 để không trùng id với seq entity 1..5 trong cùng một câu INSERT. `NB_SETUP_POI_AMENITY` giữ seq 1, 2, 3 cho đường sửa lại.
+- 2026-10-19 — Review round 2 `FIX_REQUIRED`. GATE-003 đóng. STATE-001: predicate `extra` chặn cạnh legacy `slv_poi_entity → slv_poi_amenity` trước khi MERGE retire. SQL-001: stale đếm cả schema khác `lh_vv_silver.dbo` nên chặn setup. `rounds.review=2`, `rounds.verification=2`. Lượt review kế tiếp vượt cap.
+- 2026-10-19 — STATE-001 và SQL-001 sửa trong cùng lượt, không chạy `run-gate` vì round 3 vượt cap. Hàm `setup_edge_issues` dùng chung hai notebook. Fixture: cạnh RETIRE đúng bộ không chặn; owner khác thì chặn; schema khác thì bỏ qua.
+- 2026-10-19 — R1. Người dùng chấp nhận rủi ro không có review round 3. Bước còn lại là runtime DEV theo `runtime-runbook.md`. Không đánh `gates.runtime`.
+- 2026-10-19 — Runtime DEV, người dùng chạy. Entity RUN đầu: SUCCESS, insert 81, version 1, bảng mới. Chạy lại: SUCCESS, diff 0, không commit, version vẫn 1, không phải NO_DATA. Extract FULL_RELOAD rồi INCREMENTAL đều SUCCESS; lần sau apply 0. Chi tiết `evidence/results/runtime-dev.txt`. Cột vật lý `subcategory_tags_json` và `state_province` còn trên Delta là A1, không phải bước DROP bị quên. ENR 15P để task khác. Đổi `amenity_raw` thành chỉ còn key, và tách `types[]`, đổi grain và khóa `slv_poi_amenity`; không sửa trong task này.
+- 2026-10-19 — Người dùng đã DROP bảng L1 trên DEV để bỏ cột vật lý `state_province` và `subcategory_tags_json`. A1 trên repo vẫn giữ: không DROP ở prod cho đến khi có quyết định mới. Script kiểm tra đọc schema trước, không giả định hai cột còn tồn tại.
+- 2026-10-19 — Check DEV sau DROP: registry 53, cạnh 5 và 3, partner 24 đúng nhóm Other, hai cột vật lý đã mất, khoá luồng trống, không có watermark cạnh. Amenity workspace còn spec `slv_poi_entity` nên dừng trước khi build. Entity `p_force=true`, exec `b94fc4c7-dbda-4b3d-86ab-28deb72dfa9d`, nguồn 65, update 1, xoá mềm 16, version 2. Chi tiết `evidence/results/runtime-dev.txt`.
+- 2026-10-19 — Amenity chạy lại, exec `c611cee0-f4c8-4cb6-9e22-df69e48f8c15`, SUCCESS, nguồn 54, insert 0, update 0, xoá mềm 43, version 2. `slv_poi_entity` history dừng ở version 1 ngày 2026-10-16. V9 vẫn để task khác. Chưa đánh `gates.runtime`.
+- 2026-10-19 — V6. Người dùng chấp nhận exit `SUCCESS` cùng `NEW_EDGE` của lần chạy tay, và MERGE version 2 của lần `p_force=true`. Chưa chấp nhận số dòng amenity đổi sau DROP. `gates.runtime` vẫn `pending`.
+- 2026-10-19 — V7. Người dùng chấp nhận 43 dòng amenity xoá mềm, exec `c611cee0-f4c8-4cb6-9e22-df69e48f8c15`, version 2. `gates.runtime` chuyển `pass`. `specialist_review` và `risk_gate` giữ `fix_required` theo R1.

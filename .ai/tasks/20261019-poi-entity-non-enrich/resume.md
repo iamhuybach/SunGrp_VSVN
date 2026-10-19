@@ -1,13 +1,13 @@
 # Resume
 
-Status: implementing. Owner: main. Gates: evidence=pass, architecture=pass, local_verification=pass, specialist_review=fix_required, risk_gate=fix_required, runtime=pending. Review round 1.
+Status: user_decision. Owner: user. Gates: evidence=pass, architecture=pass, local_verification=pass, specialist_review=fix_required, risk_gate=fix_required, runtime=pass. Review round 2.
 
-Done this session: Recorded Fabric DEV setup results in evidence/results/setup-dev.txt. Registry 53 columns. category_group counts match the seed. Entity setup SUCCESS, drift 0, 5 edges inserted, 2 retired. Amenity setup SUCCESS, drift 6 on amenity_vi or is_active, 1 edge inserted, 1 retired.
+Done this session: Recorded decision V7. The user accepts the 43 amenity soft-deletes from exec c611cee0-f4c8-4cb6-9e22-df69e48f8c15. Runtime gate is pass. Review and risk gates stay fix_required under R1. Status moved from waiting_runtime to user_decision. Local verify passed.
 
-Next action: remediate GATE-001..004, then verify and run-gate. Do not run NB_SLV_POI_ENTITY_NON_ENRICH until those P1s are fixed.
+Next action: user decides whether the task is ready to merge. Review and risk gates stay fix_required under R1. The user asked to commit and push main.
 
-Read next: reviews/round-1.md section P0/P1 findings.
+Read next: decision.md rows V6 and V7. evidence/results/runtime-dev.txt.
 
-Waiting on: GATE-001 one cutover lock, GATE-002 validate before MERGE, GATE-003 iterative JSON walk, GATE-004 schema in the MERGE key.
+Waiting on: user commit, and a ready-to-merge decision.
 
-Prompt: Task 20261019-poi-entity-non-enrich. Phase: remediate. Fix GATE-001, GATE-002, GATE-003, GATE-004. Then verify and run-gate.
+Prompt: Task 20261019-poi-entity-non-enrich. Phase: closeout. Do not mark ready_to_merge unless the user accepts the review and risk gates.

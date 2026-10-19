@@ -281,4 +281,17 @@ def test_setup_contract():
         assert name in src
     assert "slv_poi_amenity: chưa có cạnh slv_poi_entity_non_enrich, chạy NB_SETUP_POI_ENTITY trước" in src
     assert "entity_edges_ok != 5" in src
-    assert "(0, 'slv_poi_entity', 'slv_poi_amenity', 'RETIRE')" in src
+    assert "(0, 'lh_vv_silver.dbo', 'slv_poi_entity', 'lh_vv_silver.dbo', 'slv_poi_amenity', 'RETIRE')" in src
+    edges = src[src.index("# BEGIN_EDGE_PRECHECK"):src.index("with_retry(_write_edges")]
+    merge_at = edges.index("MERGE INTO")
+    pre = edges[:merge_at]
+    match_on = edges[edges.index("ON t.pl_name"):edges.index("WHEN MATCHED")]
+    assert "t.src_schema = s.src_schema" in match_on and "t.trg_schema = s.trg_schema" in match_on
+    for token in (
+        "entity_edges_ok != 5",
+        "còn cạnh active ngoài cạnh chuẩn",
+        "slv_poi_amenity: còn cạnh active slv_poi_entity",
+        "src_schema = 'lh_vv_silver.dbo'",
+        "trg_schema = 'lh_vv_silver.dbo'",
+    ):
+        assert token in pre
