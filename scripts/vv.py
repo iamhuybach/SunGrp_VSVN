@@ -372,6 +372,21 @@ def get_mapping(data: dict[str, Any], key: str, errors: list[str]) -> dict[str, 
     return value
 
 
+def review_round_cap(state: dict[str, Any]) -> int:
+    """Two review rounds, or three when the user approved one extra round for this task."""
+    review_plan = state.get("review_plan")
+    approved = review_plan.get("extra_round_approved_on") if isinstance(review_plan, dict) else None
+    if approved is None:
+        return 2
+    try:
+        if not isinstance(approved, str):
+            raise ValueError
+        dt.date.fromisoformat(approved)
+    except ValueError:
+        return 2
+    return 3
+
+
 def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
     errors: list[str] = []
     if data.get("schema_version") != 1:
@@ -422,8 +437,17 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
         errors.append(f"unknown reviewers: {', '.join(unknown_reviewers)}")
     if len(required_reviewers) != len(set(required_reviewers)):
         errors.append("review_plan.required_reviewers contains duplicates")
-    if review_plan.get("round") not in {0, 1, 2}:
-        errors.append("review_plan.round must be 0, 1, or 2")
+    approved_extra_round = review_plan.get("extra_round_approved_on")
+    if approved_extra_round is not None:
+        try:
+            if not isinstance(approved_extra_round, str):
+                raise ValueError
+            dt.date.fromisoformat(approved_extra_round)
+        except ValueError:
+            errors.append("review_plan.extra_round_approved_on must be an ISO date")
+    review_cap = review_round_cap(data)
+    if review_plan.get("round") not in set(range(review_cap + 1)):
+        errors.append(f"review_plan.round must be 0 through {review_cap}")
 
     expected_models = {
         "main": "grok-4.7", "architect": "claude-opus-5-5",
@@ -562,7 +586,8 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
         if not required and result not in {"not_required", "pending"}:
             errors.append(f"gates.{gate} must be not_required or pending when not required")
 
-    for name, limit in {"verification": 2, "review": 2, "architecture": 2, "runtime_failure": 2}.items():
+    round_limits = {"verification": 2, "review": review_round_cap(data), "architecture": 2, "runtime_failure": 2}
+    for name, limit in round_limits.items():
         value = rounds.get(name)
         if not isinstance(value, int) or isinstance(value, bool) or value < 0:
             errors.append(f"rounds.{name} must be a non-negative integer")
@@ -1044,8 +1069,10 @@ def render_prompt(task_id: str, target: str, round_number: int = 1) -> tuple[Pat
     template = Path(".ai/prompts") / PROMPTS[target]
     if not template.is_file():
         fail(f"Prompt template not found: {template.as_posix()}")
-    if target == "review" and round_number not in {1, 2}:
-        fail("Review round must be 1 or 2.")
+    if target == "review":
+        cap = review_round_cap(load_state(directory / "task-state.yaml"))
+        if round_number not in set(range(1, cap + 1)):
+            fail(f"Review round must be 1 through {cap}.")
     text = template.read_text(encoding="utf-8")
     text = text.replace("{{TASK_ID}}", task_id).replace("{{ROUND}}", str(round_number))
     if target == "architect":
@@ -1222,8 +1249,9 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
         if status == "reviewing":
             if state["gates"]["local_verification"] != "pass":
                 fail("Local verification must pass before automated review.")
+            review_cap = review_round_cap(state)
             expected_round = state["rounds"]["review"] + 1
-            if expected_round > 2:
+            if expected_round > review_cap:
                 candidate = copy.deepcopy(state)
                 if candidate["review_plan"]["required_reviewers"]:
                     candidate["gates"]["specialist_review"] = "user_decision"
@@ -1235,7 +1263,7 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
                 print("Review round cap reached; routed task to user_decision.")
                 return 0
             round_number = args.round if args.round is not None else expected_round
-            if round_number != expected_round or round_number not in {1, 2}:
+            if round_number != expected_round or round_number not in set(range(1, review_cap + 1)):
                 fail(f"Expected review round {expected_round}; received {round_number}.")
             handoff, prompt = render_prompt(args.task, "review", round_number)
             reviewers = list(state["review_plan"]["required_reviewers"])

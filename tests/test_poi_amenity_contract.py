@@ -15,35 +15,50 @@ FLAG_KEYS = (
     "outdoorSeating", "restroom", "reservable", "takeout", "delivery", "dineIn", "curbsidePickup",
 )
 OBJECT_KEYS = ("parkingOptions", "paymentOptions", "accessibilityOptions", "evChargeOptions", "fuelOptions")
-COND_RE = re.compile(r"([A-Za-z][A-Za-z0-9]*)(?:\.([A-Za-z][A-Za-z0-9]*))? = (true|false)")
-MATCHABLE = {
-    ("accommodation", "general_amenities", "parkingOptions.freeStreetParking = true"),
-    ("accommodation", "general_amenities", "parkingOptions.valetParking = true"),
-    ("accommodation", "general_amenities", "parkingOptions.freeGarageParking = true"),
-    ("accommodation", "general_amenities", "parkingOptions.paidGarageParking = true"),
-    ("accommodation", "general_amenities", "outdoorSeating = true"),
-    ("accommodation", "general_amenities", "restroom = true"),
-    ("accommodation", "general_amenities", "goodForChildren = true"),
-    ("accommodation", "general_amenities", "goodForGroups = true"),
-    ("accommodation", "general_amenities", "liveMusic = true"),
-    ("accommodation", "general_amenities", "parkingOptions.freeParkingLot = true"),
-    ("accommodation", "general_amenities", "parkingOptions.paidParkingLot = true"),
-    ("accommodation", "general_amenities", "servesCocktails = true"),
-    ("accommodation", "general_amenities", "parkingOptions.freeElectricVehicleParking = true"),
-    ("accommodation", "general_amenities", "parkingOptions.paidElectricVehicleParking = true"),
-    ("accommodation", "accessibility", "accessibilityOptions.wheelchairAccessibleSeating = true"),
-    ("accommodation", "accessibility", "accessibilityOptions.wheelchairAccessibleElevator = true"),
-    ("accommodation", "accessibility", "accessibilityOptions.wheelchairAccessibleEntrance = true"),
-    ("accommodation", "accessibility", "accessibilityOptions.wheelchairAccessibleRestroom = true"),
-    ("accommodation", "accessibility", "accessibilityOptions.wheelchairAccessibleParking = true"),
-    ("f_n_b", "space_and_services", "restroom = true"),
-    ("f_n_b", "space_and_services", "goodForChildren = true"),
-    ("f_n_b", "space_and_services", "accessibilityOptions.wheelchairAccessibleEntrance = true"),
-    ("f_n_b", "space_and_services", "goodForWatchingSports = true"),
-    ("f_n_b", "space_and_services", "liveMusic = true"),
-    ("f_n_b", "space_and_services", "dineIn = true"),
-    ("attraction", "facilities_and_services", "parkingOptions.freeParkingLot = true"),
-    ("attraction", "facilities_and_services", "parkingOptions.paidParkingLot = true"),
+FLAG_MATCH = {
+    ("accommodation", "general_amenities", "parkingOptions.freeStreetParking"),
+    ("accommodation", "general_amenities", "parkingOptions.valetParking"),
+    ("accommodation", "general_amenities", "parkingOptions.freeGarageParking"),
+    ("accommodation", "general_amenities", "parkingOptions.paidGarageParking"),
+    ("accommodation", "general_amenities", "outdoorSeating"),
+    ("accommodation", "general_amenities", "restroom"),
+    ("accommodation", "general_amenities", "goodForChildren"),
+    ("accommodation", "general_amenities", "goodForGroups"),
+    ("accommodation", "general_amenities", "liveMusic"),
+    ("accommodation", "general_amenities", "parkingOptions.freeParkingLot"),
+    ("accommodation", "general_amenities", "parkingOptions.paidParkingLot"),
+    ("accommodation", "general_amenities", "servesCocktails"),
+    ("accommodation", "general_amenities", "parkingOptions.freeElectricVehicleParking"),
+    ("accommodation", "general_amenities", "parkingOptions.paidElectricVehicleParking"),
+    ("accommodation", "accessibility", "accessibilityOptions.wheelchairAccessibleSeating"),
+    ("accommodation", "accessibility", "accessibilityOptions.wheelchairAccessibleElevator"),
+    ("accommodation", "accessibility", "accessibilityOptions.wheelchairAccessibleEntrance"),
+    ("accommodation", "accessibility", "accessibilityOptions.wheelchairAccessibleRestroom"),
+    ("accommodation", "accessibility", "accessibilityOptions.wheelchairAccessibleParking"),
+    ("f_n_b", "space_and_services", "restroom"),
+    ("f_n_b", "space_and_services", "goodForChildren"),
+    ("f_n_b", "space_and_services", "accessibilityOptions.wheelchairAccessibleEntrance"),
+    ("f_n_b", "space_and_services", "goodForWatchingSports"),
+    ("f_n_b", "space_and_services", "liveMusic"),
+    ("f_n_b", "space_and_services", "dineIn"),
+    ("attraction", "facilities_and_services", "parkingOptions.freeParkingLot"),
+    ("attraction", "facilities_and_services", "parkingOptions.paidParkingLot"),
+}
+TYPE_MATCH = {
+    ("accommodation", "general_amenities", "swimming_pool"),
+    ("accommodation", "general_amenities", "hot_spring"),
+    ("accommodation", "general_amenities", "sauna"),
+    ("accommodation", "general_amenities", "garden"),
+    ("accommodation", "general_amenities", "botanical_garden"),
+    ("accommodation", "general_amenities", "meeting_rooms"),
+    ("f_n_b", "specialty_tags", "food_stand"),
+    ("f_n_b", "specialty_tags", "street_food_gathering"),
+    ("f_n_b", "specialty_tags", "seafood_restaurant"),
+    ("f_n_b", "specialty_tags", "oyster_bar_restaurant"),
+    ("f_n_b", "specialty_tags", "steakhouse"),
+    ("f_n_b", "specialty_tags", "bakery"),
+    ("f_n_b", "specialty_tags", "pastry_shop"),
+    ("f_n_b", "specialty_tags", "cake_shop"),
 }
 
 
@@ -103,17 +118,16 @@ def parse_mapping(md):
     return rows
 
 
-def resolve_condition(raw):
-    """Điều kiện -> (path, giá trị) hoặc None."""
-    match = COND_RE.fullmatch((raw or "").strip())
-    if match is None:
-        return None
-    head, leaf, value = match.groups()
-    if leaf is None:
-        return (f"flags.{head}", value) if head in FLAG_KEYS else None
-    if head == "flags":
-        return (f"flags.{leaf}", value) if leaf in FLAG_KEYS else None
-    return (f"{head}.{leaf}", value) if head in OBJECT_KEYS else None
+def _expand(rows, keys):
+    out = []
+    for source, sector, group, raw, en, vi in rows:
+        for key in keys(raw):
+            out.append((source, sector, group, key, en, vi))
+    return out
+
+
+def _google(rows):
+    return [(sector, group, raw, en, vi) for source, sector, group, raw, en, vi in rows if source == "google"]
 
 
 def _nb(name: str) -> str:
@@ -141,25 +155,85 @@ def _match_ns():
 def test_seed_matches_mapping_file():
     ns = _seed_ns()
     rows = parse_mapping(MAPPING.read_text(encoding="utf-8"))
-    assert ns["SEED_ROWS"] == rows
-    ns["validate_seed"](rows)
+    assert ns["SEED_ROWS"] == _expand(rows, ns["amenity_keys"])
+    ns["validate_seed"](ns["SEED_ROWS"])
+
+
+def test_amenity_keys_cases():
+    keys = _seed_ns()["amenity_keys"]
+    assert keys("outdoorSeating = true") == ["outdoorSeating"]
+    assert keys("parkingOptions.freeElectricVehicleParking = true") == ["parkingOptions.freeElectricVehicleParking"]
+    assert keys("types[] = hot_spring, sauna") == ["hot_spring", "sauna"]
+    assert keys("types[] = bakery, pastry_shop, cake_shop") == ["bakery", "pastry_shop", "cake_shop"]
+    ns = _seed_ns()
+    keys = ns["amenity_keys"]
+    assert keys("types[] có art_gallery") == ["json_type = 'art_gallery'"]
+    assert keys("types[] thuộc business_category = Bar & Pub/Nightlife") == [
+        ns["AMENITY_JSON_TYPE"]["types[] thuộc business_category = Bar & Pub/Nightlife"]
+    ]
+    for raw in (
+        "outdoorSeating = true = true",
+        "serves_meals = true",
+        "parkingOptions.freeParkingLot, parkingOptions.paidParkingLot = true",
+        "cat_cafe, dog_cafe",
+        "dim_sum_restaurant",
+        "Hồ bơi",
+    ):
+        assert keys(raw) == [raw]
+    for row in _seed_ns()["SEED_ROWS"]:
+        assert keys(row[3]) == [row[3]]
+
+
+def test_seed_census():
+    ns = _seed_ns()
+    rows = parse_mapping(MAPPING.read_text(encoding="utf-8"))
+    flag = types = unchanged = type_keys = json_type = 0
+    for source, _sector, _group, raw, _en, _vi in rows:
+        got = ns["amenity_keys"](raw)
+        if source == "partner":
+            assert got == [raw]
+        if ns["AMENITY_FLAG_RE"].fullmatch(raw):
+            flag += 1
+        elif ns["AMENITY_TYPES_RE"].fullmatch(raw):
+            types += 1
+            type_keys += len(got)
+        elif raw in ns["AMENITY_JSON_TYPE"]:
+            json_type += 1
+            assert got == [ns["AMENITY_JSON_TYPE"][raw]]
+        else:
+            unchanged += 1
+            assert got == [raw]
+    assert (flag, types, type_keys, json_type, unchanged) == (27, 8, 14, 12, 105)
 
 
 def test_seed_counts():
     rows = _seed_ns()["SEED_ROWS"]
+    assert len(rows) == 158
     assert sum(row[0] == "partner" for row in rows) == 74
-    assert sum(row[0] == "google" for row in rows) == 78
+    assert sum(row[0] == "google" for row in rows) == 84
     counts = {}
     for source, sector, *_rest in rows:
         counts[(sector, source)] = counts.get((sector, source), 0) + 1
     assert counts[("accommodation", "partner")] == 22
-    assert counts[("accommodation", "google")] == 29
+    assert counts[("accommodation", "google")] == 31
     assert counts[("f_n_b", "partner")] == 18
-    assert counts[("f_n_b", "google")] == 30
+    assert counts[("f_n_b", "google")] == 34
     assert counts[("attraction", "partner")] == 22
     assert counts[("attraction", "google")] == 16
     assert counts[("shopping_n_retail", "partner")] == 12
     assert counts[("shopping_n_retail", "google")] == 3
+
+
+def test_seed_split_rows_keep_columns():
+    rows = _seed_ns()["SEED_ROWS"]
+    sauna = [row for row in rows if row[3] in {"hot_spring", "sauna"}]
+    assert sauna == [
+        ("google", "accommodation", "general_amenities", "hot_spring", "Sauna", "Xông hơi"),
+        ("google", "accommodation", "general_amenities", "sauna", "Sauna", "Xông hơi"),
+    ]
+    bakery = [row for row in rows if row[3] in {"bakery", "pastry_shop", "cake_shop"}]
+    assert {(row[4], row[5]) for row in bakery} == {("Bakery", "Tiệm bánh")}
+    assert [row[3] for row in bakery] == ["bakery", "pastry_shop", "cake_shop"]
 
 
 def test_seed_excludes_placeholders():
@@ -169,11 +243,11 @@ def test_seed_excludes_placeholders():
     assert rooftop == [("partner", "f_n_b", "specialty_tags", "Rooftop Bar", "Rooftop Bar", "Bar sân thượng")]
     street = [
         row for row in rows
-        if row[0] == "google" and row[3] == "parkingOptions.freeStreetParking = true"
+        if row[0] == "google" and row[3] == "parkingOptions.freeStreetParking"
     ]
     assert street == [(
         "google", "accommodation", "general_amenities",
-        "parkingOptions.freeStreetParking = true", "Free Street Parking", "Đỗ xe trên phố",
+        "parkingOptions.freeStreetParking", "Free Street Parking", "Đỗ xe trên phố",
     )]
 
 
@@ -192,6 +266,31 @@ def test_seed_sectors_in_entity_vocabulary():
     assert {row[1] for row in _seed_ns()["SEED_ROWS"]} <= allowed
 
 
+def test_seed_raw_unique_within_group():
+    ns = _seed_ns()
+    rows = ns["SEED_ROWS"]
+    counts = {}
+    for row in rows:
+        counts[row[:4]] = counts.get(row[:4], 0) + 1
+    dups = {key for key, n in counts.items() if n > 1}
+    assert dups == set(ns["AMENITY_SHARED_RAW"])
+    assert counts[ns["AMENITY_SHARED_RAW"][0]] == 2
+    extra = rows + [("google", "accommodation", "general_amenities", "sauna", "Steam", "Hơi")]
+    try:
+        ns["validate_seed"](extra)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("duplicate sauna key was accepted")
+    legacy = rows + [("google", "accommodation", "general_amenities", "outdoorSeating = true", "Outdoor Seating", "x")]
+    try:
+        ns["validate_seed"](legacy)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("legacy amenity_raw was accepted")
+
+
 def test_hoac_split_same_amenity():
     rows = _seed_ns()["SEED_ROWS"]
     parking = [row for row in rows if row[0] == "google" and row[1] == "accommodation" and row[4] == "Parking"]
@@ -203,22 +302,33 @@ def test_hoac_split_same_amenity():
 
 
 def test_resolve_condition_cases():
-    assert resolve_condition("parkingOptions.freeStreetParking = true") == (
-        "parkingOptions.freeStreetParking", "true",
+    resolve = _match_ns()["resolve_condition"]
+    assert resolve("accommodation", "general_amenities", "outdoorSeating") == (
+        "flag", "flags.outdoorSeating", "true",
     )
-    assert resolve_condition("outdoorSeating = true") == ("flags.outdoorSeating", "true")
-    assert resolve_condition("evChargeOptions.x = true") == ("evChargeOptions.x", "true")
-    for raw in (
-        "outdoorSeating = true = true",
-        "restroom",
-        "types[] = swimming_pool",
-        "serves_meals = true",
-        "parkingOptions.freeParkingLot, parkingOptions.paidParkingLot = true",
-        "foo.bar = true",
+    assert resolve("accommodation", "general_amenities", "parkingOptions.freeStreetParking") == (
+        "flag", "parkingOptions.freeStreetParking", "true",
+    )
+    assert resolve("f_n_b", "specialty_tags", "bakery") == ("type", "types[]", "bakery")
+    assert resolve("attraction", "facilities_and_services", "json_type = 'art_gallery'") == (
+        "type", "types[]", "art_gallery",
+    )
+    history = resolve(
+        "attraction", "facilities_and_services",
+        _seed_ns()["AMENITY_JSON_TYPE"]["types[] có enum thuộc business_category = Historical Site"],
+    )
+    assert history[0] == "json_in" and history[1] == "types[]"
+    assert history[2].split(",")[0] == "historical_landmark"
+    for args in (
+        ("attraction", "facilities_and_services", "restroom"),
+        ("attraction", "facilities_and_services", "goodForChildren"),
+        ("attraction", "facilities_and_services", "accessibilityOptions.wheelchairAccessibleEntrance"),
+        ("shopping_n_retail", "facilities_and_services", "delivery"),
+        ("f_n_b", "specialty_tags", "dim_sum_restaurant"),
+        ("accommodation", "general_amenities", "outdoorSeating = true"),
+        ("f_n_b", "space_and_services", "outdoorSeating = true = true"),
     ):
-        assert resolve_condition(raw) is None
-    node = _match_ns()["resolve_condition"]
-    assert node("outdoorSeating = true") == ("flags.outdoorSeating", "true")
+        assert resolve(*args) is None
 
 
 def test_flag_keys_match_registry():
@@ -232,15 +342,85 @@ def test_flag_keys_match_registry():
     assert ns["OBJECT_KEYS"] == objects == OBJECT_KEYS
 
 
-def test_matchable_conditions_pinned():
-    rows = _seed_ns()["SEED_ROWS"]
-    found = {
+def test_match_sets_pinned():
+    seed = _seed_ns()
+    match = _match_ns()
+    md = parse_mapping(MAPPING.read_text(encoding="utf-8"))
+    flag_from_md = set()
+    type_from_md = set()
+    for source, sector, group, raw, _en, _vi in md:
+        if source != "google":
+            continue
+        if seed["AMENITY_FLAG_RE"].fullmatch(raw):
+            flag_from_md.add((sector, group, seed["amenity_keys"](raw)[0]))
+        elif seed["AMENITY_TYPES_RE"].fullmatch(raw):
+            type_from_md.update((sector, group, key) for key in seed["amenity_keys"](raw))
+    assert match["FLAG_MATCH"] == FLAG_MATCH == flag_from_md
+    assert match["TYPE_MATCH"] == TYPE_MATCH == type_from_md
+    assert (len(FLAG_MATCH), len(TYPE_MATCH)) == (27, 14)
+    assert FLAG_MATCH.isdisjoint(TYPE_MATCH)
+    shared = {key[1:] for key in seed["AMENITY_SHARED_RAW"]}
+    assert shared.isdisjoint(FLAG_MATCH) and shared.isdisjoint(TYPE_MATCH)
+    google_keys = {(sector, group, raw) for source, sector, group, raw, _en, _vi in seed["SEED_ROWS"] if source == "google"}
+    assert FLAG_MATCH <= google_keys and TYPE_MATCH <= google_keys
+    json_from_seed = {
         (sector, group, raw)
-        for source, sector, group, raw, _en, _vi in rows
-        if source == "google" and resolve_condition(raw)
+        for source, sector, group, raw, _en, _vi in seed["SEED_ROWS"]
+        if source == "google" and raw.startswith("json_type ")
     }
-    assert found == MATCHABLE
-    assert len(found) == 27
+    assert match["JSON_MATCH"] == json_from_seed
+    assert len(json_from_seed) == 12
+    for sector, group, raw in FLAG_MATCH:
+        hit = match["resolve_condition"](sector, group, raw)
+        assert hit is not None and hit[0] == "flag"
+
+
+def test_legacy_form_consistent():
+    seed = _seed_ns()
+    match = _match_ns()
+    for _source, _sector, _group, raw, _en, _vi in parse_mapping(MAPPING.read_text(encoding="utf-8")):
+        changed = seed["amenity_keys"](raw) != [raw]
+        if raw in seed["AMENITY_JSON_TYPE"]:
+            assert changed and not match["is_legacy_form"](raw)
+        else:
+            assert match["is_legacy_form"](raw) == changed
+    assert all(not match["is_legacy_form"](row[3]) for row in seed["SEED_ROWS"])
+
+
+def test_match_conditions_states():
+    seed = _seed_ns()
+    match = _match_ns()
+    md = parse_mapping(MAPPING.read_text(encoding="utf-8"))
+    new_rows = _google(seed["SEED_ROWS"])
+    old_rows = _google(md)
+    conds, dup, legacy = match["match_conditions"](new_rows)
+    assert len(conds) == 53
+    assert sum(row[5] == "flag" for row in conds) == 27
+    assert sum(row[5] == "json_in" for row in conds) == 8
+    assert dup == [] and legacy == 0
+    old_conds, _old_dup, _old_legacy = match["match_conditions"](old_rows)
+    assert old_conds == []
+    mixed, mixed_dup, mixed_legacy = match["match_conditions"](old_rows + new_rows)
+    assert len(mixed) == 53 and mixed_dup == [] and mixed_legacy == 35
+    assert match["legacy_blocks_write"](mixed_legacy)
+    assert not match["legacy_blocks_write"](0)
+    dup_rows = new_rows + [("accommodation", "general_amenities", "sauna", "Steam", "Hơi")]
+    _conds, dup_keys, _legacy = match["match_conditions"](dup_rows)
+    assert dup_keys == [("accommodation", "general_amenities", "sauna")]
+
+
+def test_match_coverage_requires_full_allowlist():
+    seed = _seed_ns()
+    match = _match_ns()
+    rows = _google(seed["SEED_ROWS"])
+    conds, dup, _legacy = match["match_conditions"](rows)
+    assert dup == []
+    assert match["match_coverage"](conds) == ([], [])
+    dropped = [row for row in rows if row[2] != "sauna"]
+    partial, _dup, _legacy = match["match_conditions"](dropped)
+    missing, extra = match["match_coverage"](partial)
+    assert ("accommodation", "general_amenities", "sauna") in missing
+    assert extra == []
 
 
 def test_amenity_node_contract():
@@ -259,6 +439,16 @@ def test_amenity_node_contract():
     assert "get_json_object" not in src
     assert "có POI join entity nhưng không khớp điều kiện nào" not in src
     assert "rows=n" in src
+    assert '"array<string>"' in src
+    assert "types_json" in src
+    assert "dropDuplicates" in src
+    assert "TYPES_PATH" in src
+    assert "JSON_MATCH" in src
+    assert "array_contains" in src
+    assert "json_in" in src
+    assert "dict_legacy_form=" in src
+    assert "legacy_blocks_write" in src
+    assert "conditions_type=" in src
 
 
 def test_setup_contract():
@@ -295,3 +485,5 @@ def test_setup_contract():
         "trg_schema = 'lh_vv_silver.dbo'",
     ):
         assert token in pre
+    assert "stale_keys" in src
+    assert '"stale": STALE' in src

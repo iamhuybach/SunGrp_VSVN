@@ -1,0 +1,12 @@
+{
+  "round": 3,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "docs/context/01_DATA_MODEL.md": "fc89f59dd5fef656d8fb9a0c06b094813b3b76b17ab8b74e17ba243cb6da9305",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "bccb8e07a6fa4388ddb077d957e54b66db3a7c73901451905575b865c7f48291",
+    "notebooks/NB_SETUP_POI_AMENITY.ipynb": "0dd8094c7bfe7513ef9094f1831200d45d18fcf054451acdb739a32942d5e5f7",
+    "notebooks/NB_SLV_POI_AMENITY.ipynb": "780e7e08f7edaa7ae83565af84955f9531d58cb27fd3e7e840965431b7ec752e",
+    "tests/test_poi_amenity_contract.py": "ad801e48b1c6773567dc57c6c7718143caff6d38ff47a036db3b5f1ea3911568"
+  }
+}
