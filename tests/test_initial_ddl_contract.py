@@ -275,7 +275,7 @@ def test_table_inventory_matches_sources():
         "lh_vv_gold.enr.gld_enr_poi_coordinate",
         "lh_vv_gold.enr.gld_enr_poi_review",
     })
-    entity = _cell(_notebook("NB_SLV_POI_ENTITY.ipynb"), "b1entitybuild")
+    entity = _cell(_notebook("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb"), "b1entitybuild")
     match = re.search(r'trg_tbl\s*=\s*"([^"]+)"', entity)
     assert match
     found.add("lh_vv_silver.dbo." + match.group(1))
@@ -331,23 +331,33 @@ def test_poi_entity_columns_derived():
     ]
     extract = _cell(_notebook("NB_LIB_EXTRACT_RAWDATA.ipynb"), "b756d39b")
     transform = _cell(_notebook("NB_LIB_TRANSFORM_SLV_GLD.ipynb"), "9ff87eee")
-    build = _cell(_notebook("NB_SLV_POI_ENTITY.ipynb"), "b1entitybuild")
+    build = _cell(_notebook("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb"), "b1entitybuild")
     place = _cell(_notebook("NB_SETUP_POI_ENTITY.ipynb"), "a1setupddl")
     snap = _exec_assigns(extract, {"AUDIT_COLUMNS", "SNAPSHOT_TECH_COLUMNS"})
     tech = _exec_assigns(transform, {"TECH_COLUMNS", "TECH_NAMES"})
+    poi_cols = _assign(build, "POI_COLS")
+    address_cols = _assign(build, "ADDRESS_COLS")
     category = _assign(build, "CATEGORY_COLS")
     expected_types = {name: dtype for name, dtype, _nullable in _assign(place, "EXPECTED")}
     names = set(tech["TECH_NAMES"])
+    address = {
+        row["trg_column"]: row["data_type"]
+        for row in rows
+        if row["trg_tbl"] == "slv_3p_poi_address" and row["is_active"]
+    }
     expected = [col for col in registry + list(snap["SNAPSHOT_TECH_COLUMNS"]) if col[0] not in names]
+    expected += [(name, address[name]) for name in address_cols]
     expected += [(name, expected_types[name]) for name in category]
     expected += list(tech["TECH_COLUMNS"])
     got = [(name, dtype.lower()) for name, dtype, _comment in spec["cols"]]
     assert got == [(name, dtype.lower()) for name, dtype in expected]
+    assert [name for name, _dtype in expected if name in set(poi_cols)][:len(poi_cols)] == list(poi_cols)
     assert all("NOT NULL" not in dtype and comment is None for _name, dtype, comment in spec["cols"])
     assert spec["props"] == PROPS and spec["partition"] is None
-    assert spec["fq"] == "lh_vv_silver.dbo.slv_poi_entity"
-    assert 'keep = [c for c in src.columns if c.lower() not in TECH_NAMES]' in build
-    assert 'return out.select(*keep, pick("business_sector"' in build
+    assert spec["fq"] == "lh_vv_silver.dbo.slv_poi_entity_non_enrich"
+    assert _assign(build, "POI_COLS") == poi_cols
+    assert _assign(build, "ADDRESS_COLS") == address_cols
+    assert category == ("business_sector", "business_category", "business_category_vi", "category_group")
     assert "create_sql" in namespace
 
 
@@ -382,7 +392,7 @@ def test_registry_rows_valid():
     exec(initial["init_cfg_3p"], env)  # noqa: S102
     rows = env["flatten_table_configs"](env["TABLE_CONFIGS_3P"], "lh_vv_bronze.dbo", "brz_3rd_crawler_poi_stream")
     env["validate_rows"](env["TABLE_CONFIGS_3P"], rows)
-    assert len(rows) == 55
+    assert len(rows) == 53
     keys = [(row["src_schema"], row["src_tbl"], row["trg_schema"], row["trg_tbl"], row["trg_column"]) for row in rows]
     assert len(keys) == len(set(keys))
 
@@ -393,7 +403,7 @@ def test_ref_seed_blocks_identical():
     amenity = _cell(_notebook("NB_SETUP_POI_AMENITY.ipynb"), "c1setupseed")
     assert _marker(initial["init_seed_place_type"], "# BEGIN_PLACE_TYPE_SEED", "# END_PLACE_TYPE_SEED") == place.strip()
     assert _marker(initial["init_seed_amenity"], "# BEGIN_AMENITY_SEED", "# END_AMENITY_SEED") == amenity.strip()
-    assert "PLACE_TYPE_ROWS = list(SEED_ROWS)" in initial["init_seed_place_type"]
+    assert "PLACE_TYPE_ROWS = with_category_group(SEED_ROWS)" in initial["init_seed_place_type"]
     assert "AMENITY_ROWS = list(SEED_ROWS)" in initial["init_seed_amenity"]
 
 
@@ -428,14 +438,17 @@ def test_pipeline_config_rows_match_sources():
         ))
     for _seq, src, schema, target, mode, notebook, priority in edges:
         expected.append(("PL_VV_TRANS_SLV_TO_ENR_15P", silver, src, schema, target, 1, priority, mode, None, None, notebook))
-    for src in ("slv_3p_poi", "ref_dictionary_place_type"):
-        expected.append(("PL_VV_TRANS_SLV_TO_SLV_1H", silver, src, silver, "slv_poi_entity", 1, 1, "RECOMPUTE", None, None, None))
-    for src in ("slv_3p_poi_amenity", "slv_poi_entity", "ref_dictionary_amenities"):
+    for src in (
+        "slv_3p_poi", "slv_3p_poi_address", "ref_dictionary_place_type",
+        "slv_pn_business_services", "slv_pn_business_service_i18ns",
+    ):
+        expected.append(("PL_VV_TRANS_SLV_TO_SLV_1H", silver, src, silver, "slv_poi_entity_non_enrich", 1, 1, "RECOMPUTE", None, None, None))
+    for src in ("slv_3p_poi_amenity", "slv_poi_entity_non_enrich", "ref_dictionary_amenities"):
         expected.append(("PL_VV_TRANS_SLV_TO_SLV_1H", silver, src, silver, "slv_poi_amenity", 1, 1, "RECOMPUTE", None, None, None))
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 50
+    assert len(expected) == 53
 
 
 def test_watermark_rows_match_source():
@@ -462,6 +475,37 @@ def test_example_patch_dual_update():
     create = _cell(_notebook("NB_CREATE_DDL.ipynb"), "80154b61").split("-- 2. INSERT", 1)[0]
     assert "nb_name" not in create
     assert "ADD COLUMNS" not in "\n".join(_text(cell) for cell in _initial()["cells"])
+
+
+def test_dropped_l1_columns_unread():
+    initial = _by_id(_initial())
+    env: dict = {}
+    exec(_marker(initial["init_registry_pure"], "# BEGIN_REGISTRY_PURE", "# END_REGISTRY_PURE"), env)  # noqa: S102
+    exec(initial["init_cfg_3p"], env)  # noqa: S102
+    rows = env["flatten_table_configs"](env["TABLE_CONFIGS_3P"], "lh_vv_bronze.dbo", "brz_3rd_crawler_poi_stream")
+    pairs = {(row["trg_tbl"], row["trg_column"]) for row in rows}
+    assert ("slv_3p_poi", "subcategory_tags_json") not in pairs
+    assert ("slv_3p_poi_address", "state_province") not in pairs
+    specs, _namespace = _specs()
+    names = {name for spec in specs for name, _dtype, _comment in spec["cols"]}
+    assert "subcategory_tags_json" not in names
+    assert "state_province" not in names
+
+    def code(name):
+        parts = []
+        for item in _notebook(name)["cells"]:
+            if item.get("cell_type") != "code":
+                continue
+            for line in _text(item).splitlines():
+                if line.strip().startswith("#"):
+                    continue
+                parts.append(line.split("#", 1)[0])
+        return "\n".join(parts)
+
+    for name in ("NB_ENR_POI_INFO.ipynb", "NB_ENR_POI_COORDINATE.ipynb", "NB_SLV_POI_ENTITY_NON_ENRICH.ipynb"):
+        text = code(name)
+        assert "state_province" not in text
+        assert "subcategory_tags_json" not in text
 
 
 def test_roles_documented():

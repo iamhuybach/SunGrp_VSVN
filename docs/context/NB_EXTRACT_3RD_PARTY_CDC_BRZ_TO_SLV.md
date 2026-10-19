@@ -166,7 +166,7 @@ Luật phân loại tài liệu (luật đầu tiên khớp quyết định):
 
 [SỬA 10/10] Đã xóa khỏi registry và pipeline config: `slv_3p_poi_raw_data`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`. `slv_3p_poi_price` được thêm lại.
 
-Cột JSON giữ nguyên khối: `amenity_schema_json`, `ext_attributes_json`, `facilities_json`, `secondary_hours_json`. Mảng 1 tầng để cột JSON: `periods_json`, `types_json`, `subcategory_tags_json`, `weekday_text_json`.
+Cột JSON giữ nguyên khối: `amenity_schema_json`, `ext_attributes_json`, `facilities_json`, `secondary_hours_json`. Mảng 1 tầng để cột JSON: `periods_json`, `types_json`, `weekday_text_json`. [SỬA 19/10] `subcategory_tags_json` không còn trong registry.
 
 ## 9. Ghi chú migration — số liệu đo trên raw 3P cũ trước 08/10
 

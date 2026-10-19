@@ -10,8 +10,8 @@ DROPPED = (
     "slv_3p_poi_review_i18n",
 )
 EXPECTED = {
-    "slv_3p_poi": 10,
-    "slv_3p_poi_address": 12,
+    "slv_3p_poi": 9,
+    "slv_3p_poi_address": 11,
     "slv_3p_poi_contact": 4,
     "slv_3p_poi_price": 5,
     "slv_3p_poi_opening_hours": 4,
@@ -47,7 +47,7 @@ def test_registry_shape():
     configs = _configs()
     assert len(configs) == 9
     columns = [(table, name, spec) for table in configs for name, spec in table["columns"].items()]
-    assert len(columns) == 55
+    assert len(columns) == 53
     assert sum(1 for _, _, spec in columns if spec.get("active") is False) == 0
     assert [table["target_table"] for table in configs] == list(EXPECTED)
     for table in configs:

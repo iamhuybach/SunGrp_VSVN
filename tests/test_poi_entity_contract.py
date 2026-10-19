@@ -1,4 +1,5 @@
-"""Contract checks for ref_dictionary_place_type and slv_poi_entity. No Spark."""
+"""Contract checks for ref_dictionary_place_type and slv_poi_entity_non_enrich. No Spark."""
+import ast
 import json
 import re
 from pathlib import Path
@@ -129,13 +130,23 @@ def test_seed_counts():
 
 
 def test_entity_node_contract():
-    src = _nb("NB_SLV_POI_ENTITY.ipynb")
-    assert 'trg_tbl="slv_poi_entity"' in src
-    assert '"poi": "slv_3p_poi"' in src
-    assert '"dict": "ref_dictionary_place_type"' in src
+    src = _nb("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb")
+    assert 'trg_tbl="slv_poi_entity_non_enrich"' in src
+    for role in (
+        '"poi": "slv_3p_poi"',
+        '"address": "slv_3p_poi_address"',
+        '"dict": "ref_dictionary_place_type"',
+        '"svc": "slv_pn_business_services"',
+        '"i18n": "slv_pn_business_service_i18ns"',
+    ):
+        assert role in src
     assert 'pk=("poi_id",)' in src
     assert 'write_mode="MERGE"' in src
-    assert 'required_inputs=("poi", "dict")' in src
+    assert 'required_inputs=("poi", "address", "dict", "svc", "i18n")' in src
+    assert 'uuid_md5(F.col("id"), F.lit(PARTNER))' in src
+    assert '"operation_status"' in src
+    assert '== "vi"' in src
+    assert "subcategory_tags_json" not in src
     assert "posexplode(" in src
     assert "min_by(" in src
     assert '"_pos"' in src
@@ -180,3 +191,101 @@ def test_setup_contract():
     assert "'slv_3p_poi'" in edges
     assert "'ref_dictionary_place_type'" in edges
     assert "cạnh active không đúng" in edges
+    assert "category_group" in ddl
+    for name in (
+        "slv_3p_poi", "slv_3p_poi_address", "ref_dictionary_place_type",
+        "slv_pn_business_services", "slv_pn_business_service_i18ns",
+    ):
+        assert f"'{name}'" in edges
+    assert "'RETIRE'" in edges
+    assert "is_active = 0" in edges
+    assert "acquire_flow_lock" in src
+    assert "finally:" in src[src.index("acquire_flow_lock"):src.index("release_flow_lock")]
+
+
+def _assign(source: str, name: str):
+    tree = ast.parse(source)
+    for node in tree.body:
+        targets = node.targets if isinstance(node, ast.Assign) else []
+        if any(isinstance(target, ast.Name) and target.id == name for target in targets):
+            return ast.literal_eval(node.value)
+    raise AssertionError(name)
+
+
+def _partner_json():
+    text = _nb("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb")
+    start = text.index("# BEGIN_PARTNER_JSON")
+    end = text.index("# END_PARTNER_JSON")
+    ns: dict = {}
+    exec(text[start:end], ns)  # noqa: S102
+    return ns["first_child_value"], ns
+
+
+def test_partner_json_first():
+    first, ns = _partner_json()
+    assert first('{"facilities": {"classification": {"main_category": ["Hotel"]}}}', "main_category") == ("Hotel", "OK")
+    assert first('{"main_category": ["", "Hostel"]}', "main_category") == ("Hostel", "OK")
+    assert first('{"x": {"main_category": "A"}, "main_category": "B"}', "main_category") == ("A", "OK")
+    assert first('{"main_category": "", "x": {"main_category": "Later"}}', "main_category") == ("Later", "OK")
+    assert first("null", "main_category") == (None, ns["JSON_NULL"])
+    assert first(None, "main_category") == (None, ns["JSON_NULL"])
+    assert first("{", "main_category") == (None, ns["JSON_INVALID"])
+    assert first('{"other": "Hotel"}', "main_category") == (None, ns["JSON_NO_VALUE"])
+
+
+def test_category_groups_seed():
+    ns = _seed_ns()
+    groups = ns["CATEGORY_GROUPS"]
+    assert [group for group, _types in groups] == [
+        "Lodging", "Main Meals", "Light Snacks / Cafe", "Heavy Entertainment",
+        "Light Sightseeing / Culture & Nature", "Shopping & Nightlife",
+    ]
+    assert groups[0][1] == ("lodging", "hotel", "resort_hotel", "motel", "guest_house", "hostel", "bed_and_breakfast", "resort")
+    seen = {}
+    for group, types in groups:
+        for token in types:
+            assert token not in seen
+            seen[token] = group
+    assert ns["category_group"]("hotel") == "Lodging"
+    assert ns["category_group"]("Hotel") == "Other"
+    assert ns["category_group"]("vietnamese_restaurant") == "Other"
+    rows = ns["with_category_group"](ns["SEED_ROWS"])
+    assert len(rows) == 356
+    assert all(len(row) == 6 for row in rows)
+
+
+def test_partner_group_resolution_on_seed():
+    ns = _seed_ns()
+    rows = ns["with_category_group"](ns["SEED_ROWS"])
+    step1 = {}
+    named = {}
+    for _source, place, _sector, category, _vi, _group in rows:
+        step1.setdefault(place, set()).add(category)
+    for source, _place, _sector, category, _vi, group in rows:
+        if source != "google" or group == "Other":
+            continue
+        named.setdefault(category, set()).add(group)
+    assert all(len(values) == 1 for values in step1.values())
+    assert all(len(values) < 2 for values in named.values())
+
+    def resolved(place):
+        category = next(iter(step1[place]))
+        groups = named.get(category, set())
+        return next(iter(groups)) if len(groups) == 1 else "Other"
+
+    assert resolved("Hotel") == "Lodging"
+    assert resolved("Homestay") == "Lodging"
+    assert resolved("Café") == "Light Snacks / Cafe"
+    assert resolved("Vietnamese") == "Other"
+    assert resolved("Car with Driver") == "Other"
+
+
+def test_create_ddl_patch():
+    nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
+    assert [cell["id"] for cell in nb["cells"][-2:]] == ["nonenrmd", "nonenrpy"]
+    patch = "".join(nb["cells"][-1]["source"])
+    assert 'if "category_group" not in' in patch
+    assert "ADD COLUMNS (category_group STRING)" in patch
+    assert "WHERE category_group IS NULL" in patch
+    assert "CREATE TABLE IF NOT EXISTS lh_vv_" not in patch
+    assert _assign(patch, "CATEGORY_GROUPS") == _seed_ns()["CATEGORY_GROUPS"]

@@ -111,21 +111,24 @@ Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (ch�
 | `slv_3p_poi_enrichment` | LANG | | | 1 |
 | `slv_3p_poi_review_i18n` | LANG_ARRAY | `poi_review` | | 1 |
 
-**`PL_VV_TRANS_SLV_TO_SLV_1H` — chưa schedule, chạy tay** (`load_mode = RECOMPUTE`, `trg_schema = lh_vv_silver.dbo`, `trg_tbl = slv_poi_entity`, `is_active = 1`, `priority = 1`, `nb_name` NULL nên lib lấy `NB_SLV_POI_ENTITY`):
+**`PL_VV_TRANS_SLV_TO_SLV_1H` — chưa schedule, chạy tay** (`load_mode = RECOMPUTE`, `trg_schema = lh_vv_silver.dbo`, `trg_tbl = slv_poi_entity_non_enrich`, `is_active = 1`, `priority = 1`, `nb_name` NULL nên lib lấy `NB_SLV_POI_ENTITY_NON_ENRICH`):
 
 | src_tbl | src_schema |
 |---|---|
 | `slv_3p_poi` | `lh_vv_silver.dbo` |
+| `slv_3p_poi_address` | `lh_vv_silver.dbo` |
 | `ref_dictionary_place_type` | `lh_vv_silver.dbo` |
+| `slv_pn_business_services` | `lh_vv_silver.dbo` |
+| `slv_pn_business_service_i18ns` | `lh_vv_silver.dbo` |
 
-Seed bằng `NB_SETUP_POI_ENTITY` (`p_apply` mặc định `false`). Chạy lại không nhân đôi cạnh. Cạnh cùng `pl_name` + `src_tbl` + `trg_tbl`, kể cả schema lệch hoặc cột trạng thái NULL, được MERGE về `lh_vv_silver.dbo`, `is_active = 1`, `priority = 1`, `RECOMPUTE`. Pipeline active khác đang giữ `slv_poi_entity` thì fail. Chưa có JSON pipeline trong repo.
+[SỬA 19/10] Seed bằng `NB_SETUP_POI_ENTITY` (`p_apply` mặc định `false`). Cùng một MERGE ghi 5 cạnh trên và retire cạnh cũ vào `slv_poi_entity` (`is_active = 0`). Bảng Delta `slv_poi_entity` không đổi tên, không xoá. Chạy lại không nhân đôi cạnh. Pipeline active khác đang giữ `slv_poi_entity_non_enrich` thì fail. Chưa có JSON pipeline trong repo.
 
-**`slv_poi_amenity`** trong cùng pipeline (`trg_tbl = slv_poi_amenity`, `nb_name` NULL nên lib lấy `NB_SLV_POI_AMENITY`). Seed cạnh bằng `NB_SETUP_POI_AMENITY`. Điều kiện tiên quyết: đã có 2 cạnh active `trg_tbl = slv_poi_entity`.
+**`slv_poi_amenity`** trong cùng pipeline (`trg_tbl = slv_poi_amenity`, `nb_name` NULL nên lib lấy `NB_SLV_POI_AMENITY`). Seed cạnh bằng `NB_SETUP_POI_AMENITY`. Điều kiện tiên quyết: đã có 5 cạnh active `trg_tbl = slv_poi_entity_non_enrich`. Cạnh `slv_poi_entity` → `slv_poi_amenity` được retire.
 
 | src_tbl | src_schema |
 |---|---|
 | `slv_3p_poi_amenity` | `lh_vv_silver.dbo` |
-| `slv_poi_entity` | `lh_vv_silver.dbo` |
+| `slv_poi_entity_non_enrich` | `lh_vv_silver.dbo` |
 | `ref_dictionary_amenities` | `lh_vv_silver.dbo` |
 
 ### Thao tác thường gặp
@@ -551,6 +554,7 @@ FROM lh_vv_ctrl.dbo.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 OR
 | 05/10 | `ctrl_log_run.output_versions_json`; `ctrl_log_table_run` + `src_versions_json`, `trg_version`, `deactivated_rows`, `qg_json`. Notebook trong repo chưa ghi `LOCK_EXPIRES_AT` và chưa cho lùi dấu đã đọc khi cùng table id |
 | 08/10 | Chuyển 7 bảng sang `lh_vv_ctrl.dbo`, seed mới từ repo (không copy vị trí cũ), đổi danh tính nguồn 3P sang `brz_3rd_crawler_poi_stream` / `wm_transform_brz_3rd_crawler_poi_stream`, bỏ cell DROP trong `NB_CREATE_DDL`, không seed cạnh gold |
 | 16/10 | Tách `NB_SETUP_INITIAL_DDL` (dựng môi trường trống, chỉ thêm; gồm `slv_poi_amenity`, `slv_poi_entity`) khỏi `NB_CREATE_DDL` (patch) |
+| 19/10 | Node entity đổi thành `slv_poi_entity_non_enrich` / `NB_SLV_POI_ENTITY_NON_ENRICH`. 5 cạnh active vào node mới, 3 cạnh amenity đọc node mới, cạnh `slv_poi_entity` retire. Registry 3P 53 cột |
 
 ## 11. Việc còn lại liên quan ctrl
 

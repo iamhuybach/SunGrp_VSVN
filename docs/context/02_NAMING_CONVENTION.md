@@ -60,7 +60,7 @@ Luật cho mọi yêu cầu DDL hoặc `INSERT` cấu hình mới (agent bắt b
 4. Không sửa, không xoá cell cũ của `NB_CREATE_DDL`; không đưa lại cell `DROP` đã bỏ. Ngoại lệ: `TABLE_CONFIGS` / `TABLE_CONFIGS_3P` là trạng thái đầy đủ của registry theo nguồn. Sửa giống hệt ở cả hai notebook, rồi chạy lại cell seed registry của nguồn đó trong `NB_CREATE_DDL`.
 5. Không `DROP` bảng đã có dữ liệu ở cả hai notebook. Cột thêm vào bảng đã có phải cho phép NULL.
 6. Seed lấy từ định nghĩa trong repo, không `INSERT … SELECT` từ bảng Fabric đang chạy.
-7. Bảng do lib tự tạo khi chạy (`slv_pn_*`, `slv_3p_poi*` theo registry; node L2 / gold qua `ensure_target`) không có DDL ở hai notebook. Ngoại lệ: `slv_poi_amenity`, `slv_poi_entity` có DDL trong `NB_SETUP_INITIAL_DDL`, cột phải giống hệt cột `ensure_target` tạo (cột build + `TECH_COLUMNS`). Đổi cột build hoặc đổi registry `slv_3p_poi` thì sửa `TABLE_SPECS` cùng task; môi trường đã có bảng thì `ensure_target` tự thêm cột, không cần cell patch.
+7. Bảng do lib tự tạo khi chạy (`slv_pn_*`, `slv_3p_poi*` theo registry; node L2 / gold qua `ensure_target`) không có DDL ở hai notebook. Ngoại lệ: `slv_poi_amenity`, `slv_poi_entity_non_enrich` có DDL trong `NB_SETUP_INITIAL_DDL`, cột phải giống hệt cột `ensure_target` tạo (cột build + `TECH_COLUMNS`). [SỬA 19/10] `slv_poi_entity` là bảng cũ, không còn trong `TABLE_SPECS`. Đổi cột build hoặc đổi registry `slv_3p_poi` thì sửa `TABLE_SPECS` cùng task; môi trường đã có bảng thì `ensure_target` tự thêm cột, không cần cell patch.
 8. Khối seed `BEGIN_PLACE_TYPE_SEED` / `BEGIN_AMENITY_SEED` giữ giống hệt giữa `NB_SETUP_POI_*` và `NB_SETUP_INITIAL_DDL`. `tests/test_initial_ddl_contract.py` kiểm tra hai notebook khớp nguồn; thêm bảng mới thì cập nhật nguồn của test.
 
 ## 3. Pipeline

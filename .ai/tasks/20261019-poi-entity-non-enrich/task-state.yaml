@@ -1,0 +1,90 @@
+schema_version: 1
+task:
+  id: 20261019-poi-entity-non-enrich
+  title: Rename POI entity and drop duplicate silver columns
+  status: implementing
+  owner: main
+  created_at: '2026-10-19'
+  updated_at: '2026-10-19'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - cross_system
+  - stateful_logic
+  - idempotency
+  - cross_state_impact
+  - design_tradeoffs
+  - data_evidence_required
+  - runtime_proof_required
+scope:
+  systems:
+  - lh_vv_silver
+  - lh_vv_ctrl
+  - lh_vv_gold.enr
+  files:
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_SETUP_INITIAL_DDL.ipynb
+  - notebooks/NB_SLV_POI_ENTITY_NON_ENRICH.ipynb
+  - notebooks/NB_SETUP_POI_ENTITY.ipynb
+  - notebooks/NB_SLV_POI_AMENITY.ipynb
+  - notebooks/NB_SETUP_POI_AMENITY.ipynb
+  - notebooks/NB_ENR_POI_INFO.ipynb
+  - notebooks/NB_ENR_POI_COORDINATE.ipynb
+  - docs/context/01_DATA_MODEL.md
+  - docs/context/02_NAMING_CONVENTION.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+  - docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md
+  - docs/requirements/20261012-map-gld-enr-poi-tables/MAPPING.md
+  - docs/requirements/20261012-map-gld-enr-poi-tables/BRD.md
+  - tests/test_poi_entity_contract.py
+  - tests/test_poi_amenity_contract.py
+  - tests/test_initial_ddl_contract.py
+  - tests/test_3p_l1_contract.py
+review_plan:
+  required_reviewers:
+  - state-correctness-reviewer
+  - spark-runtime-reviewer
+  - sql-data-reviewer
+  round: 1
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: fix_required
+  risk_gate: fix_required
+  runtime: pending
+rounds:
+  verification: 1
+  review: 1
+  architecture: 1
+  runtime_failure: 0
+open_findings:
+- id: GATE-001
+  severity: P1
+- id: GATE-002
+  severity: P1
+- id: GATE-003
+  severity: P1
+- id: GATE-004
+  severity: P1

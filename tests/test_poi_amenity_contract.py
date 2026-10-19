@@ -247,7 +247,7 @@ def test_amenity_node_contract():
     src = _nb("NB_SLV_POI_AMENITY.ipynb")
     assert 'trg_tbl="slv_poi_amenity"' in src
     assert '"amenity": "slv_3p_poi_amenity"' in src
-    assert '"entity": "slv_poi_entity"' in src
+    assert '"entity": "slv_poi_entity_non_enrich"' in src
     assert '"dict": "ref_dictionary_amenities"' in src
     assert 'pk=("poi_id", "business_sector", "amenity_group", "amenity_raw")' in src
     assert 'write_mode="MERGE"' in src
@@ -277,6 +277,8 @@ def test_setup_contract():
     assert "WHEN MATCHED" not in merge
     assert "PL_VV_TRANS_SLV_TO_SLV_1H" in src
     assert "RECOMPUTE" in src
-    for name in ("slv_3p_poi_amenity", "slv_poi_entity", "ref_dictionary_amenities"):
+    for name in ("slv_3p_poi_amenity", "slv_poi_entity_non_enrich", "ref_dictionary_amenities"):
         assert name in src
-    assert "slv_poi_amenity: chưa có cạnh slv_poi_entity, chạy NB_SETUP_POI_ENTITY trước" in src
+    assert "slv_poi_amenity: chưa có cạnh slv_poi_entity_non_enrich, chạy NB_SETUP_POI_ENTITY trước" in src
+    assert "entity_edges_ok != 5" in src
+    assert "(0, 'slv_poi_entity', 'slv_poi_amenity', 'RETIRE')" in src
