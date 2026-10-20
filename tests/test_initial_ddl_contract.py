@@ -403,7 +403,7 @@ def test_ref_seed_blocks_identical():
     amenity = _cell(_notebook("NB_SETUP_POI_AMENITY.ipynb"), "c1setupseed")
     assert _marker(initial["init_seed_place_type"], "# BEGIN_PLACE_TYPE_SEED", "# END_PLACE_TYPE_SEED") == place.strip()
     assert _marker(initial["init_seed_amenity"], "# BEGIN_AMENITY_SEED", "# END_AMENITY_SEED") == amenity.strip()
-    assert "PLACE_TYPE_ROWS = with_category_group(SEED_ROWS)" in initial["init_seed_place_type"]
+    assert "PLACE_TYPE_ROWS = list(SEED_ROWS)" in initial["init_seed_place_type"]
     assert "AMENITY_ROWS = list(SEED_ROWS)" in initial["init_seed_amenity"]
 
 

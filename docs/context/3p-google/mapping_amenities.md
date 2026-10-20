@@ -138,3 +138,18 @@
 | Flexible Return             | Không có field riêng                                             | Đổi trả linh hoạt      | Flexible Return           |
 | Parking                     | `parkingOptions.freeParkingLot`, `parkingOptions.paidParkingLot` | Bãi đỗ xe              | Parking                   |
 | Free Wi-Fi                  | Không có field riêng                                             | Wi-Fi miễn phí         | Free Wi-Fi                |
+
+#### **2.5 Tạo danh sách TRUE Amenity**
+
+Insert thêm vào bảng `ref_dictionary_amenities`, các trường hợp nếu đã có trong `amenity_raw`, chỉ cần thêm vào tương ứng. Nếu chưa có, thêm vào và các fields `business_sector` là `other`, `amenity_group` là `other`, `amenity` = `amenity_raw` và `amenity_vi` = `amenity_raw`. Phần điều kiện tách thành từng dòng cho `place_type`:
+
+| service_flags | amenity_raw |
+|---|---|
+| Food/service | takeout, delivery, dineIn, curbsidePickup, reservable, servesBreakfast, servesLunch, servesDinner, servesBeer, servesWine, servesBrunch, servesVegetarianFood, outdoorSeating, liveMusic, menuForChildren, servesCocktails, servesDessert, servesCoffee |
+| Suitability | goodForChildren, allowsDogs, restroom, goodForGroups, goodForWatchingSports, pureServiceAreaBusiness |
+| Payment | paymentOptions.acceptsCreditCards, acceptsDebitCards, acceptsNfc |
+| Parking | parkingOptions.*; aggregate parking = true nếu có ít nhất một parking option bằng true |
+| Accessibility | accessibilityOptions.wheelchairAccessibleParking, wheelchairAccessibleEntrance, wheelchairAccessibleRestroom, wheelchairAccessibleSeating |
+| Derived amenities | Pool, gym, spa, sauna, garden, bar, restaurant, coworking và EV charging có thể được map từ Google fields hoặc relevant types[] theo approved rule |
+
+Chỉ tên flag có giá trị `true` được đưa vào `service_flags`. Missing field không được xem là `true`.

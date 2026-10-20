@@ -1,0 +1,26 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "GATE-001",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-002",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/01_DATA_MODEL.md": "984a1fbcdc61fb6fc685f6800a55e28399ad5c3d2da3992906a9728a45e143bb",
+    "docs/context/3p-google/mapping_amenities.md": "fc913ce50b88d9b15f6e2b913f565b08ae9f131ce9a256c7173af2e0f3c5c429",
+    "docs/context/3p-google/mapping_place_type.md": "ff654cd063bbc5bae95fd42156784ac0dbcb94ba1a67dc3681c0335029f984aa",
+    "notebooks/NB_CREATE_DDL.ipynb": "9545a1091389c831276c2887800db989eee7b938adc7f0c35c33144c6560cf71",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "70b11ee8a389cbc48b2abe6aec0c40f142eab98d3300daba6a5f35fc156c89ca",
+    "notebooks/NB_SETUP_POI_AMENITY.ipynb": "8d203dfe7f1d5a37ee5069ada66221e90b61348cdc2f363db42e351f2f475709",
+    "notebooks/NB_SETUP_POI_ENTITY.ipynb": "a868da3828369050b202bfc60e725102786db11d36986b0993c4bb505eb14516",
+    "tests/test_initial_ddl_contract.py": "90462deff305f992573574952a68e34dd161741367c36a0f87c8dcca47fcf02b",
+    "tests/test_poi_amenity_contract.py": "0d5c55fc6631782b81559295b1fd03489fcbc84e03e05722b1a0ac91616e09d1",
+    "tests/test_poi_entity_contract.py": "4e1ea7358d91bcbad63e1de6db6b935d2c0b49e5627a606933358e254b954168"
+  }
+}

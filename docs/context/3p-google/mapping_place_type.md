@@ -181,4 +181,164 @@
 |                                                                  | academic_building       | university, school                      |
 | **Khu** **vực tâm linh (Religious Places - Thường public)**      | public_religious_site   | church, hindu_temple, mosque, synagogue |
 
- 
+# **1.8. Category Group**
+
+| category_group | Google place_type |
+|---|---|
+| Lodging | `lodging`, `hotel`, `resort_hotel`, `motel`, `guest_house`, `hostel`, `bed_and_breakfast`, `resort` |
+| Main Meals | `restaurant`, `food`, `meal_takeaway`, `seafood_restaurant`, `bistro` |
+| Light Snacks / Cafe | `cafe`, `bakery`, `coffee_shop`, `tea_house` |
+| Heavy Entertainment | `amusement_park`, `theme_park`, `water_park`, `zoo`, `aquarium`, `national_park`, `hiking_area` |
+| Light Sightseeing / Culture & Nature | `tourist_attraction`, `museum`, `place_of_worship`, `beach`, `park`, `historical_landmark`, `pagoda`, `church` |
+| Shopping & Nightlife | `shopping_mall`, `market`, `night_market`, `bar`, `night_club`, `souvenir_store` |
+
+place_type không có trong bảng: `Other`.
+
+| Partner Portal Enum | category_group |
+|---|---|
+| Hotel | Lodging |
+| Resort | Lodging |
+| Hostel | Lodging |
+| Motel | Lodging |
+| Homestay | Lodging |
+| Campground/Glamping | Other |
+| Vietnamese | Other |
+| Chinese | Other |
+| Japanese | Other |
+| Korean | Other |
+| Thai | Other |
+| French | Other |
+| Italian | Other |
+| American | Other |
+| Western | Other |
+| International | Other |
+| Fusion | Main Meals |
+| Bakery & Dessert | Light Snacks / Cafe |
+| Bar & Pub/Nightlife | Shopping & Nightlife |
+| Fast Food | Main Meals |
+| Vegan Restaurant | Other |
+| Seafood Restaurant | Main Meals |
+| Café | Light Snacks / Cafe |
+| Day Spa | Other |
+| Therapeutic Massage | Other |
+| Clinic-Aesthetic Spa | Other |
+| Blind Massage | Other |
+| Onsen-Jjimjilbang | Other |
+| Hair Salon | Other |
+| Nail-Lash Salon | Other |
+| Gym-Fitness | Other |
+| Yoga-Pilates Studio | Other |
+| Meditation Center | Other |
+| Local Specialty | Other |
+| Souvenirs & Handicrafts | Other |
+| Fashion & Accessories | Other |
+| Jewelry & Gems | Other |
+| Cosmetics & Beauty | Other |
+| Convenience Store | Other |
+| Local/Night Market | Shopping & Nightlife |
+| Sporting Goods | Other |
+| Home & Decor | Other |
+| Theme Park | Heavy Entertainment |
+| Water Park | Heavy Entertainment |
+| Museum | Light Sightseeing / Culture & Nature |
+| Historical Site | Light Sightseeing / Culture & Nature |
+| Zoo-Aquarium | Heavy Entertainment |
+| Nature Reserve | Heavy Entertainment |
+| Architecture-Landmark | Other |
+| Art Show-Performance | Other |
+| Traditional Village | Other |
+| Religious Site | Light Sightseeing / Culture & Nature |
+| Casino | Other |
+| Art Gallery | Other |
+| Motorbike Rental | Other |
+| Self-drive Car Rental | Other |
+| Car with Driver | Other |
+| Bicycle-EV Rental | Other |
+| Campervan Rental | Other |
+
+
+# **1.9. Category Group Estimation**
+- Sau khi nhóm thành từng category, time_to_spend, cost và best time sẽ được gán các giá trị mặc định theo từng category.
+- Chuẩn hóa lại
+## 1.9.1 Để tính candidate_time_to_spend_minutes
+
+Insert thêm vào bảng `ref_dictionary_place_type`
+
+| category_group | default_range(min) | avg_range(min) |
+|---|---|---|
+| Lodging | 1,200–1,200 | 1,200 |
+| Main Meals | 60–90 | 75 |
+| Light Snacks / Cafe | 45–60 | 60 |
+| Heavy Entertainment | 180–360 | 270 |
+| Light Sightseeing / Culture & Nature | 60–120 | 90 |
+| Shopping & Nightlife | 60–180 | 120 |
+| Other | 60–90 | 75 |
+
+Các trường hợp đặc biệt nếu đã có trong `place_type`, chỉ cần thêm vào tương ứng. Nếu chưa có, thêm vào và các fields `business_sector`, `business_category`, `business_category_vi`, `category_group` để là `other` / `Other` (với `category_group`):
+
+| Nếu xuất hiện trong type và name | default_range(min) | avg_range(min) |
+|---|---|---|
+| cable car, safari, theme, vinwonders, water park | 180–360 | 270 |
+| night market, market | 90–150 | 120 |
+| pagoda, temple, prison, museum | 60–120 | 90 |
+| beach, snorkel, island, boat | 120–240 | 180 |
+
+## 1.9.2 Để tính candidate_best_time_code và candidate_best_time
+
+Tương tự, candidate code sẽ được sử dụng để tính khoảng thời gian đẹp nhất trong năm.
+
+Insert thêm vào bảng `ref_dictionary_place_type`, các trường hợp nếu đã có trong `place_type`, chỉ cần thêm vào tương ứng. Nếu chưa có, thêm vào và các fields `business_sector`, `business_category`, `business_category_vi`, `category_group` để là `other` / `Other` (với `category_group`). Phần điều kiện tách thành từng dòng cho `place_type`:
+
+| priority | place_type | candidate_best_time_code |
+|---|---|---|
+| 1 | Có snorkel, snorkeling, diving, scuba | snorkeling_diving |
+| 2 | Có island, boat, canoe, ferry, sailing | island_boat |
+| 3 | Có beach, sunset, coast, coastal | beach_coast |
+| 4 | Có waterfall, stream, suối, thác | waterfall_green_season |
+| 5 | Exact type là national_park, hiking_area; hoặc có forest, hiking, trekking, trail | forest_hiking |
+| 6 | Exact type là museum, place_of_worship; hoặc có museum, pagoda, temple, prison, church | indoor_culture |
+| 7 | Exact type là shopping_mall, market, night_market; hoặc có market, shopping, mall, night market | shopping_nightlife |
+| 8 | Có spa, wellness, massage | spa_wellness |
+| 9 | Exact type là amusement_park, theme_park, water_park | outdoor_entertainment |
+| 10 | Exact type thuộc OUTDOOR_TYPES | dry_season |
+| Default | Không match rule nào | all |
+
+Giá trị ước tính theo `candidate_best_time_code`:
+
+| candidate_best_time_code | canonical_candidate |
+|---|---|
+| snorkeling_diving | Month 12–5 |
+| island_boat | Month 11–4 |
+| beach_coast | Month 12–4 |
+| waterfall_green_season | Month 6–10 |
+| forest_hiking | Month 11–3 |
+| outdoor_entertainment, dry_season | Month 11–4 |
+| indoor_culture, shopping_nightlife, spa_wellness, all | all_year |
+
+## 1.9.3 deterministic_cost_vnd
+
+- `deterministic_cost_vnd`.
+
+Khi có đủ cả `price_min` và `price_max`:
+
+```text
+deterministic_cost_vnd = ROUND((price_min + price_max) / 2)
+cost_method = observed_average
+cost_confidence = high
+```
+
+Ví dụ:
+
+```text
+price_min = 200,000
+price_max = 400,000
+deterministic_cost_vnd = (200,000 + 400,000) / 2 = 300,000 VND
+```
+
+- Đi kèm với `deterministic_cost_vnd` là `cost_confidence`
+
+| Trường hợp | cost_confidence |
+|---|---|
+| Có đủ price_min và price_max | luôn là high |
+| Không có price_min và price_max, phải phụ thuộc vào LLM để gen cost | Lấy từ LLM confidence (LLM tự đánh giá) |
+

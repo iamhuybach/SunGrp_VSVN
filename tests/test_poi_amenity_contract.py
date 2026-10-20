@@ -77,6 +77,9 @@ def parse_mapping(md):
     for line in md.splitlines():
         match = SECTION_RE.match(line)
         if match:
+            if match.group(1) not in SECTOR:
+                sector, group, cols = None, None, None
+                continue
             sector, group, cols = SECTOR[match.group(1)], None, None
             continue
         if not line.lstrip().startswith("|"):
@@ -127,7 +130,7 @@ def _expand(rows, keys):
 
 
 def _google(rows):
-    return [(sector, group, raw, en, vi) for source, sector, group, raw, en, vi in rows if source == "google"]
+    return [(row[1], row[2], row[3], row[4], row[5]) for row in rows if row[0] == "google"]
 
 
 def _nb(name: str) -> str:
@@ -152,10 +155,45 @@ def _match_ns():
     return ns
 
 
+SECTION_25 = (
+    "takeout", "curbsidePickup", "reservable", "servesBreakfast", "servesLunch", "servesDinner",
+    "servesBeer", "servesWine", "servesBrunch", "servesVegetarianFood", "menuForChildren",
+    "servesDessert", "servesCoffee", "allowsDogs", "pureServiceAreaBusiness", "acceptsDebitCards",
+    "acceptsNfc",
+)
+
+
+def _rows_2_5(existing):
+    md = MAPPING.read_text(encoding="utf-8")
+    body = md.split("#### **2.5", 1)[1].split("#### ", 1)[0]
+    rows = []
+    for line in body.splitlines():
+        if not line.lstrip().startswith("|"):
+            continue
+        cells = [clean(part) for part in line.strip().strip("|").split("|")]
+        if not cells or cells[0] in {None, "service_flags"} or set(cells[0] or "") <= {"-"}:
+            continue
+        label, raw = cells[0], cells[1] if len(cells) > 1 else None
+        if label in {"Parking", "Derived amenities"} or not raw:
+            continue
+        for token in (part.strip() for part in raw.split(",")):
+            if not token or token.endswith(".*"):
+                continue
+            hit = token in existing
+            if label == "Accessibility":
+                hit = hit or f"accessibilityOptions.{token}" in existing
+            if hit:
+                continue
+            rows.append(("google", "other", "other", token, token, token))
+    return rows
+
+
 def test_seed_matches_mapping_file():
     ns = _seed_ns()
     rows = parse_mapping(MAPPING.read_text(encoding="utf-8"))
-    assert ns["SEED_ROWS"] == _expand(rows, ns["amenity_keys"])
+    existing = {raw for source, _sector, _group, raw, _en, _vi in _expand(rows, ns["amenity_keys"]) if source == "google"}
+    extra = _rows_2_5(existing)
+    assert [row[:6] for row in ns["SEED_ROWS"]] == _expand(rows, ns["amenity_keys"]) + extra
     ns["validate_seed"](ns["SEED_ROWS"])
 
 
@@ -208,9 +246,10 @@ def test_seed_census():
 
 def test_seed_counts():
     rows = _seed_ns()["SEED_ROWS"]
-    assert len(rows) == 158
+    assert len(rows) == 175
     assert sum(row[0] == "partner" for row in rows) == 74
-    assert sum(row[0] == "google" for row in rows) == 84
+    assert sum(row[0] == "google" for row in rows) == 101
+    assert sum(row[1] == "other" and row[0] == "google" for row in rows) == 17
     counts = {}
     for source, sector, *_rest in rows:
         counts[(sector, source)] = counts.get((sector, source), 0) + 1
@@ -228,8 +267,8 @@ def test_seed_split_rows_keep_columns():
     rows = _seed_ns()["SEED_ROWS"]
     sauna = [row for row in rows if row[3] in {"hot_spring", "sauna"}]
     assert sauna == [
-        ("google", "accommodation", "general_amenities", "hot_spring", "Sauna", "Xông hơi"),
-        ("google", "accommodation", "general_amenities", "sauna", "Sauna", "Xông hơi"),
+        ("google", "accommodation", "general_amenities", "hot_spring", "Sauna", "Xông hơi", "Derived amenities"),
+        ("google", "accommodation", "general_amenities", "sauna", "Sauna", "Xông hơi", "Derived amenities"),
     ]
     bakery = [row for row in rows if row[3] in {"bakery", "pastry_shop", "cake_shop"}]
     assert {(row[4], row[5]) for row in bakery} == {("Bakery", "Tiệm bánh")}
@@ -240,24 +279,40 @@ def test_seed_excludes_placeholders():
     rows = _seed_ns()["SEED_ROWS"]
     assert all(value not in SKIP for row in rows for value in row)
     rooftop = [row for row in rows if row[3] == "Rooftop Bar" or row[4] == "Rooftop Bar"]
-    assert rooftop == [("partner", "f_n_b", "specialty_tags", "Rooftop Bar", "Rooftop Bar", "Bar sân thượng")]
+    assert rooftop == [("partner", "f_n_b", "specialty_tags", "Rooftop Bar", "Rooftop Bar", "Bar sân thượng", None)]
     street = [
         row for row in rows
         if row[0] == "google" and row[3] == "parkingOptions.freeStreetParking"
     ]
     assert street == [(
         "google", "accommodation", "general_amenities",
-        "parkingOptions.freeStreetParking", "Free Street Parking", "Đỗ xe trên phố",
+        "parkingOptions.freeStreetParking", "Free Street Parking", "Đỗ xe trên phố", "Parking",
     )]
 
 
 def test_seed_sectors_groups():
     rows = _seed_ns()["SEED_ROWS"]
-    assert {row[1] for row in rows} == {"accommodation", "f_n_b", "attraction", "shopping_n_retail"}
+    assert {row[1] for row in rows} == {"accommodation", "f_n_b", "attraction", "shopping_n_retail", "other"}
     assert "accomodation" not in {row[1] for row in rows}
     assert "fnb" not in {row[1] for row in rows}
     attraction = [row[2] for row in rows if row[1] == "attraction"]
     assert attraction and set(attraction) == {"facilities_and_services"}
+    assert {row[2] for row in rows if row[1] == "other"} == {"other"}
+
+
+def test_section_2_5_rows():
+    extra = [row for row in _seed_ns()["SEED_ROWS"] if row[1] == "other"]
+    assert [row[3] for row in extra] == list(SECTION_25)
+    assert all(row[:3] == ("google", "other", "other") and row[4] == row[3] and row[5] == row[3] for row in extra)
+    assert not any(row[3].startswith("parkingOptions.") or row[3].startswith("wheelchair") for row in extra)
+
+
+def test_section_2_5_rows_inert():
+    match = _match_ns()
+    for token in SECTION_25:
+        assert match["resolve_condition"]("other", "other", token) is None
+    conds, _dup, _legacy = match["match_conditions"](_google(_seed_ns()["SEED_ROWS"]))
+    assert match["match_coverage"](conds) == ([], [])
 
 
 def test_seed_sectors_in_entity_vocabulary():
@@ -361,12 +416,12 @@ def test_match_sets_pinned():
     assert FLAG_MATCH.isdisjoint(TYPE_MATCH)
     shared = {key[1:] for key in seed["AMENITY_SHARED_RAW"]}
     assert shared.isdisjoint(FLAG_MATCH) and shared.isdisjoint(TYPE_MATCH)
-    google_keys = {(sector, group, raw) for source, sector, group, raw, _en, _vi in seed["SEED_ROWS"] if source == "google"}
+    google_keys = {(row[1], row[2], row[3]) for row in seed["SEED_ROWS"] if row[0] == "google"}
     assert FLAG_MATCH <= google_keys and TYPE_MATCH <= google_keys
     json_from_seed = {
-        (sector, group, raw)
-        for source, sector, group, raw, _en, _vi in seed["SEED_ROWS"]
-        if source == "google" and raw.startswith("json_type ")
+        (row[1], row[2], row[3])
+        for row in seed["SEED_ROWS"]
+        if row[0] == "google" and row[3].startswith("json_type ")
     }
     assert match["JSON_MATCH"] == json_from_seed
     assert len(json_from_seed) == 12
@@ -451,17 +506,37 @@ def test_amenity_node_contract():
     assert "conditions_type=" in src
 
 
+def test_service_flags_follow_section_2_5():
+    rows = _seed_ns()["SEED_ROWS"]
+    allowed = {
+        "Food/service", "Suitability", "Payment", "Parking",
+        "Accessibility", "Derived amenities",
+    }
+    assert all(len(row) == 7 and (row[6] in allowed or row[6] is None) for row in rows)
+    by_raw = {}
+    for row in rows:
+        by_raw.setdefault(row[3], set()).add(row[6])
+    assert by_raw["takeout"] == {"Food/service"}
+    assert by_raw["allowsDogs"] == {"Suitability"}
+    assert by_raw["acceptsNfc"] == {"Payment"}
+    assert by_raw["parkingOptions.freeStreetParking"] == {"Parking"}
+    assert by_raw["accessibilityOptions.wheelchairAccessibleEntrance"] == {"Accessibility"}
+    assert by_raw["swimming_pool"] == {"Derived amenities"}
+    assert by_raw["Hồ bơi"] == {None}
+
+
 def test_setup_contract():
     src = _nb("NB_SETUP_POI_AMENITY.ipynb")
     assert 'p_apply = "false"' in src
     for column in (
-        "source_name", "business_sector", "amenity_group", "amenity_raw", "amenity", "amenity_vi",
+        "source_name", "business_sector", "amenity_group", "amenity_raw", "amenity", "amenity_vi", "service_flags",
         "is_active", "updated_at", "poi_id", "row_hash", "created_at", "deleted_at",
     ):
         assert column in src
     ddl = src.split("CREATE TABLE IF NOT EXISTS lh_vv_silver.dbo.ref_dictionary_amenities", 1)[1]
     ddl = ddl.split("for fq, expected", 1)[0]
     assert "business_category" not in ddl
+    assert "service_flags" in ddl
     merge = src.split("def _seed_merge", 1)[1].split("missing_before", 1)[0]
     assert "WHEN NOT MATCHED" in merge
     assert "WHEN MATCHED" not in merge

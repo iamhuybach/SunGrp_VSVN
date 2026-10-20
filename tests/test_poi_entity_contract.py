@@ -27,7 +27,7 @@ def parse_mapping(md):
     for line in md.splitlines():
         m = SECTION_RE.match(line)
         if m:
-            sector, cols = SECTOR[m.group(1)], None
+            sector, cols = SECTOR.get(m.group(1)), None
             continue
         if not line.lstrip().startswith("|"):
             continue
@@ -78,7 +78,16 @@ def _seed_ns():
 def test_seed_matches_mapping_file():
     ns = _seed_ns()
     rows, _conflicts = parse_mapping(MAPPING.read_text(encoding="utf-8"))
-    assert ns["SEED_ROWS"] == rows
+    assert [row[:5] for row in ns["SEED_ROWS"][:356]] == rows
+    new = ns["SEED_ROWS"][356:]
+    assert [row[1] for row in new] == [
+        "cable_car", "safari", "theme", "vinwonders", "night_market", "pagoda", "temple", "prison",
+        "snorkel", "island", "boat",
+        "snorkeling", "diving", "scuba", "canoe", "ferry", "sailing", "sunset", "coast", "coastal",
+        "stream", "suối", "thác", "forest", "hiking", "trekking", "trail", "shopping", "mall",
+        "wellness", "theme_park",
+    ]
+    assert all(row[2:5] == ("other", "other", "other") for row in new)
     ns["validate_seed"](ns["SEED_ROWS"])
 
 
@@ -99,7 +108,8 @@ def test_seed_keys_unique_and_tokens_valid():
     keys = [(source, place) for source, place, *_rest in rows]
     assert len(keys) == len(set(keys))
     token_re = re.compile(r"^[a-z0-9_]+$")
-    assert all(token_re.fullmatch(place) for source, place, *_rest in rows if source == "google")
+    keep = set(ns["TOKEN_KEEP"])
+    assert all(place in keep or token_re.fullmatch(place) for source, place, *_rest in rows if source == "google")
 
 
 def test_seed_sector_normalization():
@@ -125,7 +135,7 @@ def test_seed_conflicts_pinned():
 def test_seed_counts():
     ns = _seed_ns()
     rows = ns["SEED_ROWS"]
-    assert sum(source == "google" for source, *_rest in rows) == 297
+    assert sum(source == "google" for source, *_rest in rows) == 328
     assert sum(source == "partner" for source, *_rest in rows) == 59
 
 
@@ -204,6 +214,16 @@ def test_setup_contract():
     assert "'ref_dictionary_place_type'" in edges
     assert "cạnh active không đúng" in edges
     assert "category_group" in ddl
+    for name, dtype in (
+        ("range_low_min", "INT"),
+        ("range_high_min", "INT"),
+        ("avg_range_min", "INT"),
+        ("candidate_best_time_code", "STRING"),
+        ("canonical_candidate", "STRING"),
+    ):
+        assert name in ddl and dtype in ddl
+    assert "unseeded_rows" in src
+    assert "dòng thiếu cột/giá trị 1.8–1.9" in src
     for name in (
         "slv_3p_poi", "slv_3p_poi_address", "ref_dictionary_place_type",
         "slv_pn_business_services", "slv_pn_business_service_i18ns",
@@ -328,59 +348,257 @@ def test_partner_json_depth():
     assert first(bomb, "main_category") == (None, ns["JSON_INVALID"])
 
 
-def test_category_groups_seed():
-    ns = _seed_ns()
-    groups = ns["CATEGORY_GROUPS"]
-    assert [group for group, _types in groups] == [
-        "Lodging", "Main Meals", "Light Snacks / Cafe", "Heavy Entertainment",
-        "Light Sightseeing / Culture & Nature", "Shopping & Nightlife",
-    ]
-    assert groups[0][1] == ("lodging", "hotel", "resort_hotel", "motel", "guest_house", "hostel", "bed_and_breakfast", "resort")
-    seen = {}
-    for group, types in groups:
-        for token in types:
-            assert token not in seen
-            seen[token] = group
-    assert ns["category_group"]("hotel") == "Lodging"
-    assert ns["category_group"]("Hotel") == "Other"
-    assert ns["category_group"]("vietnamese_restaurant") == "Other"
-    rows = ns["with_category_group"](ns["SEED_ROWS"])
-    assert len(rows) == 356
-    assert all(len(row) == 6 for row in rows)
+CATEGORY_GROUPS = (
+    ("Lodging", ("lodging", "hotel", "resort_hotel", "motel", "guest_house", "hostel", "bed_and_breakfast", "resort")),
+    ("Main Meals", ("restaurant", "food", "meal_takeaway", "seafood_restaurant", "bistro")),
+    ("Light Snacks / Cafe", ("cafe", "bakery", "coffee_shop", "tea_house")),
+    ("Heavy Entertainment", ("amusement_park", "theme_park", "water_park", "zoo", "aquarium", "national_park", "hiking_area")),
+    ("Light Sightseeing / Culture & Nature", ("tourist_attraction", "museum", "place_of_worship", "beach", "park", "historical_landmark", "pagoda", "church")),
+    ("Shopping & Nightlife", ("shopping_mall", "market", "night_market", "bar", "night_club", "souvenir_store")),
+)
 
 
-def test_partner_group_resolution_on_seed():
-    ns = _seed_ns()
-    rows = ns["with_category_group"](ns["SEED_ROWS"])
-    step1 = {}
-    named = {}
-    for _source, place, _sector, category, _vi, _group in rows:
-        step1.setdefault(place, set()).add(category)
-    for source, _place, _sector, category, _vi, group in rows:
-        if source != "google" or group == "Other":
+def _md_tables(md, heading):
+    body = md.split(heading, 1)[1]
+    stop = re.search(r"^#{1,3} ", body, re.M)
+    body = body[:stop.start()] if stop else body
+    tables = []
+    current = None
+    for line in body.splitlines():
+        if not line.lstrip().startswith("|"):
+            if current:
+                tables.append(current)
+                current = None
             continue
-        named.setdefault(category, set()).add(group)
+        cells = [_cell(part) for part in line.strip().strip("|").split("|")]
+        if all(part is None or set(part) <= {"-"} for part in cells):
+            continue
+        if current is None:
+            current = []
+        current.append(cells)
+    if current:
+        tables.append(current)
+    return tables
+
+
+def _snake(token):
+    if " " in token and all(ord(ch) < 128 for ch in token):
+        return token.replace(" ", "_")
+    return token
+
+
+def _ints(text):
+    return int(text.replace(",", "").replace(".", ""))
+
+
+def _range_pair(text):
+    low, high = re.split(r"[–-]", text)
+    return _ints(low), _ints(high)
+
+
+def section_1_8_lookup(md):
+    table = _md_tables(md, "# **1.8. Category Group**")[0]
+    lookup = {}
+    groups = []
+    for cells in table[1:]:
+        group, raw = cells[0], cells[1]
+        tokens = tuple(re.findall(r"[a-z0-9_]+", raw))
+        groups.append((group, tokens))
+        for token in tokens:
+            lookup[token] = group
+    return groups, lookup
+
+
+def _partner_row_groups(md, lookup):
+    found = {}
+    sector, cols = None, None
+    for line in md.splitlines():
+        match = SECTION_RE.match(line)
+        if match:
+            sector, cols = SECTOR.get(match.group(1)), None
+            continue
+        if sector is None or not line.lstrip().startswith("|"):
+            continue
+        cells = [_cell(part) for part in line.strip().strip("|").split("|")]
+        if all(part is None or set(part) <= {"-"} for part in cells):
+            continue
+        if any(part and "Google Place API" in part for part in cells):
+            cols = {role: i for i, part in enumerate(cells) for key, role in ROLES if part and key in part}
+            continue
+        if cols is None:
+            continue
+        partner = cells[cols["partner"]] if "partner" in cols else None
+        google = cells[cols["google"]] if "google" in cols else None
+        if not partner or partner in SKIP:
+            continue
+        groups = found.setdefault(partner, set())
+        if google and google not in SKIP:
+            for token in (part.strip() for part in google.split(",")):
+                if token:
+                    group = lookup.get(token, "Other")
+                    if group != "Other":
+                        groups.add(group)
+    assert all(len(groups) < 2 for groups in found.values())
+    return {partner: next(iter(groups)) if len(groups) == 1 else "Other" for partner, groups in found.items()}
+
+
+def _estimate_oracle(md):
+    tables = _md_tables(md, "## 1.9.1")
+    group_range = {}
+    for cells in tables[0][1:]:
+        low, high = _range_pair(cells[1])
+        group_range[cells[0]] = (low, high, _ints(cells[2]))
+    special = {}
+    for cells in tables[1][1:]:
+        low, high = _range_pair(cells[1])
+        values = (low, high, _ints(cells[2]))
+        for token in (part.strip() for part in cells[0].split(",")):
+            special[_snake(token)] = values
+    best = {}
+    for cells in _md_tables(md, "## 1.9.2")[0][1:]:
+        priority, raw, code = cells
+        if priority in {"10", "Default"}:
+            continue
+        text = raw.replace("Exact type là ", "").replace("hoặc có ", "").replace("Có ", "")
+        for part in re.split(r"[,;]", text):
+            token = _snake(part.strip())
+            if token:
+                best.setdefault(token, code)
+    canon = {}
+    for cells in _md_tables(md, "Giá trị ước tính theo")[0][1:]:
+        for code in (part.strip() for part in cells[0].split(",")):
+            canon[code] = cells[1]
+    return group_range, special, best, canon
+
+
+def test_category_group_from_section_1_8():
+    md = MAPPING.read_text(encoding="utf-8")
+    groups, lookup = section_1_8_lookup(md)
+    assert groups == list(CATEGORY_GROUPS)
+    rows = _seed_ns()["SEED_ROWS"]
+    for row in rows:
+        if row[0] != "google":
+            continue
+        assert row[5] == lookup.get(row[1], "Other")
+    assert lookup["pagoda"] == "Light Sightseeing / Culture & Nature"
+    assert lookup["night_market"] == "Shopping & Nightlife"
+    assert lookup["theme_park"] == "Heavy Entertainment"
+
+
+def test_partner_category_group_from_mapping_row():
+    md = MAPPING.read_text(encoding="utf-8")
+    _groups, lookup = section_1_8_lookup(md)
+    expected = _partner_row_groups(md, lookup)
+    assert expected["Hotel"] == "Lodging"
+    assert expected["Homestay"] == "Lodging"
+    assert expected["Café"] == "Light Snacks / Cafe"
+    assert expected["Vietnamese"] == "Other"
+    assert expected["Car with Driver"] == "Other"
+    rows = _seed_ns()["SEED_ROWS"]
+    seeded = {place: group for source, place, _sector, _cat, _vi, group, *_rest in rows if source == "partner"}
+    assert seeded == expected
+    partner_table = _md_tables(md, "# **1.8. Category Group**")[1]
+    documented = [(cells[0], cells[1]) for cells in partner_table[1:]]
+    seed_order = [(place, group) for source, place, _s, _c, _v, group, *_r in rows if source == "partner"]
+    assert documented == seed_order
+
+
+def test_partner_group_matches_node_rule():
+    rows = _seed_ns()["SEED_ROWS"]
+    step1, named = {}, {}
+    for _source, place, _sector, category, _vi, _group, *_rest in rows:
+        step1.setdefault(place, set()).add(category)
+    for source, _place, _sector, category, _vi, group, *_rest in rows:
+        if source == "google" and group != "Other":
+            named.setdefault(category, set()).add(group)
     assert all(len(values) == 1 for values in step1.values())
-    assert all(len(values) < 2 for values in named.values())
 
     def resolved(place):
         category = next(iter(step1[place]))
         groups = named.get(category, set())
         return next(iter(groups)) if len(groups) == 1 else "Other"
 
-    assert resolved("Hotel") == "Lodging"
-    assert resolved("Homestay") == "Lodging"
-    assert resolved("Café") == "Light Snacks / Cafe"
-    assert resolved("Vietnamese") == "Other"
-    assert resolved("Car with Driver") == "Other"
+    for source, place, _sector, _cat, _vi, group, *_rest in rows:
+        if source == "partner":
+            assert group == resolved(place)
+
+
+def test_estimates_from_section_1_9():
+    group_range, special, best, canon = _estimate_oracle(MAPPING.read_text(encoding="utf-8"))
+    for row in _seed_ns()["SEED_ROWS"]:
+        _source, place, _sector, _cat, _vi, group, low, high, avg, code, canonical = row
+        assert (low, high, avg) == special.get(place, group_range[group])
+        expect = best.get(place, "all")
+        assert (code, canonical) == (expect, canon[expect])
+
+
+def test_estimate_spot_values():
+    rows = {(row[0], row[1]): row for row in _seed_ns()["SEED_ROWS"]}
+    assert rows[("google", "beach")][5:] == (
+        "Light Sightseeing / Culture & Nature", 120, 240, 180, "beach_coast", "Month 12–4",
+    )
+    assert rows[("google", "market")][5:] == (
+        "Shopping & Nightlife", 90, 150, 120, "shopping_nightlife", "all_year",
+    )
+    assert rows[("google", "national_park")][5:] == (
+        "Heavy Entertainment", 180, 360, 270, "forest_hiking", "Month 11–3",
+    )
+    assert rows[("google", "water_park")][5:] == (
+        "Heavy Entertainment", 180, 360, 270, "outdoor_entertainment", "Month 11–4",
+    )
+    assert rows[("google", "suối")][5:] == ("Other", 60, 90, 75, "waterfall_green_season", "Month 6–10")
+    assert rows[("google", "cable_car")][5:] == ("Other", 180, 360, 270, "all", "all_year")
+    assert rows[("google", "ferry_terminal")][5:] == ("Other", 60, 90, 75, "all", "all_year")
+    assert rows[("google", "hindu_temple")][5:] == ("Other", 60, 90, 75, "all", "all_year")
+    assert rows[("google", "hotel")][5:] == ("Lodging", 1200, 1200, 1200, "all", "all_year")
+    assert rows[("partner", "Café")][5:] == ("Light Snacks / Cafe", 45, 60, 60, "all", "all_year")
+
+
+def test_validate_seed_rejects_bad_rows():
+    ns = _seed_ns()
+    good = ns["SEED_ROWS"][0]
+    cases = [
+        good[:5] + ("Not a group",) + good[6:],
+        good[:6] + (90, 60, 75) + good[9:],
+        good[:9] + ("all", "Month 12–5"),
+        good[:10],
+        good[:6] + (None, good[7], good[8]) + good[9:],
+    ]
+    for bad in cases:
+        try:
+            ns["validate_seed"]([bad])
+        except ValueError:
+            continue
+        raise AssertionError(bad)
+
+
+def test_no_category_group_function():
+    for name in ("NB_SETUP_POI_ENTITY.ipynb", "NB_SETUP_INITIAL_DDL.ipynb"):
+        src = _nb(name)
+        assert "def category_group" not in src
+        assert "with_category_group" not in src
+
+
+def test_section_1_9_preserved():
+    md = MAPPING.read_text(encoding="utf-8")
+    for heading in (
+        "# **1.9. Category Group Estimation**",
+        "## 1.9.1 Để tính candidate_time_to_spend_minutes",
+        "## 1.9.2 Để tính candidate_best_time_code và candidate_best_time",
+        "## 1.9.3 deterministic_cost_vnd",
+    ):
+        assert heading in md
+    assert "deterministic_cost_vnd = ROUND((price_min + price_max) / 2)" in md
 
 
 def test_create_ddl_patch():
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
-    assert [cell["id"] for cell in nb["cells"][-2:]] == ["nonenrmd", "nonenrpy"]
+    assert [cell["id"] for cell in nb["cells"][-2:]] == ["dictseedmd", "dictseedpy"]
+    assert any(cell.get("id") == "nonenrpy" for cell in nb["cells"])
     patch = "".join(nb["cells"][-1]["source"])
-    assert 'if "category_group" not in' in patch
-    assert "ADD COLUMNS (category_group STRING)" in patch
-    assert "WHERE category_group IS NULL" in patch
-    assert "CREATE TABLE IF NOT EXISTS lh_vv_" not in patch
-    assert _assign(patch, "CATEGORY_GROUPS") == _seed_ns()["CATEGORY_GROUPS"]
+    assert "ADD COLUMNS" in patch and "missing" in patch
+    assert "UPDATE" not in patch and "CATEGORY_GROUPS" not in patch
+    entity = _nb("NB_SETUP_POI_ENTITY.ipynb")
+    start = entity.index("EXPECTED = ")
+    expected = _assign(entity[start:entity.index("\ndescribed", start)], "EXPECTED")
+    assert _assign(patch, "NEW_COLS") == tuple((name, dtype.upper()) for name, dtype, _null in expected[-5:])
