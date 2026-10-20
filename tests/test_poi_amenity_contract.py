@@ -464,6 +464,33 @@ def test_match_conditions_states():
     assert dup_keys == [("accommodation", "general_amenities", "sauna")]
 
 
+def test_match_conditions_carries_service_flags():
+    seed = _seed_ns()["SEED_ROWS"]
+    match = _match_ns()
+    five = _google(seed)
+    six = [row[1:6] + (row[6],) for row in seed if row[0] == "google"]
+    conds5, _dup5, _legacy5 = match["match_conditions"](five)
+    conds, dup, legacy = match["match_conditions"](six)
+    flags = {(row[1], row[2], row[3]): row[6] for row in seed if row[0] == "google"}
+    assert len(conds) == len(conds5) == 53
+    assert sum(c[-3] == "flag" for c in conds) == sum(c[5] == "flag" for c in conds5) == 27
+    assert dup == [] and legacy == 0
+    for cond in conds:
+        assert cond[5] == flags[cond[:3]]
+        assert cond[-3] in {"flag", "type", "json_in"}
+
+
+def test_amenity_ddl_matches_node():
+    src = _nb("NB_SETUP_POI_AMENITY.ipynb")
+    node = _nb("NB_SLV_POI_AMENITY.ipynb")
+    out = re.search(r"OUT_COLS = \(([^)]*)\)", node)
+    cols = [part.strip().strip('"') for part in out.group(1).split(",") if part.strip()]
+    start = src.index("CREATE TABLE IF NOT EXISTS lh_vv_silver.dbo.slv_poi_amenity")
+    ddl = src[start:src.index("TBLPROPERTIES", start)]
+    names = re.findall(r"^\s+([a-z_]+)\s+", ddl, re.M)
+    assert names == list(cols) + ["row_hash", "created_at", "updated_at", "deleted_at"]
+
+
 def test_match_coverage_requires_full_allowlist():
     seed = _seed_ns()
     match = _match_ns()
@@ -476,6 +503,12 @@ def test_match_coverage_requires_full_allowlist():
     missing, extra = match["match_coverage"](partial)
     assert ("accommodation", "general_amenities", "sauna") in missing
     assert extra == []
+
+
+def test_amenity_parameter_cell_is_tagged():
+    nb = json.loads((ROOT / "notebooks" / "NB_SLV_POI_AMENITY.ipynb").read_text(encoding="utf-8"))
+    cell = next(item for item in nb["cells"] if item["id"] == "d1amenparam")
+    assert "parameters" in cell["metadata"].get("tags", [])
 
 
 def test_amenity_node_contract():
@@ -504,6 +537,12 @@ def test_amenity_node_contract():
     assert "dict_legacy_form=" in src
     assert "legacy_blocks_write" in src
     assert "conditions_type=" in src
+    out = re.search(r"OUT_COLS = \(([^)]*)\)", src)
+    cols = [part.strip().strip('"') for part in out.group(1).split(",") if part.strip()]
+    assert cols[-1] == "service_flags"
+    assert "service_flags string, _kind" in src
+    assert 'c[-3] == "flag"' in src
+    assert 'c[5] == "flag"' not in src[src.index("def build"):]
 
 
 def test_service_flags_follow_section_2_5():
@@ -545,7 +584,8 @@ def test_setup_contract():
     for name in ("slv_3p_poi_amenity", "slv_poi_entity_non_enrich", "ref_dictionary_amenities"):
         assert name in src
     assert "slv_poi_amenity: chưa có cạnh slv_poi_entity_non_enrich, chạy NB_SETUP_POI_ENTITY trước" in src
-    assert "entity_edges_ok != 5" in src
+    assert "entity_edges_ok != 6" in src
+    assert "'slv_3p_poi_contact'" in src
     assert "(0, 'lh_vv_silver.dbo', 'slv_poi_entity', 'lh_vv_silver.dbo', 'slv_poi_amenity', 'RETIRE')" in src
     edges = src[src.index("# BEGIN_EDGE_PRECHECK"):src.index("with_retry(_write_edges")]
     merge_at = edges.index("MERGE INTO")
@@ -553,7 +593,7 @@ def test_setup_contract():
     match_on = edges[edges.index("ON t.pl_name"):edges.index("WHEN MATCHED")]
     assert "t.src_schema = s.src_schema" in match_on and "t.trg_schema = s.trg_schema" in match_on
     for token in (
-        "entity_edges_ok != 5",
+        "entity_edges_ok != 6",
         "còn cạnh active ngoài cạnh chuẩn",
         "slv_poi_amenity: còn cạnh active slv_poi_entity",
         "src_schema = 'lh_vv_silver.dbo'",

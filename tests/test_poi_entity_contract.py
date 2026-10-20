@@ -2,6 +2,7 @@
 import ast
 import json
 import re
+from datetime import datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -64,6 +65,14 @@ def parse_mapping(md):
 def _nb(name: str) -> str:
     nb = json.loads((ROOT / "notebooks" / name).read_text(encoding="utf-8"))
     return "".join("".join(cell["source"]) for cell in nb["cells"])
+
+
+def _nb_cell(name: str, cell_id: str) -> str:
+    nb = json.loads((ROOT / "notebooks" / name).read_text(encoding="utf-8"))
+    for item in nb["cells"]:
+        if item.get("id") == cell_id:
+            return "".join(item["source"])
+    raise AssertionError(cell_id)
 
 
 def _seed_ns():
@@ -145,6 +154,7 @@ def test_entity_node_contract():
     for role in (
         '"poi": "slv_3p_poi"',
         '"address": "slv_3p_poi_address"',
+        '"contact": "slv_3p_poi_contact"',
         '"dict": "ref_dictionary_place_type"',
         '"svc": "slv_pn_business_services"',
         '"i18n": "slv_pn_business_service_i18ns"',
@@ -152,7 +162,13 @@ def test_entity_node_contract():
         assert role in src
     assert 'pk=("poi_id",)' in src
     assert 'write_mode="MERGE"' in src
-    assert 'required_inputs=("poi", "address", "dict", "svc", "i18n")' in src
+    assert 'required_inputs=("poi", "address", "contact", "dict", "svc", "i18n")' in src
+    build = _nb_cell("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb", "b1entitybuild")
+    for name in ("website_url_of", "top_level_text", '"_web.value"', "*ESTIMATE_COLS", '"slv_3p_poi_contact: "'):
+        assert name in src
+    for name in ("_crawled_at", "_event_id", "_first_seen_at", "_last_seen_at"):
+        assert name not in build
+    assert 'get_json_object("website_urls"' not in src
     assert 'uuid_md5(F.col("id"), F.lit(PARTNER))' in src
     assert '"operation_status"' in src
     assert '== "vi"' in src
@@ -225,7 +241,7 @@ def test_setup_contract():
     assert "unseeded_rows" in src
     assert "dòng thiếu cột/giá trị 1.8–1.9" in src
     for name in (
-        "slv_3p_poi", "slv_3p_poi_address", "ref_dictionary_place_type",
+        "slv_3p_poi", "slv_3p_poi_address", "slv_3p_poi_contact", "ref_dictionary_place_type",
         "slv_pn_business_services", "slv_pn_business_service_i18ns",
     ):
         assert f"'{name}'" in edges
@@ -263,6 +279,7 @@ _ENTITY_UPSERTS = {
     ("ref_dictionary_place_type", "slv_poi_entity_non_enrich"),
     ("slv_pn_business_services", "slv_poi_entity_non_enrich"),
     ("slv_pn_business_service_i18ns", "slv_poi_entity_non_enrich"),
+    ("slv_3p_poi_contact", "slv_poi_entity_non_enrich"),
     ("slv_3p_poi_amenity", "slv_poi_amenity"),
     ("slv_poi_entity_non_enrich", "slv_poi_amenity"),
     ("ref_dictionary_amenities", "slv_poi_amenity"),
@@ -593,12 +610,73 @@ def test_section_1_9_preserved():
 
 def test_create_ddl_patch():
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
-    assert [cell["id"] for cell in nb["cells"][-2:]] == ["dictseedmd", "dictseedpy"]
+    assert [cell["id"] for cell in nb["cells"][-2:]] == ["entwebmd", "entwebpy"]
     assert any(cell.get("id") == "nonenrpy" for cell in nb["cells"])
-    patch = "".join(nb["cells"][-1]["source"])
+    patch = _nb_cell("NB_CREATE_DDL.ipynb", "dictseedpy")
     assert "ADD COLUMNS" in patch and "missing" in patch
     assert "UPDATE" not in patch and "CATEGORY_GROUPS" not in patch
     entity = _nb("NB_SETUP_POI_ENTITY.ipynb")
     start = entity.index("EXPECTED = ")
     expected = _assign(entity[start:entity.index("\ndescribed", start)], "EXPECTED")
     assert _assign(patch, "NEW_COLS") == tuple((name, dtype.upper()) for name, dtype, _null in expected[-5:])
+
+
+def test_partner_website_top_level():
+    _first, ns = _partner_json()
+    top = ns["top_level_text"]
+    assert top('{"website_url": "https://a.example/"}', "website_url") == ("https://a.example/", "OK")
+    assert top('{"website_url": ""}', "website_url") == ("", "OK")
+    assert top('{"website_url": " x "}', "website_url") == (" x ", "OK")
+    for text in (
+        '{"website_url": 1}',
+        '{"website_url": true}',
+        '{"website_url": {"a": 1}}',
+        '{"website_url": ["u"]}',
+    ):
+        assert top(text, "website_url") == (None, "NOT_STRING")
+    assert top('{"website_url": null}', "website_url") == (None, "NO_VALUE")
+    assert top('{"x": {"website_url": "u"}}', "website_url") == (None, "NO_VALUE")
+    assert top('["u"]', "website_url") == (None, "NO_VALUE")
+    assert top(None, "website_url") == (None, "NULL_JSON")
+    assert top("null", "website_url") == (None, "NULL_JSON")
+    assert top("{", "website_url") == (None, "INVALID_JSON")
+    assert top("[" * 3000 + "]" * 3000, "website_url") == (None, "INVALID_JSON")
+
+
+def test_create_ddl_contact_edge_patch():
+    src = _nb_cell("NB_CREATE_DDL.ipynb", "entwebpy")
+    for token in ("INSERT INTO", "WHERE NOT EXISTS", "'slv_3p_poi_contact'", "wm_flow__", "RECOMPUTE"):
+        assert token in src
+    for token in ("DROP ", "DELETE FROM", "ALTER TABLE"):
+        assert token not in src
+    assert src.count("UPDATE ") == 2
+    parts = src.split("UPDATE {WM}")
+    assert len(parts) == 3
+    acquire_where = parts[1].split("WHERE", 1)[1]
+    assert "lock_exec_id = '{LOCK}'" not in acquire_where
+    assert "lock_exec_id = '{LOCK}'" in parts[2]
+    assert "lock_exec_id IS NULL" in parts[1]
+    assert "INTERVAL {LEASE_MINUTES} MINUTES" in parts[1]
+    assert 'owner["lock_exec_id"] != LOCK' in src
+    assert "uuid.uuid4().hex" in src
+    assert 'status = "FAILED" if failed else "SUCCESS"' in src
+    assert "finally:" in src
+    start = src.index("from datetime import timedelta")
+    end = src.index('LOCK = "entweb-"')
+    ns: dict = {}
+    exec(src[start:end], ns)  # noqa: S102
+    now = datetime(2026, 10, 20, 16, 0, 0)
+    free = ns["lock_is_free"]
+    assert free(None, None, now)
+    assert free("stale", None, now)
+    assert not free("live", now - timedelta(minutes=1), now)
+    assert free("stale", now - timedelta(minutes=90), now)
+    state = {"owner": None, "lock_at": None}
+    assert free(state["owner"], state["lock_at"], now)
+    state = {"owner": "A", "lock_at": now}
+    assert state["owner"] != "B"
+    assert not free(state["owner"], state["lock_at"], now)
+    state = {"owner": "old", "lock_at": now - timedelta(minutes=91)}
+    assert free(state["owner"], state["lock_at"], now)
+    state = {"owner": "new", "lock_at": now}
+    assert state["owner"] != "old"

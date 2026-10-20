@@ -117,13 +117,14 @@ Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (ch�
 |---|---|
 | `slv_3p_poi` | `lh_vv_silver.dbo` |
 | `slv_3p_poi_address` | `lh_vv_silver.dbo` |
+| `slv_3p_poi_contact` | `lh_vv_silver.dbo` |
 | `ref_dictionary_place_type` | `lh_vv_silver.dbo` |
 | `slv_pn_business_services` | `lh_vv_silver.dbo` |
 | `slv_pn_business_service_i18ns` | `lh_vv_silver.dbo` |
 
-[SỬA 19/10] Seed bằng `NB_SETUP_POI_ENTITY` (`p_apply` mặc định `false`). Cùng một MERGE ghi 5 cạnh trên và retire cạnh cũ vào `slv_poi_entity` (`is_active = 0`). Bảng Delta `slv_poi_entity` không đổi tên, không xoá. Chạy lại không nhân đôi cạnh. Pipeline active khác đang giữ `slv_poi_entity_non_enrich` thì fail. Chưa có JSON pipeline trong repo.
+[SỬA 20/10] Seed bằng `NB_SETUP_POI_ENTITY` (`p_apply` mặc định `false`). Cùng một MERGE ghi 6 cạnh trên và retire cạnh cũ vào `slv_poi_entity` (`is_active = 0`). Bảng Delta `slv_poi_entity` không đổi tên, không xoá. Chạy lại không nhân đôi cạnh. Pipeline active khác đang giữ `slv_poi_entity_non_enrich` thì fail. Chưa có JSON pipeline trong repo.
 
-**`slv_poi_amenity`** trong cùng pipeline (`trg_tbl = slv_poi_amenity`, `nb_name` NULL nên lib lấy `NB_SLV_POI_AMENITY`). Seed cạnh bằng `NB_SETUP_POI_AMENITY`. Điều kiện tiên quyết: đã có 5 cạnh active `trg_tbl = slv_poi_entity_non_enrich`. Cạnh `slv_poi_entity` → `slv_poi_amenity` được retire.
+**`slv_poi_amenity`** trong cùng pipeline (`trg_tbl = slv_poi_amenity`, `nb_name` NULL nên lib lấy `NB_SLV_POI_AMENITY`). Seed cạnh bằng `NB_SETUP_POI_AMENITY`. Điều kiện tiên quyết: đã có 6 cạnh active `trg_tbl = slv_poi_entity_non_enrich`. Cạnh `slv_poi_entity` → `slv_poi_amenity` được retire.
 
 | src_tbl | src_schema |
 |---|---|
@@ -228,6 +229,8 @@ SET watermark_value = NULL, last_success_at = NULL, last_src_version = NULL, las
 WHERE watermark_id = '<wm_transform_...>';
 
 -- Ép 1 node tính lại: KHÔNG sửa dòng cạnh, dùng tham số NB_00 p_force_nodes = '<trg_tbl>'
+
+-- DEV, reset một bảng node: DROP bảng rồi xoá các dòng wm_e__ của đúng trg_tbl đó, theo runtime-runbook.md của task. Không xoá dòng wm_flow__.
 ```
 
 ---
@@ -555,6 +558,7 @@ FROM lh_vv_ctrl.dbo.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 OR
 | 08/10 | Chuyển 7 bảng sang `lh_vv_ctrl.dbo`, seed mới từ repo (không copy vị trí cũ), đổi danh tính nguồn 3P sang `brz_3rd_crawler_poi_stream` / `wm_transform_brz_3rd_crawler_poi_stream`, bỏ cell DROP trong `NB_CREATE_DDL`, không seed cạnh gold |
 | 16/10 | Tách `NB_SETUP_INITIAL_DDL` (dựng môi trường trống, chỉ thêm; gồm `slv_poi_amenity`, `slv_poi_entity`) khỏi `NB_CREATE_DDL` (patch) |
 | 19/10 | Node entity đổi thành `slv_poi_entity_non_enrich` / `NB_SLV_POI_ENTITY_NON_ENRICH`. 5 cạnh active vào node mới, 3 cạnh amenity đọc node mới, cạnh `slv_poi_entity` retire. Registry 3P 53 cột |
+| 20/10 | Entity bỏ 4 cột op, thêm `website_url` và 5 cột ước tính. Amenity thêm `service_flags`. Cạnh `slv_3p_poi_contact` → `slv_poi_entity_non_enrich`: 6 cạnh entity |
 
 ## 11. Việc còn lại liên quan ctrl
 

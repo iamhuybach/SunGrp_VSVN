@@ -336,18 +336,28 @@ def test_poi_entity_columns_derived():
     snap = _exec_assigns(extract, {"AUDIT_COLUMNS", "SNAPSHOT_TECH_COLUMNS"})
     tech = _exec_assigns(transform, {"TECH_COLUMNS", "TECH_NAMES"})
     poi_cols = _assign(build, "POI_COLS")
+    contact_cols = _assign(build, "CONTACT_COLS")
     address_cols = _assign(build, "ADDRESS_COLS")
     category = _assign(build, "CATEGORY_COLS")
+    estimate_cols = _assign(build, "ESTIMATE_COLS")
     expected_types = {name: dtype for name, dtype, _nullable in _assign(place, "EXPECTED")}
     names = set(tech["TECH_NAMES"])
+    snap_names = {name for name, _dtype in snap["SNAPSHOT_TECH_COLUMNS"]}
     address = {
         row["trg_column"]: row["data_type"]
         for row in rows
         if row["trg_tbl"] == "slv_3p_poi_address" and row["is_active"]
     }
-    expected = [col for col in registry + list(snap["SNAPSHOT_TECH_COLUMNS"]) if col[0] not in names]
+    contact = {
+        row["trg_column"]: row["data_type"]
+        for row in rows
+        if row["trg_tbl"] == "slv_3p_poi_contact" and row["is_active"]
+    }
+    expected = [col for col in registry if col[0] not in names and col[0] not in snap_names]
+    expected += [(name, contact[name]) for name in contact_cols]
     expected += [(name, address[name]) for name in address_cols]
     expected += [(name, expected_types[name]) for name in category]
+    expected += [(name, expected_types[name]) for name in estimate_cols]
     expected += list(tech["TECH_COLUMNS"])
     got = [(name, dtype.lower()) for name, dtype, _comment in spec["cols"]]
     assert got == [(name, dtype.lower()) for name, dtype in expected]
@@ -355,6 +365,8 @@ def test_poi_entity_columns_derived():
     assert all("NOT NULL" not in dtype and comment is None for _name, dtype, comment in spec["cols"])
     assert spec["props"] == PROPS and spec["partition"] is None
     assert spec["fq"] == "lh_vv_silver.dbo.slv_poi_entity_non_enrich"
+    kept = {name for name, _dtype in tech["TECH_COLUMNS"]}
+    assert (snap_names - kept).isdisjoint({name for name, _dtype, _comment in spec["cols"]})
     assert _assign(build, "POI_COLS") == poi_cols
     assert _assign(build, "ADDRESS_COLS") == address_cols
     assert category == ("business_sector", "business_category", "business_category_vi", "category_group")
@@ -440,7 +452,7 @@ def test_pipeline_config_rows_match_sources():
         expected.append(("PL_VV_TRANS_SLV_TO_ENR_15P", silver, src, schema, target, 1, priority, mode, None, None, notebook))
     for src in (
         "slv_3p_poi", "slv_3p_poi_address", "ref_dictionary_place_type",
-        "slv_pn_business_services", "slv_pn_business_service_i18ns",
+        "slv_pn_business_services", "slv_pn_business_service_i18ns", "slv_3p_poi_contact",
     ):
         expected.append(("PL_VV_TRANS_SLV_TO_SLV_1H", silver, src, silver, "slv_poi_entity_non_enrich", 1, 1, "RECOMPUTE", None, None, None))
     for src in ("slv_3p_poi_amenity", "slv_poi_entity_non_enrich", "ref_dictionary_amenities"):
@@ -448,7 +460,7 @@ def test_pipeline_config_rows_match_sources():
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 53
+    assert len(expected) == 54
 
 
 def test_watermark_rows_match_source():
