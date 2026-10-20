@@ -84,3 +84,7 @@ Lần `NB_00` exec `4704e1a4-d6fd-446b-a320-962dc8d0dbb9`: entity `SUCCESS`, `in
 ### 2026-10-20 — User xác nhận runtime
 
 User xác nhận `gates.runtime = pass` sau R5 và lần `NB_00` idempotent exec `86a52eee-474c-45ec-9d3b-2483cab3b0aa` (`NO_DATA`, 0 Dirty Edge). `specialist_review` và `risk_gate` giữ `fix_required` vì vòng 3 không trả `PASS`. STATE-005 vẫn `accepted-risk`. Task chưa sang `ready_to_merge`.
+
+### 2026-10-20 — User chấp nhận hai cổng review
+
+User chấp nhận `specialist_review` và `risk_gate` dù vòng 3 trả `FIX_REQUIRED`. Không có vòng 4. STATE-005 đã là `accepted-risk` và `open_findings` rỗng. Hai cổng chuyển `pass` theo xác nhận của user, không phải kết quả reviewer mới. Task sang `ready_to_merge`.

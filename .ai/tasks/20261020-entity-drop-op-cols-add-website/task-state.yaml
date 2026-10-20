@@ -2,8 +2,8 @@ schema_version: 1
 task:
   id: 20261020-entity-drop-op-cols-add-website
   title: Drop op columns and add website_url on slv_poi_entity_non_enrich
-  status: waiting_runtime
-  owner: user
+  status: ready_to_merge
+  owner: main
   created_at: '2026-10-20'
   updated_at: '2026-10-20'
 classification:
@@ -66,8 +66,8 @@ gates:
   evidence: not_required
   architecture: pass
   local_verification: pass
-  specialist_review: fix_required
-  risk_gate: fix_required
+  specialist_review: pass
+  risk_gate: pass
   runtime: pass
 rounds:
   verification: 2

@@ -1,11 +1,11 @@
 # Resume
 
-Status: waiting_runtime. Owner: user. Gates: architecture=pass, local_verification=pass, specialist_review=fix_required, risk_gate=fix_required, runtime=pass. runtime_failure=2.
+Status: ready_to_merge. Owner: main. Gates: architecture=pass, local_verification=pass, specialist_review=pass, risk_gate=pass, runtime=pass. runtime_failure=2.
 
-Done this session: user confirmed gates.runtime=pass after the idempotent NO_DATA run. Review gates stay fix_required because round 3 did not pass. STATE-005 is accepted-risk. Status is not ready_to_merge.
+Done this session: user accepted the two review gates that round 3 left at fix_required. STATE-005 stays accepted-risk. No fourth review round. Status is ready_to_merge.
 
-Next action: user decides whether to accept the two review gates. Commit and push were requested separately.
+Next action: none. The user asked for the commit and push.
 
-Read next: `.ai/tasks/20261020-entity-drop-op-cols-add-website/decision.md` heading `User xác nhận runtime`.
+Read next: `.ai/tasks/20261020-entity-drop-op-cols-add-website/decision.md` heading `User chấp nhận hai cổng review`.
 
-Waiting on: nothing for Fabric. Review gates remain open.
+Waiting on: nothing.
