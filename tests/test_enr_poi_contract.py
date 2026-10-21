@@ -1,17 +1,26 @@
 """Contract checks for the gld_enr append flow. No Spark."""
+import ast
 import json
+import re
+import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
 INFO = [
-    ("poi_id", "STRING NOT NULL"), ("poi_name", "STRING"), ("types", "STRING"),
-    ("subcategory_tags", "STRING"), ("business_sector", "STRING"), ("business_category", "STRING"),
-    ("website_url", "STRING"), ("short_address", "STRING"), ("district", "STRING"),
-    ("destination_name", "STRING"), ("destination_context", "STRING"), ("rating", "DECIMAL(4,2)"),
-    ("userRatingCount", "BIGINT"), ("priceLevel", "INT"), ("opening_hours_text", "STRING"),
-    ("review_json", "STRING"), ("time_to_spend", "STRING"), ("best_time_type", "STRING"),
-    ("best_time_from_month", "INT"), ("best_time_to_month", "INT"), ("cost", "BIGINT"),
+    ("poi_id", "STRING NOT NULL"), ("source_name", "STRING"), ("source_id", "STRING"),
+    ("language_code", "STRING"), ("poi_name", "STRING"), ("poi_name_normalized", "STRING"),
+    ("types", "STRING"), ("operating_status", "STRING"), ("primary_type", "STRING"),
+    ("website_url", "STRING"), ("house_number", "STRING"), ("street", "STRING"),
+    ("ward", "STRING"), ("district", "STRING"), ("city", "STRING"),
+    ("destination_name", "STRING"), ("full_address", "STRING"), ("lat", "DOUBLE"),
+    ("lng", "DOUBLE"), ("business_sector", "STRING"), ("business_category", "STRING"),
+    ("business_category_vi", "STRING"), ("category_group", "STRING"),
+    ("range_low_min", "INT"), ("range_high_min", "INT"), ("avg_range_min", "INT"),
+    ("candidate_best_time_code", "STRING"), ("canonical_candidate", "STRING"),
+    ("rating", "DECIMAL(4,2)"), ("user_rating_count", "BIGINT"), ("price_level", "INT"),
+    ("opening_hours_text", "STRING"), ("review_json", "STRING"), ("time_to_spend", "STRING"),
+    ("best_time", "STRING"), ("cost", "BIGINT"), ("cost_vnd", "STRING"), ("service_flag", "STRING"),
     ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
 ]
 COORD = [
@@ -26,6 +35,27 @@ REVIEW = [
     ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
 ]
 DROPPED = ("description", "title", "positive", "negative", "response_text", "source_review_id")
+INFO_DROPPED = (
+    "subcategory_tags", "short_address", "destination_context", "best_time_type",
+    "best_time_from_month", "best_time_to_month", "userRatingCount", "priceLevel", "types_json",
+)
+EDGES_OFF = [
+    ("slv_3p_poi", "gld_enr_poi_info"),
+    ("slv_3p_poi_address", "gld_enr_poi_info"),
+    ("slv_3p_poi_contact", "gld_enr_poi_info"),
+    ("slv_3p_poi", "gld_enr_poi_coordinate"),
+    ("slv_3p_poi_address", "gld_enr_poi_coordinate"),
+    ("slv_pn_poi", "gld_enr_poi_coordinate"),
+]
+EDGES_ON = [
+    (1, "slv_poi_entity_non_enrich", "lh_vv_gold.enr", "gld_enr_poi_info", "APPEND", "NB_ENR_POI_INFO", 1),
+    (2, "slv_poi_amenity", "lh_vv_gold.enr", "gld_enr_poi_info", "APPEND", "NB_ENR_POI_INFO", 1),
+    (3, "slv_pn_business_service_i18ns", "lh_vv_gold.enr", "gld_enr_poi_info", "APPEND", "NB_ENR_POI_INFO", 1),
+]
+INFO_ACTIVE = (
+    "slv_poi_entity_non_enrich", "slv_poi_amenity", "slv_3p_poi_rating", "slv_3p_poi_price",
+    "slv_3p_poi_opening_hours", "slv_3p_poi_review", "slv_pn_business_service_i18ns",
+)
 EDGES = [
     (1, "slv_pn_business_services", "slv_pn_poi", "RECOMPUTE", "NB_SLV_PN_POI", 1),
     (2, "slv_pn_business_service_i18ns", "slv_pn_poi", "RECOMPUTE", "NB_SLV_PN_POI", 1),
@@ -48,6 +78,42 @@ def _nb(name: str) -> str:
     return "".join("".join(cell["source"]) for cell in nb["cells"])
 
 
+def _cell(name: str, cell_id: str) -> str:
+    nb = json.loads((ROOT / "notebooks" / name).read_text(encoding="utf-8"))
+    found = [cell for cell in nb["cells"] if cell.get("id") == cell_id]
+    assert len(found) == 1, cell_id
+    return "".join(found[0]["source"])
+
+
+def _assign(source: str, name: str):
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == name for t in node.targets):
+            return ast.literal_eval(node.value)
+    raise AssertionError(name)
+
+
+def _info_pure() -> dict:
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    ns: dict = {}
+    exec(info[info.index("# BEGIN_INFO_PURE"):info.index("# END_INFO_PURE")], ns)  # noqa: S102
+    return ns
+
+
+def _mapping_labels() -> dict[str, tuple[str, str, str]]:
+    text = (ROOT / "docs" / "context" / "3p-google" / "mapping_gld_enr_poi_info.md").read_text(encoding="utf-8")
+    section = text.split("# 2. Mapping business_sector", 1)[1]
+    labels = {}
+    for line in section.splitlines():
+        if not line.startswith("|") or line.startswith("|---") or "business_sector" in line:
+            continue
+        cells = [part.strip() for part in line.strip("|").split("|")]
+        if len(cells) < 2:
+            continue
+        parts = [unicodedata.normalize("NFC", part.strip()) for part in cells[1].split(" / ")]
+        labels[cells[0].strip()] = tuple(parts)
+    return labels
+
+
 def _pure():
     text = _nb("NB_LIB_TRANSFORM_SLV_GLD.ipynb")
     start = text.index("# BEGIN_APPEND_PURE")
@@ -65,43 +131,136 @@ def _pure():
 
 
 def test_gold_ddl_matches_mapping():
-    src = _nb("NB_CREATE_DDL.ipynb")
-    for table, cols in (
-        ("gld_enr_poi_info", INFO),
-        ("gld_enr_poi_coordinate", COORD),
-        ("gld_enr_poi_review", REVIEW),
-    ):
-        assert table in src
-        for name, dtype in cols:
-            assert f'("{name}", "{dtype}")' in src
+    patch = _cell("NB_CREATE_DDL.ipynb", "enrinfopy")
+    old = _cell("NB_CREATE_DDL.ipynb", "enrddlpy")
+    assert _assign(patch, "INFO_COLS") == INFO
+    assert _assign(old, "COORD_COLS") == COORD
+    assert _assign(old, "REVIEW_COLS") == REVIEW
+    names = [name for name, _dtype in INFO]
+    for dropped in INFO_DROPPED:
+        assert dropped not in names
+    review_names = [name for name, _dtype in REVIEW]
     for dropped in DROPPED:
-        assert f"`{dropped}`" not in src.split("gld_enr_poi_info")[-1].split("EDGES")[0] or dropped not in (
-            "description", "title", "positive", "negative", "response_text", "source_review_id"
-        )
-    # Dropped names are absent as DDL columns of the three tables.
-    block = src[src.index("INFO_COLS"):src.index("EDGES")]
-    for dropped in DROPPED:
-        assert f'"{dropped}"' not in block
+        assert dropped not in review_names
 
 
 def test_mapping_comments_and_edges():
-    info = _nb("NB_ENR_POI_INFO.ipynb")
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
     coord = _nb("NB_ENR_POI_COORDINATE.ipynb")
     review = _nb("NB_ENR_POI_REVIEW.ipynb")
-    for col in ["COL-001", "COL-003", "COL-004", "COL-005", "COL-006", "COL-007", "COL-008", "COL-009", "COL-010"]:
+    for col in ("COL-001", "COL-003", "COL-007", "COL-009", "COL-010"):
         assert col in info
-    for number in range(35, 49):
+    for number in (35, 36, 37, 38, 39, 41, 42, 44, 45, 46, 47, 48):
         assert f"COL-{number:03d}" in info
+    for col in ("COL-004", "COL-005", "COL-006", "COL-008", "COL-040", "COL-043"):
+        assert col not in info
     for number in range(11, 22):
         assert f"COL-{number:03d}" in coord
     for col in ("COL-022", "COL-023", "COL-025", "COL-027", "COL-031", "COL-032", "COL-033", "COL-034"):
         assert col in review
-    ddl = _nb("NB_CREATE_DDL.ipynb")
+    ddl = _cell("NB_CREATE_DDL.ipynb", "enrddlpy")
     for _seq, src, trg, mode, nb, _priority in EDGES:
         assert f'"{src}"' in ddl and f'"{trg}"' in ddl and f'"{mode}"' in ddl and f'"{nb}"' in ddl
     assert ddl.count('"APPEND"') == 11
     assert "pn_poi" not in info
     assert "PL_VV_TRANS_SLV_TO_ENR_15P" in ddl
+
+
+def test_info_patch_cell_edges():
+    patch = _cell("NB_CREATE_DDL.ipynb", "enrinfopy")
+    old = _cell("NB_CREATE_DDL.ipynb", "enrddlpy")
+    assert _assign(patch, "EDGES_OFF") == EDGES_OFF
+    assert _assign(patch, "EDGES_ON") == EDGES_ON
+    assert _assign(patch, "INFO_ACTIVE") == INFO_ACTIVE
+    pairs = {(src, trg) for _seq, src, _schema, trg, _mode, _nb, _priority in _assign(old, "EDGES")}
+    assert set(map(tuple, EDGES_OFF)) <= pairs
+    off = set(map(tuple, EDGES_OFF))
+    kept = {src for src, trg in pairs if trg == "gld_enr_poi_info" and (src, trg) not in off}
+    added = {src for _seq, src, _schema, _trg, _mode, _nb, _priority in EDGES_ON}
+    assert kept | added == set(INFO_ACTIVE)
+    assert not any(trg == "gld_enr_poi_coordinate" and (src, trg) not in off for src, trg in pairs)
+
+
+def test_info_patch_cell_guards():
+    patch = _cell("NB_CREATE_DDL.ipynb", "enrinfopy")
+    old = _cell("NB_CREATE_DDL.ipynb", "enrddlpy")
+    assert list(_assign(patch, "OLD_INFO_NAMES")) == [name for name, _dtype in _assign(old, "INFO_COLS")]
+    for token in ("DROP", "DELETE", "TRUNCATE", "ALTER TABLE", "REPLACE", "RESTORE"):
+        assert token not in patch
+    order = [
+        "held = True", "tableExists(INFO_FQ)", "OLD_INFO_NAMES]",
+        "STATE-001:", "INSERT INTO {CFG}", "SET is_active = 0", "finally:",
+    ]
+    positions = [patch.index(token) for token in order]
+    assert positions == sorted(positions)
+    assert "SET is_active = 1" not in patch
+    assert "lock_exec_id = '{LOCK}'" in patch
+    nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
+    ids = [cell.get("id") for cell in nb["cells"]]
+    assert ids[-1] == "enrinfopy"
+    assert ids[-2] == "enrinfomd"
+
+
+def test_info_select_matches_ddl():
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    block = info.split("# BEGIN_INFO_SELECT", 1)[1].split("# END_INFO_SELECT", 1)[0]
+    assert re.findall(r'\.alias\("(\w+)"\)', block) + ["created_at", "updated_at"] == [name for name, _dtype in INFO]
+
+
+def test_info_spec_inputs_match_active_edges():
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    spec = next(
+        node.value for node in ast.parse(info).body
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "SPEC" for t in node.targets)
+    )
+    inputs = next(kw.value for kw in spec.keywords if kw.arg == "inputs")
+    assert {elt.value for elt in inputs.values} == set(INFO_ACTIVE)
+    for name in ('"slv_3p_poi"', '"slv_3p_poi_address"', '"slv_3p_poi_contact"'):
+        assert name not in info
+
+
+def test_info_partner_join_matches_entity():
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    assert 'uuid_md5(F.col("business_service_id"), F.lit(PARTNER))' in info
+    assert 'F.col("locale") == F.lit("vi")' in info
+    assert _info_pure()["PARTNER"] == "partner"
+    entity = _cell("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb", "b1entitybuild")
+    assert 'uuid_md5(F.col("id"), F.lit(PARTNER))' in entity
+    assert 'PARTNER = "partner"' in entity
+    assert '["source_id", "language_code"]' not in info
+
+
+def test_info_labels_match_mapping():
+    pure = _info_pure()
+    got = {key: tuple(unicodedata.normalize("NFC", part) for part in value) for key, value in pure["SECTOR_LABELS"].items()}
+    got["other"] = tuple(unicodedata.normalize("NFC", part) for part in pure["SECTOR_OTHER"])
+    assert got == _mapping_labels()
+
+
+def test_best_time_pattern():
+    pattern = re.compile(_info_pure()["BEST_TIME_RE"])
+    seed = _assign(_cell("NB_SETUP_INITIAL_DDL.ipynb", "init_seed_place_type"), "BEST_TIME_CANONICAL")
+    for value in seed.values():
+        match = pattern.fullmatch(value.strip())
+        if value == "all_year":
+            assert match is None
+        else:
+            assert match and all(1 <= int(group) <= 12 for group in match.groups())
+    assert pattern.fullmatch("Month 11-3").groups() == ("11", "3")
+    assert pattern.fullmatch("Month 11–4").groups() == ("11", "4")
+    for value in ("Month 13-2", "Month 0-5", ""):
+        assert pattern.fullmatch(value) is None
+
+
+def test_info_removal_keys():
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    assert "def _role_keys(ctx, role, spine_keys):" in info
+    assert 'for role in ("rating", "price", "hours", "review", "amenity"):' in info
+    assert "old.subtract(current)" in info
+    assert 'if info["basis"] not in ("EDGE", "MARKER") or info["from"] is None:' in info
+    assert "return spine_keys" in info
+    assert "_amenity_keys" not in info
+    assert '_keys(ctx.changed("entity"), "poi_id")' in info
 
 
 def test_pipeline_timeouts():

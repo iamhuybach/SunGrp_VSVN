@@ -1,0 +1,22 @@
+{
+  "round": 2,
+  "verdict": "EVIDENCE_REQUIRED",
+  "findings": [
+    {
+      "id": "SQL-001",
+      "severity": "P1"
+    },
+    {
+      "id": "SQL-002",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "notebooks/NB_CREATE_DDL.ipynb": "a4599c98f495bbe3c7234c8a6bb98f431b253a3c7e228a3dcd31d1b577a61cd5",
+    "notebooks/NB_ENR_POI_INFO.ipynb": "efa2c069f4022ff1c5f26515ed0779f29dfdaaf08c268f5361ae4139fbcda19a",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "91174baee7bcc1d2c19cf586df07d10574f9b483e46bad486e8d1948a78a5d02",
+    "tests/test_enr_poi_contract.py": "90dee656cd7e87991a34d55ac16f72f8cfba7f932b4487b37ce0c9baec242021",
+    "tests/test_initial_ddl_contract.py": "5e7c7f3696edfd1db1e815ed006c5456e7c1b67f8a49a5c19afe97c07f1a82ef",
+    "tests/test_poi_entity_contract.py": "0f221386081292074b9e8a08e5c4f9d85ba1c10a2fb99244c7d7f2a17f4b5a15"
+  }
+}

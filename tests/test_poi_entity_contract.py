@@ -610,7 +610,10 @@ def test_section_1_9_preserved():
 
 def test_create_ddl_patch():
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
-    assert [cell["id"] for cell in nb["cells"][-2:]] == ["entwebmd", "entwebpy"]
+    ids = [cell.get("id") for cell in nb["cells"]]
+    assert ids[-2:] == ["enrinfomd", "enrinfopy"]
+    assert ids[ids.index("entwebpy") - 1] == "entwebmd"
+    assert ids.index("entwebpy") < ids.index("enrinfomd")
     assert any(cell.get("id") == "nonenrpy" for cell in nb["cells"])
     patch = _nb_cell("NB_CREATE_DDL.ipynb", "dictseedpy")
     assert "ADD COLUMNS" in patch and "missing" in patch

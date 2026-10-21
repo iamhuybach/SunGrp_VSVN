@@ -301,12 +301,15 @@ def test_columns_match_sources():
         assert by_fq[fq]["cols"] == source["cols"]
         assert by_fq[fq]["partition"] == source["partition"]
     enr = _cell(ddl, "enrddlpy")
-    gold = {
-        "lh_vv_gold.enr.gld_enr_poi_info": "INFO_COLS",
+    patch = _cell(ddl, "enrinfopy")
+    assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["cols"] == [
+        (col, dtype, None) for col, dtype in _assign(patch, "INFO_COLS")
+    ]
+    assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["props"] == PROPS
+    for fq, name in {
         "lh_vv_gold.enr.gld_enr_poi_coordinate": "COORD_COLS",
         "lh_vv_gold.enr.gld_enr_poi_review": "REVIEW_COLS",
-    }
-    for fq, name in gold.items():
+    }.items():
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in _assign(enr, name)]
         assert by_fq[fq]["props"] == PROPS
     assert by_fq["lh_vv_ctrl.dbo.ctrl_cdc_state"]["partition"] == ["src_tbl"]
@@ -437,6 +440,8 @@ def test_pipeline_config_rows_match_sources():
         third_sql,
     )
     edges = _assign(_cell(ddl, "enrddlpy"), "EDGES")
+    off = set(map(tuple, _assign(_cell(ddl, "enrinfopy"), "EDGES_OFF")))
+    added = _assign(_cell(ddl, "enrinfopy"), "EDGES_ON")
     bronze, silver = "lh_vv_bronze.dbo", "lh_vv_silver.dbo"
     flow = "PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00"
     expected = []
@@ -449,7 +454,11 @@ def test_pipeline_config_rows_match_sources():
             _sql_string(align), _sql_string(dedup), None,
         ))
     for _seq, src, schema, target, mode, notebook, priority in edges:
+        active = 0 if (src, target) in off else 1
+        expected.append(("PL_VV_TRANS_SLV_TO_ENR_15P", silver, src, schema, target, active, priority, mode, None, None, notebook))
+    for seq, src, schema, target, mode, notebook, priority in added:
         expected.append(("PL_VV_TRANS_SLV_TO_ENR_15P", silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        assert seq > 0
     for src in (
         "slv_3p_poi", "slv_3p_poi_address", "ref_dictionary_place_type",
         "slv_pn_business_services", "slv_pn_business_service_i18ns", "slv_3p_poi_contact",
@@ -460,7 +469,7 @@ def test_pipeline_config_rows_match_sources():
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 54
+    assert len(expected) == 57
 
 
 def test_watermark_rows_match_source():
@@ -527,3 +536,32 @@ def test_roles_documented():
     agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
     assert "NB_SETUP_INITIAL_DDL" in agents
     assert (ROOT / "AGENTS.md").stat().st_size < 8192
+
+
+def test_info_patch_create_matches_init():
+    specs, namespace = _specs()
+    spec = next(item for item in specs if item["fq"] == "lh_vv_gold.enr.gld_enr_poi_info")
+    patch = _cell(_notebook("NB_CREATE_DDL.ipynb"), "enrinfopy")
+    cols = _assign(patch, "INFO_COLS")
+    expected = (
+        "CREATE TABLE IF NOT EXISTS lh_vv_gold.enr.gld_enr_poi_info (\n    "
+        + ",\n    ".join(f"`{name}` {dtype}" for name, dtype in cols)
+        + "\n) USING DELTA\nTBLPROPERTIES (" + PROPS + ")"
+    )
+    assert namespace["create_sql"](spec) == expected
+    assert _assign(patch, "PROPS") == PROPS
+    assert 'f"CREATE TABLE IF NOT EXISTS {INFO_FQ} (\\n    {body}\\n) USING DELTA\\nTBLPROPERTIES ({PROPS})"' in patch
+
+
+def test_enr_initial_edge_state():
+    from test_enr_poi_contract import INFO_ACTIVE
+
+    namespace: dict = {}
+    exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
+    rows = namespace["PIPELINE_CONFIG_ROWS"]
+    active = {src for _pl, _ss, src, _ts, trg, active_flag, *_rest in rows if trg == "gld_enr_poi_info" and active_flag == 1}
+    assert active == set(INFO_ACTIVE)
+    assert not any(trg == "gld_enr_poi_coordinate" and active_flag == 1 for _pl, _ss, _src, _ts, trg, active_flag, *_rest in rows)
+    assert sum(trg == "gld_enr_poi_coordinate" for _pl, _ss, _src, _ts, trg, *_rest in rows) == 3
+    specs, _namespace = _specs()
+    assert any(spec["fq"] == "lh_vv_gold.enr.gld_enr_poi_coordinate" for spec in specs)

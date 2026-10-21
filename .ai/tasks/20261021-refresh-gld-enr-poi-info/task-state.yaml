@@ -1,0 +1,75 @@
+schema_version: 1
+task:
+  id: 20261021-refresh-gld-enr-poi-info
+  title: Refresh gld_enr_poi_info from slv_poi_entity_non_enrich
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-21'
+  updated_at: '2026-10-21'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - data_model_change
+  - cross_system
+  - cross_state_impact
+  - idempotency
+  - design_tradeoffs
+  - runtime_proof_required
+scope:
+  systems:
+  - lh_vv_gold.enr
+  - lh_vv_silver.dbo
+  - lh_vv_ctrl.dbo.ctrl_mng_pipeline_config
+  - PL_VV_TRANS_SLV_TO_ENR_15P
+  files:
+  - notebooks/NB_ENR_POI_INFO.ipynb
+  - notebooks/NB_SETUP_INITIAL_DDL.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+  - tests/test_enr_poi_contract.py
+  - tests/test_initial_ddl_contract.py
+  - tests/test_poi_entity_contract.py
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  - state-correctness-reviewer
+  round: 3
+  extra_round_approved_on: '2026-10-21'
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: pass
+  runtime: pass
+rounds:
+  verification: 0
+  review: 3
+  architecture: 2
+  runtime_failure: 0
+open_findings: []
