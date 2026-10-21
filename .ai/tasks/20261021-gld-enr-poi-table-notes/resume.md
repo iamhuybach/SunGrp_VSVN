@@ -1,9 +1,9 @@
 Status: ready_to_merge. Owner: main. Gates: evidence=not_required, architecture=not_required, local_verification=pass, specialist_review=not_required, risk_gate=not_required, runtime=not_required.
 
-Done this session: Added documentation column enrich_type on the gld_enr_poi_info section of docs/context/gld_enr_poi_info_review.md. Types are enrich description, enrich multi-lang, and enrich destination from the user's lists. Columns in several lists show every match. Unlisted columns are blank. gld_enr_poi_review has no enrich_type. No notebook, DDL, or pipeline edits.
+Done this session: Committed and pushed 77d1ec3 to origin/main. The commit adds docs/context/gld_enr_poi_info_review.md and this task folder. enrich_type is documentation-only on gld_enr_poi_info.
 
-Next action: User commits docs/context/gld_enr_poi_info_review.md and .ai/tasks/20261021-gld-enr-poi-table-notes/.
+Next action: None for this task. The unrelated deletion of docs/context/3p-google/Mapping_POI_Service_Data.md was left unstaged.
 
 Read next: docs/context/gld_enr_poi_info_review.md
 
-Waiting on: commit
+Waiting on: none
