@@ -1,0 +1,84 @@
+-- Environment: Fabric DEV. Spark notebook with lakehouses lh_vv_silver, lh_vv_gold, lh_vv_ctrl.
+-- Decision: SPARK-001. After one new landing key, do the warning distinct / left_anti / count
+-- jobs in NB_ENR_POI_INFO and NB_ENR_POI_REVIEW finish in under 15 minutes with no OOM and no spill?
+-- Pass: each DRY_RUN wall time < 15 minutes, spill bytes = 0, no OOM, probe-key counts return to 0.
+-- Fail: wall time >= 15 minutes, any spill, or OOM.
+-- Paste aggregates only. At most 50 rows. No poi_id values other than the literal probe-spark-001,
+-- no review_id values, no review_text, no description, no secrets.
+--
+-- Already confirmed by the user on 2026-10-22: no Fabric pipeline PL_VV_TRANS_SLV_TO_ENR_15P to pause;
+-- lock_exec_id is NULL on wm_flow__PL_VV_TRANS_SLV_TO_ENR_15P; the four notebooks are git-synced.
+-- p_pl_name below is the ctrl_mng_pipeline_config.pl_name string. It does not start a pipeline.
+--
+-- Step A. Empty scratch table in a Spark %%sql cell. Do not use the real gold table.
+-- CREATE TABLE lh_vv_gold.enr.probe_spark001_scratch (id STRING, drop_me STRING) USING DELTA;
+-- ALTER TABLE lh_vv_gold.enr.probe_spark001_scratch SET TBLPROPERTIES (
+--   'delta.minReaderVersion' = '2', 'delta.minWriterVersion' = '5', 'delta.columnMapping.mode' = 'name');
+-- ALTER TABLE lh_vv_gold.enr.probe_spark001_scratch DROP COLUMNS (drop_me);
+-- DESCRIBE TABLE lh_vv_gold.enr.probe_spark001_scratch;
+-- Pass in Spark: column list is only id.
+-- Then run this on the lh_vv_gold SQL analytics endpoint, not in the Spark session:
+-- SELECT id FROM lh_vv_gold.enr.probe_spark001_scratch;
+-- Pass: the query succeeds, returns 0 rows, and drop_me is not a column.
+-- If the endpoint still shows drop_me, refresh the endpoint metadata once and read again. Paste what you see.
+-- Semantic models or shortcuts that read gld_enr_poi_info: list their names, or write none.
+-- Then: DROP TABLE lh_vv_gold.enr.probe_spark001_scratch;
+-- If step A fails, stop. Do not alter gld_enr_poi_info.
+--
+-- Step B. Irreversible. Run only after step A passes. Spark %%sql.
+-- ALTER TABLE lh_vv_gold.enr.gld_enr_poi_info SET TBLPROPERTIES (
+--   'delta.minReaderVersion' = '2',
+--   'delta.minWriterVersion' = '5',
+--   'delta.columnMapping.mode' = 'name');
+-- ALTER TABLE lh_vv_gold.enr.gld_enr_poi_info DROP COLUMNS (district, destination_name);
+-- DESCRIBE TABLE lh_vv_gold.enr.gld_enr_poi_info;
+-- Pass: district and destination_name are absent. Paste the column-name list only.
+--
+-- Step C. In Fabric, open notebooks/NB_CREATE_DDL.ipynb. Run only the last code cell, id enrflagpy.
+-- Do not run the notebook from the top. When it finishes, run that same cell again.
+-- After each run, execute:
+-- SELECT src_tbl, trg_tbl, is_active, count(*) AS n
+-- FROM lh_vv_ctrl.dbo.ctrl_mng_pipeline_config
+-- WHERE pl_name = 'PL_VV_TRANS_SLV_TO_ENR_15P'
+--   AND src_tbl IN (
+--     'slv_enr_poi_info_multi_lang', 'slv_enr_poi_destination', 'slv_enr_poi_review_multi_lang')
+-- GROUP BY src_tbl, trg_tbl, is_active
+-- ORDER BY src_tbl, trg_tbl;
+-- Pass: both runs succeed, the two result sets are identical, and each pair has one row with is_active = 1 and n = 1.
+--
+-- Step D. Insert one synthetic key. No enrich text.
+-- INSERT INTO lh_vv_silver.dbo.slv_enr_poi_info_multi_lang (poi_id, lang) VALUES ('probe-spark-001', 'vi');
+-- INSERT INTO lh_vv_silver.dbo.slv_enr_poi_destination (poi_id) VALUES ('probe-spark-001');
+-- INSERT INTO lh_vv_silver.dbo.slv_enr_poi_review_multi_lang (review_id) VALUES ('probe-spark-001');
+-- SELECT 'info_landing' AS probe_table, count(*) AS n FROM lh_vv_silver.dbo.slv_enr_poi_info_multi_lang
+-- UNION ALL SELECT 'destination_landing', count(*) FROM lh_vv_silver.dbo.slv_enr_poi_destination
+-- UNION ALL SELECT 'review_landing', count(*) FROM lh_vv_silver.dbo.slv_enr_poi_review_multi_lang
+-- UNION ALL SELECT 'gld_enr_poi_info', count(*) FROM lh_vv_gold.enr.gld_enr_poi_info
+-- UNION ALL SELECT 'gld_enr_poi_review', count(*) FROM lh_vv_gold.enr.gld_enr_poi_review;
+--
+-- Step E. Run all cells of NB_ENR_POI_INFO, then all cells of NB_ENR_POI_REVIEW.
+-- Set the first cell of each notebook to:
+--   p_exec_id = ""
+--   p_run_id = ""
+--   p_pl_name = "PL_VV_TRANS_SLV_TO_ENR_15P"
+--   p_trg_fq = ""
+--   p_pinned_json = ""
+--   p_mode = "DRY_RUN"
+--   p_force = "false"
+--   p_history_limit = "1000"
+-- Open Spark UI for that run, tab Stages. For each stage whose name contains count, paste:
+--   notebook, stage_id, wall_seconds, input_bytes, shuffle_read_bytes, shuffle_write_bytes,
+--   memory_spill_bytes, disk_spill_bytes, peak_execution_memory_bytes, oom
+-- Peak memory is on the stage detail page. If a metric is absent, write "not shown". Do not estimate.
+--
+-- Step F. Cleanup.
+-- DELETE FROM lh_vv_silver.dbo.slv_enr_poi_info_multi_lang WHERE poi_id = 'probe-spark-001';
+-- DELETE FROM lh_vv_silver.dbo.slv_enr_poi_destination WHERE poi_id = 'probe-spark-001';
+-- DELETE FROM lh_vv_silver.dbo.slv_enr_poi_review_multi_lang WHERE review_id = 'probe-spark-001';
+-- SELECT 'probe_info_left' AS probe_table, count(*) AS n
+-- FROM lh_vv_silver.dbo.slv_enr_poi_info_multi_lang WHERE poi_id = 'probe-spark-001'
+-- UNION ALL SELECT 'probe_destination_left', count(*)
+-- FROM lh_vv_silver.dbo.slv_enr_poi_destination WHERE poi_id = 'probe-spark-001'
+-- UNION ALL SELECT 'probe_review_left', count(*)
+-- FROM lh_vv_silver.dbo.slv_enr_poi_review_multi_lang WHERE review_id = 'probe-spark-001';
+-- Pass: each n is 0.

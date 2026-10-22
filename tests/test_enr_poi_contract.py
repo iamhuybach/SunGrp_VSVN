@@ -12,8 +12,8 @@ INFO = [
     ("language_code", "STRING"), ("poi_name", "STRING"), ("poi_name_normalized", "STRING"),
     ("types", "STRING"), ("operating_status", "STRING"), ("primary_type", "STRING"),
     ("website_url", "STRING"), ("house_number", "STRING"), ("street", "STRING"),
-    ("ward", "STRING"), ("district", "STRING"), ("city", "STRING"),
-    ("destination_name", "STRING"), ("full_address", "STRING"), ("lat", "DOUBLE"),
+    ("ward", "STRING"), ("city", "STRING"),
+    ("full_address", "STRING"), ("lat", "DOUBLE"),
     ("lng", "DOUBLE"), ("business_sector", "STRING"), ("business_category", "STRING"),
     ("business_category_vi", "STRING"), ("category_group", "STRING"),
     ("range_low_min", "INT"), ("range_high_min", "INT"), ("avg_range_min", "INT"),
@@ -21,6 +21,7 @@ INFO = [
     ("rating", "DECIMAL(4,2)"), ("user_rating_count", "BIGINT"), ("price_level", "INT"),
     ("opening_hours_text", "STRING"), ("review_json", "STRING"), ("time_to_spend", "STRING"),
     ("best_time", "STRING"), ("cost", "BIGINT"), ("cost_vnd", "STRING"), ("service_flag", "STRING"),
+    ("is_enriched_multi_lang", "BOOLEAN"), ("is_enriched_destination", "BOOLEAN"),
     ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
 ]
 COORD = [
@@ -32,6 +33,7 @@ COORD = [
 REVIEW = [
     ("review_id", "STRING NOT NULL"), ("poi_id", "STRING"), ("rating", "DECIMAL(3,1)"),
     ("review_text", "STRING"), ("review_date", "TIMESTAMP"), ("review_updated_at", "TIMESTAMP"),
+    ("is_enriched_multi_lang", "BOOLEAN"),
     ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
 ]
 DROPPED = ("description", "title", "positive", "negative", "response_text", "source_review_id")
@@ -56,6 +58,30 @@ INFO_ACTIVE = (
     "slv_poi_entity_non_enrich", "slv_poi_amenity", "slv_3p_poi_rating", "slv_3p_poi_price",
     "slv_3p_poi_opening_hours", "slv_3p_poi_review", "slv_pn_business_service_i18ns",
 )
+INFO_FLAGS = ("is_enriched_multi_lang", "is_enriched_destination")
+INFO_REMOVED = ("district", "destination_name")
+REVIEW_FLAGS = ("is_enriched_multi_lang",)
+LANDING = {
+    "lh_vv_silver.dbo.slv_enr_poi_info_multi_lang": [
+        ("poi_id", "STRING NOT NULL"), ("lang", "STRING"), ("time_to_spend", "STRING"), ("best_time", "STRING"),
+        ("cost_vnd", "STRING"), ("description", "STRING"), ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
+    ],
+    "lh_vv_silver.dbo.slv_enr_poi_destination": [
+        ("poi_id", "STRING NOT NULL"), ("street", "STRING"), ("ward", "STRING"), ("district", "STRING"),
+        ("city", "STRING"), ("full_address", "STRING"), ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
+    ],
+    "lh_vv_silver.dbo.slv_enr_poi_review_multi_lang": [
+        ("review_id", "STRING NOT NULL"), ("poi_id", "STRING"), ("review_text", "STRING"),
+        ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
+    ],
+}
+FLAG_EDGES = [
+    (1, "slv_enr_poi_info_multi_lang", "lh_vv_gold.enr", "gld_enr_poi_info", "APPEND", "NB_ENR_POI_INFO", 1),
+    (2, "slv_enr_poi_destination", "lh_vv_gold.enr", "gld_enr_poi_info", "APPEND", "NB_ENR_POI_INFO", 1),
+    (3, "slv_enr_poi_review_multi_lang", "lh_vv_gold.enr", "gld_enr_poi_review", "APPEND", "NB_ENR_POI_REVIEW", 1),
+]
+INFO_INPUTS = INFO_ACTIVE + ("slv_enr_poi_info_multi_lang", "slv_enr_poi_destination")
+REVIEW_INPUTS = ("slv_3p_poi_review", "slv_enr_poi_review_multi_lang")
 EDGES = [
     (1, "slv_pn_business_services", "slv_pn_poi", "RECOMPUTE", "NB_SLV_PN_POI", 1),
     (2, "slv_pn_business_service_i18ns", "slv_pn_poi", "RECOMPUTE", "NB_SLV_PN_POI", 1),
@@ -131,11 +157,16 @@ def _pure():
 
 
 def test_gold_ddl_matches_mapping():
-    patch = _cell("NB_CREATE_DDL.ipynb", "enrinfopy")
+    patch = _cell("NB_CREATE_DDL.ipynb", "enrflagpy")
+    previous = _cell("NB_CREATE_DDL.ipynb", "enrinfopy")
     old = _cell("NB_CREATE_DDL.ipynb", "enrddlpy")
     assert _assign(patch, "INFO_COLS") == INFO
+    assert _assign(patch, "REVIEW_COLS") == REVIEW
+    assert [col for col in _assign(previous, "INFO_COLS") if col[0] not in INFO_REMOVED] == [
+        col for col in INFO if col[0] not in INFO_FLAGS
+    ]
+    assert [col for col in REVIEW if col[0] not in REVIEW_FLAGS] == _assign(old, "REVIEW_COLS")
     assert _assign(old, "COORD_COLS") == COORD
-    assert _assign(old, "REVIEW_COLS") == REVIEW
     names = [name for name, _dtype in INFO]
     for dropped in INFO_DROPPED:
         assert dropped not in names
@@ -149,9 +180,9 @@ def test_mapping_comments_and_edges():
     review = _nb("NB_ENR_POI_REVIEW.ipynb")
     for col in ("COL-001", "COL-003", "COL-007", "COL-009", "COL-010"):
         assert col in info
-    for number in (35, 36, 37, 38, 39, 41, 42, 44, 45, 46, 47, 48):
+    for number in (35, 36, 37, 38, 39, 44, 45, 46, 47, 48):
         assert f"COL-{number:03d}" in info
-    for col in ("COL-004", "COL-005", "COL-006", "COL-008", "COL-040", "COL-043"):
+    for col in ("COL-004", "COL-005", "COL-006", "COL-008", "COL-040", "COL-041", "COL-042", "COL-043"):
         assert col not in info
     for col in ("COL-022", "COL-023", "COL-025", "COL-027", "COL-031", "COL-032", "COL-033", "COL-034"):
         assert col in review
@@ -194,7 +225,7 @@ def test_info_patch_cell_guards():
     assert "lock_exec_id = '{LOCK}'" in patch
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-4:] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy"]
+    assert ids[-6:] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
 
 
 def test_info_select_matches_ddl():
@@ -210,9 +241,70 @@ def test_info_spec_inputs_match_active_edges():
         if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "SPEC" for t in node.targets)
     )
     inputs = next(kw.value for kw in spec.keywords if kw.arg == "inputs")
-    assert {elt.value for elt in inputs.values} == set(INFO_ACTIVE)
+    assert {elt.value for elt in inputs.values} == set(INFO_INPUTS)
+    landing = {src for _seq, src, _schema, trg, *_rest in FLAG_EDGES if trg == "gld_enr_poi_info"}
+    assert set(INFO_ACTIVE) | landing == set(INFO_INPUTS)
     for name in ('"slv_3p_poi"', '"slv_3p_poi_address"', '"slv_3p_poi_contact"'):
         assert name not in info
+
+
+def _func_text(source: str, name: str) -> str:
+    tree = ast.parse(source)
+    node = next(item for item in tree.body if isinstance(item, ast.FunctionDef) and item.name == name)
+    segment = ast.get_source_segment(source, node)
+    assert segment
+    return segment
+
+
+def test_flag_patch_constants():
+    patch = _cell("NB_CREATE_DDL.ipynb", "enrflagpy")
+    assert _assign(patch, "LANDING_COLS") == LANDING
+    assert _assign(patch, "EDGES_ON") == FLAG_EDGES
+    for cols in LANDING.values():
+        assert all("UNIQUE" not in name and "UNIQUE" not in dtype for name, dtype in cols)
+        assert "NOT NULL" in cols[0][1]
+        assert all("NOT NULL" not in dtype for _name, dtype in cols[1:])
+
+
+def test_flag_patch_guards():
+    raw = _cell("NB_CREATE_DDL.ipynb", "enrflagpy")
+    code = "\n".join(line for line in raw.splitlines() if not line.strip().startswith("#"))
+    for token in ("DROP", "DELETE", "TRUNCATE", "REPLACE", "RESTORE", "columnMapping", "SET is_active", "UPDATE {CFG}"):
+        assert token not in code
+    assert "ADD COLUMNS (" in raw
+    assert "BOOLEAN AFTER" in raw
+    order = [
+        "held = True", "Dừng trước khi ghi", "spark.sql(_create_sql(fq, CONTRACTS[fq]))",
+        "_add_flags(fq, flags)", "INSERT INTO {CFG}", "Sau khi ghi", "finally:",
+    ]
+    positions = [raw.index(token) for token in order]
+    assert positions == sorted(positions)
+    assert "lock_exec_id = '{LOCK}'" in raw
+
+
+def test_flag_node_contract():
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    review = _cell("NB_ENR_POI_REVIEW.ipynb", "04339a06")
+    present = _func_text(info, "_present")
+    assert "ctx.input(role).select(key)" in present
+    assert ".distinct()" in present
+    assert 'isNotNull().alias("is_enriched_multi_lang")' in info
+    assert 'isNotNull().alias("is_enriched_destination")' in info
+    assert 'required_inputs=("entity",)' in info
+    assert "enrich_flag_null" in info
+    block = review.split("return rv.select(", 1)[1].split("SPEC =", 1)[0]
+    bare = re.findall(r'^\s*F\.col\("(\w+)"\),\s*(?:#|$)', block, re.M)
+    aliases = re.findall(r'\.alias\("(\w+)"\)', block)
+    assert bare + aliases + ["created_at", "updated_at"] == [name for name, _dtype in REVIEW]
+    spec = next(
+        node.value for node in ast.parse(review).body
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "SPEC" for t in node.targets)
+    )
+    inputs = next(kw.value for kw in spec.keywords if kw.arg == "inputs")
+    assert {elt.value for elt in inputs.values} == set(REVIEW_INPUTS)
+    assert 'required_inputs=("review",)' in review
+    assert "enrich_flag_null" in review
+    assert _func_text(info, "_flag_keys") == _func_text(review, "_flag_keys")
 
 
 def test_info_partner_join_matches_entity():

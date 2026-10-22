@@ -1,0 +1,15 @@
+{
+  "round": 2,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "notebooks/NB_CREATE_DDL.ipynb": "bec3598df627c185541ae3f9ef08023712e0fd1d9d76d588f739537b4a4340c6",
+    "notebooks/NB_ENR_POI_INFO.ipynb": "af11f3f7cee0081cb3cda0bcffedd5d0746801421169d4d3b0e90c36ea9bd5d1",
+    "notebooks/NB_ENR_POI_REVIEW.ipynb": "7398275310da8b50a87138e1d87a64792eaad60edc5ec59145f76a4164f9217b",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "99886a3e7f141f5cb3b4b7dae5f4da72dcb626cc23bdb8d776d0250ec7624a39",
+    "tests/test_enr_poi_contract.py": "d4f2bf8f239ed4c9104aadbf9b1460a0e7fe5119f7b80850b14ca723a4e523a5",
+    "tests/test_initial_ddl_contract.py": "3758d45811a52e3a87dfd9939e224bc5911a466487e8ba7578e409b544a7631f",
+    "tests/test_poi_entity_contract.py": "0c7bece3bf592ec02c8f4a8a9839f1c46c86db051f458bacc3b4152ca264bed1"
+  },
+  "elapsed_seconds": 44
+}

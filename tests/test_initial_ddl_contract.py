@@ -278,8 +278,9 @@ def test_table_inventory_matches_sources():
     match = re.search(r'trg_tbl\s*=\s*"([^"]+)"', entity)
     assert match
     found.add("lh_vv_silver.dbo." + match.group(1))
+    found.update(_assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "enrflagpy"), "LANDING_COLS").keys())
     assert {spec["fq"] for spec in specs} == found
-    assert len(specs) == 13
+    assert len(specs) == 16
 
 
 def test_columns_match_sources():
@@ -299,16 +300,15 @@ def test_columns_match_sources():
             continue
         assert by_fq[fq]["cols"] == source["cols"]
         assert by_fq[fq]["partition"] == source["partition"]
-    enr = _cell(ddl, "enrddlpy")
-    patch = _cell(ddl, "enrinfopy")
-    assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["cols"] == [
-        (col, dtype, None) for col, dtype in _assign(patch, "INFO_COLS")
-    ]
-    assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["props"] == PROPS
+    flag = _cell(ddl, "enrflagpy")
     for fq, name in {
+        "lh_vv_gold.enr.gld_enr_poi_info": "INFO_COLS",
         "lh_vv_gold.enr.gld_enr_poi_review": "REVIEW_COLS",
     }.items():
-        assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in _assign(enr, name)]
+        assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in _assign(flag, name)]
+        assert by_fq[fq]["props"] == PROPS
+    for fq, cols in _assign(flag, "LANDING_COLS").items():
+        assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
     assert by_fq["lh_vv_ctrl.dbo.ctrl_cdc_state"]["partition"] == ["src_tbl"]
     assert by_fq["lh_vv_ctrl.dbo.ctrl_cdc_reject"]["partition"] == ["src_tbl"]
@@ -440,6 +440,7 @@ def test_pipeline_config_rows_match_sources():
     edges = _assign(_cell(ddl, "enrddlpy"), "EDGES")
     off = set(map(tuple, _assign(_cell(ddl, "enrinfopy"), "EDGES_OFF")))
     added = _assign(_cell(ddl, "enrinfopy"), "EDGES_ON")
+    flagged = _assign(_cell(ddl, "enrflagpy"), "EDGES_ON")
     deleted = {(src, target) for src, _schema, target in _assign(_cell(ddl, "mvpoipy"), "EDGES_DELETE")}
     bronze, silver = "lh_vv_bronze.dbo", "lh_vv_silver.dbo"
     flow = "PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00"
@@ -463,6 +464,11 @@ def test_pipeline_config_rows_match_sources():
             continue
         expected.append((enr, silver, src, schema, target, 1, priority, mode, None, None, notebook))
         assert seq > 0
+    for seq, src, schema, target, mode, notebook, priority in flagged:
+        if (src, target) in deleted:
+            continue
+        expected.append((enr, silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        assert seq > 0
     for src in (
         "slv_3p_poi", "slv_3p_poi_address", "ref_dictionary_place_type",
         "slv_pn_business_services", "slv_pn_business_service_i18ns", "slv_3p_poi_contact",
@@ -473,7 +479,7 @@ def test_pipeline_config_rows_match_sources():
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 49
+    assert len(expected) == 52
 
 
 def test_watermark_rows_match_source():
@@ -542,23 +548,33 @@ def test_roles_documented():
     assert (ROOT / "AGENTS.md").stat().st_size < 8192
 
 
-def test_info_patch_create_matches_init():
+def test_flag_patch_create_matches_init():
     specs, namespace = _specs()
-    spec = next(item for item in specs if item["fq"] == "lh_vv_gold.enr.gld_enr_poi_info")
-    patch = _cell(_notebook("NB_CREATE_DDL.ipynb"), "enrinfopy")
-    cols = _assign(patch, "INFO_COLS")
-    expected = (
-        "CREATE TABLE IF NOT EXISTS lh_vv_gold.enr.gld_enr_poi_info (\n    "
-        + ",\n    ".join(f"`{name}` {dtype}" for name, dtype in cols)
-        + "\n) USING DELTA\nTBLPROPERTIES (" + PROPS + ")"
-    )
-    assert namespace["create_sql"](spec) == expected
-    assert _assign(patch, "PROPS") == PROPS
-    assert 'f"CREATE TABLE IF NOT EXISTS {INFO_FQ} (\\n    {body}\\n) USING DELTA\\nTBLPROPERTIES ({PROPS})"' in patch
+    patch = _cell(_notebook("NB_CREATE_DDL.ipynb"), "enrflagpy")
+    module = ast.parse(patch)
+    selected = []
+    for node in module.body:
+        if isinstance(node, ast.FunctionDef) and node.name == "_create_sql":
+            selected.append(node)
+        elif isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "PROPS" for target in node.targets
+        ):
+            selected.append(node)
+    env: dict = {}
+    exec(ast.unparse(ast.Module(body=selected, type_ignores=[])), env)  # noqa: S102
+    contracts = {
+        "lh_vv_gold.enr.gld_enr_poi_info": _assign(patch, "INFO_COLS"),
+        "lh_vv_gold.enr.gld_enr_poi_review": _assign(patch, "REVIEW_COLS"),
+        **_assign(patch, "LANDING_COLS"),
+    }
+    create_sql = namespace["create_sql"]
+    for fq, cols in contracts.items():
+        spec = next(item for item in specs if item["fq"] == fq)
+        assert env["_create_sql"](fq, cols) == create_sql(spec)
 
 
 def test_enr_initial_edge_state():
-    from test_enr_poi_contract import INFO_ACTIVE
+    from test_enr_poi_contract import INFO_INPUTS, REVIEW_INPUTS
 
     seed = _by_id(_initial())["init_seed_ctrl"]
     namespace: dict = {}
@@ -572,7 +588,12 @@ def test_enr_initial_edge_state():
         ("slv_3p_poi_contact", "gld_enr_poi_info"),
     }
     active = {src for _pl, _ss, src, _ts, trg, active_flag, *_rest in rows if trg == "gld_enr_poi_info" and active_flag == 1}
-    assert active == set(INFO_ACTIVE)
+    review_active = {
+        src for _pl, _ss, src, _ts, trg, active_flag, *_rest in rows
+        if trg == "gld_enr_poi_review" and active_flag == 1
+    }
+    assert active == set(INFO_INPUTS)
+    assert review_active == set(REVIEW_INPUTS)
     assert not any(row[0] == "PL_VV_TRANS_SLV_TO_SLV_1H" for row in rows)
     assert not any(src in removed or trg in removed for _pl, _ss, src, _ts, trg, *_rest in rows)
     assert not any((src, trg) in old_info for _pl, _ss, src, _ts, trg, *_rest in rows)
