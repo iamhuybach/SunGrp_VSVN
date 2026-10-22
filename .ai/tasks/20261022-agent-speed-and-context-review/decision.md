@@ -46,9 +46,11 @@ Giá trị quyết định hợp lệ: `fixed`, `accepted-risk`, `rejected-false
 - 2026-10-22: duyệt EXC-01, EXC-02, và DEC-03 (không đổi model ID hay effort trong `.claude/settings.json` và `.codex/config.toml`).
 - 2026-10-22: architecture của task là báo cáo Fable sau khi chốt mục 8. Ba phiên dùng chung một task.
 - 2026-10-22: chốt mục 8, dòng 1 đến 15. Mục 9: không đổi manifest vòng 2; không sửa agent_runner, review.md, WORKFLOW.md §6; không đổi _architect_appendix; không đổi luật fabric-pipeline-reviewer; không sửa AGENT_PROMPT_SAMPLES.md A18; EXC-02 chỉ áp cho task này; giữ tên PL_VV_TRANS_SLV_TO_ENR_15P và làm mục 8 dòng 4 đúng câu trong báo cáo.
+- 2026-10-22: đóng task. Workflow không có status `done`; status kết thúc là `ready_to_merge`.
 
 ## Lịch sử quyết định
 
+- 2026-10-22: Người dùng yêu cầu chuyển status sang done. `verifying` -> `ready_to_merge`. `validate` PASS. Commit nội dung đã ở `bbb508c` trên `origin/main`.
 - 2026-10-22: Review `reviews/round-1.md` verdict `FIX_REQUIRED`, 0 P0/P1, 2 P2, 5 P3. DIFF-001 đến DIFF-007 xử lý `fixed`. DEC-09 ghi lệch grep của dòng lịch sử. `gates.specialist_review` về `not_required` vì `required_reviewers` rỗng và validator không nhận `pass`. `models.review.actual` là `claude-opus-5-5`.
 - 2026-10-22: Người dùng duyệt exception cho phiên khảo sát và phiên review diff. EXC-01 ghi `role: architect`, `model: claude-fable-5-1`, `effort: medium`, `runtime: cursor`. EXC-02 ghi `role: review`, `model: claude-opus-5-5`, `effort: high`, `runtime: claude-code`. `models.*.expected` và `models.*.effort` giữ mặc định. Không gọi `run-author`. Không gọi `run-gate`.
 - 2026-10-22: DEC-01 sửa tại chỗ. Câu trước: architecture của task là báo cáo Fable sau khi người dùng chốt mục 8. Câu hiện hành: người dùng đã chốt mục 8 dòng 1–15, architecture trỏ tới mục 8 của `reviews/agent-speed-review.md`. DEC-04 đến DEC-08 ghi năm câu trả lời mục 9. Không sửa `scripts/agent_runner.py`, `.ai/prompts/review.md`, `docs/agent-system/WORKFLOW.md` §6, `_architect_appendix`, luật `fabric-pipeline-reviewer`, hay `AGENT_PROMPT_SAMPLES.md` A18.
