@@ -237,8 +237,8 @@ Hợp đồng cột event notebook phải dựng: `_cdc_ts_ms` BIGINT, `_cdc_lsn
 
 | Tham số | Partner | 3P | Ý nghĩa |
 |---|---|---|---|
-| `allow_full_scan` | False | False | Cho phép đọc FULL khi có khoảng trống version (lần đầu, sau reset, thiếu log, raw tạo lại) |
-| `max_parallel` | 4 (rerun dùng 12) | 8 (rerun dùng 12) | Bảng chạy đồng thời trong 1 wave |
+| `allow_full_scan` | True | True | Cho phép đọc FULL khi có khoảng trống version (lần đầu, sau reset, thiếu log, raw tạo lại) |
+| `max_parallel` | 12 | 12 | Bảng chạy đồng thời trong 1 wave |
 | `max_retries` | 1 | 1 | Thử lại 1 bảng khi lỗi tạm thời |
 | `table_filter` | "" | "" | Chỉ chạy các `trg_tbl` này (watermark không đổi) |
 | `full_reload` | False | False | Đọc toàn bộ raw, bỏ state (watermark không đổi) |

@@ -13,7 +13,7 @@ Gồm 2 phần dùng ở 2 nơi:
 
 | | |
 |---|---|
-| Được gọi bởi | `NB_00_ORCHES_SLV_TO_GLD` |
+| Được gọi bởi | 9 notebook `%run`: `NB_00_ORCHES_SLV_TO_ENR_15P`, `NB_00_ORCHES_SLV_TO_GLD`, `NB_SLV_POI_AMENITY`, `NB_SLV_POI_ENTITY_NON_ENRICH`, `NB_ENR_POI_INFO`, `NB_ENR_POI_REVIEW`, `NB_SETUP_INITIAL_DDL`, `NB_SETUP_POI_ENTITY`, `NB_SETUP_POI_AMENITY` |
 | Đọc / ghi khi `%run` | Không |
 | Default lakehouse | `lh_vv_bronze` (bắt buộc giống nhau với runMultiple) |
 | Tự chứa | Không `%run NB_LIB_EXTRACT_RAWDATA`; `with_retry`, `append_rows`, `quote_name`… **chép mẫu** từ lib extract, giữ hành vi |
@@ -55,6 +55,9 @@ Vì sao tính lại toàn bộ thay vì incremental: dữ liệu ~19k POI, logic
 |---|---|
 | `T_PIPELINE_CONFIG`, `T_WATERMARK`, `T_LOG_RUN`, `T_LOG_TABLE_RUN` | Bảng ctrl dùng |
 | `EDGE_LOAD_MODE` | `RECOMPUTE`. [THÊM 13/10] `EDGE_LOAD_MODES` thêm `APPEND`. Node APPEND ghi Delta append và marker `userMetadata`, không gọi MERGE |
+| `APPEND_TECH_COLUMNS` | `(("created_at", "timestamp"), ("updated_at", "timestamp"))` |
+| `APPEND_MARKER_KEY` | `vv_append` |
+| `APPEND_INVALIDATING_OPS` | `RESTORE`, `DELETE`, `UPDATE`, `MERGE`, `TRUNCATE`, `CREATE OR REPLACE TABLE`, `REPLACE TABLE` |
 | `RUN_MODES` / `NODE_MODES` | `RUN, PLAN, DRY_RUN` / `RUN, DRY_RUN` |
 | `NODE_OK` / `NODE_BAD` | `SUCCESS, NO_DATA` / `FAILED, SKIPPED, NOT_RUN` |
 | `WATERMARK_COLUMN_EDGE` | `commit_ts` |

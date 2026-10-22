@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -1234,7 +1235,12 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
                     )
             handoff, prompt = render_prompt(args.task, "architect")
             print(f"Running Claude Architect from {handoff.as_posix()}...")
-            result = agent_runner.run_architecture(repo_root(), prompt, timeout_seconds=args.timeout)
+            started = time.monotonic()
+            try:
+                result = agent_runner.run_architecture(repo_root(), prompt, timeout_seconds=args.timeout)
+            finally:
+                elapsed_seconds = int(time.monotonic() - started)
+                print(f"Elapsed: {elapsed_seconds} s")
             candidate = architecture_state_after(state, result.verdict)
             _validate_candidate_state(args.task, candidate)
             architecture = directory / "architecture.md"
@@ -1270,9 +1276,14 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
             risk_required = state["classification"]["risk_level"] in {"high", "critical"}
             reviewed_files = {path: _file_digest(path) for path in _review_files(args.task, state)}
             print(f"Running Codex review from {handoff.as_posix()}...")
-            result = agent_runner.run_review(
-                repo_root(), prompt, reviewers, risk_required, timeout_seconds=args.timeout,
-            )
+            started = time.monotonic()
+            try:
+                result = agent_runner.run_review(
+                    repo_root(), prompt, reviewers, risk_required, timeout_seconds=args.timeout,
+                )
+            finally:
+                elapsed_seconds = int(time.monotonic() - started)
+                print(f"Elapsed: {elapsed_seconds} s")
             candidate = review_state_after(state, result, round_number)
             _validate_candidate_state(args.task, candidate)
             review_path = directory / "reviews" / f"round-{round_number}.md"
@@ -1283,6 +1294,7 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
                 "verdict": result.verdict,
                 "findings": [dict(item) for item in result.findings],
                 "files": reviewed_files,
+                "elapsed_seconds": elapsed_seconds,
             }
             review_path.with_suffix(".json").write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8")
             write_state(state_path, candidate)
@@ -1329,8 +1341,13 @@ def cmd_run_author(args: argparse.Namespace) -> int:
     prompt = f"{prompt.rstrip()}\n\n## Author input\n\n{author_input.rstrip()}\n"
     key = AUTHOR_LANES[args.kind]
     effort = agent_runner.AUTHOR_EFFORTS[args.kind]
+    started = time.monotonic()
     try:
-        result = agent_runner.run_author(repo_root(), prompt, args.kind, timeout_seconds=args.timeout)
+        try:
+            result = agent_runner.run_author(repo_root(), prompt, args.kind, timeout_seconds=args.timeout)
+        finally:
+            elapsed_seconds = int(time.monotonic() - started)
+            print(f"Elapsed: {elapsed_seconds} s")
     except agent_runner.RunnerError as exc:
         fail(f"AUTHOR FAIL: {exc}")
     candidate = copy.deepcopy(state)

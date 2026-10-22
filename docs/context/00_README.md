@@ -1,13 +1,14 @@
 # Bộ context Visit Vietnam — Data Model mới (POI) trên Microsoft Fabric
 
-> Cập nhật: 08/10/2026. Dùng cho người mới vào dự án và cho agent (Cursor / Claude) trước khi đọc / sửa code.
+> Cập nhật: 22/10/2026. Dùng cho người mới vào dự án và cho agent (Cursor / Claude) trước khi đọc / sửa code.
 > Số liệu theo log đã gửi về tới 05/10. Lấy số mới: chạy `CHECK_CTRL_SNAPSHOT.py` (chỉ đọc).
 
 ## Danh sách file
 
 | File | Nội dung | Khi nào đọc |
 |---|---|---|
-| `01_DATA_MODEL.md` | Mô tả, thông tin, ý nghĩa của Data Model mới: phân tầng, sơ đồ, pipeline, bronze, silver L1 (23 + 14 bảng), ref, định danh, model cũ → mới | Đọc mục cần cho task (bản đồ context trong docs/AGENT_PROMPT_SAMPLES.md) |
+| `00_README.md` | Mục lục bộ context và tóm tắt 10 dòng | Đọc trước, rồi chỉ mở mục được prompt nêu |
+| `01_DATA_MODEL.md` | Mô tả, thông tin, ý nghĩa của Data Model mới: phân tầng, sơ đồ, pipeline, bronze, silver L1 (23 + 9 bảng 3P), ref, định danh, model cũ → mới | Đọc mục cần cho task (bản đồ context trong docs/AGENT_PROMPT_SAMPLES.md) |
 | `02_NAMING_CONVENTION.md` | Quy ước đặt tên (lakehouse, tiền tố bảng, notebook, pipeline, id ctrl, cột, cột nội bộ, enum, tham số) và convention code | Trước khi tạo / đổi tên bất cứ thứ gì, trước khi viết code |
 | `CTRL_TABLES_CONTEXT.md` | 7 bảng ctrl: mô tả, ý nghĩa, DDL, cột, dữ liệu hiện có, thao tác SQL, lịch sử thay đổi | Khi đụng tới cấu hình, watermark, log, state, reject |
 | `CHECK_CTRL_SNAPSHOT.py` | Script **chỉ đọc**: chụp dữ liệu hiện có của 7 bảng ctrl | Khi cần số liệu ctrl thật |
@@ -17,6 +18,7 @@
 | `NB_00_ORCHES_SLV_TO_GLD.md` | Điều phối tính lại: tham số, luồng `orchestrate`, runbook | Khi sửa `NB_00_ORCHES_SLV_TO_GLD` |
 | `NB_LIB_TRANSFORM_SLV_GLD.md` | Thư viện tính lại: cạnh, hộp thư, khoá, ghim, QG, row_hash, MERGE, mọi hàm | Khi sửa lib |
 | `99_PAIN_POINTS.md` | Pain point, root cause, lỗi đã gặp, vấn đề còn mở, bài học | Trước khi đề xuất giải pháp (tránh lặp lỗi cũ) |
+| `gld_enr_poi_info_review.md` | Hợp đồng `gld_enr_poi_info` và `gld_enr_poi_review` | Khi sửa hai bảng gold `lh_vv_gold.enr` |
 | `3p-google/README.md` | Sample raw/normalized, rule ngành, amenity, và map xã phường | Khi sửa extract 3rd-party hoặc L2 phân loại / địa chỉ |
 
 ## Thứ tự đọc
@@ -28,11 +30,11 @@ Agent: đọc "Tóm tắt 10 dòng" dưới đây, rồi chỉ đọc mục đư
 1. Fabric F16, Runtime 1.3, 3 lakehouse medallion `lh_vv_bronze` / `lh_vv_silver` / `lh_vv_gold`, bảng control ở `lh_vv_ctrl.dbo`.
 2. Raw: `partner_raw_data` (Debezium CDC), `brz_3rd_crawler_poi_stream` (tài liệu crawl 3P), Eventstream append, không stats.
 3. Extract (`PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`, 10–15 phút): ForEach tuần tự, nhánh có việc chỉ gọi `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` với `partner_raw_data` gắn cứng. Notebook 3rd-party có trong repo, không nằm trong pipeline này.
-4. Silver L1 đúng cấu trúc nguồn: `slv_pn_*` (23), `slv_3p_poi_*` (14, 13 active). Không rule nghiệp vụ.
+4. Silver L1 đúng cấu trúc nguồn: `slv_pn_*` (23), `slv_3p_poi_*` (9 bảng trong registry, 9 active). Không rule nghiệp vụ.
 5. Rule nghiệp vụ dạng dữ liệu nằm ở bảng `ref_*`.
 6. Chống chạy chồng bằng khoá nguyên tử trên dòng watermark. Hạn khoá luồng tính lại = `lock_at` cộng timeout của run đang xét, không phải hạn đã ghi trên dòng khoá.
 7. Bảng `poi_*` cũ, `poi_master`, chuỗi NB_00 cũ vẫn chạy song song tới cutover.
-8. Còn mở: dữ liệu nguồn (`after` rỗng, raw dừng từ 16–17/09), C2 lib extract, `[VERIFY]` runMultiple / múi giờ, bảo trì Delta.
+8. Gold hiện hành: `PL_VV_TRANS_SLV_TO_ENR_15P`, nhịp 15 phút, mode `APPEND`, bảng `gld_enr_poi_info` và `gld_enr_poi_review`. Còn mở: dữ liệu nguồn (`after` rỗng, raw dừng từ 16–17/09), C2 lib extract, `[VERIFY]` runMultiple / múi giờ, bảo trì Delta.
 
 ## Quy tắc khi làm việc với bộ này
 
@@ -43,13 +45,3 @@ Agent: đọc "Tóm tắt 10 dòng" dưới đây, rồi chỉ đọc mục đư
 | Sửa code | Comment `[SỬA dd/mm]` + lý do; sửa ít → chỉ ra chỗ sửa; sửa nhiều → thay cả notebook; deploy lib trước notebook gọi |
 | Nhãn | `[PROPOSED]` tên mới · `[VERIFY]` cần kiểm trên Fabric · `[ASSUMED]` giả định · `OD-xx` quyết định mở |
 | Nguồn sự thật | Notebook trong repo (`notebooks/*.ipynb`) > tài liệu thiết kế > bộ context này. Lệch nhau → báo, không tự chọn |
-
-## Tài liệu gốc trong project (`claude/`)
-
-| Nhóm | File |
-|---|---|
-| Thiết kế | `GOLD_POI_FLOW_DESIGN.md`, `POI_3P_EXTRACT_REDESIGN.md`, `PARTNER_EXTRACT_REDESIGN.md`, `NB_EXTRACT_PARTNER_CDC_FLOW.md`, `PL_PRECHECK_GET_METADATA.md` |
-| Review | `REVIEW_EXTRACT_PROD_0410.md`, `PATCH_REVIEW_0510.md` |
-| Notebook trong repo | `notebooks/NB_LIB_EXTRACT_RAWDATA.ipynb`, `notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb`, `notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb`, `notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb`, `notebooks/NB_00_ORCHES_SLV_TO_GLD.ipynb`, `notebooks/NB_CREATE_DDL.ipynb` |
-| Script chỉ đọc | `CHECK_GOLD_POI_INPUTS_0410.py`, `DIAG_GOLD_GAPS_0510.py`, `DIAG_PARTNER_0410*.py`, `VERIFY_3P_CONFIG_0410.py`, `PREVIEW_3P_CONFIG_0410.py` |
-| Đã cũ, không dùng | `seed_ctrl_poi_3rd_party.sql`, `APPLY_3P_CONFIG_0410.sql`, `RESULT_RERUN_0410.py`, `DOC_MAP_0410.diff`, `NB_EXTRACT_PARTNER_CDC.ipynb`, `ctrl_changes_2026-10-01.sql`, `ddl_ctrl_log_cdc.sql` (thay bằng `NB_CREATE_DDL`) |

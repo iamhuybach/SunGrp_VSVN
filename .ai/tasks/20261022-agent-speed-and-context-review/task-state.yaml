@@ -1,0 +1,95 @@
+schema_version: 1
+task:
+  id: 20261022-agent-speed-and-context-review
+  title: Agent speed and context review
+  status: verifying
+  owner: main
+  created_at: '2026-10-22'
+  updated_at: '2026-10-22'
+classification:
+  complexity: medium
+  risk_level: medium
+  architecture_required: true
+  evidence_required: false
+  runtime_required: false
+  signals:
+  - design_tradeoffs
+scope:
+  systems:
+  - agent-system
+  files:
+  - docs/context/01_DATA_MODEL.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+  - docs/context/02_NAMING_CONVENTION.md
+  - docs/context/NB_00_ORCHES_SLV_TO_GLD.md
+  - docs/context/NB_LIB_TRANSFORM_SLV_GLD.md
+  - docs/context/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.md
+  - docs/context/NB_LIB_EXTRACT_RAWDATA.md
+  - docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md
+  - .cursor/skills/vsvn-extract-notebook/SKILL.md
+  - .cursor/skills/vsvn-notebook-library/SKILL.md
+  - docs/context/00_README.md
+  - AGENTS.md
+  - CLAUDE.md
+  - scripts/vv.py
+  - tests/test_vv.py
+review_plan:
+  required_reviewers: []
+  round: 1
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-fable-5-1
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: claude-opus-5-5
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+exceptions:
+- id: EXC-01
+  kind: model_override
+  role: architect
+  model: claude-fable-5-1
+  effort: medium
+  runtime: cursor
+  approved_by: user
+  approved_on: '2026-10-22'
+  scope: Fable 5.1 medium writes .ai/tasks/20261022-agent-speed-and-context-review/reviews/agent-speed-review.md.
+    Do not call run-author. Do not change model id or effort in .claude/settings.json
+    or .codex/config.toml. After the user locks item 8, that report is this task's
+    architecture.
+- id: EXC-02
+  kind: model_override
+  role: review
+  model: claude-opus-5-5
+  effort: high
+  runtime: claude-code
+  approved_by: user
+  approved_on: '2026-10-22'
+  scope: Claude Code Opus 5.5 high reviews the diff only. Do not call run-gate. Do
+    not change model id or effort in .claude/settings.json or .codex/config.toml.
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: not_required
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 0
+  review: 1
+  architecture: 0
+  runtime_failure: 0
+open_findings: []

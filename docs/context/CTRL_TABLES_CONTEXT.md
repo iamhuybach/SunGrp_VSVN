@@ -25,7 +25,7 @@ Quy ước chung:
 ## 2. Quan hệ
 
 ```
-                                  ┌── load_mode CDC / DOC / DOC_ARRAY / LANG / LANG_ARRAY ─► EXTRACT (1 notebook / nguồn raw)
+                                  ┌── load_mode CDC / DOC / DOC_ARRAY ─► EXTRACT (1 notebook / nguồn raw)
 ctrl_mng_pipeline_config ─────────┤        (src = bảng raw, trg = bảng silver L1)
   pl_name, src_*, trg_*           │        ├─ (src_schema, src_tbl) ──► ctrl_mng_watermark  wm_transform_<src_tbl>   (1 dòng / nguồn)
                                   │        └─ (src_*, trg_*) ─────────► ctrl_cfg_schema_registry                  (1 dòng / cột đích)
@@ -63,8 +63,8 @@ CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_mng_pipeline_config (
     trg_tbl     STRING,
     is_active   INT,
     priority    INT,
-    load_mode   STRING  COMMENT 'CDC (Debezium, partner) | DOC | DOC_ARRAY | LANG | LANG_ARRAY (snapshot, 3rd-party). NULL = CDC',
-    align_path  STRING  COMMENT 'DOC_ARRAY / LANG_ARRAY: mảng tính từ gốc payload ghép theo vị trí, đọc bằng json_path _align.<trường>',
+    load_mode   STRING  COMMENT 'CDC (Debezium, partner) | DOC | DOC_ARRAY (snapshot, 3rd-party). NULL = CDC',
+    align_path  STRING  COMMENT 'DOC_ARRAY: mảng tính từ gốc payload ghép theo vị trí, đọc bằng json_path _align.<trường>',
     dedup_order STRING  COMMENT 'Snapshot: chọn 1 dòng khi 1 tài liệu có nhiều dòng cùng khoá, vd is_original DESC, created_at DESC',
     nb_name     STRING
 ) USING DELTA;
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_mng_pipeline_config (
 | `trg_schema`, `trg_tbl` | STRING | Bảng silver L1 | Node (silver L2 / gold) |
 | `is_active` | INT | 1 bật / 0 tắt **cả bảng** | 1 bật / 0 tắt cạnh |
 | `priority` | INT | Wave: cùng priority chạy song song (`max_parallel`) | = tầng của node trong DAG (chỉ để đọc; NB_00 tự tính thứ tự từ cạnh) |
-| `load_mode` | STRING | `CDC` (partner; NULL = CDC) · `DOC` · `DOC_ARRAY` · `LANG` · `LANG_ARRAY` (3P). Notebook kiểm tra: partner chỉ nhận `CDC`, 3P chỉ nhận 4 mode snapshot | `RECOMPUTE` · `APPEND` (luồng `PL_VV_TRANS_SLV_TO_ENR_15P`, không MERGE) |
+| `load_mode` | STRING | `CDC` (partner; NULL = CDC) · `DOC` · `DOC_ARRAY` (3P). Notebook kiểm tra: partner chỉ nhận `CDC`, 3P chỉ nhận `DOC` và `DOC_ARRAY`. Mode lang cũ chỉ còn ở §10 | `RECOMPUTE` · `APPEND` (luồng `PL_VV_TRANS_SLV_TO_ENR_15P`, không MERGE) |
 | `align_path` | STRING | `*_ARRAY`: mảng ghép theo vị trí (đọc bằng `json_path` `_align.<trường>`) | NULL |
 | `dedup_order` | STRING | Snapshot: `"<cột> [ASC\|DESC], ..."` chọn 1 dòng khi 1 tài liệu có nhiều dòng cùng khoá (NULL xếp cuối, rồi `_pos`) | NULL |
 
@@ -98,18 +98,19 @@ Kiểm tra khi nạp (lib): trùng bảng đích, `table_filter` có tên lạ, 
 
 Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (chốt 02/10). Các bảng không phụ thuộc nhau (L2 trong review: có thể gộp 1 priority).
 
-**`PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` — nguồn `brz_3rd_crawler_poi_stream`** (id 24–37, priority 1, 1 wave):
+**`PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` — nguồn `brz_3rd_crawler_poi_stream`** (priority 1, 1 wave, seed `NB_SETUP_INITIAL_DDL` cell 7):
 
 | trg_tbl | load_mode | align_path | dedup_order | is_active |
 |---|---|---|---|---|
 | `slv_3p_poi` | DOC | | | 1 |
-| `slv_3p_poi_address`, `_contact`, `_price`, `_opening_hours`, `_rating`, `_amenity`, `_raw_data` | DOC | | | 1 |
-| `slv_3p_poi_policy` | DOC | | | **0** (khối `policies` luôn null, D1 04/10) |
-| `slv_3p_poi_content` | DOC_ARRAY | | (NULL từ 04/10) | 1 |
+| `slv_3p_poi_address` | DOC | | | 1 |
+| `slv_3p_poi_contact` | DOC | | | 1 |
+| `slv_3p_poi_opening_hours` | DOC | | | 1 |
+| `slv_3p_poi_rating` | DOC | | | 1 |
+| `slv_3p_poi_amenity` | DOC | | | 1 |
 | `slv_3p_poi_review` | DOC_ARRAY | | | 1 |
-| `slv_3p_poi_media` | DOC_ARRAY | | `display_order ASC, media_id ASC` | 1 |
-| `slv_3p_poi_enrichment` | LANG | | | 1 |
-| `slv_3p_poi_review_i18n` | LANG_ARRAY | `poi_review` | | 1 |
+| `slv_3p_poi_media` | DOC_ARRAY | | `display_order ASC` | 1 |
+| `slv_3p_poi_price` | DOC | | | 1 |
 
 **`PL_VV_TRANS_SLV_TO_ENR_15P`** (`NB_00_ORCHES_SLV_TO_ENR_15P`). Cạnh quyết định thứ tự: `slv_poi_entity_non_enrich` → `slv_poi_amenity` → `gld_enr_poi_info`.
 
@@ -566,6 +567,7 @@ FROM lh_vv_ctrl.dbo.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 OR
 | 19/10 | Node entity đổi thành `slv_poi_entity_non_enrich` / `NB_SLV_POI_ENTITY_NON_ENRICH`. 5 cạnh active vào node mới, 3 cạnh amenity đọc node mới, cạnh `slv_poi_entity` retire. Registry 3P 53 cột |
 | 20/10 | Entity bỏ 4 cột op, thêm `website_url` và 5 cột ước tính. Amenity thêm `service_flags`. Cạnh `slv_3p_poi_contact` → `slv_poi_entity_non_enrich`: 6 cạnh entity |
 | 21/10 | Hai node silver thuộc ENR_15P; xoá cạnh/watermark slv_pn_poi, gld_enr_poi_coordinate, info cũ; DROP hai bảng trên DEV |
+| 22/10 | Bảng 3P ở §3 còn 9 dòng `DOC` / `DOC_ARRAY` theo seed `NB_SETUP_INITIAL_DDL` cell 7. Mode `LANG` / `LANG_ARRAY` (`slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`) không còn trong seed; ghi chú lịch sử giữ ở mục này |
 
 ## 11. Việc còn lại liên quan ctrl
 

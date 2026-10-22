@@ -58,14 +58,14 @@ Shared source of truth for Cursor, Claude Code, Codex, and human operators. Keep
 - Microsoft Fabric F16 per environment; capacity is shared with Eventstream, Copy Job, and the SQL analytics endpoint.
 - Bronze, silver, and gold are separate Lakehouses in the same workspace: `lh_vv_bronze`, `lh_vv_silver`, and `lh_vv_gold`.
 - Ingestion: Event Hub -> Eventstream -> bronze. Transformation: Spark SQL/PySpark notebooks. Orchestration: Fabric Data Pipeline.
-- Batch cadence is 10-15 minutes; source-to-serving SLA is 30-60 minutes; silver-to-gold POI runs hourly.
+- Batch cadence is 10-15 minutes; source-to-serving SLA is 30-60 minutes; `PL_VV_TRANS_SLV_TO_ENR_15P` runs every 15 minutes.
 - Gold exposes data and may apply business logic that belongs only to that gold table. Shared business decisions, canonical entities, reusable rules, and intermediate tables belong in silver. Gold does not read other gold.
 - Silver prefixes: `slv_pn_` for partner and `slv_3p_` for third party. Gold prefix: `gld_`.
 - The POI identifier is `poi_id`. It never includes language. Do not use `poi_uid`.
 - Third-party `poi_id = uuid_format(md5(concat(source_name, source_id)))` (`HASH_MD5_UUID`).
 - Partner `poi_id = uuid_format(md5('partner_portal' || business_service_id))`. The formula is retained for a future notebook. No current notebook applies it.
-- Notebook roles follow `docs/context/02_NAMING_CONVENTION.md`. `NB_LIB_*` is a `%run` library. `NB_EXTRACT_*_CDC_BRZ_TO_SLV` is one extract notebook per raw source. `NB_00_ORCHES_*` is the shared orchestrator, selected by `p_pl_name`. `NB_<UPPER(trg_tbl)>` is one node notebook per target table. `NB_SETUP_*` is a manual one-shot setup notebook. `NB_SETUP_INITIAL_DDL` builds an empty environment and `NB_CREATE_DDL` patches an existing one; every DDL or configuration-insert change updates both (`docs/context/02_NAMING_CONVENTION.md` §2.1). No deeper orchestration tier.
-- `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` has no Switch. Its notebook activity is `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` with `partner_raw_data` fixed. `run_id` may be empty so the notebook uses `exec_id` and the other activity parameters. Other sources are handled by a script outside this pipeline.
+- Notebook roles follow `docs/context/02_NAMING_CONVENTION.md`. `NB_LIB_*` is a `%run` library. `NB_EXTRACT_*_CDC_BRZ_TO_SLV` is one extract notebook per raw source. `NB_00_ORCHES_*` is the shared orchestrator, selected by `p_pl_name`, with two copies in the repo: `NB_00_ORCHES_SLV_TO_ENR_15P` and `NB_00_ORCHES_SLV_TO_GLD`. `NB_<UPPER(trg_tbl)>` is one node notebook per target table. `NB_SETUP_*` is a manual one-shot setup notebook. `NB_SETUP_INITIAL_DDL` builds an empty environment and `NB_CREATE_DDL` patches an existing one; every DDL or configuration-insert change updates both (`docs/context/02_NAMING_CONVENTION.md` §2.1). No deeper orchestration tier.
+- `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` has no Switch. Its notebook activity is `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV_BK` with `partner_raw_data` fixed. `run_id` may be empty so the notebook uses `exec_id` and the other activity parameters. Other sources are handled by a script outside this pipeline.
 - Pipeline pre-check reads `ctrl_mng_pipeline_config` and `ctrl_mng_watermark`, then inspects `_delta_log` through `Files/_delta_src/<table>`. No new data means no Spark startup.
 - Control-table semantics belong in `docs/context/CTRL_TABLES_CONTEXT.md`. If that file is missing or incomplete, changes to `ctrl_*` require evidence and user action.
 

@@ -428,3 +428,5 @@ def test_run_gate_review_writes_round_snapshot(tmp_path: Path, monkeypatch: pyte
     assert snapshot["verdict"] == "FIX_REQUIRED"
     assert snapshot["findings"] == [{"id": "SQL-001", "severity": "P1"}]
     assert snapshot["files"] == {"src.py": vv._file_digest("src.py")}
+    assert isinstance(snapshot["elapsed_seconds"], int)
+    assert snapshot["elapsed_seconds"] >= 0

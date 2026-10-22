@@ -33,8 +33,8 @@ Quy tắc:
 |---|---|---|
 | `NB_LIB_<VIỆC>` | Thư viện `%run`: chỉ hằng số / class / hàm, không đọc ghi khi được `%run` | `NB_LIB_EXTRACT_RAWDATA`, `NB_LIB_TRANSFORM_SLV_GLD` |
 | `NB_EXTRACT_<NGUỒN>_CDC_BRZ_TO_SLV` | Extract 1 nguồn raw → silver L1 (**1 notebook / nguồn**) | `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`, `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`, `NB_EXTRACT_POIMGMT_CDC_BRZ_TO_SLV` `[PROPOSED]` |
-| `NB_00_ORCHES_<TỪ>_TO_<ĐẾN>` | Điều phối dùng chung, chọn luồng bằng tham số `p_pl_name` | `NB_00_ORCHES_SLV_TO_GLD` |
-| `NB_<UPPER(trg_tbl)>` | Notebook node: 1 notebook = 1 bảng đích. Tên suy ra từ `trg_tbl` (hoặc cột tuỳ chọn `nb_name` ở `pipeline_config`) | — |
+| `NB_00_ORCHES_<TỪ>_TO_<ĐẾN>` | Điều phối dùng chung, chọn luồng bằng tham số `p_pl_name` | `NB_00_ORCHES_SLV_TO_GLD`, `NB_00_ORCHES_SLV_TO_ENR_15P` |
+| `NB_<UPPER(trg_tbl)>` | Notebook node: 1 notebook = 1 bảng đích. Tên suy ra từ `trg_tbl` (hoặc cột tuỳ chọn `nb_name` ở `pipeline_config`) | `NB_SLV_POI_AMENITY`, `NB_SLV_POI_ENTITY_NON_ENRICH`, `NB_ENR_POI_INFO`, `NB_ENR_POI_REVIEW` |
 | `NB_SETUP_<LUỒNG>` | Chạy tay 1 lần: thêm cột ctrl, tạo + seed ref, cạnh, watermark. Mặc định chỉ in (`p_apply = false`) | — |
 | `NB_SETUP_INITIAL_DDL` | Dựng 1 lần môi trường trống: DDL đầy đủ + seed cấu hình, chỉ thêm. Mặc định chỉ in (`p_apply = false`). Xem §2.1 | — |
 | `NB_CREATE_DDL` | Patch DDL / seed cho môi trường đã có bảng. Mỗi yêu cầu mới = 1 cell ở cuối. Xem §2.1 | — |
@@ -69,6 +69,7 @@ Luật cho mọi yêu cầu DDL hoặc `INSERT` cấu hình mới (agent bắt b
 |---|---|---|
 | `PL_VV_TRANSFORM_<TỪ>_TO_<ĐẾN>_<HẬU TỐ>` | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | Pipeline extract (hậu tố `FL_00` = luồng chính) |
 | Hậu tố nhịp `_<n>M` / `_<n>H` / `_<n>D` | `…_15M` `[PROPOSED]`, `…_1H` `[PROPOSED]`, `…_1D` `[PROPOSED]` | **Bắt buộc với luồng tính lại**: lib đọc nhịp từ hậu tố (`CADENCE_RE = _(\d+)([MHD])$`) để chặn luồng nhanh đọc node của luồng chậm |
+| `PL_VV_TRANS_SLV_TO_ENR_15P` | `PL_VV_TRANS_SLV_TO_ENR_15P` | Tên đang chạy. Hậu tố `_15P` không khớp `CADENCE_RE` nên lib WARN và bỏ kiểm tra nhịp. Quyết định đổi tên (nếu có) là task riêng |
 
 `pl_name` trong ctrl = đúng tên pipeline (`@pipeline().Pipeline`). 1 node chỉ thuộc 1 `pl_name` đang active.
 

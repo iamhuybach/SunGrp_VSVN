@@ -11,11 +11,9 @@ An extract notebook holds only what is specific to one raw source. `NB_LIB_EXTRA
 
 ## Before editing
 
-1. Read the closer existing notebook in full. Use `notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb` for change events with deletes. Use `notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb` for full-document snapshots with derived keys.
+1. Read cell 0, cell 1, and the Main and Exit cells through `python scripts/vv.py toc` and `python scripts/vv.py show`. Use `notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb` for change events with deletes. Use `notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb` for full-document snapshots with derived keys.
 2. Read `docs/context/NB_LIB_EXTRACT_RAWDATA.md` (section 4 and the function tables for §11, §13, §14) and the source's context file. Read `docs/context/CTRL_TABLES_CONTEXT.md` before changing anything that writes `ctrl_*`.
-3. When a notebook and its context file disagree, report the difference in the task. Do not pick one. Known differences on 2026-10-11:
-   - Both notebooks default `allow_full_scan = True` and `max_parallel = 12`. The partner context file lists `False` and `4`. The third-party context file lists `allow_full_scan` as `False`. Take defaults from the task, not from either file.
-   - The third-party context file still describes `LANG` / `LANG_ARRAY` modes and a `langs` parameter. The notebook accepts only `EXTRACT_MODES = ("DOC", "DOC_ARRAY")`.
+3. When a notebook and its context file disagree, report the difference in the task. Do not pick one.
 4. If source facts are missing from task evidence (event-order column, key uniqueness, null rates, payload shape), use the `fabric-runtime-evidence` skill. Do not infer them from column names.
 
 ### Read budget

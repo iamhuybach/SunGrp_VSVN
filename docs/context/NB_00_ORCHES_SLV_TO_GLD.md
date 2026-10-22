@@ -1,6 +1,6 @@
-# NB_00_ORCHES_SLV_TO_GLD — Điều phối luồng tính lại silver → silver L2 → gold
+# NB_00_ORCHES_SLV_TO_GLD — Điều phối dùng chung: `NB_00_ORCHES_SLV_TO_ENR_15P` và `NB_00_ORCHES_SLV_TO_GLD`
 
-> Cập nhật: 08/10/2026. Bản code: `notebooks/NB_00_ORCHES_SLV_TO_GLD.ipynb`. Toàn bộ logic nằm ở `orchestrate()` của `NB_LIB_TRANSFORM_SLV_GLD` (xem `NB_LIB_TRANSFORM_SLV_GLD.md` §7).
+> Cập nhật: 22/10/2026. Bản code: `notebooks/NB_00_ORCHES_SLV_TO_ENR_15P.ipynb` và `notebooks/NB_00_ORCHES_SLV_TO_GLD.ipynb`. Toàn bộ logic nằm ở `orchestrate()` của `NB_LIB_TRANSFORM_SLV_GLD` (xem `NB_LIB_TRANSFORM_SLV_GLD.md` §7).
 > Thiết kế: `claude/GOLD_POI_FLOW_DESIGN.md` §5, §11, §12. Không nhầm với `NB_00_POI_PIPELINE_ORCHESTRATOR` (chuỗi 3P cũ, vẫn chạy song song).
 
 ## 1. Mô tả
@@ -13,8 +13,8 @@ NB_00 là nơi **duy nhất** ghi `ctrl_mng_watermark` (cạnh) và `ctrl_log_ru
 
 | | |
 |---|---|
-| Gọi bởi | Chưa có pipeline trong repo |
-| Luồng hiện có | Chưa chốt |
+| Gọi bởi | `PL_VV_TRANS_SLV_TO_ENR_15P` gọi `NB_00_ORCHES_SLV_TO_ENR_15P` (activity timeout 32 phút, retry 0, `p_pl_name = @pipeline().Pipeline`). `NB_00_ORCHES_SLV_TO_GLD` chưa có cạnh seed |
+| Luồng hiện có | `PL_VV_TRANS_SLV_TO_ENR_15P`. `NB_00_ORCHES_SLV_TO_GLD` chưa có cạnh seed |
 | Đọc | `ctrl_mng_pipeline_config`, `ctrl_mng_watermark`, `ctrl_log_run` (ghim theo batch extract, lát cắt pl khác), `ctrl_log_table_run` (kết quả node), `DeltaTable.history()` + `DESCRIBE DETAIL` mọi đầu vào và node |
 | Ghi | `ctrl_mng_watermark` (dòng khoá, 33 dòng cạnh), `ctrl_log_run` (1 dòng / lần chạy); bảng đích do node ghi |
 | Lỗi | Node lỗi → run `PARTIAL_FAILED`, notebook raise (pipeline báo lỗi); lần sau chỉ chạy lại phần còn bẩn |
@@ -31,18 +31,18 @@ NB_00 là nơi **duy nhất** ghi `ctrl_mng_watermark` (cạnh) và `ctrl_log_ru
 
 ## 3. Tham số
 
-| Tham số | Mặc định | Ý nghĩa |
-|---|---|---|
-| `p_pl_name` | (bắt buộc) | pl cần chạy; nhịp đọc từ hậu tố `_15M` / `_1H` / `_1D` |
-| `p_run_id` | "" | `@pipeline().RunId`; trống = `exec_id` |
-| `p_mode` | `RUN` | `RUN`; `PLAN` = chỉ in kế hoạch + DAG runMultiple, **không khoá, không ghi**; `DRY_RUN` = node tính + QG + đếm diff, không ghi bảng đích, không tiến cạnh (vẫn khoá + ghi run log) |
-| `p_max_parallel` | 3 | Node chạy cùng lúc (runMultiple `concurrency`), 1–8 |
-| `p_node_timeout_min` | 20 | Timeout 1 node (`timeoutPerCellInSeconds`; cell `run_node` là cell dài nhất), ≤ DAG |
-| `p_dag_timeout_min` | 45 | Timeout cả DAG (`timeoutInSeconds`) |
-| `p_lock_timeout_min` | 90 | Hạn khoá của lần chạy này, ghi vào dòng khoá lúc nhận; run khác chỉ lấy lại khoá khi đã qua hạn này. **Phải > `p_dag_timeout_min` + 5**; timeout activity pipeline phải nhỏ hơn |
-| `p_force_nodes` | "" | `trg_tbl` ép chạy (bỏ qua hộp thư) + hậu duệ, vd sau khi sửa tay bảng đích |
-| `p_history_limit` | 1000 | Số commit tối đa đọc khi xét 1 đầu vào; vượt → cạnh coi là bẩn (`HISTORY_GAP`). Vd cạnh đã đọc v100, bảng nay v1.250 → cần 1.150 commit > 1000 → tính lại cho chắc |
-| `p_non_data_ops` | "" | Ghi đè danh sách operation không đổi dữ liệu (CSV); trống = `DEFAULT_NON_DATA_OPS` |
+| Tham số | `NB_00_ORCHES_SLV_TO_ENR_15P` | `NB_00_ORCHES_SLV_TO_GLD` | Ý nghĩa |
+|---|---|---|---|
+| `p_pl_name` | `PL_VV_TRANS_SLV_TO_ENR_15P` | `PL_VV_TRANSFORM_SLV_TO_GLD_1H` | pl cần chạy. Hậu tố `_15P` không khớp `CADENCE_RE` nên lib WARN và bỏ kiểm tra nhịp. Hậu tố `_15M` / `_1H` / `_1D` thì lib đọc nhịp |
+| `p_run_id` | "" | "" | `@pipeline().RunId`; trống = `exec_id` |
+| `p_mode` | `RUN` | `RUN` | `RUN`; `PLAN` = chỉ in kế hoạch + DAG runMultiple, **không khoá, không ghi**; `DRY_RUN` = node tính + QG + đếm diff, không ghi bảng đích, không tiến cạnh (vẫn khoá + ghi run log) |
+| `p_max_parallel` | 2 | 3 | Node chạy cùng lúc (runMultiple `concurrency`), 1–8 |
+| `p_node_timeout_min` | 15 | 20 | Timeout 1 node (`timeoutPerCellInSeconds`; cell `run_node` là cell dài nhất), ≤ DAG |
+| `p_dag_timeout_min` | 25 | 45 | Timeout cả DAG (`timeoutInSeconds`) |
+| `p_lock_timeout_min` | 35 | 90 | Hạn khoá của lần chạy này, ghi vào dòng khoá lúc nhận; run khác chỉ lấy lại khoá khi đã qua hạn này. **Phải > `p_dag_timeout_min` + 5**; timeout activity pipeline phải nhỏ hơn |
+| `p_force_nodes` | "" | "" | `trg_tbl` ép chạy (bỏ qua hộp thư) + hậu duệ, vd sau khi sửa tay bảng đích |
+| `p_history_limit` | 1000 | 1000 | Số commit tối đa đọc khi xét 1 đầu vào; vượt → cạnh coi là bẩn (`HISTORY_GAP`). Vd cạnh đã đọc v100, bảng nay v1.250 → cần 1.150 commit > 1000 → tính lại cho chắc |
+| `p_non_data_ops` | "" | "" | Ghi đè danh sách operation không đổi dữ liệu (CSV); trống = `DEFAULT_NON_DATA_OPS` |
 
 Tham số truyền dạng chuỗi; `_validate_orch_params` kiểm tra miền giá trị trước khi làm gì (sai → `ConfigError` liệt kê hết).
 

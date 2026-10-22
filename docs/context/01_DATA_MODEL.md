@@ -24,7 +24,7 @@
 | **Silver L1 — extract** (`lh_vv_silver.dbo.slv_pn_*`, `slv_3p_*`) | Đưa payload về bảng đúng cấu trúc nguồn, chuẩn kiểu, khoá | Parse JSON, chuyển kiểu theo cấu hình, khử trùng event, MERGE theo khoá, xoá mềm (CDC) | Không rule nghiệp vụ, không canonical, không gate |
 | **Silver L2 — tích hợp** (`lh_vv_silver.dbo.slv_poi_*`) | Mọi quyết định nghiệp vụ dùng chung | Định danh, phân loại, chuẩn hoá địa chỉ, chọn tên / mô tả, slug, destination, cờ đủ ngôn ngữ | Không "serving zone" hình dáng theo consumer |
 | **Ref** (`lh_vv_silver.dbo.ref_*`) | Rule dạng dữ liệu, sửa tay | 1 dòng = 1 rule; sửa = commit đổi dữ liệu → luồng tự tính lại | Không rule viết cứng trong code |
-| **Gold** (`lh_vv_gold.dbo.gld_srv_*`) | Phơi dữ liệu cho consumer và xử lý nghiệp vụ riêng của bảng gold đó | Join theo khoá, gom, tính `row_hash`, lọc theo cờ silver, và nghiệp vụ chỉ thuộc bảng gold đó | Không lấy quyết định nghiệp vụ dùng chung; gold không đọc gold khác |
+| **Gold** (`lh_vv_gold.enr.gld_enr_*`) | Phơi dữ liệu cho consumer và xử lý nghiệp vụ riêng của bảng gold đó | Join theo khoá, gom, tính `row_hash`, lọc theo cờ silver, và nghiệp vụ chỉ thuộc bảng gold đó | Không lấy quyết định nghiệp vụ dùng chung; gold không đọc gold khác |
 | **Ctrl** (`lh_vv_ctrl.dbo.ctrl_*`) | Cấu hình + trạng thái + log | Xem `CTRL_TABLES_CONTEXT.md` | — |
 
 Quy tắc phụ:
@@ -47,16 +47,15 @@ flowchart LR
   end
   subgraph L1["Silver L1 (extract)"]
     PN["slv_pn_* (23 bảng)"]
-    P3["slv_3p_poi_* (14 bảng, 13 active)"]
+    P3["slv_3p_poi_* (9 bảng trong registry, 9 active)"]
   end
   subgraph L2["Silver L2 + ref"]
     N["slv_poi_source_map · slv_poi · slv_poi_address<br/>slv_poi_localization · slv_poi_destination"]
     RF["ref_* (5 bảng)"]
   end
-  subgraph G["Gold lh_vv_gold.dbo"]
-    GR["gld_srv_poi_registry"]
-    GM["gld_srv_poi_multi_lang"]
-    GD["gld_srv_poi_destination_membership"]
+  subgraph G["Gold lh_vv_gold.enr"]
+    GI["gld_enr_poi_info"]
+    GV["gld_enr_poi_review"]
   end
   PG -->|Event Hub → Eventstream| R1
   CR -->|Event Hub → Eventstream| R2
@@ -65,13 +64,14 @@ flowchart LR
   PN --> N
   P3 --> N
   RF --> N
-  N -->|NB_00_ORCHES_SLV_TO_GLD| GR & GM & GD
-  GR & GM & GD -->|sync theo updated_at| OUT[("PostgreSQL / KB")]
+  N -->|NB_00_ORCHES_SLV_TO_ENR_15P, APPEND| GI & GV
+  GI & GV -->|sync theo updated_at| OUT[("PostgreSQL / KB")]
 ```
 
 | Pipeline | Nhịp | Notebook | Đọc → Ghi |
 |---|---|---|---|
 | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | 10–15 phút | `Get_Config_4Run` lọc `src_tbl = 'partner_raw_data'` + `Lookup_WM` → `ForEach_Source` (tuần tự) → Get Metadata `_delta_log` → `If_HasWork` → activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. Tham số gắn cứng `partner_raw_data`. Không có Switch và không gọi notebook 3rd-party | bronze `partner_raw_data` → `slv_pn_*` |
+| `PL_VV_TRANS_SLV_TO_ENR_15P` | 15 phút | `NB_00_ORCHES_SLV_TO_ENR_15P`, mode `APPEND` | silver → `lh_vv_gold.enr.gld_enr_poi_info`, `gld_enr_poi_review` |
 
 ## 4. Bronze — bảng raw
 
@@ -285,7 +285,7 @@ Ghi bởi `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. 1 dòng = 1 dòng bảng Postgres
 
 Ghi chú dữ liệu (rerun 04/10): 11 bảng (`products`, 9 bảng `product_*`, `order_item_flights`) có `after = ''` ở 100% event → NO_DATA / reject; `business_locations`, `product_post_translations` không có event nào trong raw. Chi tiết: `99_PAIN_POINTS.md`.
 
-### 5.2 3rd-party `slv_3p_poi_*` (10 bảng trong registry, 9 active, snapshot)
+### 5.2 3rd-party `slv_3p_poi_*` (9 bảng trong registry, 9 active, snapshot)
 
 Ghi bởi `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`. Cột kỹ thuật: `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at` (ba mốc thời gian vẫn `TIMESTAMP`), `created_at`, `updated_at` (`timestamp`). Không có nhánh xoá; bảng con chỉ upsert, `_last_seen_at` cho biết lần cuối thấy. `created_at` là lúc dòng vào silver, không thay `_first_seen_at`. [SỬA 10/10] Registry 98 cột (83 bật, 15 tắt). L1 chỉ extract 1:1 và cast kiểu. `slv_3p_poi_price` được thêm lại vì 13/53 tài liệu có object `poi_price`. Bốn bảng không còn khối nguồn vẫn bị gỡ khỏi registry.
 
@@ -296,13 +296,12 @@ Ghi bởi `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`. Cột kỹ thuật: `_crawled_a
 | `slv_3p_poi_contact` | DOC | `poi_contact` | `poi_id` | 8 (5) | — |
 | `slv_3p_poi_price` | DOC | `poi_price` | `poi_id` | 5 (5) | `currency`, `price_level` int, `price_min`, `price_max` |
 | `slv_3p_poi_opening_hours` | DOC | `poi_opening_hours` | `poi_id` | 7 (7) | Thêm `open_now` |
-| `slv_3p_poi_policy` | DOC | `policies` | `poi_id` | 2 (2) | **tắt** (`is_active = 0`) |
 | `slv_3p_poi_rating` | DOC | `poi_rating` | `poi_id` | 5 (3) | — |
 | `slv_3p_poi_amenity` | DOC | `poi_amenity` | `poi_id` | 3 (3) | Chỉ `poi_id`, `amenity_schema_json`, `ext_attributes_json` |
 | `slv_3p_poi_review` | DOC_ARRAY | `poi_review` | `review_id` (sha256) | 8 (8) | — |
 | `slv_3p_poi_media` | DOC_ARRAY | `poi_media` | `media_dedup_key` (sha256 nối `\|`) | 18 (15) | — |
 
-Đã gỡ khỏi registry: `slv_3p_poi_raw_data`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`.
+Đã gỡ khỏi registry: `slv_3p_poi_raw_data`, `slv_3p_poi_content`, `slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`, `slv_3p_poi_policy`.
 
 Cập nhật 2026-10-14: registry L1 lúc đó có 9 bảng, 55 cột active.
 `slv_3p_poi_contact` thêm `phone`; `slv_3p_poi_media` thêm `blob_url` và
@@ -323,9 +322,9 @@ Mọi bảng tính lại toàn bộ rồi MERGE theo `row_hash`; cột kỹ thu�
 |---|---|---|---|---|---|
 | N1 | `slv_poi_source_map` | (`source_name`, `source_id`) | `slv_3p_poi`, `slv_pn_business_services`, `slv_pn_business_service_poi_link`, `ref_poi_legacy_id` | **Định danh**: `poi_id`; `canonical_poi_id` (= `poi_id` tới khi POI management gửi quyết định); `legacy_poi_ids_json` theo lang; `match_rule` (`SELF` / `PARTNER_LINK` / `POI_MGMT` / `MANUAL`); first / last seen | 19.070 |
 | N2 | `slv_poi` | `poi_id` | N1, `slv_3p_poi`, `slv_pn_business_services`, `slv_pn_partners`, `ref_business_category`, `ref_source` | [SỬA 09/10] Sector / category / `poi_type` từ `slv_3p_poi` qua ref, không đọc enrichment. `brand_name`, `model_business_sector`, `model_type` = NULL với 3P. Notebook node chưa có trong repo | 19.070 |
-| N3 | `slv_poi_address` | `poi_id` | N1, `slv_3p_poi_address`, `slv_pn_business_services`, `lh_vv_gold.dbo.poi_address_enrichment_staging` | Chọn nguồn địa chỉ (3P / partner Vietmap / partner JSON); 1 hàm chuẩn hoá `ward_norm`, `province_norm`; `addr_parts` cho rule đặc biệt | 19.070 |
+| N3 | `slv_poi_address` | `poi_id` | N1, `slv_3p_poi_address`, `slv_pn_business_services`, `poi_address_enrichment_staging` (gold cũ, §11) | Chọn nguồn địa chỉ (3P / partner Vietmap / partner JSON); 1 hàm chuẩn hoá `ward_norm`, `province_norm`; `addr_parts` cho rule đặc biệt | 19.070 |
 | N4 | `slv_poi_localization` | (`poi_id`, `lang`) | N1, `slv_3p_poi`, `slv_pn_business_services`, `slv_pn_business_service_i18ns`, `ref_lang_policy`, `ref_source` | [SỬA 09/10] Tên 3P từ `slv_3p_poi.poi_name` theo `language_code`. Mô tả 3P = NULL. Fallback tên vẫn ở L2, không copy mô tả. Notebook node chưa có trong repo | 57.200 |
-| N5 | `slv_poi_destination` | (`poi_id`, `destination_id`) | N3, `lh_vv_gold.dbo.destination_ward_mapping`, `ref_destination_special_rule`, `cms_destination` | (ward, province) → destination; rule đặc biệt (Phú Quốc); tên → `MAX(documentId)`; ≥ 2 destination → id nhỏ nhất là `DIRECT` / `is_primary`; chuỗi cha → `ANCESTOR` (`depth`) | 22.298 |
+| N5 | `slv_poi_destination` | (`poi_id`, `destination_id`) | N3, `destination_ward_mapping` (gold cũ, §11), `ref_destination_special_rule`, `cms_destination` | (ward, province) → destination; rule đặc biệt (Phú Quốc); tên → `MAX(documentId)`; ≥ 2 destination → id nhỏ nhất là `DIRECT` / `is_primary`; chuỗi cha → `ANCESTOR` (`depth`) | 22.298 |
 | N6 | `slv_poi_entity_non_enrich` | `poi_id` | `slv_3p_poi`, `slv_3p_poi_address`, `slv_3p_poi_contact`, `ref_dictionary_place_type`, `slv_pn_business_services`, `slv_pn_business_service_i18ns` | [SỬA 20/10] Dòng google cộng dòng partner có i18n `vi`. Không có cột op `_crawled_at`, `_event_id`, `_first_seen_at`, `_last_seen_at`. `website_url`: google left join `slv_3p_poi_contact` theo `poi_id`, trùng `poi_id` thì fail; partner lấy chuỗi của khoá `website_url` ở tầng gốc `website_urls`. Năm cột ước tính lấy từ đúng dòng `ref_dictionary_place_type` đã khớp, NULL khi không khớp. Google: category từ `primary_type`, rồi phần tử `types_json` đầu tiên khớp, rồi `other` / `other` / NULL / `Other`. Partner: `category_group` theo `business_category` rồi nhóm google, `Other` là phần còn lại. Bảng cũ `slv_poi_entity` không ghi nữa. Pipeline `PL_VV_TRANS_SLV_TO_ENR_15P`, chạy trước `gld_enr_poi_info` trong cùng DAG. Notebook `NB_SLV_POI_ENTITY_NON_ENRICH`. | — |
 | N7 | `slv_poi_amenity` | (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`) | `slv_3p_poi_amenity`, `slv_poi_entity_non_enrich`, `ref_dictionary_amenities` | Khớp key cờ google (`amenity_raw` chỉ còn key, ví dụ `outdoorSeating`) với `source_flags_json` = true; key tách từ `types[] =` khớp đúng một phần tử `types_json`. `json_type = 'a'` hoặc `json_type in ('a', 'b')` khớp một phần tử trong danh sách. Dòng google khác không khớp. `service_flags` lấy từ đúng dòng `ref_dictionary_amenities` đã khớp. Danh sách key ghim trong `NB_SLV_POI_AMENITY` (`FLAG_MATCH` 27, `TYPE_MATCH` 14, `JSON_MATCH` 12). `business_sector` lấy từ `slv_poi_entity_non_enrich`. Không có `business_category`. Pipeline `PL_VV_TRANS_SLV_TO_ENR_15P`, chạy trước `gld_enr_poi_info` trong cùng DAG. | — |
 
@@ -345,15 +344,16 @@ Hai ngoại lệ tạm (silver đọc gold): N3 đọc `poi_address_enrichment_s
 
 Sửa 1 dòng ref = 1 commit đổi dữ liệu → lần chạy sau của pipeline sở hữu node tự tính lại node đọc ref đó và hậu duệ. Setup chỉ chèn dòng chưa có (không ghi đè sửa tay).
 
-## 7. Gold — 3 bảng phục vụ (`lh_vv_gold.dbo`)
+## 7. Gold hiện hành (`lh_vv_gold.enr`)
 
-Chung: MERGE theo khoá; cập nhật chỉ khi `row_hash` khác; dòng biến mất → xoá mềm (`deleted_at`, `is_active = false`), không xoá cứng để PG nhận tombstone; `updated_at` chỉ đổi khi nội dung đổi. Gold chỉ giữ POI có đủ vi, en, ko (`has_required_langs`, lọc ở cả 3 bảng).
+Pipeline `PL_VV_TRANS_SLV_TO_ENR_15P` gọi `NB_00_ORCHES_SLV_TO_ENR_15P`, mode `APPEND`.
 
-| Bảng | Grain / PK | Cột | Nguồn | Run 1 |
-|---|---|---|---|---|---|
-| `gld_srv_poi_registry` | `poi_id` | `poi_id`, `canonical_poi_id`, `source_name`, `source_id`, `partner_id`, `poi_type`, `business_sector`, `business_category`, `subcategory_tags` (JSON), `brand_name`, `operating_status`, `lifecycle_state`, `is_active`, `is_verified`, `is_bookable`, `is_recommended`, `primary_destination_id`, `available_langs` (JSON, chỉ lang có tên **thật**), `source_first_seen_at` + 4 cột kỹ thuật | N2 ⋈ N5 (`is_primary`) ⋈ gom lang N4 | 19.066 |
-| `gld_srv_poi_multi_lang` | (`poi_id`, `lang`) | `poi_id`, `lang`, `poi_name`, `short_description`, `slug`, `legacy_poi_id`, `name_source`, `description_source`, `is_active` + 4 cột kỹ thuật | N4 (chiếu 1–1) | 57.198 |
-| `gld_srv_poi_destination_membership` | (`poi_id`, `destination_id`) | `poi_id`, `destination_id`, `is_primary`, `relation_type` (`DIRECT` / `ANCESTOR`), `depth`, `match_rule`, `rule_id`, `matched_ward`, `matched_province`, `is_active` + 4 cột kỹ thuật | N5 (chiếu 1–1) | 22.293 |
+| Bảng | Schema |
+|---|---|
+| `gld_enr_poi_info` | `lh_vv_gold.enr` |
+| `gld_enr_poi_review` | `lh_vv_gold.enr` |
+
+Ba bảng phục vụ cũ và orchestrator gold phục vụ nằm ở §11 với nhãn `[PROPOSED]`.
 
 ## 8. Định danh
 
@@ -372,7 +372,7 @@ Chung: MERGE theo khoá; cập nhật chỉ khi `row_hash` khác; dòng biến m
 
 | Thành phần cũ | Vấn đề | Thay bằng |
 |---|---|---|
-| `lh_vv_gold.dbo.poi_master` (grain POI × lang, `poi_id` có lang) | Thuộc tính không theo lang lặp 3 lần, có thể lệch nhau; 2 notebook (2.1 partner, NB_40 3P) ghi cùng bảng bằng 2 logic | 3 bảng `gld_srv_poi_*` + 5 node L2 |
+| `poi_master` (gold cũ, grain POI × lang, `poi_id` có lang) | Thuộc tính không theo lang lặp 3 lần, có thể lệch nhau; 2 notebook (2.1 partner, NB_40 3P) ghi cùng bảng bằng 2 logic | gold hiện hành `gld_enr_*` + L2. Ba bảng phục vụ đề xuất: §11 `[PROPOSED]` |
 | Chuỗi `NB_00_POI_PIPELINE_ORCHESTRATOR` → NB_10…NB_60 (3P) | Watermark theo `crawled_at` không overlap (bỏ sót event commit trễ); tên 4 phần `sgr_visitvn_stg.*` viết cứng; khoá có lang; silver phụ thuộc gold; rule trong code; không chống chạy chồng | Extract 3P mới + L2 + gold mới |
 | `lh_vv_bronze.partner.*` + notebook partner cũ | Viết cứng `TABLE_CONFIGS`; lọc theo thời gian quét cả raw; TOAST xử lý sai NULL thật | `slv_pn_*` + `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV` |
 | Gold đọc chính gold (`COALESCE(t.rating, s.rating)`, `t.nearby_pois`) | Không tái lập được | Gold chỉ chiếu từ silver |
@@ -392,6 +392,9 @@ Chung: MERGE theo khoá; cập nhật chỉ khi `row_hash` khác; dòng biến m
 
 | Việc | Ghi chú |
 |---|---|
+| `[PROPOSED]` `gld_srv_poi_registry`, `gld_srv_poi_multi_lang`, `gld_srv_poi_destination_membership` (`lh_vv_gold.dbo`) | Gold phục vụ cũ. Orchestrator `NB_00_ORCHES_SLV_TO_GLD`. MERGE theo khoá; cập nhật chỉ khi `row_hash` khác; dòng biến mất → xoá mềm (`deleted_at`, `is_active = false`), không xoá cứng để PG nhận tombstone; `updated_at` chỉ đổi khi nội dung đổi. Gold chỉ giữ POI có đủ vi, en, ko (`has_required_langs`, lọc ở cả 3 bảng). `gld_srv_poi_registry` grain `poi_id`; cột `poi_id`, `canonical_poi_id`, `source_name`, `source_id`, `partner_id`, `poi_type`, `business_sector`, `business_category`, `subcategory_tags` (JSON), `brand_name`, `operating_status`, `lifecycle_state`, `is_active`, `is_verified`, `is_bookable`, `is_recommended`, `primary_destination_id`, `available_langs` (JSON, chỉ lang có tên thật), `source_first_seen_at` + 4 cột kỹ thuật; nguồn N2 ⋈ N5 (`is_primary`) ⋈ gom lang N4; Run 1: 19.066. `gld_srv_poi_multi_lang` grain (`poi_id`, `lang`); cột `poi_id`, `lang`, `poi_name`, `short_description`, `slug`, `legacy_poi_id`, `name_source`, `description_source`, `is_active` + 4 cột kỹ thuật; nguồn N4; Run 1: 57.198. `gld_srv_poi_destination_membership` grain (`poi_id`, `destination_id`); cột `poi_id`, `destination_id`, `is_primary`, `relation_type` (`DIRECT` / `ANCESTOR`), `depth`, `match_rule`, `rule_id`, `matched_ward`, `matched_province`, `is_active` + 4 cột kỹ thuật; nguồn N5; Run 1: 22.293 |
+| `[PROPOSED]` `NB_00_ORCHES_SLV_TO_GLD` | Orchestrator gold phục vụ. Chưa có cạnh seed |
+| `lh_vv_gold.dbo.poi_address_enrichment_staging`, `lh_vv_gold.dbo.destination_ward_mapping` | Nguồn gold cũ còn được N3 và N5 nêu. Cùng hướng bỏ ngoại lệ silver đọc gold ở dòng dưới |
 | N6 `slv_poi_match_candidate` + `gld_srv_poi_match_candidate` | Chấm điểm cặp POI trùng bằng Splink (Fellegi–Sunter, EM), mọi nguồn; luồng chậm (`_1D`); POI management đọc qua PG |
 | Quyết định canonical về | Debezium CDC qua Event Hub → bronze `poimgmt_raw_data` → `NB_EXTRACT_POIMGMT_CDC_BRZ_TO_SLV` → `slv_pm_*` → N1 |
 | `slv_destination`, `ref_destination_ward`, `slv_poi_address_enrichment` | Bỏ 2 ngoại lệ silver đọc gold |

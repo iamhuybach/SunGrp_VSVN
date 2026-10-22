@@ -9,7 +9,7 @@
 
 | | |
 |---|---|
-| Gọi bởi | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` → `ForEach_Source` (tuần tự) → `If_HasWork` → activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. Không có Switch |
+| Gọi bởi | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` → `ForEach_Source` (tuần tự) → `If_HasWork` → activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV_BK`. Không có Switch |
 | Đọc | `ctrl_mng_pipeline_config`, `ctrl_cfg_schema_registry`, `ctrl_mng_watermark`, `ctrl_cdc_state`; raw: file `add` của commit mới theo `_delta_log` (VERSION) hoặc `VERSION AS OF` toàn bộ (FULL) |
 | Ghi | `slv_pn_*` (MERGE, xoá mềm), `ctrl_cdc_state`, `ctrl_cdc_reject`, `ctrl_log_run`, `ctrl_log_table_run`, `ctrl_mng_watermark` |
 | Song song | Bảng cùng `priority` chạy cùng lúc (`max_parallel` luồng): wave 1 = 12 bảng nghiệp vụ / đơn hàng, wave 2 = 11 bảng `slv_pn_product*` |
@@ -37,8 +37,8 @@ Thay notebook cũ `1. parsing_bronze_partner` + bảng `lh_vv_bronze.partner.*`:
 | `run_id` | "" | Pipeline truyền `""`; notebook lấy `exec_id` khi trống |
 | `src_schema`, `src_tbl` | `lh_vv_bronze.dbo`, `partner_raw_data` | Bảng raw |
 | `overlap_minutes` | 10 | Không còn dùng (giữ để pipeline cũ truyền không lỗi) |
-| `allow_full_scan` | False | Đọc FULL khi không đọc theo version được |
-| `max_parallel` | 4 | Bảng đồng thời / wave (rerun 04/10 dùng 12) |
+| `allow_full_scan` | True | Đọc FULL khi không đọc theo version được |
+| `max_parallel` | 12 | Bảng đồng thời / wave |
 | `max_retries` | 1 | Thử lại bảng khi lỗi tạm thời |
 | `table_filter` | "" | `"slv_pn_products,slv_pn_orders"`; rỗng = tất cả |
 | `full_reload` | False | Đọc toàn bộ raw, bỏ state (dùng kèm `table_filter`) |
