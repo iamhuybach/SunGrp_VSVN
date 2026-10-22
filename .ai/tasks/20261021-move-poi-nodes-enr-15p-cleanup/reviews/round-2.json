@@ -1,0 +1,24 @@
+{
+  "round": 2,
+  "verdict": "EVIDENCE_REQUIRED",
+  "findings": [
+    {
+      "id": "PIPE-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/01_DATA_MODEL.md": "953b6e4aeef4a441c29c7e37177ee94f79990b9a0f8415132aae5f3bdcd5523d",
+    "docs/context/CTRL_TABLES_CONTEXT.md": "dd77a6853b834408dc74a3766e40a9c56ad86bd054326c99454b5cf86a2b05a8",
+    "notebooks/NB_CREATE_DDL.ipynb": "c96ade3b70b0e6e6c0e6baa5db66956725d075005b66281443c8bcaa3b1c9fee",
+    "notebooks/NB_ENR_POI_COORDINATE.ipynb": null,
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "bf21a4a496ea0f0d95b652757157e52051f57c9bfcffb30fc8e1f18478854281",
+    "notebooks/NB_SETUP_POI_AMENITY.ipynb": "f25f953e513c431c54a6b21336eb004b96d369a4ddc4f07028a7264e28924c52",
+    "notebooks/NB_SETUP_POI_ENTITY.ipynb": "6d3f329fe2aa9e6a741407e82aa95615e8538861de47be8ceef37afd7df78068",
+    "notebooks/NB_SLV_PN_POI.ipynb": null,
+    "tests/test_enr_poi_contract.py": "3cf0672f0ce4efe90b60ebaac8c78c7cbebbfa42d057a76c0964d6a190ac8f12",
+    "tests/test_initial_ddl_contract.py": "74bac69a80697b78d822bfecfed4e26204873422622af828fcb295df0c7473ef",
+    "tests/test_poi_amenity_contract.py": "d67fa11690fb9860deca55620ab0adc7c9bbfb079f3bc58f358371de1e212bde",
+    "tests/test_poi_entity_contract.py": "97a9793075e7089faac0dead9ac98051f3d0417bc00df2c3937af42507e661c9"
+  }
+}

@@ -272,7 +272,6 @@ def test_table_inventory_matches_sources():
     enr = _cell(_notebook("NB_CREATE_DDL.ipynb"), "enrddlpy")
     found.update(_assign(enr, "INFO_COLS") and {
         "lh_vv_gold.enr.gld_enr_poi_info",
-        "lh_vv_gold.enr.gld_enr_poi_coordinate",
         "lh_vv_gold.enr.gld_enr_poi_review",
     })
     entity = _cell(_notebook("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb"), "b1entitybuild")
@@ -280,7 +279,7 @@ def test_table_inventory_matches_sources():
     assert match
     found.add("lh_vv_silver.dbo." + match.group(1))
     assert {spec["fq"] for spec in specs} == found
-    assert len(specs) == 14
+    assert len(specs) == 13
 
 
 def test_columns_match_sources():
@@ -307,7 +306,6 @@ def test_columns_match_sources():
     ]
     assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["props"] == PROPS
     for fq, name in {
-        "lh_vv_gold.enr.gld_enr_poi_coordinate": "COORD_COLS",
         "lh_vv_gold.enr.gld_enr_poi_review": "REVIEW_COLS",
     }.items():
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in _assign(enr, name)]
@@ -442,8 +440,10 @@ def test_pipeline_config_rows_match_sources():
     edges = _assign(_cell(ddl, "enrddlpy"), "EDGES")
     off = set(map(tuple, _assign(_cell(ddl, "enrinfopy"), "EDGES_OFF")))
     added = _assign(_cell(ddl, "enrinfopy"), "EDGES_ON")
+    deleted = {(src, target) for src, _schema, target in _assign(_cell(ddl, "mvpoipy"), "EDGES_DELETE")}
     bronze, silver = "lh_vv_bronze.dbo", "lh_vv_silver.dbo"
     flow = "PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00"
+    enr = "PL_VV_TRANS_SLV_TO_ENR_15P"
     expected = []
     for target in partner:
         priority = 2 if target.startswith("slv_pn_product") else 1
@@ -454,22 +454,26 @@ def test_pipeline_config_rows_match_sources():
             _sql_string(align), _sql_string(dedup), None,
         ))
     for _seq, src, schema, target, mode, notebook, priority in edges:
+        if (src, target) in deleted:
+            continue
         active = 0 if (src, target) in off else 1
-        expected.append(("PL_VV_TRANS_SLV_TO_ENR_15P", silver, src, schema, target, active, priority, mode, None, None, notebook))
+        expected.append((enr, silver, src, schema, target, active, priority, mode, None, None, notebook))
     for seq, src, schema, target, mode, notebook, priority in added:
-        expected.append(("PL_VV_TRANS_SLV_TO_ENR_15P", silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        if (src, target) in deleted:
+            continue
+        expected.append((enr, silver, src, schema, target, 1, priority, mode, None, None, notebook))
         assert seq > 0
     for src in (
         "slv_3p_poi", "slv_3p_poi_address", "ref_dictionary_place_type",
         "slv_pn_business_services", "slv_pn_business_service_i18ns", "slv_3p_poi_contact",
     ):
-        expected.append(("PL_VV_TRANS_SLV_TO_SLV_1H", silver, src, silver, "slv_poi_entity_non_enrich", 1, 1, "RECOMPUTE", None, None, None))
+        expected.append((enr, silver, src, silver, "slv_poi_entity_non_enrich", 1, 1, "RECOMPUTE", None, None, None))
     for src in ("slv_3p_poi_amenity", "slv_poi_entity_non_enrich", "ref_dictionary_amenities"):
-        expected.append(("PL_VV_TRANS_SLV_TO_SLV_1H", silver, src, silver, "slv_poi_amenity", 1, 1, "RECOMPUTE", None, None, None))
+        expected.append((enr, silver, src, silver, "slv_poi_amenity", 1, 1, "RECOMPUTE", None, None, None))
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 57
+    assert len(expected) == 49
 
 
 def test_watermark_rows_match_source():
@@ -523,7 +527,7 @@ def test_dropped_l1_columns_unread():
                 parts.append(line.split("#", 1)[0])
         return "\n".join(parts)
 
-    for name in ("NB_ENR_POI_INFO.ipynb", "NB_ENR_POI_COORDINATE.ipynb", "NB_SLV_POI_ENTITY_NON_ENRICH.ipynb"):
+    for name in ("NB_ENR_POI_INFO.ipynb", "NB_SLV_POI_ENTITY_NON_ENRICH.ipynb"):
         text = code(name)
         assert "state_province" not in text
         assert "subcategory_tags_json" not in text
@@ -556,12 +560,44 @@ def test_info_patch_create_matches_init():
 def test_enr_initial_edge_state():
     from test_enr_poi_contract import INFO_ACTIVE
 
+    seed = _by_id(_initial())["init_seed_ctrl"]
     namespace: dict = {}
-    exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
+    exec(seed, namespace)  # noqa: S102
     rows = namespace["PIPELINE_CONFIG_ROWS"]
+    enr = "PL_VV_TRANS_SLV_TO_ENR_15P"
+    removed = {"slv_pn_poi", "gld_enr_poi_coordinate"}
+    old_info = {
+        ("slv_3p_poi", "gld_enr_poi_info"),
+        ("slv_3p_poi_address", "gld_enr_poi_info"),
+        ("slv_3p_poi_contact", "gld_enr_poi_info"),
+    }
     active = {src for _pl, _ss, src, _ts, trg, active_flag, *_rest in rows if trg == "gld_enr_poi_info" and active_flag == 1}
     assert active == set(INFO_ACTIVE)
-    assert not any(trg == "gld_enr_poi_coordinate" and active_flag == 1 for _pl, _ss, _src, _ts, trg, active_flag, *_rest in rows)
-    assert sum(trg == "gld_enr_poi_coordinate" for _pl, _ss, _src, _ts, trg, *_rest in rows) == 3
+    assert not any(row[0] == "PL_VV_TRANS_SLV_TO_SLV_1H" for row in rows)
+    assert not any(src in removed or trg in removed for _pl, _ss, src, _ts, trg, *_rest in rows)
+    assert not any((src, trg) in old_info for _pl, _ss, src, _ts, trg, *_rest in rows)
+    owners: dict = {}
+    for pl, _ss, _src, schema, trg, active_flag, *_rest in rows:
+        if active_flag == 1:
+            owners.setdefault((schema, trg), set()).add(pl)
+    assert all(len(names) == 1 for names in owners.values())
+    assert owners[("lh_vv_silver.dbo", "slv_poi_entity_non_enrich")] == {enr}
+    assert owners[("lh_vv_silver.dbo", "slv_poi_amenity")] == {enr}
+    assert sum(trg == "gld_enr_poi_coordinate" for _pl, _ss, _src, _ts, trg, *_rest in rows) == 0
     specs, _namespace = _specs()
-    assert any(spec["fq"] == "lh_vv_gold.enr.gld_enr_poi_coordinate" for spec in specs)
+    assert not any(spec["fq"] == "lh_vv_gold.enr.gld_enr_poi_coordinate" for spec in specs)
+    assert "_SLV1H" not in seed
+
+
+def test_enr_15p_dag_order():
+    namespace: dict = {}
+    exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
+    enr = "PL_VV_TRANS_SLV_TO_ENR_15P"
+    active = {
+        (src, trg)
+        for pl, _ss, src, _ts, trg, active_flag, *_rest in namespace["PIPELINE_CONFIG_ROWS"]
+        if pl == enr and active_flag == 1
+    }
+    assert ("slv_poi_entity_non_enrich", "slv_poi_amenity") in active
+    assert ("slv_poi_entity_non_enrich", "gld_enr_poi_info") in active
+    assert ("slv_poi_amenity", "gld_enr_poi_info") in active

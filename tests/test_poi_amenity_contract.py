@@ -579,7 +579,9 @@ def test_setup_contract():
     merge = src.split("def _seed_merge", 1)[1].split("missing_before", 1)[0]
     assert "WHEN NOT MATCHED" in merge
     assert "WHEN MATCHED" not in merge
-    assert "PL_VV_TRANS_SLV_TO_SLV_1H" in src
+    assert "PL_VV_TRANS_SLV_TO_ENR_15P" in src
+    assert "PL_VV_TRANS_SLV_TO_SLV_1H" not in src
+    assert "pl_name IS NULL" in src
     assert "RECOMPUTE" in src
     for name in ("slv_3p_poi_amenity", "slv_poi_entity_non_enrich", "ref_dictionary_amenities"):
         assert name in src

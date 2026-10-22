@@ -146,7 +146,6 @@ def test_gold_ddl_matches_mapping():
 
 def test_mapping_comments_and_edges():
     info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
-    coord = _nb("NB_ENR_POI_COORDINATE.ipynb")
     review = _nb("NB_ENR_POI_REVIEW.ipynb")
     for col in ("COL-001", "COL-003", "COL-007", "COL-009", "COL-010"):
         assert col in info
@@ -154,8 +153,6 @@ def test_mapping_comments_and_edges():
         assert f"COL-{number:03d}" in info
     for col in ("COL-004", "COL-005", "COL-006", "COL-008", "COL-040", "COL-043"):
         assert col not in info
-    for number in range(11, 22):
-        assert f"COL-{number:03d}" in coord
     for col in ("COL-022", "COL-023", "COL-025", "COL-027", "COL-031", "COL-032", "COL-033", "COL-034"):
         assert col in review
     ddl = _cell("NB_CREATE_DDL.ipynb", "enrddlpy")
@@ -197,8 +194,7 @@ def test_info_patch_cell_guards():
     assert "lock_exec_id = '{LOCK}'" in patch
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-1] == "enrinfopy"
-    assert ids[-2] == "enrinfomd"
+    assert ids[-4:] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy"]
 
 
 def test_info_select_matches_ddl():
@@ -312,3 +308,89 @@ def test_append_baseline_and_marker():
     assert marker["exec_id"] == "a"
     assert ns["parse_append_marker"]('{"exec_id": "a"}') is None
     assert ns["parse_append_marker"]("not-json") is None
+
+
+EDGES_DELETE = [
+    ("slv_pn_business_services", "lh_vv_silver.dbo", "slv_pn_poi"),
+    ("slv_pn_business_service_i18ns", "lh_vv_silver.dbo", "slv_pn_poi"),
+    ("slv_3p_poi", "lh_vv_gold.enr", "gld_enr_poi_coordinate"),
+    ("slv_3p_poi_address", "lh_vv_gold.enr", "gld_enr_poi_coordinate"),
+    ("slv_pn_poi", "lh_vv_gold.enr", "gld_enr_poi_coordinate"),
+    ("slv_3p_poi", "lh_vv_gold.enr", "gld_enr_poi_info"),
+    ("slv_3p_poi_address", "lh_vv_gold.enr", "gld_enr_poi_info"),
+    ("slv_3p_poi_contact", "lh_vv_gold.enr", "gld_enr_poi_info"),
+]
+WM_DELETE = (
+    "wm_e__gld_enr_poi_coordinate__slv_3p_poi",
+    "wm_e__gld_enr_poi_coordinate__slv_3p_poi_address",
+    "wm_e__gld_enr_poi_coordinate__slv_pn_poi",
+    "wm_e__slv_pn_poi__slv_pn_business_service_i18ns",
+    "wm_e__slv_pn_poi__slv_pn_business_services",
+    "wm_flow__PL_VV_TRANS_SLV_TO_SLV_1H",
+)
+NODE_EDGES = [
+    ("slv_3p_poi", "slv_poi_entity_non_enrich"),
+    ("slv_3p_poi_address", "slv_poi_entity_non_enrich"),
+    ("ref_dictionary_place_type", "slv_poi_entity_non_enrich"),
+    ("slv_pn_business_services", "slv_poi_entity_non_enrich"),
+    ("slv_pn_business_service_i18ns", "slv_poi_entity_non_enrich"),
+    ("slv_3p_poi_contact", "slv_poi_entity_non_enrich"),
+    ("slv_3p_poi_amenity", "slv_poi_amenity"),
+    ("slv_poi_entity_non_enrich", "slv_poi_amenity"),
+    ("ref_dictionary_amenities", "slv_poi_amenity"),
+]
+
+
+def test_cleanup_patch_constants():
+    from test_initial_ddl_contract import _by_id, _initial
+
+    patch = _cell("NB_CREATE_DDL.ipynb", "mvpoipy")
+    edges = _assign(patch, "EDGES_DELETE")
+    watermarks = _assign(patch, "WM_DELETE")
+    assert edges == EDGES_DELETE
+    assert watermarks == WM_DELETE
+    assert _assign(patch, "NODE_EDGES") == NODE_EDGES
+    assert _assign(patch, "INFO_ACTIVE") == INFO_ACTIVE
+    assert set(map(tuple, EDGES_OFF)) <= {(src, trg) for src, _schema, trg in edges}
+    edge_wm = {f"wm_e__{trg}__{src}" for src, _schema, trg in edges if trg != "gld_enr_poi_info"}
+    assert {item for item in watermarks if item.startswith("wm_e__")} == edge_wm
+    assert "wm_flow__PL_VV_TRANS_SLV_TO_SLV_1H" in watermarks
+    namespace: dict = {}
+    exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
+    seed_keys = {(src, schema, trg) for _pl, _ss, src, schema, trg, *_rest in namespace["PIPELINE_CONFIG_ROWS"]}
+    assert seed_keys.isdisjoint(set(map(tuple, edges)))
+
+
+def test_cleanup_patch_guards():
+    patch = _cell("NB_CREATE_DDL.ipynb", "mvpoipy")
+    assert patch.count("DELETE FROM") == 2
+    for token in ("DROP", "TRUNCATE", "ALTER TABLE", "INSERT INTO", "SET is_active", "RESTORE", "UPDATE {CFG}"):
+        assert token not in patch
+    order = ["held = True", "Dừng trước khi ghi", "DELETE FROM {CFG}", "DELETE FROM {WM}", "Sau khi ghi", "finally:"]
+    positions = [patch.index(token) for token in order]
+    assert positions == sorted(positions)
+    assert "AND NOT (trg_tbl = 'gld_enr_poi_info' AND is_active <=> 1)" in patch
+    assert "AND lock_exec_id IS NULL\")" in patch
+    assert "lock_exec_id = '{LOCK}'" in patch
+    assert "LEASE_MINUTES = 35" in patch
+    assert patch.index("cạnh active của info") < patch.index("DELETE FROM {CFG}")
+    assert "GROUP BY src_schema, src_tbl" in patch
+    assert patch.index("pl_name IS NULL") < patch.index("DELETE FROM {CFG}")
+
+
+def test_removed_notebooks_absent():
+    for name in ("NB_SLV_PN_POI.ipynb", "NB_ENR_POI_COORDINATE.ipynb"):
+        assert not (ROOT / "notebooks" / name).exists()
+    pattern = re.compile(r"\bslv_pn_poi\b|gld_enr_poi_coordinate")
+    for path in (ROOT / "notebooks").glob("*.ipynb"):
+        if path.name == "NB_CREATE_DDL.ipynb":
+            continue
+        text = path.read_text(encoding="utf-8")
+        if path.name == "NB_SETUP_INITIAL_DDL.ipynb":
+            code = "\n".join(
+                line.split("#", 1)[0] for line in text.splitlines()
+            )
+            assert pattern.search(code) is None
+            continue
+        assert pattern.search(text) is None
+

@@ -218,12 +218,12 @@ def test_setup_contract():
     assert "<=>" in edges
     assert "src_schema = 'lh_vv_silver.dbo'" in edges
     assert "trg_schema = 'lh_vv_silver.dbo'" in edges
-    assert "PL_VV_TRANS_SLV_TO_SLV_1H" in edges
+    assert "PL_VV_TRANS_SLV_TO_ENR_15P" in edges
     assert "RECOMPUTE" in edges
     assert "WHEN MATCHED" in edges
     assert "WHEN NOT MATCHED" in edges
     assert "NOT EXISTS" in edges
-    assert "pl_name <> 'PL_VV_TRANS_SLV_TO_SLV_1H'" in edges
+    assert "pl_name <> 'PL_VV_TRANS_SLV_TO_ENR_15P'" in edges
     assert "is_active = 1" in edges
     assert "priority = 1" in edges
     assert "'slv_3p_poi'" in edges
@@ -249,6 +249,8 @@ def test_setup_contract():
     assert "is_active = 0" in edges
     assert "acquire_flow_lock" in src
     assert "finally:" in src[src.index("acquire_flow_lock"):src.index("release_flow_lock")]
+    assert "PL_VV_TRANS_SLV_TO_SLV_1H" not in src
+    assert "pl_name IS NULL" in src
 
 
 def _edge_precheck(notebook: str):
@@ -262,7 +264,7 @@ def _edge_precheck(notebook: str):
 
 def _edge(src_tbl, trg_tbl, **overrides):
     row = {
-        "pl_name": "PL_VV_TRANS_SLV_TO_SLV_1H",
+        "pl_name": "PL_VV_TRANS_SLV_TO_ENR_15P",
         "src_schema": "lh_vv_silver.dbo",
         "src_tbl": src_tbl,
         "trg_schema": "lh_vv_silver.dbo",
@@ -611,7 +613,7 @@ def test_section_1_9_preserved():
 def test_create_ddl_patch():
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-2:] == ["enrinfomd", "enrinfopy"]
+    assert ids[-4:] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy"]
     assert ids[ids.index("entwebpy") - 1] == "entwebmd"
     assert ids.index("entwebpy") < ids.index("enrinfomd")
     assert any(cell.get("id") == "nonenrpy" for cell in nb["cells"])

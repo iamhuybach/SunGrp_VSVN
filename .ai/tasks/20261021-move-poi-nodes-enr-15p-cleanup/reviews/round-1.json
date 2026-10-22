@@ -1,0 +1,40 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "GATE-001",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-002",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-003",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-004",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-005",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/01_DATA_MODEL.md": "953b6e4aeef4a441c29c7e37177ee94f79990b9a0f8415132aae5f3bdcd5523d",
+    "docs/context/CTRL_TABLES_CONTEXT.md": "dd77a6853b834408dc74a3766e40a9c56ad86bd054326c99454b5cf86a2b05a8",
+    "notebooks/NB_CREATE_DDL.ipynb": "6c216cbe36b299acda03fcbff29d213bd113bf2b0050e8d3f8909d9502603b2e",
+    "notebooks/NB_ENR_POI_COORDINATE.ipynb": null,
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "bf21a4a496ea0f0d95b652757157e52051f57c9bfcffb30fc8e1f18478854281",
+    "notebooks/NB_SETUP_POI_AMENITY.ipynb": "01edfbbe71963f79b93c0a2c1af80e9e336684e7ad92174000c197bb32e6eebb",
+    "notebooks/NB_SETUP_POI_ENTITY.ipynb": "9fb4b2c141ed8c9713db600091c29a48981129ff69783926a2ce44958244c0b6",
+    "notebooks/NB_SLV_PN_POI.ipynb": null,
+    "tests/test_enr_poi_contract.py": "8f3f16724b2343aadb2172b2e08db4df5dbf75f14750a1e5b63221f41a7950c2",
+    "tests/test_initial_ddl_contract.py": "74bac69a80697b78d822bfecfed4e26204873422622af828fcb295df0c7473ef",
+    "tests/test_poi_amenity_contract.py": "134a698afca4bf083f74d232f4f3386c84a8a8a2eb91edf1da458b3c7b13e28d",
+    "tests/test_poi_entity_contract.py": "7d082c2d876afdeef9d747f60cb265a953a14dbdbbfec41d3e0d29afd80c478f"
+  }
+}
