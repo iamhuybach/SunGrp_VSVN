@@ -9,7 +9,7 @@ Hai bảng gold enrich POI. Cột và kiểu lấy từ `NB_ENR_POI_INFO`, `NB_E
 | Schema | `lh_vv_gold.enr` |
 | Grain | Một dòng một `poi_id` |
 | Notebook | `NB_ENR_POI_INFO` |
-| Nguồn đang dùng | `lh_vv_silver.dbo.slv_poi_entity_non_enrich` (spine, bắt buộc), `slv_poi_amenity`, `slv_3p_poi_rating`, `slv_3p_poi_price`, `slv_3p_poi_opening_hours`, `slv_3p_poi_review`, `slv_pn_business_service_i18ns` |
+| Nguồn đang dùng | `lh_vv_silver.dbo.slv_poi_entity_non_enrich` (spine, bắt buộc), `slv_poi_amenity`, `slv_3p_poi_rating`, `slv_3p_poi_price`, `slv_3p_poi_opening_hours`, `slv_3p_poi_review`, `slv_pn_business_service_i18ns`. [SỬA 22/10] Thêm `slv_enr_poi_info_multi_lang` và `slv_enr_poi_destination`, chỉ đọc `poi_id` để tính cờ. Không chép nội dung enrich sang gold |
 
 `enrich_type` là nhóm trong tài liệu này, không phải cột Delta. Một cột có thể thuộc nhiều nhóm. Ô trống là cột không nằm trong ba rule.
 
@@ -28,9 +28,7 @@ Hai bảng gold enrich POI. Cột và kiểu lấy từ `NB_ENR_POI_INFO`, `NB_E
 | `house_number`             | `STRING`          | Số nhà.                                                               | enrich destination                     |
 | `street`                   | `STRING`          | Tên đường.                                                            | enrich description, enrich destination |
 | `ward`                     | `STRING`          | Phường hoặc xã.                                                       | enrich description, enrich destination |
-| `district`                 | `STRING`          | Copy giá trị `ward`.                                                  |                                        |
 | `city`                     | `STRING`          | Thành phố hoặc tỉnh.                                                  | enrich description, enrich destination |
-| `destination_name`         | `STRING`          | Copy giá trị `city`.                                                  | enrich description                     |
 | `full_address`             | `STRING`          | Địa chỉ đầy đủ.                                                       | enrich description, enrich destination |
 | `lat`                      | `DOUBLE`          | Vĩ độ.                                                                | enrich destination                     |
 | `lng`                      | `DOUBLE`          | Kinh độ.                                                              | enrich destination                     |
@@ -53,6 +51,8 @@ Hai bảng gold enrich POI. Cột và kiểu lấy từ `NB_ENR_POI_INFO`, `NB_E
 | `cost`                     | `BIGINT`          | Trung bình làm tròn của `price_min` và `price_max` khi đủ cả hai.     | enrich description                     |
 | `cost_vnd`                 | `STRING`          | JSON câu giá VND theo sector; `cost` null thì chuỗi `null`.           | enrich description, enrich multi-lang  |
 | `service_flag`             | `STRING`          | JSON mảng `service_flags` phân biệt, đã sort; không có thì `[]`.      | enrich description                     |
+| `is_enriched_multi_lang`   | `BOOLEAN`         | True khi `poi_id` có ít nhất một dòng trong `slv_enr_poi_info_multi_lang`, ngược lại false. Notebook ghi true hoặc false. |                                        |
+| `is_enriched_destination`  | `BOOLEAN`         | True khi `poi_id` có ít nhất một dòng trong `slv_enr_poi_destination`, ngược lại false. Notebook ghi true hoặc false. |                                        |
 | `created_at`               | `TIMESTAMP`       | Mốc ghi batch; thư viện gán, không nằm trong `select`.                |                                        |
 | `updated_at`               | `TIMESTAMP`       | Mốc ghi batch; thư viện gán, không nằm trong `select`.                |                                        |
 
@@ -63,7 +63,7 @@ Hai bảng gold enrich POI. Cột và kiểu lấy từ `NB_ENR_POI_INFO`, `NB_E
 | Schema | `lh_vv_gold.enr` |
 | Grain | Một dòng một `review_id` |
 | Notebook | `NB_ENR_POI_REVIEW` |
-| Nguồn đang dùng | `lh_vv_silver.dbo.slv_3p_poi_review` (chỉ third-party) |
+| Nguồn đang dùng | `lh_vv_silver.dbo.slv_3p_poi_review` (chỉ third-party). [SỬA 22/10] Thêm `slv_enr_poi_review_multi_lang`, chỉ đọc `review_id` để tính cờ. Không chép `review_text` sang gold |
 
 | Cột | Kiểu | Ý nghĩa |
 |---|---|---|
@@ -73,5 +73,6 @@ Hai bảng gold enrich POI. Cột và kiểu lấy từ `NB_ENR_POI_INFO`, `NB_E
 | `review_text` | `STRING` | Nội dung review, lấy từ cột `text`. |
 | `review_date` | `TIMESTAMP` | Thời điểm review, parse UTC từ cột `time`. |
 | `review_updated_at` | `TIMESTAMP` | Parse UTC từ cột `time`, cùng biểu thức với `review_date`. |
+| `is_enriched_multi_lang` | `BOOLEAN` | True khi `review_id` có ít nhất một dòng trong `slv_enr_poi_review_multi_lang`, ngược lại false. Notebook ghi true hoặc false. |
 | `created_at` | `TIMESTAMP` | Mốc ghi batch; thư viện gán, không nằm trong `select`. |
 | `updated_at` | `TIMESTAMP` | Mốc ghi batch; thư viện gán, không nằm trong `select`. |

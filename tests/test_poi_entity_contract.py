@@ -158,8 +158,10 @@ def test_entity_node_contract():
         '"dict": "ref_dictionary_place_type"',
         '"svc": "slv_pn_business_services"',
         '"i18n": "slv_pn_business_service_i18ns"',
+        '"hours": "slv_3p_poi_opening_hours"',
     ):
         assert role in src
+    assert "HOURS_COLS" in src
     assert 'pk=("poi_id",)' in src
     assert 'write_mode="MERGE"' in src
     assert 'required_inputs=("poi", "address", "contact", "dict", "svc", "i18n")' in src
@@ -172,6 +174,16 @@ def test_entity_node_contract():
     assert 'uuid_md5(F.col("id"), F.lit(PARTNER))' in src
     assert '"operation_status"' in src
     assert '== "vi"' in src
+    partner = next(item for item in ast.parse(build).body if isinstance(item, ast.FunctionDef) and item.name == "_partner")
+    vi = next(
+        node for node in partner.body
+        if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "vi" for target in node.targets)
+    )
+    vi_text = ast.get_source_segment(build, vi)
+    assert vi_text and vi_text.startswith("vi = (")
+    assert "$.policies.operating_hours" in vi_text
+    assert "opening_hours_other_source" in build
+    assert "partner_opening_hours_null" in build
     assert "subcategory_tags_json" not in src
     assert "posexplode(" in src
     assert "min_by(" in src
@@ -613,9 +625,71 @@ def test_section_1_9_preserved():
 def test_create_ddl_patch():
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-6:] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-10:-4] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-4:-2] == ["ohpassmd", "ohpasspy"]
+    assert ids[-2:] == ["peholmd", "peholpy"]
     assert ids[ids.index("entwebpy") - 1] == "entwebmd"
     assert ids.index("entwebpy") < ids.index("enrinfomd")
+
+
+def test_entity_detail_columns():
+    build = _nb_cell("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb", "b1entitybuild")
+    tree = ast.parse(build)
+    google_node = next(item for item in tree.body if isinstance(item, ast.FunctionDef) and item.name == "_google")
+    partner_node = next(item for item in tree.body if isinstance(item, ast.FunctionDef) and item.name == "_partner")
+    google = ast.get_source_segment(build, google_node)
+    partner = ast.get_source_segment(build, partner_node)
+    assert google and partner
+    assert '.select("poi_id", *CONTACT_COLS, "phone")' in google
+    assert 'F.lit(None).cast("string").alias("email")' in google
+    assert 'F.lit(None).cast("string").alias("holiday_exceptions")' in google
+    assert "dup_contact" in google  # D-PEH-08: biến của QG, không phải string literal
+    assert "$.policies.holiday_exceptions" not in google
+    vi = next(
+        node for node in partner_node.body
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "vi" for t in node.targets)
+    )
+    vi_text = ast.get_source_segment(build, vi)
+    assert vi_text and vi_text.startswith("vi = (")
+    assert "$.policies.operating_hours" in vi_text
+    assert '$.policies.holiday_exceptions").alias("_holiday")' in vi_text
+    assert '"phone": F.col("phone")' in partner
+    assert '"email": F.col("email")' in partner
+    assert '"holiday_exceptions": F.col("_holiday")' in partner
+    assert partner.count('F.col("_holiday")') == 1
+    assert "+ HOURS_COLS + DETAIL_COLS" in build
+    assert "phone_email_holiday_other_source" in build
+    assert "opening_hours_other_source" in build
+    assert "partner_opening_hours_null" in build
+
+
+def test_entity_detail_patch_cell():
+    nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
+    markdown = "".join(next(cell["source"] for cell in nb["cells"] if cell.get("id") == "peholmd"))
+    title = "# [THÊM 23/10] 20261023-entity-phone-email-holiday"
+    assert markdown.strip() == title
+    raw = _nb_cell("NB_CREATE_DDL.ipynb", "peholpy")
+    assert raw.startswith(title)
+    code = "\n".join(line for line in raw.splitlines() if not line.strip().startswith("#"))
+    for token in (
+        "DROP", "DELETE", "TRUNCATE", "REPLACE", "RESTORE", "columnMapping",
+        " AFTER ", "ALTER COLUMN", "ctrl_mng", "MERGE", "UPDATE", "INSERT",
+        "CREATE TABLE", "lock_exec_id",
+    ):
+        assert token not in code
+    entity = _nb_cell("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb", "b1entitybuild")
+    assert _assign(raw, "NEW_COLS") == tuple((name, "STRING") for name in _assign(entity, "DETAIL_COLS"))
+    assert _assign(raw, "ANCHOR") == _assign(entity, "HOURS_COLS")[-1]
+    assert raw.count("ALTER TABLE") == 1
+    stop, alter, after = (raw.index(token) for token in ("Dừng trước khi ghi", "ALTER TABLE", "Sau khi ghi"))
+    assert stop < alter < after
+    from test_initial_ddl_contract import _specs
+
+    specs, _namespace = _specs()
+    spec = next(item for item in specs if item["fq"] == "lh_vv_silver.dbo.slv_poi_entity_non_enrich")
+    names = [name for name, _dtype, _comment in spec["cols"]]
+    at = names.index("opening_hours_text")
+    assert [name for name, _dtype in _assign(raw, "NEW_COLS")] == names[at + 1:at + 4]
     assert any(cell.get("id") == "nonenrpy" for cell in nb["cells"])
     patch = _nb_cell("NB_CREATE_DDL.ipynb", "dictseedpy")
     assert "ADD COLUMNS" in patch and "missing" in patch

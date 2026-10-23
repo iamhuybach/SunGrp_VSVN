@@ -322,6 +322,7 @@ def test_poi_entity_columns_derived():
     env: dict = {}
     exec(pure, env)  # noqa: S102 - pure registry helpers
     exec(initial["init_cfg_3p"], env)  # noqa: S102 - verbatim config cell
+    exec(initial["init_cfg_partner"], env)  # noqa: S102 - verbatim config cell
     rows = env["flatten_table_configs"](env["TABLE_CONFIGS_3P"], "lh_vv_bronze.dbo", "brz_3rd_crawler_poi_stream")
     registry = [
         (row["trg_column"], row["data_type"])
@@ -354,11 +355,27 @@ def test_poi_entity_columns_derived():
         for row in rows
         if row["trg_tbl"] == "slv_3p_poi_contact" and row["is_active"]
     }
+    svc = {
+        row["trg_column"]: row["data_type"]
+        for row in env["flatten_table_configs"](env["TABLE_CONFIGS"], "lh_vv_bronze.dbo", "partner_raw_data")
+        if row["trg_tbl"] == "slv_pn_business_services" and row["is_active"]
+    }
     expected = [col for col in registry if col[0] not in names and col[0] not in snap_names]
     expected += [(name, contact[name]) for name in contact_cols]
     expected += [(name, address[name]) for name in address_cols]
     expected += [(name, expected_types[name]) for name in category]
+    hours = {
+        row["trg_column"]: row["data_type"]
+        for row in rows
+        if row["trg_tbl"] == "slv_3p_poi_opening_hours" and row["is_active"]
+    }
+    assert hours["periods_json"].lower() == "string"
+    assert _assign(build, "HOURS_COLS") == ("opening_hours_text",)
+    assert _assign(build, "DETAIL_COLS") == ("phone", "email", "holiday_exceptions")
+    assert contact["phone"].lower() == svc["phone"].lower() == svc["email"].lower() == "string"
     expected += [(name, expected_types[name]) for name in estimate_cols]
+    expected += [("opening_hours_text", hours["periods_json"])]
+    expected += [("phone", contact["phone"]), ("email", svc["email"]), ("holiday_exceptions", "string")]
     expected += list(tech["TECH_COLUMNS"])
     got = [(name, dtype.lower()) for name, dtype, _comment in spec["cols"]]
     assert got == [(name, dtype.lower()) for name, dtype in expected]
@@ -441,6 +458,8 @@ def test_pipeline_config_rows_match_sources():
     off = set(map(tuple, _assign(_cell(ddl, "enrinfopy"), "EDGES_OFF")))
     added = _assign(_cell(ddl, "enrinfopy"), "EDGES_ON")
     flagged = _assign(_cell(ddl, "enrflagpy"), "EDGES_ON")
+    hours_off = {(src, target) for src, _schema, target in _assign(_cell(ddl, "ohpasspy"), "EDGES_OFF")}
+    hours_on = _assign(_cell(ddl, "ohpasspy"), "EDGES_ON")
     deleted = {(src, target) for src, _schema, target in _assign(_cell(ddl, "mvpoipy"), "EDGES_DELETE")}
     bronze, silver = "lh_vv_bronze.dbo", "lh_vv_silver.dbo"
     flow = "PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00"
@@ -457,7 +476,7 @@ def test_pipeline_config_rows_match_sources():
     for _seq, src, schema, target, mode, notebook, priority in edges:
         if (src, target) in deleted:
             continue
-        active = 0 if (src, target) in off else 1
+        active = 0 if (src, target) in off or (src, target) in hours_off else 1
         expected.append((enr, silver, src, schema, target, active, priority, mode, None, None, notebook))
     for seq, src, schema, target, mode, notebook, priority in added:
         if (src, target) in deleted:
@@ -474,12 +493,14 @@ def test_pipeline_config_rows_match_sources():
         "slv_pn_business_services", "slv_pn_business_service_i18ns", "slv_3p_poi_contact",
     ):
         expected.append((enr, silver, src, silver, "slv_poi_entity_non_enrich", 1, 1, "RECOMPUTE", None, None, None))
+    for src, schema, trg, mode in hours_on:
+        expected.append((enr, silver, src, schema, trg, 1, 1, mode, None, None, None))
     for src in ("slv_3p_poi_amenity", "slv_poi_entity_non_enrich", "ref_dictionary_amenities"):
         expected.append((enr, silver, src, silver, "slv_poi_amenity", 1, 1, "RECOMPUTE", None, None, None))
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 52
+    assert len(expected) == 53
 
 
 def test_watermark_rows_match_source():

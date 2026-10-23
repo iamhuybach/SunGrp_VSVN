@@ -80,7 +80,10 @@ FLAG_EDGES = [
     (2, "slv_enr_poi_destination", "lh_vv_gold.enr", "gld_enr_poi_info", "APPEND", "NB_ENR_POI_INFO", 1),
     (3, "slv_enr_poi_review_multi_lang", "lh_vv_gold.enr", "gld_enr_poi_review", "APPEND", "NB_ENR_POI_REVIEW", 1),
 ]
-INFO_INPUTS = INFO_ACTIVE + ("slv_enr_poi_info_multi_lang", "slv_enr_poi_destination")
+HOURS_OFF = ("slv_3p_poi_opening_hours",)
+INFO_INPUTS = tuple(s for s in INFO_ACTIVE if s not in HOURS_OFF) + (
+    "slv_enr_poi_info_multi_lang", "slv_enr_poi_destination",
+)
 REVIEW_INPUTS = ("slv_3p_poi_review", "slv_enr_poi_review_multi_lang")
 EDGES = [
     (1, "slv_pn_business_services", "slv_pn_poi", "RECOMPUTE", "NB_SLV_PN_POI", 1),
@@ -225,7 +228,9 @@ def test_info_patch_cell_guards():
     assert "lock_exec_id = '{LOCK}'" in patch
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-6:] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-10:-4] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-4:-2] == ["ohpassmd", "ohpasspy"]
+    assert ids[-2:] == ["peholmd", "peholpy"]
 
 
 def test_info_select_matches_ddl():
@@ -243,7 +248,7 @@ def test_info_spec_inputs_match_active_edges():
     inputs = next(kw.value for kw in spec.keywords if kw.arg == "inputs")
     assert {elt.value for elt in inputs.values} == set(INFO_INPUTS)
     landing = {src for _seq, src, _schema, trg, *_rest in FLAG_EDGES if trg == "gld_enr_poi_info"}
-    assert set(INFO_ACTIVE) | landing == set(INFO_INPUTS)
+    assert (set(INFO_ACTIVE) - set(HOURS_OFF)) | landing == set(INFO_INPUTS)
     for name in ('"slv_3p_poi"', '"slv_3p_poi_address"', '"slv_3p_poi_contact"'):
         assert name not in info
 
@@ -343,7 +348,7 @@ def test_best_time_pattern():
 def test_info_removal_keys():
     info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
     assert "def _role_keys(ctx, role, spine_keys):" in info
-    assert 'for role in ("rating", "price", "hours", "review", "amenity"):' in info
+    assert 'for role in ("rating", "price", "review", "amenity"):' in info
     assert "old.subtract(current)" in info
     assert 'if info["basis"] not in ("EDGE", "MARKER") or info["from"] is None:' in info
     assert "return spine_keys" in info
@@ -468,6 +473,75 @@ def test_cleanup_patch_guards():
     assert patch.index("cạnh active của info") < patch.index("DELETE FROM {CFG}")
     assert "GROUP BY src_schema, src_tbl" in patch
     assert patch.index("pl_name IS NULL") < patch.index("DELETE FROM {CFG}")
+
+
+def test_info_hours_passthrough():
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    assert 'F.col("e.opening_hours_text").alias("opening_hours_text")' in info
+    for token in (
+        "_partner_hours", "periods_json", '"hours"', "slv_3p_poi_opening_hours",
+        "$.policies.operating_hours", "opening_hours_other_source", "partner_opening_hours_null",
+    ):
+        assert token not in info
+    assert "opening_hours_text_mismatch" in info
+    assert "eqNullSafe" in info
+    pure = _info_pure()
+    assert "opening_hours_text" in pure["REQUIRED_COLS"]["entity"]
+    assert pure["REQUIRED_COLS"]["i18n"] == ("business_service_id", "locale")
+
+
+def test_hours_patch_cell_constants():
+    patch = _cell("NB_CREATE_DDL.ipynb", "ohpasspy")
+    assert _assign(patch, "EDGES_ON") == [
+        ("slv_3p_poi_opening_hours", "lh_vv_silver.dbo", "slv_poi_entity_non_enrich", "RECOMPUTE"),
+    ]
+    assert _assign(patch, "EDGES_OFF") == [
+        ("slv_3p_poi_opening_hours", "lh_vv_gold.enr", "gld_enr_poi_info"),
+    ]
+    assert set(_assign(patch, "INFO_KEEP")) == set(INFO_INPUTS)
+    node_edges = _assign(_cell("NB_CREATE_DDL.ipynb", "mvpoipy"), "NODE_EDGES")
+    entity_src = tuple(src for src, trg in node_edges if trg == "slv_poi_entity_non_enrich")
+    assert _assign(patch, "ENTITY_SRC") == entity_src
+    assert _assign(patch, "NEW_COL") == ("opening_hours_text", "STRING")
+    from test_initial_ddl_contract import _by_id, _initial
+
+    namespace: dict = {}
+    exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
+    rows = namespace["PIPELINE_CONFIG_ROWS"]
+
+    def flags(src, schema, trg):
+        return [
+            active for pl, _ss, name, trg_schema, target, active, *_rest in rows
+            if pl == "PL_VV_TRANS_SLV_TO_ENR_15P" and name == src and trg_schema == schema and target == trg
+        ]
+
+    assert flags("slv_3p_poi_opening_hours", "lh_vv_silver.dbo", "slv_poi_entity_non_enrich") == [1]
+    assert flags("slv_3p_poi_opening_hours", "lh_vv_gold.enr", "gld_enr_poi_info") == [0]
+
+
+def test_hours_patch_cell_guards():
+    raw = _cell("NB_CREATE_DDL.ipynb", "ohpasspy")
+    code = "\n".join(line for line in raw.splitlines() if not line.strip().startswith("#"))
+    for token in (
+        "DROP", "DELETE", "TRUNCATE", "REPLACE", "RESTORE", "columnMapping",
+        " AFTER ", "SET is_active = 1", "CREATE TABLE",
+    ):
+        assert token not in code
+    assert "ADD COLUMNS (`{NEW_COL[0]}` {NEW_COL[1]})" in raw
+    order = [
+        "held = True", "Dừng trước khi ghi", "ALTER TABLE", "MERGE INTO {CFG}", "Sau khi ghi", "finally:",
+    ]
+    positions = [raw.index(token) for token in order]
+    assert positions == sorted(positions)
+    assert "lock_exec_id = '{LOCK}'" in raw
+    assert "LEASE_MINUTES = 35" in raw
+    assert raw.count("MERGE INTO {CFG}") == 1
+    calls = [match.start() for match in re.finditer(r"(?m)^\s*_refresh_lock\(\)", raw)]
+    assert len(calls) == 2
+    assert calls[0] < raw.index("ALTER TABLE") < calls[1] < raw.index("MERGE INTO {CFG}")
+    assert "if off_flags not in ({0: 1}, {1: 1}):" in raw
+    assert ".replace(\"'\", \"''\")" in raw
+    assert "cần đúng 1 dòng is_active = 0" in raw
 
 
 def test_removed_notebooks_absent():
