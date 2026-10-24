@@ -283,6 +283,8 @@ Ghi bởi `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. 1 dòng = 1 dòng bảng Postgres
 | `slv_pn_order_item_hotels` | `order_id` (**chưa xác nhận PK**, K1) | 12 | 1 | 1 |
 | `slv_pn_order_item_flights` | `order_id` (**chưa xác nhận PK**, K1) | 22 | 2 | 1 |
 
+`slv_pn_business_services` và `slv_pn_business_service_i18ns` không có cột `poi_id`; extract giữ khóa nguồn. Khi cần `poi_id` partner từ hai bảng này: `md5(concat(<id>, 'partner'))` rồi chèn gạch 8-4-4-4-12. `<id>` là cột `id` của `slv_pn_business_services`, hoặc cột `business_service_id` của `slv_pn_business_service_i18ns` (cùng một giá trị, cùng một `poi_id`). Gọi `uuid_md5(<id>, lit('partner'))`. Công thức đầy đủ và notebook đang gọi: §8. Không dùng `partner_portal` cho `poi_id`; `partner_portal` chỉ là giá trị `ref_source`.
+
 Ghi chú dữ liệu (rerun 04/10): 11 bảng (`products`, 9 bảng `product_*`, `order_item_flights`) có `after = ''` ở 100% event → NO_DATA / reject; `business_locations`, `product_post_translations` không có event nào trong raw. Chi tiết: `99_PAIN_POINTS.md`.
 
 ### 5.2 3rd-party `slv_3p_poi_*` (9 bảng trong registry, 9 active, snapshot)
@@ -360,7 +362,7 @@ Ba bảng phục vụ cũ và orchestrator gold phục vụ nằm ở §11 với
 | Khái niệm | Công thức / nguồn |
 |---|---|
 | `poi_id` 3rd-party | `uuid_format(md5(source_name ‖ source_id))` — cùng công thức `HASH_MD5_UUID` ở extract |
-| `poi_id` partner | `uuid_format(md5('partner_portal' ‖ business_service_id))` (chốt 05/10, giữ để dùng sau; notebook hiện tại chưa gọi) |
+| `poi_id` partner | `uuid_format(md5(concat(<id>, 'partner')))` rồi chèn gạch 8-4-4-4-12. `<id>` là `id` của `slv_pn_business_services`, hoặc `business_service_id` của `slv_pn_business_service_i18ns` (cùng một giá trị, cùng một `poi_id`). `uuid_md5(<id>, lit('partner'))` trong `NB_LIB_TRANSFORM_SLV_GLD` nối đối số theo thứ tự gọi. Notebook đang gọi: `NB_SLV_POI_ENTITY_NON_ENRICH` (`id`), `NB_ENR_POI_INFO` và `NB_GLD_SRV_POI_MULTI_LANG` (`business_service_id`) |
 | `canonical_poi_id` | = `poi_id` tới khi POI management gửi quyết định (dự kiến qua Debezium CDC như partner → `slv_pm_*` → N1) |
 | `legacy_poi_id` | `poi_id` cũ của `poi_master` (theo lang), lấy từ `ref_poi_legacy_id` |
 | `review_id` | `sha2(concat(...), 256)` (`HASH_SHA256`) |
