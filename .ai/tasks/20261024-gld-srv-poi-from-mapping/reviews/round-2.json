@@ -1,0 +1,18 @@
+{
+  "round": 2,
+  "verdict": "EVIDENCE_REQUIRED",
+  "findings": [],
+  "files": {
+    "docs/context/mapping_gld_srv_poi_info.md": "6b272636fb7e8f96232ac94477c71f874072b06f181c444493560af8f3935f1b",
+    "docs/context/mapping_gld_srv_poi_multi_lang.md": "4718d511e69d9f0829c51b4bc96fff625525149b74e9be742b33ea22d3124565",
+    "notebooks/NB_CREATE_DDL.ipynb": "c6ce23e229e7611d054f743d9e29fe1415e3cdb478b45c6d40716614921ab0f7",
+    "notebooks/NB_GLD_SRV_POI_INFO.ipynb": "abaecf1b028a9674680e6c4d3cb4bc8086677e5b21f969bd78e310c54079b845",
+    "notebooks/NB_GLD_SRV_POI_MULTI_LANG.ipynb": "2c91978731ca4ee47ea031e21e679be16a1d5851628db5f5205a9451e1bd1ec0",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "2e4ec8e05aacb064dccee53d8819e35950e441582dc0173b759735848476d561",
+    "tests/test_enr_poi_contract.py": "a3f011c68a8863fcd67c18f9f5ac05478b197ece8788bf1c0321ad017ad0a230",
+    "tests/test_gld_srv_poi_contract.py": "3f98bdd0e0ec17546ec3f0f683c4546039920a348dbfa3c39a0c395e6ae4ff03",
+    "tests/test_initial_ddl_contract.py": "9b6635f7f92f6623b144d586c462797ca937db4d9fc6e96a134c019dd816d998",
+    "tests/test_poi_entity_contract.py": "7182f5ba36fc6b54e814f94cb7c69d38f6be8d6a7a8bbf63b2499fa02308f030"
+  },
+  "elapsed_seconds": 83
+}

@@ -1,0 +1,80 @@
+schema_version: 1
+task:
+  id: 20261024-gld-srv-poi-from-mapping
+  title: Gold serving POI multi-lang and info from mapping
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-24'
+  updated_at: '2026-10-25'
+classification:
+  complexity: medium
+  risk_level: medium
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - transaction_boundaries
+  - idempotency
+  - design_tradeoffs
+  - runtime_proof_required
+  - data_evidence_required
+  - data_model_change
+scope:
+  systems:
+  - lh_vv_gold
+  - ddl
+  files:
+  - notebooks/NB_GLD_SRV_POI_MULTI_LANG.ipynb
+  - notebooks/NB_GLD_SRV_POI_INFO.ipynb
+  - notebooks/NB_SETUP_INITIAL_DDL.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+  - tests/test_initial_ddl_contract.py
+  - tests/test_gld_srv_poi_contract.py
+  - tests/test_enr_poi_contract.py
+  - tests/test_poi_entity_contract.py
+  - .ai/tasks/20261024-gld-srv-poi-from-mapping/evidence/probes/partner_hours_shape.py
+  - docs/context/mapping_gld_srv_poi_multi_lang.md
+  - docs/context/mapping_gld_srv_poi_info.md
+  - .ai/tasks/20261024-gld-srv-poi-from-mapping/evidence/probes/gld_srv_input_shape.py
+  - .ai/tasks/20261024-gld-srv-poi-from-mapping/evidence/probes/gld_srv_edge_payload.py
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  - state-correctness-reviewer
+  round: 3
+  extra_round_approved_on: '2026-10-24'
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: pass
+rounds:
+  verification: 2
+  review: 3
+  architecture: 2
+  runtime_failure: 0
+open_findings: []

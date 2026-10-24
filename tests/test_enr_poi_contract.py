@@ -228,9 +228,10 @@ def test_info_patch_cell_guards():
     assert "lock_exec_id = '{LOCK}'" in patch
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-10:-4] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
-    assert ids[-4:-2] == ["ohpassmd", "ohpasspy"]
-    assert ids[-2:] == ["peholmd", "peholpy"]
+    assert ids[-12:-6] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-6:-4] == ["ohpassmd", "ohpasspy"]
+    assert ids[-4:-2] == ["peholmd", "peholpy"]
+    assert ids[-2:] == ["srvpoimd", "srvpoipy"]
 
 
 def test_info_select_matches_ddl():
