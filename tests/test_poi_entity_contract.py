@@ -625,10 +625,11 @@ def test_section_1_9_preserved():
 def test_create_ddl_patch():
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-12:-6] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
-    assert ids[-6:-4] == ["ohpassmd", "ohpasspy"]
-    assert ids[-4:-2] == ["peholmd", "peholpy"]
-    assert ids[-2:] == ["srvpoimd", "srvpoipy"]
+    assert ids[-14:-8] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-8:-6] == ["ohpassmd", "ohpasspy"]
+    assert ids[-6:-4] == ["peholmd", "peholpy"]
+    assert ids[-4:-2] == ["srvpoimd", "srvpoipy"]
+    assert ids[-2:] == ["srvratemd", "srvratepy"]
     assert ids[ids.index("entwebpy") - 1] == "entwebmd"
     assert ids.index("entwebpy") < ids.index("enrinfomd")
 

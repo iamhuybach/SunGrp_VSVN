@@ -1,0 +1,26 @@
+# Verification 2026-10-26 01:04:47 — PASS
+Files (10): docs/context/mapping_gld_srv_poi_amenity.md, docs/context/mapping_gld_srv_poi_info.md, docs/context/mapping_poi_media_info.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_GLD_SRV_POI_INFO.ipynb, notebooks/NB_SETUP_INITIAL_DDL.ipynb, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_poi_entity_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 39%]
+........................................................................ [ 79%]
+.....................................                                    [100%]
+181 passed in 2.12s
+
+## task-state: PASS
+

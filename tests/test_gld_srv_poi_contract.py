@@ -7,6 +7,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MAPPING = ROOT / "docs" / "context" / "mapping_gld_srv_poi_info.md"
 TECH = ("row_hash", "created_at", "updated_at", "deleted_at")
+INFO_FQ = "lh_vv_gold.dbo.gld_srv_poi_info"
+NEW_INFO = [("rating_overall", "DECIMAL(4,2)"), ("rating_count", "INT"), ("review_count", "INT")]
+NEW_EDGES = [
+    (1, "slv_3p_poi_rating", "lh_vv_gold.dbo", "gld_srv_poi_info", "RECOMPUTE", "NB_GLD_SRV_POI_INFO", 1),
+    (2, "slv_3p_poi_review", "lh_vv_gold.dbo", "gld_srv_poi_info", "RECOMPUTE", "NB_GLD_SRV_POI_INFO", 1),
+]
 PARTNER_DAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
 
 
@@ -188,7 +194,8 @@ def test_node_specs():
         "srvinfobuild": {
             "pk": ("poi_id",),
             "inputs": {"entity": "slv_poi_entity_non_enrich", "destination": "slv_enr_poi_destination",
-                       "multi_lang": "slv_enr_poi_info_multi_lang"},
+                       "multi_lang": "slv_enr_poi_info_multi_lang", "rating": "slv_3p_poi_rating",
+                       "review": "slv_3p_poi_review"},
             "required_inputs": ("entity",),
         },
     }
@@ -211,6 +218,7 @@ def test_node_specs():
 
 def test_build_columns_match_ddl():
     gold = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")
+    gold[INFO_FQ] = _assign(_cell("NB_CREATE_DDL.ipynb", "srvratepy"), "INFO_COLS")
     pairs = {
         "gld_srv_poi_multi_lang": _assign(_cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild"), "OUT_COLS"),
         "gld_srv_poi_info": _assign(_cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"), "OUT_COLS"),
@@ -218,3 +226,43 @@ def test_build_columns_match_ddl():
     for table, cols in pairs.items():
         fq = "lh_vv_gold.dbo." + table
         assert list(cols) + list(TECH) == [name for name, _dtype in gold[fq]]
+
+
+def test_info_rating_patch():
+    ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
+    assert ids[-4:] == ["srvpoimd", "srvpoipy", "srvratemd", "srvratepy"]
+    patch = _cell("NB_CREATE_DDL.ipynb", "srvratepy")
+    base = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")[INFO_FQ]
+    assert _assign(patch, "INFO_NEW_COLS") == NEW_INFO
+    assert _assign(patch, "INFO_COLS") == base[:-len(TECH)] + NEW_INFO + base[-len(TECH):]
+    assert _assign(patch, "EDGES_ON") == NEW_EDGES
+    order = ["held = True", "Dừng trước khi ghi", "ALTER TABLE", "INSERT INTO {CFG}", "Sau khi ghi", "finally:"]
+    positions = [patch.index(token) for token in order]
+    assert positions == sorted(positions)
+    code = "\n".join(line for line in patch.splitlines() if not line.strip().startswith("#"))
+    for token in ("DROP", "DELETE", "TRUNCATE", "UPDATE {CFG}", "REPLACE", "columnMapping", "<<<"):
+        assert token not in code
+    assert code.count("ALTER TABLE") == 1 and " AFTER " in code
+    assert "LEASE_MINUTES = 90" in patch and "lock_exec_id = '{LOCK}'" in patch
+    assert patch.rindex("_refresh_lock()") < patch.index("INSERT INTO {CFG}")
+
+
+def test_mapping_targets_match_out_cols():
+    table = MAPPING.read_text(encoding="utf-8").split("### 1.2. Field Mapping", 1)[1].split("### 1.3", 1)[0]
+    rows = [line.split("|")[1:-1] for line in table.splitlines() if line.startswith("|")][2:]
+    out = _assign(_cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"), "OUT_COLS")
+    assert [cells[3].strip() for cells in rows] == list(out) + ["created_at", "updated_at"]
+    types = {cells[3].strip(): cells[1].strip() for cells in rows}
+    assert types["rating_overall"] == "decimal(4,2)"
+    assert types["rating_count"] == types["review_count"] == "integer"
+
+
+def test_info_rating_build_rules():
+    source = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    code = "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
+    assert "countDistinct" not in code and "F.count(F.lit(1))" in code
+    assert "INT_MIN, INT_MAX = -2147483648, 2147483647" in code
+    assert "poi_id có hơn một dòng" in code and "ngoài miền INT" in code
+    assert code.count("F.when(is_google,") == 4
+    assert "coalesce(F.col(\"review_count\")" not in code
+

@@ -316,7 +316,9 @@ def test_columns_match_sources():
             cols = cols + _assign(srv, "DEST_NEW_COLS")
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
-    for fq, cols in _assign(srv, "GOLD_COLS").items():
+    gold = _assign(srv, "GOLD_COLS")
+    gold["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(_cell(ddl, "srvratepy"), "INFO_COLS")
+    for fq, cols in gold.items():
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
     assert by_fq["lh_vv_ctrl.dbo.ctrl_cdc_state"]["partition"] == ["src_tbl"]
@@ -510,10 +512,13 @@ def test_pipeline_config_rows_match_sources():
     for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "srvpoipy"), "EDGES_ON"):
         expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
         assert seq > 0
+    for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "srvratepy"), "EDGES_ON"):
+        expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        assert seq > 0
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 59
+    assert len(expected) == 61
 
 
 def test_watermark_rows_match_source():
@@ -630,6 +635,8 @@ def test_gld_srv_patch_create_matches_init():
     dest = "lh_vv_silver.dbo.slv_enr_poi_destination"
     contracts = {fq: cols for fq, cols in env["GOLD_COLS"].items()}
     contracts[dest] = env["DEST_BASE"] + env["DEST_NEW_COLS"]
+    contracts["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(
+        _cell(_notebook("NB_CREATE_DDL.ipynb"), "srvratepy"), "INFO_COLS")
     for fq, cols in contracts.items():
         spec = next(item for item in specs if item["fq"] == fq)
         assert env["_create_sql"](fq, cols) == create_sql(spec)

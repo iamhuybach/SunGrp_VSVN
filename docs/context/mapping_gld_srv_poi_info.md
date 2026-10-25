@@ -45,8 +45,13 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 | is_bookable | boolean | null | is_bookable |
 | slv_poi_entity_non_enrich.opening_hours_text | string | Google theo mục 1.3; partner theo mục 1.5 | operating_hours |
 | slv_poi_entity_non_enrich.holiday_exceptions | string | transform 1-1 | holiday_exceptions |
+| slv_3p_poi_rating.rating_overall | decimal(4,2) | transform 1-1 | rating_overall |
+| slv_3p_poi_rating.rating_count | integer | transform 1-1 | rating_count |
+| slv_3p_poi_review | integer | count review theo poi_id | review_count |
 | | timestamp | field hệ thống | created_at |
 | | timestamp | field hệ thống | updated_at |
+
+`rating_overall`, `rating_count`, `review_count`: `slv_3p_poi_rating` và `slv_3p_poi_review` LEFT JOIN qua `poi_id`, chỉ điền cho dòng `source_name` google (lower/trim). Dòng partner và dòng không khớp để NULL, vẫn giữ `poi_id`. `review_count` = `COUNT(*)` theo `poi_id`, kể cả `review_id` NULL; không coalesce 0. `slv_3p_poi_rating` có hơn một dòng cho một `poi_id` thì dừng, không chọn dòng. `rating_count`, `review_count` ngoài miền INT thì dừng.
 
 ### 1.3. Operating Hours Transform
 

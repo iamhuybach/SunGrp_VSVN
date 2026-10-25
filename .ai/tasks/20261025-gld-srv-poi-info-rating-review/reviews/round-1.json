@@ -1,0 +1,16 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "docs/context/mapping_gld_srv_poi_info.md": "47aa5c588f8a5c5308da4fc5184ea1921ba3c018d8b4a32ecb83d108820ae6e1",
+    "notebooks/NB_CREATE_DDL.ipynb": "11043e91cc71c000a952b377e6746ebf997df7cd0616cb2c2925d2f26c56a4b9",
+    "notebooks/NB_GLD_SRV_POI_INFO.ipynb": "6ebed1015c3d47ea16510d63c88b2a74ecb8ea5fcdb1521a23ffa215f0928653",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "0f232314c639fb8f70e98bcafce71f274a365c01f0d8e40ec0ea97f396fc458c",
+    "tests/test_enr_poi_contract.py": "866fab7ea660685357db3c8f09838aa86b2144b4e9a4deae1044d73198e67609",
+    "tests/test_gld_srv_poi_contract.py": "64db1ffd95334fe24268e7216cf9e96de7c363427aed70fdd5193977342865d3",
+    "tests/test_initial_ddl_contract.py": "d2e7d111f9812c23c1f48f2a6848c7df74280f9633b92d4444f48d17515e50d6",
+    "tests/test_poi_entity_contract.py": "af9d5628e70c30c448f7b5cc4e4a7a389b3442abca22c8d603af478be9977105"
+  },
+  "elapsed_seconds": 200
+}
