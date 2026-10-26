@@ -483,7 +483,7 @@ def test_pipeline_config_rows_match_sources():
     deleted = {(src, target) for src, _schema, target in _assign(_cell(ddl, "mvpoipy"), "EDGES_DELETE")}
     bronze, silver = "lh_vv_bronze.dbo", "lh_vv_silver.dbo"
     flow = "PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00"
-    enr = "PL_VV_TRANS_SLV_TO_ENR_15P"
+    enr = "PL_VV_TRANS_SLV_TO_ENR_15M"
     expected = []
     for target in partner:
         priority = 2 if target.startswith("slv_pn_product") else 1
@@ -517,7 +517,10 @@ def test_pipeline_config_rows_match_sources():
         expected.append((enr, silver, src, schema, trg, 1, 1, mode, None, None, None))
     for src in ("slv_3p_poi_amenity", "slv_poi_entity_non_enrich", "ref_dictionary_amenities"):
         expected.append((enr, silver, src, silver, "slv_poi_amenity", 1, 1, "RECOMPUTE", None, None, None))
-    gld = "PL_VV_TRANS_SLV_TO_GLD_30P"
+    gld = "PL_VV_TRANS_SLV_TO_GLD_30M"
+    renames = {old: new for old, new, _lease in _assign(_cell(ddl, "plcadpy"), "RENAMES")}
+    assert renames[_assign(_cell(ddl, "srvpoipy"), "PL")] == gld
+    assert [new for old, new in renames.items() if old in _cell(ddl, "enrddlpy")] == [enr]
     for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "srvpoipy"), "EDGES_ON"):
         expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
         assert seq > 0
@@ -683,7 +686,7 @@ def test_enr_initial_edge_state():
     namespace: dict = {}
     exec(seed, namespace)  # noqa: S102
     rows = namespace["PIPELINE_CONFIG_ROWS"]
-    enr = "PL_VV_TRANS_SLV_TO_ENR_15P"
+    enr = "PL_VV_TRANS_SLV_TO_ENR_15M"
     removed = {"slv_pn_poi", "gld_enr_poi_coordinate"}
     old_info = {
         ("slv_3p_poi", "gld_enr_poi_info"),
@@ -716,7 +719,7 @@ def test_enr_initial_edge_state():
 def test_enr_15p_dag_order():
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
-    enr = "PL_VV_TRANS_SLV_TO_ENR_15P"
+    enr = "PL_VV_TRANS_SLV_TO_ENR_15M"
     active = {
         (src, trg)
         for pl, _ss, src, _ts, trg, active_flag, *_rest in namespace["PIPELINE_CONFIG_ROWS"]
@@ -725,3 +728,127 @@ def test_enr_15p_dag_order():
     assert ("slv_poi_entity_non_enrich", "slv_poi_amenity") in active
     assert ("slv_poi_entity_non_enrich", "gld_enr_poi_info") in active
     assert ("slv_poi_amenity", "gld_enr_poi_info") in active
+
+
+OLD_SUFFIX_RE = re.compile(r"(?<![A-Za-z0-9])PL_\w*?_(?:15|30)P\b|(?<![A-Za-z0-9_])ENR_(?:15|30)P\b|`_(?:15|30)P`")
+
+
+def _renames() -> list:
+    return _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "plcadpy"), "RENAMES")
+
+
+def _cadence():
+    lib = _by_id(_notebook("NB_LIB_TRANSFORM_SLV_GLD.ipynb"))["9ff87eee"]
+    pattern = re.search(r'CADENCE_RE = re\.compile\(r"([^"]+)"\)', lib).group(1)
+    assert pattern == r"_(\d+)([MHD])$"
+    regex, unit = re.compile(pattern), {"M": 1, "H": 60, "D": 1440}
+
+    def minutes(pl):
+        m = regex.search(pl)
+        return int(m.group(1)) * unit[m.group(2)] if m else None
+    return minutes
+
+
+def test_pl_cadence_seed():
+    minutes = _cadence()
+    ns: dict = {}
+    exec(_by_id(_initial())["init_seed_ctrl"], ns)  # noqa: S102
+    rows = [r for r in ns["PIPELINE_CONFIG_ROWS"] if r[7] in ("RECOMPUTE", "APPEND")]
+    assert {r[0] for r in rows} == {new for _o, new, _l in _renames()} | {"PL_VV_TRANS_SLV_TO_GLD_1H"}
+    assert all(minutes(r[0]) for r in rows)
+    owner = {(r[3], r[4]): r[0] for r in rows if r[5] == 1}
+    for pl, src_schema, src, _ts, _trg, active, *_rest in rows:
+        other = owner.get((src_schema, src))
+        if active == 1 and other and other != pl:
+            assert minutes(other) <= minutes(pl), (pl, src, other)
+
+
+def test_pl_cadence_patch_cell():
+    ddl = _notebook("NB_CREATE_DDL.ipynb")
+    assert [c.get("id") for c in ddl["cells"]][-2:] == ["plcadmd", "plcadpy"]
+    assert _cell(ddl, "plcadmd").startswith("# [THÊM 26/10] 20261026-pl-name-cadence-suffix")
+    patch, renames, minutes = _cell(ddl, "plcadpy"), _renames(), _cadence()
+    seed: dict = {}
+    exec(_by_id(_initial())["init_seed_ctrl"], seed)  # noqa: S102
+    assert [new for _o, new, _l in renames] == [seed["_ENR"], seed["_GLD30"]]
+    for old, new, _lease in renames:
+        assert old.endswith("P") and new == old[:-1] + "M" and minutes(old) is None and minutes(new)
+    assert renames[1][0] == _assign(_cell(ddl, "srvpoipy"), "PL")
+    assert renames[1][2] == _assign(_cell(ddl, "srvpoipy"), "LEASE_MINUTES")
+    assert renames[0][0] in _cell(ddl, "enrddlpy")
+    orch = "".join("".join(c["source"]) for c in _notebook("NB_00_ORCHES_SLV_TO_ENR_15P.ipynb")["cells"])
+    assert re.search(r'^p_pl_name = "([^"]+)"', orch, re.M).group(1) == renames[0][1]
+    assert int(re.search(r'^p_lock_timeout_min = "(\d+)"', orch, re.M).group(1)) == renames[0][2]
+    for banned in ("DROP ", "DELETE ", "TRUNCATE"):
+        assert banned not in patch.upper()
+    assert "UPDATE {CFG} SET pl_name = '{new}' WHERE pl_name = '{old}'" in patch
+    assert "SET watermark_id = '{new_id}', src_tbl = '{new}'" in patch
+    assert patch.index("Dừng trước khi ghi") < patch.index("_refresh_lock(old)") < patch.index("SET watermark_id = '{new_id}'")
+    assert patch.index("_refresh_lock(new)") < patch.index("UPDATE {CFG} SET pl_name")
+    assert "Sau khi ghi" in patch and "finally:" in patch and "lock_exec_id = '{LOCK}'" in patch
+
+
+def test_no_old_cadence_suffix_in_active_surface():
+    paths = [p for p in (ROOT / "notebooks").glob("*.ipynb") if p.name != "NB_CREATE_DDL.ipynb"]
+    paths += list((ROOT / "pipelines").rglob("*.json")) + [ROOT / "AGENTS.md"]
+    hits = [p.relative_to(ROOT).as_posix() for p in paths if OLD_SUFFIX_RE.search(p.read_text(encoding="utf-8"))]
+    hits += [p.name for p in (ROOT / "pipelines").iterdir() if OLD_SUFFIX_RE.search(p.name)]
+    naming = (ROOT / "docs" / "context" / "02_NAMING_CONVENTION.md").read_text(encoding="utf-8")
+    if OLD_SUFFIX_RE.search(naming[naming.index("## 3. Pipeline"):naming.index("## 4.")]):
+        hits.append("02_NAMING_CONVENTION.md §3")
+    assert hits == []
+
+
+def test_pl_cadence_dup_key_before_write():
+    patch = _cell(_notebook("NB_CREATE_DDL.ipynb"), "plcadpy")
+    marker = "GROUP BY pl_name, src_schema, src_tbl, trg_schema, trg_tbl"
+    assert marker in patch and "HAVING count(*) > 1" in patch
+    assert patch.index(marker) < patch.index("UPDATE {CFG} SET pl_name")
+    assert patch.index(marker) < patch.index("_refresh_lock(old)")
+    assert patch.index("issues, n_old = _issues(old, new)") < patch.index("đã đổi, không ghi")
+    assert patch.count("issues, n_old = _issues(old, new)") == 1
+
+
+def test_pl_cadence_rename_is_conditional():
+    """A new lock id must not be renamed into, and a raced duplicate is reverted."""
+    patch = _cell(_notebook("NB_CREATE_DDL.ipynb"), "plcadpy")
+    rename_at = patch.index("SET watermark_id = '{new_id}', src_tbl = '{new}'")
+    before = patch[patch.rindex("_refresh_lock(old)", 0, rename_at):rename_at]
+    assert "SELECT count(*) AS n FROM {WM} WHERE watermark_id = '{new_id}'" in before
+    assert "(SELECT count(*)" not in patch
+    revert_at = patch.index("SET watermark_id = '{old_id}', src_tbl = '{old}'")
+    config_at = patch.index("UPDATE {CFG} SET pl_name")
+    assert rename_at < revert_at < config_at
+    assert "n_new_after != 1" in patch[rename_at:revert_at]
+    assert "for target in (old_id, new_id)" in patch
+    assert patch.index("có cả {old_id} và {new_id}") < rename_at
+
+    def rename(rows: list[str], new_exists: bool) -> list[str]:
+        if new_exists:
+            return list(rows)
+        return ["new" if row == "old" else row for row in rows]
+
+    assert rename(["old"], new_exists=True) == ["old"]
+    assert rename(["old"], new_exists=False).count("new") == 1
+    assert rename(["new"], new_exists=True).count("new") == 1
+
+
+def test_pl_cadence_rerun_checks_lock():
+    patch = _cell(_notebook("NB_CREATE_DDL.ipynb"), "plcadpy")
+    done = patch.index('đã đổi, không ghi')
+    head = patch[:done]
+    assert "watermark_id = '{new_id}' AND src_tbl = '{new}'" in head
+    assert "không có đúng 1 cặp" in head
+    assert "đang giữ khoá" in head
+    assert "INTERVAL {lease} MINUTES" in head
+    assert head.index("không có đúng 1 cặp") < done
+    recover = head[head.rindex("UPDATE {WM}"):done]
+    assert "lock_exec_id = NULL" in recover
+    assert "lock_exec_id = '{owner_sql}'" in recover
+    assert "for _attempt in range(3)" in head
+    assert head.index("for _attempt in range(3)") < head.rindex("UPDATE {WM}") < head.rindex(".collect()")
+    assert "vẫn hết hạn sau 3 lần" in head
+    assert "DELETE " not in patch.upper()
+    lock_update = patch.index("SET lock_exec_id = '{LOCK}'")
+    assert patch.rindex("held = True", 0, lock_update) < lock_update
+    assert "if failed is None:" in patch[patch.index("finally:"):]

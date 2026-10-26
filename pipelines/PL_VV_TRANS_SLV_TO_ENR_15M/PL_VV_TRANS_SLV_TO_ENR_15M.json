@@ -5,7 +5,7 @@
   "variables": {},
   "resources": [
     {
-      "name": "PL_VV_TRANS_SLV_TO_ENR_15P",
+      "name": "PL_VV_TRANS_SLV_TO_ENR_15M",
       "type": "pipelines",
       "apiVersion": "2018-06-01",
       "properties": {

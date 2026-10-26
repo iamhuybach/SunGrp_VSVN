@@ -568,6 +568,7 @@ FROM lh_vv_ctrl.dbo.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 OR
 | 20/10 | Entity bỏ 4 cột op, thêm `website_url` và 5 cột ước tính. Amenity thêm `service_flags`. Cạnh `slv_3p_poi_contact` → `slv_poi_entity_non_enrich`: 6 cạnh entity |
 | 21/10 | Hai node silver thuộc ENR_15P; xoá cạnh/watermark slv_pn_poi, gld_enr_poi_coordinate, info cũ; DROP hai bảng trên DEV |
 | 22/10 | Bảng 3P ở §3 còn 9 dòng `DOC` / `DOC_ARRAY` theo seed `NB_SETUP_INITIAL_DDL` cell 7. Mode `LANG` / `LANG_ARRAY` (`slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`) không còn trong seed; ghi chú lịch sử giữ ở mục này |
+| 26/10 | Đổi hậu tố nhịp `pl_name` P → M cho luồng enrich 15 phút và gold 30 phút (`plcadpy`): đổi `pl_name` dòng cấu hình, id và `src_tbl` dòng `wm_flow__`. Không đổi `wm_e__`, log. Tên cũ ở các mục trên là lịch sử |
 
 ## 11. Việc còn lại liên quan ctrl
 

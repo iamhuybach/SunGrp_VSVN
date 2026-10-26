@@ -230,10 +230,11 @@ def test_build_columns_match_ddl():
 
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-8:] == [
+    assert ids[-10:-2] == [
         "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
         "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
     ]
+    assert ids[-2:] == ["plcadmd", "plcadpy"]
     patch = _cell("NB_CREATE_DDL.ipynb", "srvratepy")
     base = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")[INFO_FQ]
     assert _assign(patch, "INFO_NEW_COLS") == NEW_INFO

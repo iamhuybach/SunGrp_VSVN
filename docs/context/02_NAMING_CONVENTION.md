@@ -68,8 +68,9 @@ Luật cho mọi yêu cầu DDL hoặc `INSERT` cấu hình mới (agent bắt b
 | Mẫu | Ví dụ | Ghi chú |
 |---|---|---|
 | `PL_VV_TRANSFORM_<TỪ>_TO_<ĐẾN>_<HẬU TỐ>` | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | Pipeline extract (hậu tố `FL_00` = luồng chính) |
-| Hậu tố nhịp `_<n>M` / `_<n>H` / `_<n>D` | `…_15M` `[PROPOSED]`, `…_1H` `[PROPOSED]`, `…_1D` `[PROPOSED]` | **Bắt buộc với luồng tính lại**: lib đọc nhịp từ hậu tố (`CADENCE_RE = _(\d+)([MHD])$`) để chặn luồng nhanh đọc node của luồng chậm |
-| `PL_VV_TRANS_SLV_TO_ENR_15P` | `PL_VV_TRANS_SLV_TO_ENR_15P` | Tên đang chạy. Hậu tố `_15P` không khớp `CADENCE_RE` nên lib WARN và bỏ kiểm tra nhịp. Quyết định đổi tên (nếu có) là task riêng |
+| Hậu tố nhịp `_<n>M` / `_<n>H` / `_<n>D` | `…_15M`, `…_30M` (đang dùng), `…_1H` `[PROPOSED]`, `…_1D` `[PROPOSED]` | **Bắt buộc với luồng tính lại**: lib đọc nhịp từ hậu tố (`CADENCE_RE = _(\d+)([MHD])$`) để chặn luồng nhanh đọc node của luồng chậm |
+| `PL_VV_TRANS_SLV_TO_ENR_15M` | `PL_VV_TRANS_SLV_TO_ENR_15M` | Luồng enrich 15 phút, notebook `NB_00_ORCHES_SLV_TO_ENR_15P`. [SỬA 26/10] đổi hậu tố P sang M để lib kiểm tra nhịp |
+| `PL_VV_TRANS_SLV_TO_GLD_30M` | `PL_VV_TRANS_SLV_TO_GLD_30M` | Luồng gold serving 30 phút, chạy bằng `NB_00_ORCHES_SLV_TO_GLD` với `p_pl_name` này. Repo chưa có JSON pipeline; tạo hoặc đổi tên pipeline Fabric trước khi chạy |
 
 `pl_name` trong ctrl = đúng tên pipeline (`@pipeline().Pipeline`). 1 node chỉ thuộc 1 `pl_name` đang active.
 

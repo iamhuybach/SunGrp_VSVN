@@ -58,7 +58,7 @@ Shared source of truth for Cursor, Claude Code, Codex, and human operators. Keep
 - Microsoft Fabric F16 per environment; capacity is shared with Eventstream, Copy Job, and the SQL analytics endpoint.
 - Bronze, silver, and gold are separate Lakehouses in the same workspace: `lh_vv_bronze`, `lh_vv_silver`, and `lh_vv_gold`.
 - Ingestion: Event Hub -> Eventstream -> bronze. Transformation: Spark SQL/PySpark notebooks. Orchestration: Fabric Data Pipeline.
-- Batch cadence is 10-15 minutes; source-to-serving SLA is 30-60 minutes; `PL_VV_TRANS_SLV_TO_ENR_15P` runs every 15 minutes.
+- Batch cadence is 10-15 minutes; source-to-serving SLA is 30-60 minutes; `PL_VV_TRANS_SLV_TO_ENR_15M` runs every 15 minutes.
 - Gold exposes data and may apply business logic that belongs only to that gold table. Shared business decisions, canonical entities, reusable rules, and intermediate tables belong in silver. Gold does not read other gold.
 - Silver prefixes: `slv_pn_` for partner and `slv_3p_` for third party. Gold prefix: `gld_`.
 - The POI identifier is `poi_id`. It never includes language. Do not use `poi_uid`.

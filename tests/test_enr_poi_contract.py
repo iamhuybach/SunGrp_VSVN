@@ -194,7 +194,8 @@ def test_mapping_comments_and_edges():
         assert f'"{src}"' in ddl and f'"{trg}"' in ddl and f'"{mode}"' in ddl and f'"{nb}"' in ddl
     assert ddl.count('"APPEND"') == 11
     assert "pn_poi" not in info
-    assert "PL_VV_TRANS_SLV_TO_ENR_15P" in ddl
+    renames = {old: new for old, new, _lease in _assign(_cell("NB_CREATE_DDL.ipynb", "plcadpy"), "RENAMES")}
+    assert [new for old, new in renames.items() if old in ddl] == ["PL_VV_TRANS_SLV_TO_ENR_15M"]
 
 
 def test_info_patch_cell_edges():
@@ -228,12 +229,13 @@ def test_info_patch_cell_guards():
     assert "lock_exec_id = '{LOCK}'" in patch
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-18:-12] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
-    assert ids[-12:-10] == ["ohpassmd", "ohpasspy"]
-    assert ids[-10:-8] == ["peholmd", "peholpy"]
-    assert ids[-8:-6] == ["srvpoimd", "srvpoipy"]
-    assert ids[-6:-4] == ["srvratemd", "srvratepy"]
-    assert ids[-4:] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
+    assert ids[-20:-14] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-14:-12] == ["ohpassmd", "ohpasspy"]
+    assert ids[-12:-10] == ["peholmd", "peholpy"]
+    assert ids[-10:-8] == ["srvpoimd", "srvpoipy"]
+    assert ids[-8:-6] == ["srvratemd", "srvratepy"]
+    assert ids[-6:-2] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
+    assert ids[-2:] == ["plcadmd", "plcadpy"]
 
 
 def test_info_select_matches_ddl():
@@ -360,10 +362,11 @@ def test_info_removal_keys():
 
 
 def test_pipeline_timeouts():
-    doc = json.loads((ROOT / "pipelines" / "PL_VV_TRANS_SLV_TO_ENR_15P" / "PL_VV_TRANS_SLV_TO_ENR_15P.json").read_text(encoding="utf-8"))
+    doc = json.loads((ROOT / "pipelines" / "PL_VV_TRANS_SLV_TO_ENR_15M" / "PL_VV_TRANS_SLV_TO_ENR_15M.json").read_text(encoding="utf-8"))
     raw = json.dumps(doc)
     assert "PENDING_FABRIC_NOTEBOOK_ID" not in raw
     assert "68c81db2-fa14-4fee-91f3-a9f31b1ca2c8" not in raw
+    assert doc["resources"][0]["name"] == "PL_VV_TRANS_SLV_TO_ENR_15M"
     props = doc["resources"][0]["properties"]
     activity = next(item for item in props["activities"] if item["name"] == "NB_00_ORCHES_SLV_TO_ENR_15P")
     guard = next(item for item in props["activities"] if item["name"] == "Validate_Notebook_Binding")
@@ -515,7 +518,7 @@ def test_hours_patch_cell_constants():
     def flags(src, schema, trg):
         return [
             active for pl, _ss, name, trg_schema, target, active, *_rest in rows
-            if pl == "PL_VV_TRANS_SLV_TO_ENR_15P" and name == src and trg_schema == schema and target == trg
+            if pl == "PL_VV_TRANS_SLV_TO_ENR_15M" and name == src and trg_schema == schema and target == trg
         ]
 
     assert flags("slv_3p_poi_opening_hours", "lh_vv_silver.dbo", "slv_poi_entity_non_enrich") == [1]

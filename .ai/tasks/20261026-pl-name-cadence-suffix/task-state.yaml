@@ -1,0 +1,84 @@
+schema_version: 1
+task:
+  id: 20261026-pl-name-cadence-suffix
+  title: Rename recompute pl_name cadence suffix P to M
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-26'
+  updated_at: '2026-10-26'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: false
+  runtime_required: true
+  signals:
+  - cross_system
+  - idempotency
+  - runtime_proof_required
+scope:
+  systems:
+  - pipeline
+  - ctrl
+  - lib transform/gold
+  files:
+  - AGENTS.md
+  - docs/context/02_NAMING_CONVENTION.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+  - notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb
+  - notebooks/NB_SETUP_INITIAL_DDL.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_00_ORCHES_SLV_TO_ENR_15P.ipynb
+  - notebooks/NB_00_ORCHES_SLV_TO_GLD.ipynb
+  - notebooks/NB_SETUP_POI_ENTITY.ipynb
+  - notebooks/NB_SETUP_POI_AMENITY.ipynb
+  - pipelines/PL_VV_TRANS_SLV_TO_ENR_15P/PL_VV_TRANS_SLV_TO_ENR_15P.json
+  - pipelines/PL_VV_TRANS_SLV_TO_ENR_15M/PL_VV_TRANS_SLV_TO_ENR_15M.json
+  - tests/test_initial_ddl_contract.py
+  - tests/test_enr_poi_contract.py
+  - tests/test_poi_entity_contract.py
+  - tests/test_poi_amenity_contract.py
+  - tests/test_poi_media_amenity_contract.py
+  - tests/test_gld_srv_poi_contract.py
+review_plan:
+  required_reviewers:
+  - state-correctness-reviewer
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  - fabric-pipeline-reviewer
+  round: 3
+  extra_round_approved_on: '2026-10-26'
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: pass
+  runtime: pass
+rounds:
+  verification: 0
+  review: 3
+  architecture: 1
+  runtime_failure: 1
+open_findings: []

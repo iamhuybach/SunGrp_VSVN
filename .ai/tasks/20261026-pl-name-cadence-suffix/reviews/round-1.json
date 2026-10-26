@@ -1,0 +1,30 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "GATE-001",
+      "severity": "P0"
+    },
+    {
+      "id": "GATE-002",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-003",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "AGENTS.md": "55e52282bba31ddd1d85fa452d243cdeab24f4fe050130c38c3123edf48f5229",
+    "docs/context/02_NAMING_CONVENTION.md": "18fca0daf53dde56d8818b7fd6aeefc20c26a23530a4b5f79f2d957b65870dd0",
+    "docs/context/CTRL_TABLES_CONTEXT.md": "0f0e2ecc0ccc69295c1bee51f8a2a4c14469f159969c2852212ab99a739b7b49",
+    "notebooks/NB_00_ORCHES_SLV_TO_ENR_15P.ipynb": "f36e42c5f75ee5710542d0e14c57ec3108d5bf2c77cf8640580f84859298ce0c",
+    "notebooks/NB_CREATE_DDL.ipynb": "315fa2ec99da0e8890dfc2366f25e14e30bf0c912967bd24d7fe1cc64db51773",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "4a90fe0afe1e68a5a73e1d99c406a61914210d974b78d7c7a61642059e767d5c",
+    "notebooks/NB_SETUP_POI_ENTITY.ipynb": "3aa4508d7bfb8046270b0a95fc83da9a3e11690b92d015d3359a07c9a173891f",
+    "tests/test_enr_poi_contract.py": "197a45512611e298a330cf9eb29570b1023605102404760a593b11ccd6533f5a",
+    "tests/test_poi_entity_contract.py": "03de3a18a8c67f97d9c786ac1ac0cb1bf488505a3265cd1e30d4b23fd4ed8622"
+  },
+  "elapsed_seconds": 241
+}

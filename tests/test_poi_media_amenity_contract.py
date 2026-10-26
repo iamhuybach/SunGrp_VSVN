@@ -144,9 +144,11 @@ def test_edges_create_vs_init():
     exec(_cell("NB_SETUP_INITIAL_DDL.ipynb", "init_seed_ctrl"), seed)  # noqa: S102
     rows = seed["PIPELINE_CONFIG_ROWS"]
     seen = []
-    for cid, pl in (("mediaddlpy", "PL_VV_TRANS_SLV_TO_GLD_30P"), ("amenddlpy", "PL_VV_TRANS_SLV_TO_GLD_1H")):
+    renames = {old: new for old, new, _lease in _assign(_cell("NB_CREATE_DDL.ipynb", "plcadpy"), "RENAMES")}
+    for cid, pl in (("mediaddlpy", "PL_VV_TRANS_SLV_TO_GLD_30M"), ("amenddlpy", "PL_VV_TRANS_SLV_TO_GLD_1H")):
         source = _cell("NB_CREATE_DDL.ipynb", cid)
-        assert _assign(source, "PL") == pl
+        hist = _assign(source, "PL")
+        assert renames.get(hist, hist) == pl
         for seq, src, schema, target, mode, notebook, priority in _assign(source, "EDGES_ON"):
             match = (pl, "lh_vv_silver.dbo", src, schema, target, 1, priority, mode, None, None, notebook)
             assert match in rows
@@ -158,8 +160,8 @@ def test_edges_create_vs_init():
         if trg in targets:
             by_target.setdefault(trg, set()).add(pl)
     assert by_target == {
-        "slv_poi_media_info": {"PL_VV_TRANS_SLV_TO_GLD_30P"},
-        "gld_srv_poi_media_gallery": {"PL_VV_TRANS_SLV_TO_GLD_30P"},
+        "slv_poi_media_info": {"PL_VV_TRANS_SLV_TO_GLD_30M"},
+        "gld_srv_poi_media_gallery": {"PL_VV_TRANS_SLV_TO_GLD_30M"},
         "gld_srv_poi_amenity": {"PL_VV_TRANS_SLV_TO_GLD_1H"},
     }
     assert len(seen) == len(set(seen)) == 5
@@ -177,11 +179,11 @@ def test_amenity_untouched():
         if row[4] == "slv_poi_amenity"
     ]
     assert enr == [
-        ("PL_VV_TRANS_SLV_TO_ENR_15P", "lh_vv_silver.dbo", "slv_3p_poi_amenity", "lh_vv_silver.dbo", "slv_poi_amenity",
+        ("PL_VV_TRANS_SLV_TO_ENR_15M", "lh_vv_silver.dbo", "slv_3p_poi_amenity", "lh_vv_silver.dbo", "slv_poi_amenity",
          1, 1, "RECOMPUTE", None, None, None),
-        ("PL_VV_TRANS_SLV_TO_ENR_15P", "lh_vv_silver.dbo", "slv_poi_entity_non_enrich", "lh_vv_silver.dbo", "slv_poi_amenity",
+        ("PL_VV_TRANS_SLV_TO_ENR_15M", "lh_vv_silver.dbo", "slv_poi_entity_non_enrich", "lh_vv_silver.dbo", "slv_poi_amenity",
          1, 1, "RECOMPUTE", None, None, None),
-        ("PL_VV_TRANS_SLV_TO_ENR_15P", "lh_vv_silver.dbo", "ref_dictionary_amenities", "lh_vv_silver.dbo", "slv_poi_amenity",
+        ("PL_VV_TRANS_SLV_TO_ENR_15M", "lh_vv_silver.dbo", "ref_dictionary_amenities", "lh_vv_silver.dbo", "slv_poi_amenity",
          1, 1, "RECOMPUTE", None, None, None),
     ]
     for cid in ("mediaddlpy", "amenddlpy"):
