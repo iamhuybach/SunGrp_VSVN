@@ -1,3 +1,5 @@
+Sau mỗi thay đổi nghiệp vụ của bảng trong file này, cùng task cập nhật file này trước review.
+
 # 0. Hiện trạng `lh_vv_silver.dbo.slv_poi_amenity`
 
 Mô tả lấy từ code hiện tại. Không thêm rule. Chỗ code không ghi: `MISSING`.
@@ -7,7 +9,7 @@ Nguồn: `notebooks/NB_SLV_POI_AMENITY.ipynb` (markdown đầu, `OUT_COLS`, `bui
 - Bảng vật lý: `lh_vv_silver.dbo.slv_poi_amenity`. Notebook: `NB_SLV_POI_AMENITY`. `SPEC.trg_tbl = slv_poi_amenity`. `write_mode = MERGE`.
 - Grain / khóa MERGE: (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`).
 - `poi_id` trong `build` lấy từ bảng nguồn. Công thức hash của `poi_id` trong notebook này: `MISSING`.
-- Pipeline của bảng này: `PL_VV_TRANS_SLV_TO_ENR_15P`. `load_mode = RECOMPUTE`, `priority = 1`, `is_active = 1`. Đây là pipeline hiện hữu của `slv_poi_amenity`, không gán cho bảng mới.
+- Pipeline của bảng này: `PL_VV_TRANS_SLV_TO_ENR_15M`. `load_mode = RECOMPUTE`, `priority = 1`, `is_active = 1`. Đây là pipeline hiện hữu của `slv_poi_amenity`, không gán cho bảng mới. `NB_SETUP_POI_AMENITY` ghi tên này. Cell `NODE_EDGES` của `NB_CREATE_DDL` còn literal `PL_VV_TRANS_SLV_TO_ENR_15P`.
 - Ba cạnh active, `src_schema` và `trg_schema` đều `lh_vv_silver.dbo`:
   1. `slv_3p_poi_amenity`
   2. `slv_poi_entity_non_enrich`
@@ -22,4 +24,8 @@ Nguồn: `notebooks/NB_SLV_POI_AMENITY.ipynb` (markdown đầu, `OUT_COLS`, `bui
 
 # 1. Table: `gld_srv_poi_amenity`
 
-Transform 1-1 từ `lh_vv_silver.dbo.slv_poi_amenity`, chỉ thay đổi `created_at` và `updated_at`. Không thêm cột nghiệp vụ ngoài `OUT_COLS`. Timestamp là field hệ thống của gold. Logic, grain, khóa và cạnh ctrl của `slv_poi_amenity` giữ nguyên.
+`NB_GLD_SRV_POI_AMENITY` RECOMPUTE `lh_vv_gold.dbo.gld_srv_poi_amenity`. Bản 1-1 của `slv_poi_amenity`: `build` trả `select(*OUT_COLS)`. Grain và khóa MERGE: (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`). `write_mode = MERGE`. `SPEC.inputs`: `amenity` = `slv_poi_amenity`. `required_inputs` = (`amenity`,).
+
+Notebook không gán `created_at` hay `updated_at`. `sql_merge_target` trong `NB_LIB_TRANSFORM_SLV_GLD` ghi `row_hash`, `created_at`, `updated_at`, `deleted_at`.
+
+Pipeline `PL_VV_TRANS_SLV_TO_GLD_1H`. Một cạnh `slv_poi_amenity` → `gld_srv_poi_amenity`, `load_mode = RECOMPUTE`, `priority = 1`, `nb_name = NB_GLD_SRV_POI_AMENITY` (`NB_CREATE_DDL` cell `amenddlpy`). DDL `AMENITY_COLS` cùng kiểu cột nghiệp vụ với `slv_poi_amenity`.

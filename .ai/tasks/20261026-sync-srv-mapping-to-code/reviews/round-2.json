@@ -1,0 +1,13 @@
+{
+  "round": 2,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "docs/AGENT_PROMPT_SAMPLES.md": "676bc7e00a20c71a881d31b0f84a4ce40736392a7d8b2b837f2d2d27a0e46e60",
+    "docs/context/mapping_gld_srv_poi_amenity.md": "2ed43fd137726cb868398ff60e5d0c9ec59bee3dab77fe103bb3992b59b4355a",
+    "docs/context/mapping_gld_srv_poi_info.md": "1a8387fc03780a96301816e55375abfb7874fcfeddd61141606ffa4f4a129486",
+    "docs/context/mapping_gld_srv_poi_multi_lang.md": "977b13f2662607a1e9154a76294a1b280e1123aabe3fe1bad30980a7799cb63d",
+    "docs/context/mapping_poi_media_info.md": "42c473f5170c994de327e6cb4a058504701708a36fc306b8e3a813b037b8be5b"
+  },
+  "elapsed_seconds": 131
+}

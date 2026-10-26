@@ -1,0 +1,52 @@
+# Verification 2026-10-26 17:47:39 — PASS
+Files (5): docs/AGENT_PROMPT_SAMPLES.md, docs/context/mapping_gld_srv_poi_amenity.md, docs/context/mapping_gld_srv_poi_info.md, docs/context/mapping_gld_srv_poi_multi_lang.md, docs/context/mapping_poi_media_info.md
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 36%]
+........................................................................ [ 72%]
+........................................................                 [100%]
+200 passed in 5.54s
+
+## task-state: PASS
+
+# Verification 2026-10-26 19:18:33 — PASS
+Files (5): docs/AGENT_PROMPT_SAMPLES.md, docs/context/mapping_gld_srv_poi_amenity.md, docs/context/mapping_gld_srv_poi_info.md, docs/context/mapping_gld_srv_poi_multi_lang.md, docs/context/mapping_poi_media_info.md
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 36%]
+........................................................................ [ 72%]
+........................................................                 [100%]
+200 passed in 5.95s
+
+## task-state: PASS
+

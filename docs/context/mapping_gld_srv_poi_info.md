@@ -1,3 +1,4 @@
+Sau mỗi thay đổi nghiệp vụ của bảng trong file này, cùng task cập nhật file này trước review.
 
 # Mapping GLD Service POI
 
@@ -7,14 +8,14 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 
 ### 1.1. Xử lý
 
-- `slv_poi_entity_non_enrich ent` LEFT JOIN `slv_enr_poi_destination des` qua `ent.poi_id = des.poi_id`.
-- `source_name` lấy từ `ent.source_name`. `des` không có cột này.
-- `poi_id` với `ent.source_name = 'partner'` lấy full.
-- Những `poi_id` với `ent.source_name = 'google'` chỉ lấy khi `poi_id` có cả trong cả 2 bảng `slv_enr_poi_destination` và `slv_enr_poi_info_multi_lang`.
-- Thêm `destination_id`, `country_code`, `postal_code`, `lat`, `lng` vào `slv_enr_poi_destination`. Gold vẫn lấy 1-1 từ các cột đó.
-- Grain một dòng `poi_id`. MERGE theo `poi_id`.
-- `des` trùng `poi_id`: ưu tiên bản ghi đến sau (`updated_at` lớn hơn).
-- `pl_name`: `PL_VV_TRANS_SLV_TO_GLD_30P`. Không gắn `PL_VV_TRANS_SLV_TO_ENR_15P`.
+- `SPEC.inputs`: `entity` = `slv_poi_entity_non_enrich`, `destination` = `slv_enr_poi_destination`, `multi_lang` = `slv_enr_poi_info_multi_lang`, `rating` = `slv_3p_poi_rating`, `review` = `slv_3p_poi_review`. `required_inputs` = (`entity`,). `entity`, `destination`, `multi_lang` gọi `live_only=False`. `rating` và `review`: notebook không truyền `live_only`. `write_mode = MERGE`.
+- `source_name` lấy từ `ent.source_name`. `DEST_COLS` không có `source_name`.
+- So khớp nguồn bằng `lower(trim(source_name))`. Dòng không phải `google` được giữ. Dòng `google` chỉ khi `poi_id` có trong cả `slv_enr_poi_destination` và `slv_enr_poi_info_multi_lang`.
+- Sau lọc, LEFT JOIN `des` theo `poi_id`.
+- `NB_CREATE_DDL` cell `srvpoipy` thêm `destination_id`, `country_code`, `postal_code`, `lat`, `lng` vào `slv_enr_poi_destination`. Gold lấy 1-1 các cột đó.
+- Grain một dòng `poi_id`. MERGE theo `poi_id`. `poi_id` nguồn `slv_poi_entity_non_enrich` là `STRING`; DDL không ghi `NOT NULL`. Target `gld_srv_poi_info.poi_id` là `STRING NOT NULL`. `quality_gate` chặn khóa NULL.
+- `des` nhiều dòng cùng `poi_id`: giữ dòng `updated_at` lớn nhất khi max duy nhất và không có `updated_at` null. Có `updated_at` null hoặc nhiều dòng cùng max thì dừng, không chọn dòng.
+- `pl_name` hiện hành: `PL_VV_TRANS_SLV_TO_GLD_30M` (`plcadpy` đổi từ `PL_VV_TRANS_SLV_TO_GLD_30P`). `load_mode = RECOMPUTE`, `priority = 1`. Cạnh: `slv_poi_entity_non_enrich`, `slv_enr_poi_destination`, `slv_enr_poi_info_multi_lang`, `slv_3p_poi_rating`, `slv_3p_poi_review` → `gld_srv_poi_info`, `nb_name = NB_GLD_SRV_POI_INFO`. Không gắn `PL_VV_TRANS_SLV_TO_ENR_15M`.
 
 ### 1.2. Field Mapping
 
@@ -41,7 +42,7 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 | slv_poi_entity_non_enrich.website_url | string | transform 1-1 | website_url |
 | slv_poi_entity_non_enrich.operating_status | string | transform 1-1 | operating_status |
 | is_verified | boolean | null | is_verified |
-| is_recommended | boolean | true khi source_name = 'partner', nguồn khác false | is_recommended |
+| is_recommended | boolean | true khi lower(trim(source_name)) = 'partner'; null hoặc nguồn khác thì false | is_recommended |
 | is_bookable | boolean | null | is_bookable |
 | slv_poi_entity_non_enrich.opening_hours_text | string | Google theo mục 1.3; partner theo mục 1.5 | operating_hours |
 | slv_poi_entity_non_enrich.holiday_exceptions | string | transform 1-1 | holiday_exceptions |
@@ -51,7 +52,7 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 | | timestamp | field hệ thống | created_at |
 | | timestamp | field hệ thống | updated_at |
 
-`rating_overall`, `rating_count`, `review_count`: `slv_3p_poi_rating` và `slv_3p_poi_review` LEFT JOIN qua `poi_id`, chỉ điền cho dòng `source_name` google (lower/trim). Dòng partner và dòng không khớp để NULL, vẫn giữ `poi_id`. `review_count` = `COUNT(*)` theo `poi_id`, kể cả `review_id` NULL; không coalesce 0. `slv_3p_poi_rating` có hơn một dòng cho một `poi_id` thì dừng, không chọn dòng. `rating_count`, `review_count` ngoài miền INT thì dừng.
+`rating_overall`, `rating_count`, `review_count`: `slv_3p_poi_rating` và `slv_3p_poi_review` LEFT JOIN qua `poi_id`, chỉ điền cho dòng `source_name` google (lower/trim). Dòng partner và dòng không khớp để NULL, vẫn giữ `poi_id`. `review_count` = `COUNT(*)` theo `poi_id`, kể cả `review_id` NULL; không coalesce 0. `slv_3p_poi_rating` có hơn một dòng cho một `poi_id` thì dừng, không chọn dòng. `rating_count`, `review_count` ngoài miền INT (`-2147483648` đến `2147483647`) thì dừng.
 
 ### 1.3. Operating Hours Transform
 
@@ -97,6 +98,10 @@ Nguồn Google:
 ```
 
 Ngày không có phần tử nào vẫn là một object đóng cửa, như case 1.
+
+`close_day` không đọc. Nhánh cả ngày chỉ khi đúng một phần tử bằng `{"open_hour": 0, "open_minute": 0, "day_of_week": 0}` và mọi value là int.
+
+Dừng, không ghi `operating_hours`, khi: `GOOGLE_INVALID_JSON`, `GOOGLE_NOT_ARRAY`, `GOOGLE_BAD_ELEMENT`, `GOOGLE_BAD_DAY`, `GOOGLE_BAD_TIME`. `source_name` sau `strip().lower()` không phải `google` hay `partner` thì dừng `SOURCE_NOT_GOOGLE_PARTNER`.
 
 ### 1.4. Operating Hours Examples
 
@@ -309,6 +314,7 @@ JSON đích cùng dạng mục 1.4: bảy phần tử, thứ tự Thứ Hai → 
 - `opening_hours_text` null thì `operating_hours` null.
 - Đúng một phần tử `hours`: `open_time` và `close_time` lấy nguyên chuỗi nguồn, không tách giờ/phút. `value` = `open_time` + ` - ` + `close_time`. `is_closed = false`. `is_open_all_day = false`.
 - Không có key ngày, không có `hours`, hoặc `hours` rỗng: cùng object ngày đóng của case 1. `is_closed = true`. `is_open_all_day = false`. `value` = `Đóng cửa`. Không ghi `open_time`, `close_time`.
-- Nhiều hơn một phần tử `hours` trong một ngày: dừng, không chọn phần tử, không ghép chuỗi.
+- Nhiều hơn một phần tử `hours` trong một ngày: dừng `PARTNER_MULTI_HOURS`, không chọn phần tử, không ghép chuỗi.
+- JSON không đọc được: `PARTNER_INVALID_JSON`. Không phải object: `PARTNER_NOT_OBJECT`. Ngày không phải object: `PARTNER_BAD_DAY`. `hours` không phải list, hoặc `open_time` / `close_time` không phải string: `PARTNER_BAD_HOURS`.
 
 ---

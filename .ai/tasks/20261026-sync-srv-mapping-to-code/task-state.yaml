@@ -1,0 +1,64 @@
+schema_version: 1
+task:
+  id: 20261026-sync-srv-mapping-to-code
+  title: Sync serving mapping docs to current notebooks
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-26'
+  updated_at: '2026-10-26'
+classification:
+  complexity: low
+  risk_level: low
+  architecture_required: false
+  evidence_required: false
+  runtime_required: false
+  signals: []
+scope:
+  systems:
+  - gold
+  - docs
+  files:
+  - docs/context/mapping_gld_srv_poi_amenity.md
+  - docs/context/mapping_gld_srv_poi_info.md
+  - docs/context/mapping_gld_srv_poi_multi_lang.md
+  - docs/context/mapping_poi_media_info.md
+  - docs/AGENT_PROMPT_SAMPLES.md
+review_plan:
+  required_reviewers:
+  - spark-runtime-reviewer
+  - sql-data-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: not_required
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 2
+  review: 2
+  architecture: 0
+  runtime_failure: 0
+open_findings: []

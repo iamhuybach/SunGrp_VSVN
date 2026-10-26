@@ -1,0 +1,22 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "SQL-001",
+      "severity": "P1"
+    },
+    {
+      "id": "SQL-002",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/AGENT_PROMPT_SAMPLES.md": "676bc7e00a20c71a881d31b0f84a4ce40736392a7d8b2b837f2d2d27a0e46e60",
+    "docs/context/mapping_gld_srv_poi_amenity.md": "2ed43fd137726cb868398ff60e5d0c9ec59bee3dab77fe103bb3992b59b4355a",
+    "docs/context/mapping_gld_srv_poi_info.md": "f49b4d7939486ab4f1134229fa9792a45a80312c17adfb261b00d5865ce731b2",
+    "docs/context/mapping_gld_srv_poi_multi_lang.md": "c8a87e9b1cfc45b05d14ec7054c7ba1cd4f720c6563ccd468fd2819d6afeecfd",
+    "docs/context/mapping_poi_media_info.md": "8d822da979261e80364ab2424518c42ffe10ee33804312e2d637f430600696a2"
+  },
+  "elapsed_seconds": 324
+}
