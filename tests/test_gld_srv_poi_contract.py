@@ -219,6 +219,8 @@ def test_node_specs():
 def test_build_columns_match_ddl():
     gold = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")
     gold[INFO_FQ] = _assign(_cell("NB_CREATE_DDL.ipynb", "srvratepy"), "INFO_COLS")
+    gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = _assign(
+        _cell("NB_CREATE_DDL.ipynb", "mlexppy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     pairs = {
         "gld_srv_poi_multi_lang": _assign(_cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild"), "OUT_COLS"),
         "gld_srv_poi_info": _assign(_cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"), "OUT_COLS"),
@@ -230,11 +232,12 @@ def test_build_columns_match_ddl():
 
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-10:-2] == [
+    assert ids[-12:-4] == [
         "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
         "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
     ]
-    assert ids[-2:] == ["plcadmd", "plcadpy"]
+    assert ids[-4:-2] == ["plcadmd", "plcadpy"]
+    assert ids[-2:] == ["mlexpmd", "mlexppy"]
     patch = _cell("NB_CREATE_DDL.ipynb", "srvratepy")
     base = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")[INFO_FQ]
     assert _assign(patch, "INFO_NEW_COLS") == NEW_INFO
@@ -269,4 +272,48 @@ def test_info_rating_build_rules():
     assert "poi_id có hơn một dòng" in code and "ngoài miền INT" in code
     assert code.count("F.when(is_google,") == 4
     assert "coalesce(F.col(\"review_count\")" not in code
+
+
+def _insert_after(cols, name, new):
+    out = []
+    for col in cols:
+        out.append(col)
+        if col[0] == name:
+            out.append(new)
+    return out
+
+
+def test_multi_lang_experience_patch():
+    patch = _cell("NB_CREATE_DDL.ipynb", "mlexppy")
+    new = ("experience", "STRING")
+    assert _assign(patch, "NEW_COL") == new
+    tables = _assign(patch, "TABLE_COLS")
+    ml = "lh_vv_silver.dbo.slv_enr_poi_info_multi_lang"
+    gld = "lh_vv_gold.dbo.gld_srv_poi_multi_lang"
+    landing = _assign(_cell("NB_CREATE_DDL.ipynb", "enrflagpy"), "LANDING_COLS")[ml]
+    gold = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")[gld]
+    assert tables[ml] == _insert_after(landing, "description", new)
+    assert tables[gld] == _insert_after(gold, "description", new)
+    assert _assign(patch, "PL") == _assign(_cell("NB_CREATE_DDL.ipynb", "plcadpy"), "RENAMES")[1][1]
+    assert "LEASE_MINUTES = 90" in patch
+    order = ["held = True", "Dừng trước khi ghi", "_refresh_lock()", "ALTER TABLE", "Sau khi ghi", "finally:"]
+    positions = [patch.index(token) for token in order]
+    assert positions == sorted(positions)
+    code = "\n".join(line for line in patch.splitlines() if not line.strip().startswith("#"))
+    for token in (
+        "CREATE TABLE", "INSERT INTO {CFG}", "UPDATE {CFG}", "MERGE INTO {WM}",
+        "DROP", "DELETE", "TRUNCATE", "REPLACE", "RESTORE", "columnMapping",
+    ):
+        assert token not in code
+    assert code.count("ALTER TABLE") == 1 and " AFTER " in code
+    assert "lock_exec_id = '{LOCK}'" in patch
+
+
+def test_multi_lang_experience_rule():
+    source = _cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild")
+    assert _assign(source, "ML_COLS")[-1] == _assign(source, "OUT_COLS")[-1] == "experience"
+    rule = 'F.when(partner, F.coalesce(F.col("usps"), F.col("experience"))).otherwise(F.col("experience"))'
+    assert rule in source
+    assert '("business_service_id", "locale", "bio", "usps")' in source
+    assert "hash_exclude" not in source
 

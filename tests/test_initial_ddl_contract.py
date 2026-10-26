@@ -285,6 +285,9 @@ def test_table_inventory_matches_sources():
     found.update(_exec_assigns(_cell(ddl, "amenddlpy"), {"AMENITY_COLS", "TABLE_COLS"})["TABLE_COLS"])
     assert {spec["fq"] for spec in specs} == found
     assert len(specs) == 21
+    plan = _by_id(_initial())["init_plan"]
+    assert f"len(fqs) != {len(specs)}" in plan
+    assert f"TABLE_SPECS cần {len(specs)} fq duy nhất" in plan
 
 
 def test_columns_match_sources():
@@ -305,6 +308,7 @@ def test_columns_match_sources():
         assert by_fq[fq]["cols"] == source["cols"]
         assert by_fq[fq]["partition"] == source["partition"]
     flag = _cell(ddl, "enrflagpy")
+    ml_cols = _assign(_cell(ddl, "mlexppy"), "TABLE_COLS")
     for fq, name in {
         "lh_vv_gold.enr.gld_enr_poi_info": "INFO_COLS",
         "lh_vv_gold.enr.gld_enr_poi_review": "REVIEW_COLS",
@@ -316,10 +320,13 @@ def test_columns_match_sources():
     for fq, cols in _assign(flag, "LANDING_COLS").items():
         if fq == dest:
             cols = cols + _assign(srv, "DEST_NEW_COLS")
+        if fq in ml_cols:
+            cols = ml_cols[fq]
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
     gold = _assign(srv, "GOLD_COLS")
     gold["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(_cell(ddl, "srvratepy"), "INFO_COLS")
+    gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = ml_cols["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     for fq, cols in gold.items():
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
@@ -626,10 +633,14 @@ def test_flag_patch_create_matches_init():
     }
     dest = "lh_vv_silver.dbo.slv_enr_poi_destination"
     extra = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "srvpoipy"), "DEST_NEW_COLS")
+    ml = "lh_vv_silver.dbo.slv_enr_poi_info_multi_lang"
+    ml_cols = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "mlexppy"), "TABLE_COLS")
     create_sql = namespace["create_sql"]
     for fq, cols in contracts.items():
         if fq == dest:
             cols = cols + extra
+        if fq == ml:
+            cols = ml_cols[fq]
         spec = next(item for item in specs if item["fq"] == fq)
         assert env["_create_sql"](fq, cols) == create_sql(spec)
 
@@ -655,6 +666,8 @@ def test_gld_srv_patch_create_matches_init():
     contracts[dest] = env["DEST_BASE"] + env["DEST_NEW_COLS"]
     contracts["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(
         _cell(_notebook("NB_CREATE_DDL.ipynb"), "srvratepy"), "INFO_COLS")
+    contracts["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = _assign(
+        _cell(_notebook("NB_CREATE_DDL.ipynb"), "mlexppy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     for fq, cols in contracts.items():
         spec = next(item for item in specs if item["fq"] == fq)
         assert env["_create_sql"](fq, cols) == create_sql(spec)
@@ -765,7 +778,7 @@ def test_pl_cadence_seed():
 
 def test_pl_cadence_patch_cell():
     ddl = _notebook("NB_CREATE_DDL.ipynb")
-    assert [c.get("id") for c in ddl["cells"]][-2:] == ["plcadmd", "plcadpy"]
+    assert [c.get("id") for c in ddl["cells"]][-4:-2] == ["plcadmd", "plcadpy"]
     assert _cell(ddl, "plcadmd").startswith("# [THÊM 26/10] 20261026-pl-name-cadence-suffix")
     patch, renames, minutes = _cell(ddl, "plcadpy"), _renames(), _cadence()
     seed: dict = {}
@@ -776,7 +789,7 @@ def test_pl_cadence_patch_cell():
     assert renames[1][0] == _assign(_cell(ddl, "srvpoipy"), "PL")
     assert renames[1][2] == _assign(_cell(ddl, "srvpoipy"), "LEASE_MINUTES")
     assert renames[0][0] in _cell(ddl, "enrddlpy")
-    orch = "".join("".join(c["source"]) for c in _notebook("NB_00_ORCHES_SLV_TO_ENR_15P.ipynb")["cells"])
+    orch = "".join("".join(c["source"]) for c in _notebook("NB_00_ORCHES_SLV_TO_ENR.ipynb")["cells"])
     assert re.search(r'^p_pl_name = "([^"]+)"', orch, re.M).group(1) == renames[0][1]
     assert int(re.search(r'^p_lock_timeout_min = "(\d+)"', orch, re.M).group(1)) == renames[0][2]
     for banned in ("DROP ", "DELETE ", "TRUNCATE"):

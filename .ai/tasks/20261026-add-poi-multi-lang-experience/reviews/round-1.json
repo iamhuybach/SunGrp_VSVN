@@ -1,0 +1,20 @@
+{
+  "round": 1,
+  "verdict": "EVIDENCE_REQUIRED",
+  "findings": [
+    {
+      "id": "SPARK-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "notebooks/NB_CREATE_DDL.ipynb": "677e4e07d25356ce1f21df962d32cfad5fa5c91f7b21b36f20401e20569f7aef",
+    "notebooks/NB_GLD_SRV_POI_MULTI_LANG.ipynb": "1f9820b347b542286b76513db8b385348049563dc1d2687d88e65c0dd074de26",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "91a8d87e22954cbdc1af5f36cc94bffc9ed1744ae1ffd3da48b3c5c2c6137e1d",
+    "tests/test_enr_poi_contract.py": "b56f6f147c6b8c164752f5a286d6055a4ef05439c138c59f9b26f618c1b440a8",
+    "tests/test_gld_srv_poi_contract.py": "f5ef84c95397098d3f57d6c5b1015d82e26c913ac258c0c417e709c8f9f2795b",
+    "tests/test_initial_ddl_contract.py": "ff044edb155621741ee53d57df7ade1b809d65ea1c52ac77ac5e018707440845",
+    "tests/test_poi_entity_contract.py": "09359cb77ec398b9b30972f19208e159bf6bd5a237be8b3f068aa1bdc73ae002"
+  },
+  "elapsed_seconds": 177
+}

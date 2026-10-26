@@ -1,0 +1,69 @@
+schema_version: 1
+task:
+  id: 20261026-add-poi-multi-lang-experience
+  title: Add experience string to POI multi-lang landing and gold
+  status: user_decision
+  owner: user
+  created_at: '2026-10-26'
+  updated_at: '2026-10-26'
+classification:
+  complexity: medium
+  risk_level: medium
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - data_model_change
+  - design_tradeoffs
+  - runtime_proof_required
+scope:
+  systems:
+  - lh_vv_silver
+  - lh_vv_gold
+  files:
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_SETUP_INITIAL_DDL.ipynb
+  - notebooks/NB_GLD_SRV_POI_MULTI_LANG.ipynb
+  - tests/test_enr_poi_contract.py
+  - tests/test_gld_srv_poi_contract.py
+  - tests/test_initial_ddl_contract.py
+  - tests/test_poi_entity_contract.py
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  round: 1
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: user_decision
+  architecture: pass
+  local_verification: pass
+  specialist_review: user_decision
+  risk_gate: not_required
+  runtime: pending
+rounds:
+  verification: 0
+  review: 1
+  architecture: 1
+  runtime_failure: 1
+open_findings: []

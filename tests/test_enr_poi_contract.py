@@ -75,6 +75,11 @@ LANDING = {
         ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
     ],
 }
+LANDING_ML = [
+    ("poi_id", "STRING NOT NULL"), ("lang", "STRING"), ("time_to_spend", "STRING"), ("best_time", "STRING"),
+    ("cost_vnd", "STRING"), ("description", "STRING"), ("experience", "STRING"),
+    ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
+]
 FLAG_EDGES = [
     (1, "slv_enr_poi_info_multi_lang", "lh_vv_gold.enr", "gld_enr_poi_info", "APPEND", "NB_ENR_POI_INFO", 1),
     (2, "slv_enr_poi_destination", "lh_vv_gold.enr", "gld_enr_poi_info", "APPEND", "NB_ENR_POI_INFO", 1),
@@ -229,13 +234,14 @@ def test_info_patch_cell_guards():
     assert "lock_exec_id = '{LOCK}'" in patch
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-20:-14] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
-    assert ids[-14:-12] == ["ohpassmd", "ohpasspy"]
-    assert ids[-12:-10] == ["peholmd", "peholpy"]
-    assert ids[-10:-8] == ["srvpoimd", "srvpoipy"]
-    assert ids[-8:-6] == ["srvratemd", "srvratepy"]
-    assert ids[-6:-2] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
-    assert ids[-2:] == ["plcadmd", "plcadpy"]
+    assert ids[-22:-16] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-16:-14] == ["ohpassmd", "ohpasspy"]
+    assert ids[-14:-12] == ["peholmd", "peholpy"]
+    assert ids[-12:-10] == ["srvpoimd", "srvpoipy"]
+    assert ids[-10:-8] == ["srvratemd", "srvratepy"]
+    assert ids[-8:-4] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
+    assert ids[-4:-2] == ["plcadmd", "plcadpy"]
+    assert ids[-2:] == ["mlexpmd", "mlexppy"]
 
 
 def test_info_select_matches_ddl():
@@ -274,6 +280,15 @@ def test_flag_patch_constants():
         assert all("UNIQUE" not in name and "UNIQUE" not in dtype for name, dtype in cols)
         assert "NOT NULL" in cols[0][1]
         assert all("NOT NULL" not in dtype for _name, dtype in cols[1:])
+
+
+def test_landing_multi_lang_experience():
+    ml = "lh_vv_silver.dbo.slv_enr_poi_info_multi_lang"
+    cols = _assign(_cell("NB_CREATE_DDL.ipynb", "mlexppy"), "TABLE_COLS")[ml]
+    assert cols == LANDING_ML
+    assert "NOT NULL" in cols[0][1]
+    assert all("NOT NULL" not in dtype for _name, dtype in cols[1:])
+    assert all("UNIQUE" not in name and "UNIQUE" not in dtype for name, dtype in cols)
 
 
 def test_flag_patch_guards():
