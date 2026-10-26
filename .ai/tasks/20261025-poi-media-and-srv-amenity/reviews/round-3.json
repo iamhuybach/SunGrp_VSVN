@@ -1,0 +1,26 @@
+{
+  "round": 3,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "STATE-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/mapping_gld_srv_poi_amenity.md": "a59bd58ce8be7838ef4286abf7f3f12b455e25576065f954301325db0c652c82",
+    "docs/context/mapping_poi_media_info.md": "be8c0359b0bf65b7350e3b432fa8601c161920b3f6a0797f9f640d7af0c1e204",
+    "notebooks/NB_CREATE_DDL.ipynb": "b31bc493a2610abe8d676d63367956fb6964f5c989ad9bf57f186ef8e381d326",
+    "notebooks/NB_GLD_SRV_POI_AMENITY.ipynb": "3a5a87277d1d5363149e66536e78ba36a2f5dbb6484d99d7d4bc3cc62d1e80ff",
+    "notebooks/NB_GLD_SRV_POI_MEDIA_GALLERY.ipynb": "8fa6c6390356e689fd2580f07f9fbba2f8e20dca362df46d2c7b2112f4dc9d08",
+    "notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb": "d1fb765bedd5ec9e2c8f2c6bf0a18d77c9f5de96c90969e2c1eb55df6c6ef348",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "7dacddde81b077a593f51217e0c250e856fcf94fd2472f3bdc4ad777fd9eb361",
+    "notebooks/NB_SLV_POI_MEDIA_INFO.ipynb": "799836dd10240bca11231203ec4db2f14e1552bf729e7a97fecdb84ccb360211",
+    "tests/test_enr_poi_contract.py": "2e3140488b377a446a97125dc90308018f08e561dbbea53f5f70bb10bebf74a1",
+    "tests/test_gld_srv_poi_contract.py": "96b58c8f02bc13568a8f5080dcd0341c5f0a48ca9c0e605390be9ebc7eca06bb",
+    "tests/test_initial_ddl_contract.py": "ce34e5d7f48846da4a54a4b78468b7f334686bd513f3a630fcb9e0732de12388",
+    "tests/test_poi_entity_contract.py": "a2487f5853863baa9876f5acb98ea64bd55b9e8cc609e6f38318a3d6af9b36b4",
+    "tests/test_poi_media_amenity_contract.py": "f0aa0a84f74a5311dc54d9a507d3d78b8caf5cf4c24a117c7e446271b79898df"
+  },
+  "elapsed_seconds": 163
+}

@@ -281,8 +281,10 @@ def test_table_inventory_matches_sources():
     ddl = _notebook("NB_CREATE_DDL.ipynb")
     found.update(_assign(_cell(ddl, "enrflagpy"), "LANDING_COLS").keys())
     found.update(_assign(_cell(ddl, "srvpoipy"), "GOLD_COLS").keys())
+    found.update(_exec_assigns(_cell(ddl, "mediaddlpy"), {"MEDIA_COLS", "TABLE_COLS"})["TABLE_COLS"])
+    found.update(_exec_assigns(_cell(ddl, "amenddlpy"), {"AMENITY_COLS", "TABLE_COLS"})["TABLE_COLS"])
     assert {spec["fq"] for spec in specs} == found
-    assert len(specs) == 18
+    assert len(specs) == 21
 
 
 def test_columns_match_sources():
@@ -321,6 +323,13 @@ def test_columns_match_sources():
     for fq, cols in gold.items():
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
+    for cell_id, names in (
+        ("mediaddlpy", {"MEDIA_COLS", "TABLE_COLS"}),
+        ("amenddlpy", {"AMENITY_COLS", "TABLE_COLS"}),
+    ):
+        for fq, cols in _exec_assigns(_cell(ddl, cell_id), names)["TABLE_COLS"].items():
+            assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
+            assert by_fq[fq]["props"] == PROPS
     assert by_fq["lh_vv_ctrl.dbo.ctrl_cdc_state"]["partition"] == ["src_tbl"]
     assert by_fq["lh_vv_ctrl.dbo.ctrl_cdc_reject"]["partition"] == ["src_tbl"]
 
@@ -515,10 +524,16 @@ def test_pipeline_config_rows_match_sources():
     for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "srvratepy"), "EDGES_ON"):
         expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
         assert seq > 0
+    for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "mediaddlpy"), "EDGES_ON"):
+        expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        assert seq > 0
+    for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "amenddlpy"), "EDGES_ON"):
+        expected.append(("PL_VV_TRANS_SLV_TO_GLD_1H", silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        assert seq > 0
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 61
+    assert len(expected) == 66
 
 
 def test_watermark_rows_match_source():

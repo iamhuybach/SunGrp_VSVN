@@ -1,0 +1,83 @@
+schema_version: 1
+task:
+  id: 20261025-poi-media-and-srv-amenity
+  title: POI media info, media gallery, and serving amenity
+  status: user_decision
+  owner: user
+  created_at: '2026-10-25'
+  updated_at: '2026-10-26'
+classification:
+  complexity: high
+  risk_level: medium
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - data_model_change
+  - data_evidence_required
+  - design_tradeoffs
+  - idempotency
+  - runtime_proof_required
+  - cross_system
+scope:
+  systems:
+  - silver
+  - gold
+  - ctrl
+  files:
+  - docs/context/mapping_poi_media_info.md
+  - docs/context/mapping_gld_srv_poi_amenity.md
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_SETUP_INITIAL_DDL.ipynb
+  - notebooks/NB_SLV_POI_MEDIA_INFO.ipynb
+  - notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb
+  - .ai/tasks/20261025-poi-media-and-srv-amenity/evidence/probes/media_id_unique.py
+  - .ai/tasks/20261025-poi-media-and-srv-amenity/evidence/probes/media_build_fixture.py
+  - notebooks/NB_GLD_SRV_POI_MEDIA_GALLERY.ipynb
+  - notebooks/NB_GLD_SRV_POI_AMENITY.ipynb
+  - tests/test_poi_media_amenity_contract.py
+  - tests/test_initial_ddl_contract.py
+  - tests/test_gld_srv_poi_contract.py
+  - tests/test_poi_entity_contract.py
+  - tests/test_enr_poi_contract.py
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  - state-correctness-reviewer
+  round: 3
+  extra_round_approved_on: '2026-10-26'
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: fix_required
+  risk_gate: not_required
+  runtime: pass
+rounds:
+  verification: 2
+  review: 3
+  architecture: 2
+  runtime_failure: 0
+open_findings: []
