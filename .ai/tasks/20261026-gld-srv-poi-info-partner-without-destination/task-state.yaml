@@ -1,0 +1,62 @@
+schema_version: 1
+task:
+  id: 20261026-gld-srv-poi-info-partner-without-destination
+  title: Partner POI without a destination row fills existing gld_srv_poi_info columns
+    from entity
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-26'
+  updated_at: '2026-10-26'
+classification:
+  complexity: low
+  risk_level: medium
+  architecture_required: false
+  evidence_required: false
+  runtime_required: false
+  signals: []
+scope:
+  systems:
+  - gold
+  files:
+  - notebooks/NB_GLD_SRV_POI_INFO.ipynb
+  - tests/test_gld_srv_poi_contract.py
+  - docs/context/mapping_gld_srv_poi_info.md
+review_plan:
+  required_reviewers:
+  - spark-runtime-reviewer
+  - sql-data-reviewer
+  round: 1
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: not_required
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 1
+  review: 1
+  architecture: 0
+  runtime_failure: 0
+open_findings: []

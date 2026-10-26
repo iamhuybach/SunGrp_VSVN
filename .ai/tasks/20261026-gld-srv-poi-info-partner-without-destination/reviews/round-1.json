@@ -1,0 +1,11 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "docs/context/mapping_gld_srv_poi_info.md": "24ce8e8f1b82b797cf0558c1545304fd919d743f7e12b5d62c08bfbeeef22597",
+    "notebooks/NB_GLD_SRV_POI_INFO.ipynb": "b9c47bf79efdec383ad7918be3e402571cb14dfec201fa587c1c9ddf4f638ab0",
+    "tests/test_gld_srv_poi_contract.py": "39001bffe066cea44a5000cf3b24727ba1c38104187fac562f67e40211eb7180"
+  },
+  "elapsed_seconds": 110
+}

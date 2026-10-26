@@ -264,6 +264,42 @@ def test_mapping_targets_match_out_cols():
     assert types["rating_count"] == types["review_count"] == "integer"
 
 
+def _entity_out_cols(source):
+    parts = ("POI_COLS", "CONTACT_COLS", "ADDRESS_COLS", "CATEGORY_COLS", "ESTIMATE_COLS", "HOURS_COLS", "DETAIL_COLS")
+    return tuple(col for name in parts for col in _assign(source, name))
+
+
+def test_partner_without_destination_branch():
+    gold = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    entity_out = _entity_out_cols(_cell("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb", "b1entitybuild"))
+    assert _assign(gold, "ENTITY_OUT_COLS") == entity_out
+    dest_names = _assign(gold, "DEST_COLS")[2:]
+    from_entity = tuple(name for name in dest_names if name in entity_out)
+    absent = tuple(name for name in dest_names if name not in entity_out)
+    assert from_entity == ("full_address", "street", "ward", "city", "lat", "lng")
+    assert absent == ("destination_id", "district", "country_code", "postal_code")
+    assert "FROM_ENTITY = tuple(name for name in DEST_COLS[2:] if name in ENTITY_OUT_COLS)" in gold
+    assert 'des = des.withColumn("_has_dest", F.lit(True))' in gold
+    assert 'is_partner = F.coalesce(SRC == "partner", F.lit(False))' in gold
+    assert 'partner_without_dest = is_partner & F.col("_has_dest").isNull()' in gold
+    assert "*from_dest" in gold
+    assert 'F.coalesce(F.col(f"_e_' not in gold
+    assert 'inputs={"entity": "slv_poi_entity_non_enrich"' in gold
+    text = MAPPING.read_text(encoding="utf-8")
+    handling = text.split("### 1.1. Xử lý", 1)[1].split("### 1.2", 1)[0]
+    assert "MISSING" in handling and "_has_dest" in handling
+    table = text.split("### 1.2. Field Mapping", 1)[1].split("### 1.3", 1)[0]
+    rows = [line for line in table.splitlines() if line.startswith("|")]
+    for name in from_entity:
+        row = next(line for line in rows if line.rstrip().endswith(f"| {name} |"))
+        assert f"slv_poi_entity_non_enrich.{name}" in row
+        assert "Không coalesce" in row
+    for name in absent:
+        row = next(line for line in rows if line.rstrip().endswith(f"| {name} |"))
+        assert "null" in row
+        assert "slv_poi_entity_non_enrich" not in row
+
+
 def test_info_rating_build_rules():
     source = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
     code = "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))

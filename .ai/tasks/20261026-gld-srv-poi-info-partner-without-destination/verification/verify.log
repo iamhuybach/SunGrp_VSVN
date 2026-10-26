@@ -1,0 +1,26 @@
+# Verification 2026-10-26 20:24:33 — PASS
+Files (3): docs/context/mapping_gld_srv_poi_info.md, notebooks/NB_GLD_SRV_POI_INFO.ipynb, tests/test_gld_srv_poi_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 35%]
+........................................................................ [ 71%]
+.........................................................                [100%]
+201 passed in 2.96s
+
+## task-state: PASS
+
