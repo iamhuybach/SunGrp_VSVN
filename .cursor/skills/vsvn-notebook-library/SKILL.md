@@ -14,7 +14,7 @@ description: Add or change code in an NB_LIB_* %run library notebook (NB_LIB_EXT
 1. Read the library's context file: `docs/context/NB_LIB_EXTRACT_RAWDATA.md` or `docs/context/NB_LIB_TRANSFORM_SLV_GLD.md`. Also read `docs/context/02_NAMING_CONVENTION.md` §8. For anything that touches `ctrl_*`, read `docs/context/CTRL_TABLES_CONTEXT.md`.
 2. Find the callers by searching for `%run <LIB_NAME>` under `notebooks/`. As of 2026-10-22:
    - `NB_LIB_EXTRACT_RAWDATA` is loaded by `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`, `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`, and `NB_SETUP_L1_TS_AUDIT`. The setup notebook uses `build_table_specs`, `table_has`, `PC_OPTIONAL_COLUMNS`, `TableSpec` and `ColumnSpec` fields, and the UTC helpers.
-   - `NB_LIB_TRANSFORM_SLV_GLD` is loaded by `NB_00_ORCHES_SLV_TO_ENR_15P`, `NB_00_ORCHES_SLV_TO_GLD`, `NB_SLV_POI_AMENITY`, `NB_SLV_POI_ENTITY_NON_ENRICH`, `NB_ENR_POI_INFO`, `NB_ENR_POI_REVIEW`, `NB_SETUP_INITIAL_DDL`, `NB_SETUP_POI_ENTITY`, and `NB_SETUP_POI_AMENITY`.
+   - `NB_LIB_TRANSFORM_SLV_GLD` is loaded by `NB_00_ORCHES_SLV_TO_ENR`, `NB_00_ORCHES_SLV_TO_GLD`, `NB_SLV_POI_AMENITY`, `NB_SLV_POI_ENTITY_NON_ENRICH`, `NB_ENR_POI_INFO`, `NB_ENR_POI_REVIEW`, `NB_SETUP_INITIAL_DDL`, `NB_SETUP_POI_ENTITY`, and `NB_SETUP_POI_AMENITY`.
    - The two libraries do not `%run` each other.
    In the task, record for each caller which library names it uses and whether the change keeps them working.
 3. Do not remove or rename a public function, class, constant, or parameter that a caller uses. Add a new name and migrate the callers in the same task.

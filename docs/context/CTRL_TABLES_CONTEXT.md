@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_mng_pipeline_config (
 | `trg_schema`, `trg_tbl` | STRING | Bảng silver L1 | Node (silver L2 / gold) |
 | `is_active` | INT | 1 bật / 0 tắt **cả bảng** | 1 bật / 0 tắt cạnh |
 | `priority` | INT | Wave: cùng priority chạy song song (`max_parallel`) | = tầng của node trong DAG (chỉ để đọc; NB_00 tự tính thứ tự từ cạnh) |
-| `load_mode` | STRING | `CDC` (partner; NULL = CDC) · `DOC` · `DOC_ARRAY` (3P). Notebook kiểm tra: partner chỉ nhận `CDC`, 3P chỉ nhận `DOC` và `DOC_ARRAY`. Mode lang cũ chỉ còn ở §10 | `RECOMPUTE` · `APPEND` (luồng `PL_VV_TRANS_SLV_TO_ENR_15P`, không MERGE) |
+| `load_mode` | STRING | `CDC` (partner; NULL = CDC) · `DOC` · `DOC_ARRAY` (3P). Notebook kiểm tra: partner chỉ nhận `CDC`, 3P chỉ nhận `DOC` và `DOC_ARRAY` | `RECOMPUTE` · `APPEND` (luồng `PL_VV_TRANS_SLV_TO_ENR_15M`, không MERGE) |
 | `align_path` | STRING | `*_ARRAY`: mảng ghép theo vị trí (đọc bằng `json_path` `_align.<trường>`) | NULL |
 | `dedup_order` | STRING | Snapshot: `"<cột> [ASC\|DESC], ..."` chọn 1 dòng khi 1 tài liệu có nhiều dòng cùng khoá (NULL xếp cuối, rồi `_pos`) | NULL |
 
@@ -112,7 +112,7 @@ Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (ch�
 | `slv_3p_poi_media` | DOC_ARRAY | | `display_order ASC` | 1 |
 | `slv_3p_poi_price` | DOC | | | 1 |
 
-**`PL_VV_TRANS_SLV_TO_ENR_15P`** (`NB_00_ORCHES_SLV_TO_ENR_15P`). Cạnh quyết định thứ tự: `slv_poi_entity_non_enrich` → `slv_poi_amenity` → `gld_enr_poi_info`.
+**`PL_VV_TRANS_SLV_TO_ENR_15M`** (`NB_00_ORCHES_SLV_TO_ENR`). Cạnh quyết định thứ tự: `slv_poi_entity_non_enrich` → `slv_poi_amenity` → `gld_enr_poi_info`.
 
 `slv_poi_entity_non_enrich` (`load_mode = RECOMPUTE`, `trg_schema = lh_vv_silver.dbo`, `is_active = 1`, `priority = 1`, `nb_name` NULL nên lib lấy `NB_SLV_POI_ENTITY_NON_ENRICH`):
 
@@ -135,7 +135,7 @@ Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (ch�
 
 Gold trong cùng pipeline (`APPEND`, `trg_schema = lh_vv_gold.enr`): `gld_enr_poi_review` ← `slv_3p_poi_review`; `gld_enr_poi_info` ← `slv_poi_entity_non_enrich`, `slv_poi_amenity`, `slv_3p_poi_rating`, `slv_3p_poi_price`, `slv_3p_poi_opening_hours`, `slv_3p_poi_review`, `slv_pn_business_service_i18ns`.
 
-`NB_SETUP_POI_ENTITY` và `NB_SETUP_POI_AMENITY` ghi cạnh trên `PL_VV_TRANS_SLV_TO_ENR_15P` và giữ khoá `wm_flow__PL_VV_TRANS_SLV_TO_ENR_15P`.
+`NB_SETUP_POI_ENTITY` và `NB_SETUP_POI_AMENITY` ghi cạnh trên `PL_VV_TRANS_SLV_TO_ENR_15M` và giữ khoá `wm_flow__PL_VV_TRANS_SLV_TO_ENR_15M`.
 
 [SỬA 21/10] Đã bỏ `slv_pn_poi`, `gld_enr_poi_coordinate` và 3 cạnh info cũ, cùng `wm_flow__PL_VV_TRANS_SLV_TO_SLV_1H`. Pipeline `PL_VV_TRANS_SLV_TO_SLV_1H` không còn dòng.
 
@@ -505,7 +505,7 @@ Kiểm tra: `SELECT trg_tbl, entity_key, COUNT(*) FROM lh_vv_ctrl.dbo.ctrl_cdc_s
 
 ```sql
 CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_cdc_reject (
-    event_hash          STRING    COMMENT 'sha2(source||op||before||after) - khoá MERGE',
+    event_hash          STRING    COMMENT 'Partner: sha2(concat_ws U+0001, coalesce source, op, before, after). 3rd-party: hash riêng',
     pl_name             STRING    COMMENT 'Pipeline',
     src_schema          STRING    COMMENT 'Schema bảng nguồn raw',
     src_tbl             STRING    COMMENT 'Bảng nguồn raw',
@@ -537,7 +537,7 @@ COMMENT 'Event CDC lỗi, không áp dụng được vào bảng đích';
 
 | | Partner | 3rd-party |
 |---|---|---|
-| `event_hash` | sha256(source ‖ op ‖ before ‖ after) | Tài liệu lỗi: sha256(event_id, source_name, source_id, crawled_at, payload). Phần tử lỗi: sha256(bảng, định danh, lang, phần tử, phần tử align) → crawl lại không sinh dòng trùng |
+| `event_hash` | `sha2(concat_ws("\u0001", coalesce(_source,""), coalesce(_op,""), coalesce(_before,""), coalesce(_after,"")), 256)` trong `reject_rows` | Tài liệu lỗi: `sha2(concat_ws("\u0001", event_id, source_name, source_id, crawled_at, payload), 256)`. Phần tử lỗi: hash riêng của phần tử → crawl lại không sinh dòng trùng |
 | Lỗi phân loại | `INVALID_PAYLOAD` (op lạ, thiếu `source.table`, `after` / `before` thiếu hoặc rỗng), `MISSING_EVENT_ORDER` (thiếu `ts_ms`), `MISSING_RAW_CURSOR` (thiếu thời điểm ingest) | `MISSING_ENTITY_KEY` (thiếu `source_name` / `source_id`), `INVALID_PAYLOAD` (payload rỗng / không phải JSON object), `MISSING_EVENT_ORDER` (thiếu `crawled_at`) |
 | Lỗi theo bảng | `MISSING_ENTITY_KEY` (khoá NULL / rỗng / không chuyển được kiểu), `INVALID_PAYLOAD` (JSON hỏng) | Phần tử thiếu khoá (review thiếu author / time, media thiếu `photo_api_uri`, bản dịch lệch số phần tử) / không phải JSON object |
 | Đọc lại cùng event | `reject_count + 1`, cập nhật `last_*`, lý do | Như bên |
@@ -567,7 +567,7 @@ FROM lh_vv_ctrl.dbo.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 OR
 | 19/10 | Node entity đổi thành `slv_poi_entity_non_enrich` / `NB_SLV_POI_ENTITY_NON_ENRICH`. 5 cạnh active vào node mới, 3 cạnh amenity đọc node mới, cạnh `slv_poi_entity` retire. Registry 3P 53 cột |
 | 20/10 | Entity bỏ 4 cột op, thêm `website_url` và 5 cột ước tính. Amenity thêm `service_flags`. Cạnh `slv_3p_poi_contact` → `slv_poi_entity_non_enrich`: 6 cạnh entity |
 | 21/10 | Hai node silver thuộc ENR_15P; xoá cạnh/watermark slv_pn_poi, gld_enr_poi_coordinate, info cũ; DROP hai bảng trên DEV |
-| 22/10 | Bảng 3P ở §3 còn 9 dòng `DOC` / `DOC_ARRAY` theo seed `NB_SETUP_INITIAL_DDL` cell 7. Mode `LANG` / `LANG_ARRAY` (`slv_3p_poi_enrichment`, `slv_3p_poi_review_i18n`) không còn trong seed; ghi chú lịch sử giữ ở mục này |
+| 22/10 | Bảng 3P ở §3 còn 9 dòng `DOC` / `DOC_ARRAY` theo seed `NB_SETUP_INITIAL_DDL` cell 7. Hai mode ngôn ngữ cũ không còn trong seed |
 | 26/10 | Đổi hậu tố nhịp `pl_name` P → M cho luồng enrich 15 phút và gold 30 phút (`plcadpy`): đổi `pl_name` dòng cấu hình, id và `src_tbl` dòng `wm_flow__`. Không đổi `wm_e__`, log. Tên cũ ở các mục trên là lịch sử |
 
 ## 11. Việc còn lại liên quan ctrl

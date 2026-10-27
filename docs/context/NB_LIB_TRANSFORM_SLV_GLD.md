@@ -13,7 +13,7 @@ Gồm 2 phần dùng ở 2 nơi:
 
 | | |
 |---|---|
-| Được gọi bởi | 9 notebook `%run`: `NB_00_ORCHES_SLV_TO_ENR_15P`, `NB_00_ORCHES_SLV_TO_GLD`, `NB_SLV_POI_AMENITY`, `NB_SLV_POI_ENTITY_NON_ENRICH`, `NB_ENR_POI_INFO`, `NB_ENR_POI_REVIEW`, `NB_SETUP_INITIAL_DDL`, `NB_SETUP_POI_ENTITY`, `NB_SETUP_POI_AMENITY` |
+| Được gọi bởi | 9 notebook `%run`: `NB_00_ORCHES_SLV_TO_ENR`, `NB_00_ORCHES_SLV_TO_GLD`, `NB_SLV_POI_AMENITY`, `NB_SLV_POI_ENTITY_NON_ENRICH`, `NB_ENR_POI_INFO`, `NB_ENR_POI_REVIEW`, `NB_SETUP_INITIAL_DDL`, `NB_SETUP_POI_ENTITY`, `NB_SETUP_POI_AMENITY` |
 | Đọc / ghi khi `%run` | Không |
 | Default lakehouse | `lh_vv_bronze` (bắt buộc giống nhau với runMultiple) |
 | Tự chứa | Không `%run NB_LIB_EXTRACT_RAWDATA`; `with_retry`, `append_rows`, `quote_name`… **chép mẫu** từ lib extract, giữ hành vi |

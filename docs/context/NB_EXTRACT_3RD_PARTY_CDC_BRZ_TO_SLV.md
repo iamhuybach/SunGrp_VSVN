@@ -199,6 +199,6 @@ GROUP BY 1, 2, 3 ORDER BY so_dong DESC;
 | Dữ liệu | Raw 3P không nhận dữ liệu từ 16/09 (collector / Eventstream) |
 | Dữ liệu | `business_sector` vừa `accommodation` vừa `accomodation` (250); category lộn xộn (`Café` / `Cafe`) — chuẩn hoá ở silver L2 qua `ref_business_category` |
 | Dữ liệu | 21 object enrichment có `poiId` là UUID khác nhau theo ngôn ngữ; `enrichmentId` đổi mỗi event → không dùng làm khoá |
-| M7 | Khối LANG_ARRAY (`review_i18n`) sai dạng mất dòng không báo (`bad_shape` chỉ đếm DOC_ARRAY) |
+| M7 | `bad_shape` chỉ đếm `DOC_ARRAY`. Khối sai dạng của mode khác không được đếm ở đó |
 | Hiệu năng | FULL: raw đọc thành ~1 partition → parse 1 task (cân nhắc `repartition`); `max_parallel` < 13 → lượt 2 |
 | Thiết kế | Bảng con chỉ upsert: phần tử không còn trong tài liệu mới vẫn giữ (dùng `_last_seen_at` để lọc ở L2 nếu cần) |

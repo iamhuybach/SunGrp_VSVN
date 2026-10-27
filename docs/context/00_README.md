@@ -34,7 +34,7 @@ Agent: đọc "Tóm tắt 10 dòng" dưới đây, rồi chỉ đọc mục đư
 5. Rule nghiệp vụ dạng dữ liệu nằm ở bảng `ref_*`.
 6. Chống chạy chồng bằng khoá nguyên tử trên dòng watermark. Hạn khoá luồng tính lại = `lock_at` cộng timeout của run đang xét, không phải hạn đã ghi trên dòng khoá.
 7. Bảng `poi_*` cũ, `poi_master`, chuỗi NB_00 cũ vẫn chạy song song tới cutover.
-8. Gold hiện hành: `PL_VV_TRANS_SLV_TO_ENR_15P`, nhịp 15 phút, mode `APPEND`, bảng `gld_enr_poi_info` và `gld_enr_poi_review`. Còn mở: dữ liệu nguồn (`after` rỗng, raw dừng từ 16–17/09), C2 lib extract, `[VERIFY]` runMultiple / múi giờ, bảo trì Delta.
+8. Gold hiện hành: `PL_VV_TRANS_SLV_TO_ENR_15M`, nhịp 15 phút, mode `APPEND`, bảng `gld_enr_poi_info` và `gld_enr_poi_review`. Còn mở: dữ liệu nguồn (`after` rỗng, raw dừng từ 16–17/09), C2 lib extract, `[VERIFY]` runMultiple / múi giờ, bảo trì Delta.
 
 ## Quy tắc khi làm việc với bộ này
 

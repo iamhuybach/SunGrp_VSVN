@@ -78,10 +78,10 @@ Bất kỳ lỗi nào trong `body` → run `FAILED`, watermark giữ nguyên, v�
 | `IDENT_RE` | `[A-Za-z][A-Za-z0-9_]*` — không cho bắt đầu bằng `_` (dành cho cột nội bộ) |
 | `JSON_PATH_RE` | `a`, `a.b.c` |
 | `MIN_TS` | 1900-01-01, thay NULL khi so thứ tự |
-| `LOAD_MODES` / `SNAPSHOT_MODES` | `CDC, DOC, DOC_ARRAY, LANG, LANG_ARRAY` / 4 mode sau |
-| `PATH_SCOPES` | Tiền tố `json_path` đặc biệt: `_doc`, `_root`, `_align`, `_lang`, `_pos`, `_langs` |
+| `LOAD_MODES` / `SNAPSHOT_MODES` | `CDC, DOC, DOC_ARRAY` / `DOC, DOC_ARRAY` |
+| `PATH_SCOPES` | Tiền tố `json_path` đặc biệt: `_doc`, `_root`, `_align`, `_pos`, `_langs` |
 
-Bảng `json_path` của bảng snapshot: `a.b` (trường trong phần tử / khối) · `$` (cả phần tử dạng JSON) · `_doc.<cột raw>` · `_root.a.b` (từ gốc payload) · `_langs` (mảng ngôn ngữ của tài liệu) · `_lang` (LANG*) · `_pos` (*_ARRAY, từ 0) · `_align.a` (phần tử cùng vị trí trong `align_path`, chỉ khi 2 mảng cùng số phần tử) · `p1,p2,...` (chỉ với `HASH_*`). Snapshot không để `json_path` NULL.
+Bảng `json_path` của bảng snapshot: `a.b` (trường trong phần tử / khối) · `$` (cả phần tử dạng JSON) · `_doc.<cột raw>` · `_root.a.b` (từ gốc payload) · `_langs` (mảng ngôn ngữ của tài liệu) · `_pos` (`DOC_ARRAY`, từ 0) · `_align.a` (phần tử cùng vị trí trong `align_path`, chỉ khi 2 mảng cùng số phần tử) · `p1,p2,...` (chỉ với `HASH_*`). Snapshot không để `json_path` NULL.
 
 Rule snapshot bổ sung:
 

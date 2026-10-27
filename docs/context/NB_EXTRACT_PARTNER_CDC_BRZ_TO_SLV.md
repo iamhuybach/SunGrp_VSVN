@@ -90,7 +90,7 @@ EXIT: in JSON; FAILED / PARTIAL_FAILED / SKIPPED_CONCURRENT → raise RuntimeErr
 | `read_raw(ctx)` | `read_incremental(ctx, ["before", "after", "source", "op"], "_raw_ingested_at")` |
 | `classify_events(raw, scope, configured)` | Parse `source` 1 lần; đổi tên cột payload sang `_before`, `_after`, `_source`, `_op`; gắn `_status` / `_reason` / `_reject_detail` theo luật dưới (luật đầu tiên khớp quyết định); event IGNORED bỏ payload cho cache nhẹ |
 | `profile_events(classified)` | 1 job groupBy (status, reason, schema, object): `read / valid / ignored / rejected`, `ignored_detail`, `valid_by_src`, `watermark_to = max(_raw_ingested_at)` của mọi dòng đã đọc (kể cả IGNORED) |
-| `reject_rows(df, ctx, reason, detail, trg_schema, trg_tbl)` | Chuẩn hoá theo schema `ctrl_cdc_reject`; `event_hash = sha256(source ‖ op ‖ before ‖ after)` (ngăn `\u0001`) → đọc lại không sinh dòng trùng |
+| `reject_rows(df, ctx, reason, detail, trg_schema, trg_tbl)` | Chuẩn hoá theo schema `ctrl_cdc_reject`. Hash đang chạy: `sha2(concat_ws("\u0001", coalesce(_source,""), coalesce(_op,""), coalesce(_before,""), coalesce(_after,"")), 256)` → đọc lại không sinh dòng trùng |
 
 Luật phân loại:
 

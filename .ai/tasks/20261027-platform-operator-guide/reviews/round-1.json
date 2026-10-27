@@ -1,0 +1,30 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "REV-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    ".cursor/skills/vsvn-data-model-flow/SKILL.md": "a6adedce89e7ebaea6d497d6408c675b90dfee9792ca8c2eae9725929a56ead1",
+    ".cursor/skills/vsvn-notebook-library/SKILL.md": "241ae3c2c14b5812293f562234057c40f8a95bb6e4f656a1b3acc55e38251fee",
+    ".cursor/skills/vsvn-operator-docs/SKILL.md": "0041d62ce6aa55d0acaca96c3b204163717c02c5907c57809cd5f72c862a9406",
+    "AGENTS.md": "8204c02c29c5df4e81006449a7aaea753f203cdeb7bdaf8494e3ffa40acb3859",
+    "docs/AGENT_PROMPT_SAMPLES.md": "e82ead2f7c2b5740477f4bf2b540953ce23b1dac6f80c7da165807ad7578607f",
+    "docs/context/00_README.md": "b0c1751298bb2bdeffa4b2c6da8f233078620388772a3a3c59082a0066557ae3",
+    "docs/context/01_DATA_MODEL.md": "2c922802b427ee18b5f135ee6927c0849fa1ec63a9f2804cdda5d2b6c7de90e9",
+    "docs/context/02_NAMING_CONVENTION.md": "da78fbd7d9c2c272af85e4b9c7050b1af849fa5682f11650c7a0c70cf425990d",
+    "docs/context/03_OPERATOR_GUIDE.md": "50dcedabb5dcd722feab3b4f42d95e23637f78bc973893255031b77b4e0009be",
+    "docs/context/CTRL_TABLES_CONTEXT.md": "099a8a3daa44e51e296ea06969caeab3b5c5c323c6c602cad5db1a5a94ec4044",
+    "docs/context/NB_00_ORCHES_SLV_TO_GLD.md": "6b9154e2ac14f046e3b2825407f5fe450f8171eb4f91f5893287ff1867e7ca08",
+    "docs/context/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.md": "29273196444dab28f248a7e830860ea14771bbcd8499b5ccb639e76c6d0540f5",
+    "docs/context/NB_LIB_TRANSFORM_SLV_GLD.md": "77eff7a5c18af4b2dc7f95f9da749909b1ae6f24ac0e857306e2bd502b8d1673",
+    "notebooks/NB_00_ORCHES_SLV_TO_ENR.ipynb": "f046e683ddc29c202e6da78269b27e89c0cecf4e4c96f40def5f76c76d3facaa",
+    "notebooks/NB_CREATE_DDL.ipynb": "6a50b559c04ee215cef626b931177053120f5e90f0c873dfad87e302a6239906",
+    "notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb": "e13fd93b85248f632e408d9c036c76ce1710829baab1e5afebeb0e46e7ebacf7",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "9caf47249d8bc542a858e2d42a0d5cedb12562b0913173f962d0dd96c88a2f58"
+  },
+  "elapsed_seconds": 156
+}

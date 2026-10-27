@@ -1,0 +1,82 @@
+schema_version: 1
+task:
+  id: 20261027-platform-operator-guide
+  title: Platform operator guide and data-model skills
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-27'
+  updated_at: '2026-10-27'
+classification:
+  complexity: medium
+  risk_level: low
+  architecture_required: true
+  evidence_required: false
+  runtime_required: false
+  signals:
+  - design_tradeoffs
+scope:
+  systems:
+  - agent-system
+  - ctrl
+  - partner-extract
+  - 3p-extract
+  - lib-extract
+  - lib-transform-gold
+  - ddl-registry
+  files:
+  - docs/context/03_OPERATOR_GUIDE.md
+  - .cursor/skills/vsvn-operator-docs/SKILL.md
+  - .cursor/skills/vsvn-data-model-flow/SKILL.md
+  - docs/AGENT_PROMPT_SAMPLES.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+  - docs/context/02_NAMING_CONVENTION.md
+  - docs/context/01_DATA_MODEL.md
+  - docs/context/00_README.md
+  - docs/context/NB_00_ORCHES_SLV_TO_GLD.md
+  - docs/context/NB_LIB_TRANSFORM_SLV_GLD.md
+  - docs/context/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.md
+  - .cursor/skills/vsvn-notebook-library/SKILL.md
+  - AGENTS.md
+  - notebooks/NB_00_ORCHES_SLV_TO_ENR.ipynb
+  - notebooks/NB_SETUP_INITIAL_DDL.ipynb
+  - notebooks/NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - spark-runtime-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 0
+  review: 2
+  architecture: 1
+  runtime_failure: 0
+open_findings: []

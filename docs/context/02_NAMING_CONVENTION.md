@@ -33,7 +33,7 @@ Quy tắc:
 |---|---|---|
 | `NB_LIB_<VIỆC>` | Thư viện `%run`: chỉ hằng số / class / hàm, không đọc ghi khi được `%run` | `NB_LIB_EXTRACT_RAWDATA`, `NB_LIB_TRANSFORM_SLV_GLD` |
 | `NB_EXTRACT_<NGUỒN>_CDC_BRZ_TO_SLV` | Extract 1 nguồn raw → silver L1 (**1 notebook / nguồn**) | `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`, `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`, `NB_EXTRACT_POIMGMT_CDC_BRZ_TO_SLV` `[PROPOSED]` |
-| `NB_00_ORCHES_<TỪ>_TO_<ĐẾN>` | Điều phối dùng chung, chọn luồng bằng tham số `p_pl_name` | `NB_00_ORCHES_SLV_TO_GLD`, `NB_00_ORCHES_SLV_TO_ENR_15P` |
+| `NB_00_ORCHES_<TỪ>_TO_<ĐẾN>` | Điều phối dùng chung, chọn luồng bằng tham số `p_pl_name` | `NB_00_ORCHES_SLV_TO_GLD`, `NB_00_ORCHES_SLV_TO_ENR` |
 | `NB_<UPPER(trg_tbl)>` | Notebook node: 1 notebook = 1 bảng đích. Tên suy ra từ `trg_tbl` (hoặc cột tuỳ chọn `nb_name` ở `pipeline_config`) | `NB_SLV_POI_AMENITY`, `NB_SLV_POI_ENTITY_NON_ENRICH`, `NB_ENR_POI_INFO`, `NB_ENR_POI_REVIEW` |
 | `NB_SETUP_<LUỒNG>` | Chạy tay 1 lần: thêm cột ctrl, tạo + seed ref, cạnh, watermark. Mặc định chỉ in (`p_apply = false`) | — |
 | `NB_SETUP_INITIAL_DDL` | Dựng 1 lần môi trường trống: DDL đầy đủ + seed cấu hình, chỉ thêm. Mặc định chỉ in (`p_apply = false`). Xem §2.1 | — |
@@ -69,7 +69,7 @@ Luật cho mọi yêu cầu DDL hoặc `INSERT` cấu hình mới (agent bắt b
 |---|---|---|
 | `PL_VV_TRANSFORM_<TỪ>_TO_<ĐẾN>_<HẬU TỐ>` | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | Pipeline extract (hậu tố `FL_00` = luồng chính) |
 | Hậu tố nhịp `_<n>M` / `_<n>H` / `_<n>D` | `…_15M`, `…_30M` (đang dùng), `…_1H` `[PROPOSED]`, `…_1D` `[PROPOSED]` | **Bắt buộc với luồng tính lại**: lib đọc nhịp từ hậu tố (`CADENCE_RE = _(\d+)([MHD])$`) để chặn luồng nhanh đọc node của luồng chậm |
-| `PL_VV_TRANS_SLV_TO_ENR_15M` | `PL_VV_TRANS_SLV_TO_ENR_15M` | Luồng enrich 15 phút, notebook `NB_00_ORCHES_SLV_TO_ENR_15P`. [SỬA 26/10] đổi hậu tố P sang M để lib kiểm tra nhịp |
+| `PL_VV_TRANS_SLV_TO_ENR_15M` | `PL_VV_TRANS_SLV_TO_ENR_15M` | Luồng enrich 15 phút, notebook `NB_00_ORCHES_SLV_TO_ENR`. [SỬA 26/10] đổi hậu tố P sang M để lib kiểm tra nhịp. [SỬA 27/10] file notebook là `NB_00_ORCHES_SLV_TO_ENR` |
 | `PL_VV_TRANS_SLV_TO_GLD_30M` | `PL_VV_TRANS_SLV_TO_GLD_30M` | Luồng gold serving 30 phút, chạy bằng `NB_00_ORCHES_SLV_TO_GLD` với `p_pl_name` này. Repo chưa có JSON pipeline; tạo hoặc đổi tên pipeline Fabric trước khi chạy |
 
 `pl_name` trong ctrl = đúng tên pipeline (`@pipeline().Pipeline`). 1 node chỉ thuộc 1 `pl_name` đang active.
@@ -143,9 +143,9 @@ Bắt đầu bằng `_` để không trùng cột nghiệp vụ.
 
 | Trường | Giá trị |
 |---|---|
-| `ctrl_mng_pipeline_config.load_mode` | `CDC` (NULL = CDC) · `DOC` · `DOC_ARRAY` · `LANG` · `LANG_ARRAY` · `RECOMPUTE` (cạnh luồng tính lại) |
+| `ctrl_mng_pipeline_config.load_mode` | `CDC` (NULL = CDC) · `DOC` · `DOC_ARRAY` · `RECOMPUTE` · `APPEND` (cạnh luồng tính lại) |
 | `ctrl_cfg_schema_registry.convert_rule` | `NONE` · `EPOCH_S_TS` · `EPOCH_MS_TS` · `EPOCH_US_TS` · `ISO_UTC_TS` · `DATE_DAYS` · `DECIMAL_BASE64` · `LOWER_TRIM` · khoá suy ra: `HASH_MD5_UUID` · `HASH_SHA256` · `HASH_SHA256_PIPE`. `EPOCH_*` và `ISO_UTC_TS` chỉ đi với `data_type = timestamp`. `DATE_DAYS` vẫn là `date` |
-| `json_path` snapshot | `a.b` · `$` · `_doc.<cột>` · `_root.a.b` · `_langs` · `_lang` · `_pos` · `_align.a` · `p1,p2,...` (chỉ `HASH_*`) |
+| `json_path` snapshot | `a.b` · `$` · `_doc.<cột>` · `_root.a.b` · `_langs` · `_pos` · `_align.a` · `p1,p2,...` (chỉ `HASH_*`) |
 | `ctrl_log_run.status` | `RUNNING` · `SUCCESS` · `PARTIAL_FAILED` · `FAILED` · `NO_DATA` · `SKIPPED_CONCURRENT` · `ABANDONED` |
 | `ctrl_log_run.run_mode` | Extract: `INCREMENTAL` · `FULL_RELOAD` · `DRY_RUN`. NB_00: `RUN` · `DRY_RUN` (`PLAN` không ghi log) |
 | `ctrl_log_run.read_mode` | Extract: `VERSION` · `FULL`. NB_00: `VERSION_INBOX` |
