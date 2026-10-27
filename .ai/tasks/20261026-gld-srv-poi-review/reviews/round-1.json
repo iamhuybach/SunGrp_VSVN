@@ -1,0 +1,15 @@
+{
+  "round": 1,
+  "verdict": "EVIDENCE_REQUIRED",
+  "findings": [
+    {
+      "id": "SQL-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "notebooks/NB_GLD_SRV_POI_REVIEW.ipynb": "4c0e89961eb8959d51a82d9525d2d7ca1e9905c2198bc9646b23842824d11dcf",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "81f7bdf5363c6d2aa2c94aaf0d869467ff67f8ca5bc77d1f1159dc60c6425d0e"
+  },
+  "elapsed_seconds": 189
+}

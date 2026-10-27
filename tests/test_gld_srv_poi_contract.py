@@ -230,14 +230,51 @@ def test_build_columns_match_ddl():
         assert list(cols) + list(TECH) == [name for name, _dtype in gold[fq]]
 
 
+def test_review_node_spec():
+    source = _cell("NB_GLD_SRV_POI_REVIEW.ipynb", "srvrvbuild")
+    code = "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
+    assert "lh_vv_gold" not in code
+    assert "deleted" not in code
+    assert ".cast(" not in source
+    spec = _spec(source)
+    kwargs = {kw.arg: ast.literal_eval(kw.value) for kw in spec.keywords if kw.arg != "build"}
+    assert kwargs["write_mode"] == "MERGE"
+    assert kwargs["pk"] == ("review_id",)
+    assert kwargs["inputs"] == {
+        "multi_lang": "slv_enr_poi_review_multi_lang",
+        "review": "slv_3p_poi_review",
+        "rating": "slv_3p_poi_rating",
+    }
+    assert kwargs["required_inputs"] == ("multi_lang", "review")
+    types = _assign(source, "SOURCE_TYPES")
+    assert types["slv_3p_poi_review"] == {"rating": "decimal(4,2)"}
+    assert types["slv_3p_poi_rating"] == {"rating_overall": "decimal(4,2)", "rating_count": "bigint"}
+
+
+def test_review_build_columns_match_ddl():
+    cols = _assign(_cell("NB_CREATE_DDL.ipynb", "srvrevpy"), "TABLE_COLS")
+    out = _assign(_cell("NB_GLD_SRV_POI_REVIEW.ipynb", "srvrvbuild"), "OUT_COLS")
+    fq = "lh_vv_gold.dbo.gld_srv_poi_review"
+    assert list(out) + list(TECH) == [name for name, _dtype in cols[fq]]
+
+
+def test_review_mapping_targets():
+    text = (ROOT / "docs" / "context" / "mapping_gld_srv_poi_review.md").read_text(encoding="utf-8")
+    table = text.split("## 2. Field Mapping", 1)[1]
+    rows = [line.split("|")[1:-1] for line in table.splitlines() if line.startswith("|")][2:]
+    out = _assign(_cell("NB_GLD_SRV_POI_REVIEW.ipynb", "srvrvbuild"), "OUT_COLS")
+    assert [cells[3].strip() for cells in rows] == list(out) + ["created_at", "updated_at"]
+
+
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-12:-4] == [
+    assert ids[-14:-6] == [
         "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
         "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
     ]
-    assert ids[-4:-2] == ["plcadmd", "plcadpy"]
-    assert ids[-2:] == ["mlexpmd", "mlexppy"]
+    assert ids[-6:-4] == ["plcadmd", "plcadpy"]
+    assert ids[-4:-2] == ["mlexpmd", "mlexppy"]
+    assert ids[-2:] == ["srvrevmd", "srvrevpy"]
     patch = _cell("NB_CREATE_DDL.ipynb", "srvratepy")
     base = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")[INFO_FQ]
     assert _assign(patch, "INFO_NEW_COLS") == NEW_INFO
