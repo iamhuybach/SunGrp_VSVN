@@ -1,0 +1,59 @@
+schema_version: 1
+task:
+  id: 20261028-redraw-slv-gld-data-model
+  title: Redraw current silver and gold data model
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-28'
+  updated_at: '2026-10-28'
+classification:
+  complexity: low
+  risk_level: low
+  architecture_required: false
+  evidence_required: false
+  runtime_required: false
+  signals: []
+scope:
+  systems:
+  - lh_vv_silver
+  - lh_vv_gold
+  - ctrl
+  files:
+  - docs/diagram/VSVN_SLV_GLD_DATA_MODEL.drawio
+review_plan:
+  required_reviewers: []
+  round: 0
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: ''
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: not_required
+  local_verification: pass
+  specialist_review: not_required
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 1
+  review: 0
+  architecture: 0
+  runtime_failure: 0
+open_findings: []
