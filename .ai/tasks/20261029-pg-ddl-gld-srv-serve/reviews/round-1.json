@@ -1,0 +1,9 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "sql/postgres/gld_srv_serve.pg.sql": "fdc05bea815e5945e11430d0de8ddb89b5a3f91768c41f5e1b57a9d7c99d9316"
+  },
+  "elapsed_seconds": 135
+}

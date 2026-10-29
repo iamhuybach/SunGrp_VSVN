@@ -1,0 +1,60 @@
+schema_version: 1
+task:
+  id: 20261029-pg-ddl-gld-srv-serve
+  title: PostgreSQL DDL for five gold serving tables
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-10-29'
+  updated_at: '2026-10-29'
+classification:
+  complexity: medium
+  risk_level: low
+  architecture_required: true
+  evidence_required: false
+  runtime_required: false
+  signals:
+  - cross_system
+  - data_model_change
+scope:
+  systems:
+  - postgresql
+  files:
+  - sql/postgres/gld_srv_serve.pg.sql
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  round: 1
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 1
+  review: 1
+  architecture: 1
+  runtime_failure: 0
+open_findings: []

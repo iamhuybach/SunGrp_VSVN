@@ -1,0 +1,118 @@
+# Verification 2026-10-29 10:21:06 — FAIL
+Files (2): docs/diagram/VSVN_DATA_MODEL.drawio, sql/postgres/gld_srv_serve.pg.sql
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: FAIL
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\__main__.py", line 6, in <module>
+    cli()  # pragma: no cover
+    ~~~^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\click\core.py", line 1569, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\click\core.py", line 1490, in main
+    rv = self.invoke(ctx)
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\click\core.py", line 1970, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\click\core.py", line 1353, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\click\core.py", line 907, in invoke
+    return callback(*args, **kwargs)
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\cli\commands.py", line 756, in lint
+    apply_recursion_limit(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        recursion_limit,
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        kwargs=kwargs,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\cli\commands.py", line 64, in apply_recursion_limit
+    config = get_config(
+        extra_config_path,
+    ...<2 lines>...
+        **(kwargs or {}),
+    )
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\cli\commands.py", line 552, in get_config
+    return FluffConfig.from_root(
+           ~~~~~~~~~~~~~~~~~~~~~^
+        extra_config_path=extra_config_path,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        require_dialect=kwargs.pop("require_dialect", True),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\fluffconfig.py", line 307, in from_root
+    configs = load_config_up_to_path(
+        path=".",
+        extra_config_path=extra_config_path,
+        ignore_local_config=ignore_local_config,
+    )
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\loader.py", line 325, in load_config_up_to_path
+    config_stack = [load_config_at_path(str(p.resolve())) for p in config_paths]
+                    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\loader.py", line 255, in load_config_at_path
+    configs = load_config_file(p, fname, configs=configs)
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\loader.py", line 129, in load_config_file
+    raw_config = load_config_file_as_dict(file_path)
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\file.py", line 116, in load_config_file_as_dict
+    raw_config = _load_raw_file_as_dict(filepath)
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\file.py", line 45, in _load_raw_file_as_dict
+    return load_ini_string(file.read())
+                           ~~~~~~~~~^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x81 in position 50: character maps to <undefined>
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 34%]
+........................................................................ [ 69%]
+..............................................................           [100%]
+206 passed in 2.95s
+
+## task-state: PASS
+
+# Verification 2026-10-29 10:21:54 — PASS
+Files (2): docs/diagram/VSVN_DATA_MODEL.drawio, sql/postgres/gld_srv_serve.pg.sql
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: PASS
+All Finished!
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 34%]
+........................................................................ [ 69%]
+..............................................................           [100%]
+206 passed in 3.27s
+
+## task-state: PASS
+
