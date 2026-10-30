@@ -1,0 +1,22 @@
+# Kafka UI local cho Event Hubs namespace dev-visitvn-evhns-sg-01.
+# Connection string chỉ được đọc từ .env (EVENTHUB_CONNECTION_STRING).
+# Không ghi secret vào file này.
+
+services:
+  kafka-ui:
+    image: ghcr.io/kafbat/kafka-ui:latest
+    container_name: visitvn-eventhubs-kafka-ui
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: dev-visitvn-evhns-sg-01
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: dev-visitvn-evhns-sg-01.servicebus.windows.net:9093
+      KAFKA_CLUSTERS_0_READONLY: "true"
+      KAFKA_CLUSTERS_0_DISABLELOGDIRSCOLLECTION: "true"
+      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: SASL_SSL
+      KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM: PLAIN
+      # $$ giữ nguyên ký tự $ của username Kafka. Password do Compose thay từ .env.
+      KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="$$ConnectionString" password="${EVENTHUB_CONNECTION_STRING:?set EVENTHUB_CONNECTION_STRING in .env}";'
+      KAFKA_CLUSTERS_0_PROPERTIES_METADATA_MAX_AGE_MS: "180000"
+      KAFKA_CLUSTERS_0_PROPERTIES_CONNECTIONS_MAX_IDLE_MS: "180000"
+    restart: "no"

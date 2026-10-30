@@ -21,6 +21,7 @@ Cách dùng:
 | Đặt tên | `docs/context/02_NAMING_CONVENTION.md` | mục 1–8 theo việc |
 | Data model | `docs/context/01_DATA_MODEL.md` | §4 bronze, §5 L1, §6 L2, §7 gold, §8 định danh |
 | Vận hành, data model và flow | `docs/context/03_OPERATOR_GUIDE.md` (42 KB), skill `vsvn-operator-docs`, skill `vsvn-data-model-flow` | `toc` rồi `show … "<tiền tố tiêu đề>"`, ví dụ `"2. Data lineage"`. Không đọc cả file |
+| Event Hubs Kafka UI | `local/eventhubs-kafka-ui/up.ps1`, `docs/context/EVENTHUBS_KAFKA_UI.md`, skill `vsvn-eventhubs-kafka-ui` | Yêu cầu mở UI Dev thì chạy `up.ps1`. Không đọc `.env`, không tạo task. |
 | Pipeline | `pipelines/<PL>/<PL>.json` | đọc cả file (nhỏ). Không đọc `manifest.json` |
 | Serving POI mapping | `docs/context/mapping_gld_srv_poi_amenity.md`, `docs/context/mapping_gld_srv_poi_info.md`, `docs/context/mapping_gld_srv_poi_multi_lang.md`, `docs/context/mapping_poi_media_info.md` | Đọc cả file. Sau mỗi thay đổi nghiệp vụ của bảng trong file, cùng task cập nhật file này trước review. |
 | Bài học cũ | `docs/context/99_PAIN_POINTS.md` | §0 |
