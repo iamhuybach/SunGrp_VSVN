@@ -2,8 +2,8 @@ schema_version: 1
 task:
   id: 20261030-wipe-data-reseed-ctrl
   title: Wipe bronze-to-gold and ctrl rows, reseed three ctrl tables
-  status: waiting_runtime
-  owner: user
+  status: blocked
+  owner: main
   created_at: '2026-10-30'
   updated_at: '2026-10-30'
 classification:
@@ -48,10 +48,10 @@ models:
 gates:
   evidence: not_required
   architecture: not_required
-  local_verification: pending
-  specialist_review: pending
-  risk_gate: pending
-  runtime: pending
+  local_verification: user_decision
+  specialist_review: user_decision
+  risk_gate: user_decision
+  runtime: user_decision
 rounds:
   verification: 0
   review: 0
