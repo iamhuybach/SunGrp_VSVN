@@ -1,0 +1,60 @@
+schema_version: 1
+task:
+  id: 20261030-wipe-data-reseed-ctrl
+  title: Wipe bronze-to-gold and ctrl rows, reseed three ctrl tables
+  status: waiting_runtime
+  owner: user
+  created_at: '2026-10-30'
+  updated_at: '2026-10-30'
+classification:
+  complexity: medium
+  risk_level: high
+  architecture_required: false
+  evidence_required: false
+  runtime_required: true
+  signals:
+  - runtime_proof_required
+  - idempotency
+scope:
+  systems:
+  - ctrl
+  - ddl
+  files: []
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  round: 0
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: ''
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: not_required
+  local_verification: pending
+  specialist_review: pending
+  risk_gate: pending
+  runtime: pending
+rounds:
+  verification: 0
+  review: 0
+  architecture: 0
+  runtime_failure: 0
+open_findings: []
