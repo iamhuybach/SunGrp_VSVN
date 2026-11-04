@@ -1,0 +1,30 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "GATE-001",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-002",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/01_DATA_MODEL.md": "b5e93f623b4c00a744963b0e62351d441c16f63d550ad2e982805b5a5849e9b8",
+    "docs/context/03_OPERATOR_GUIDE.md": "6582ace49224a94de9fd65976983315f2ff0edbdea069cc0507bf5d43f3f1bd3",
+    "docs/context/gld_enr_poi_info_review.md": "5f7eef2651b8fb8eb2dac631bbd818957f2ce7ec0868ff715a096f3043a06e21",
+    "docs/context/mapping_gld_srv_poi_review.md": "ff7a3b6975e7b40296b433b61fa0dd6e5c66b49ec0b6120eb96ee0ceb3c236b0",
+    "notebooks/NB_CREATE_DDL.ipynb": "c63a7ea252c24ad6f1139a9aa19877578ab47cedd30f7ba6866f682ec9ba3fc3",
+    "notebooks/NB_ENR_POI_INFO.ipynb": "79969abf2bea03372e3342376cc364a67917e7beb9b9b71a3911e7eb3805601d",
+    "notebooks/NB_GLD_SRV_POI_REVIEW.ipynb": "f8c92dccedfb5b8667f5aeb96a3e05e2666a36d6233d4312c3b998e0f608fc58",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "076a1b48ee63786678ebc3f4aa60c81e1a9b2b8bf2564b9e5c66a7ab992c1128",
+    "notebooks/NB_SLV_POI_ENTITY_NON_ENRICH.ipynb": "8e97c12ebbb17dc196a9123df7237d2a0be450c2f4377a4090c5dffeb8d113c7",
+    "tests/test_enr_poi_contract.py": "acf2289ce8a4283b630fd3d3dfb199d604a8d33d4586cbfa3910004fa0c28bb1",
+    "tests/test_gld_srv_poi_contract.py": "52a51bbaf008e7ce5a1337ce62fab0a3bee059ccdd1701a2ebcb483a36dac597",
+    "tests/test_initial_ddl_contract.py": "764e2e367c6b2a6a19ad7d45befe69175c1b99c883a55ba43ba353ea0a416987",
+    "tests/test_poi_entity_contract.py": "bd18ee788b83d827c33052cc8e25079b9871c6a576df1484a7bc69b2b1943d14"
+  },
+  "elapsed_seconds": 354
+}

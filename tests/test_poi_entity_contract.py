@@ -181,7 +181,14 @@ def test_entity_node_contract():
     )
     vi_text = ast.get_source_segment(build, vi)
     assert vi_text and vi_text.startswith("vi = (")
-    assert "$.policies.operating_hours" in vi_text
+    assert 'F.col("name").alias("_vi_name")' in vi_text
+    base = next(
+        node for node in partner.body
+        if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "base" for target in node.targets)
+    )
+    base_text = ast.get_source_segment(build, base)
+    assert base_text and 'vi.join(svc, "id", "left")' in base_text
+    assert "$.policies.operating_hours" in base_text
     assert "opening_hours_other_source" in build
     assert "partner_opening_hours_null" in build
     assert "subcategory_tags_json" not in src
@@ -625,15 +632,17 @@ def test_section_1_9_preserved():
 def test_create_ddl_patch():
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-24:-18] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
-    assert ids[-18:-16] == ["ohpassmd", "ohpasspy"]
-    assert ids[-16:-14] == ["peholmd", "peholpy"]
-    assert ids[-14:-12] == ["srvpoimd", "srvpoipy"]
-    assert ids[-12:-10] == ["srvratemd", "srvratepy"]
-    assert ids[-10:-6] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
-    assert ids[-6:-4] == ["plcadmd", "plcadpy"]
-    assert ids[-4:-2] == ["mlexpmd", "mlexppy"]
-    assert ids[-2:] == ["srvrevmd", "srvrevpy"]
+    assert ids[-30:-24] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-24:-22] == ["ohpassmd", "ohpasspy"]
+    assert ids[-22:-20] == ["peholmd", "peholpy"]
+    assert ids[-20:-18] == ["srvpoimd", "srvpoipy"]
+    assert ids[-18:-16] == ["srvratemd", "srvratepy"]
+    assert ids[-16:-12] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
+    assert ids[-12:-10] == ["plcadmd", "plcadpy"]
+    assert ids[-10:-8] == ["mlexpmd", "mlexppy"]
+    assert ids[-8:-6] == ["srvrevmd", "srvrevpy"]
+    assert ids[-6:-2] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-2:] == ["mlsrcmd", "mlsrcpy"]
     assert ids[ids.index("entwebpy") - 1] == "entwebmd"
     assert ids.index("entwebpy") < ids.index("enrinfomd")
 
@@ -657,8 +666,14 @@ def test_entity_detail_columns():
     )
     vi_text = ast.get_source_segment(build, vi)
     assert vi_text and vi_text.startswith("vi = (")
-    assert "$.policies.operating_hours" in vi_text
-    assert '$.policies.holiday_exceptions").alias("_holiday")' in vi_text
+    base = next(
+        node for node in partner_node.body
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "base" for t in node.targets)
+    )
+    base_text = ast.get_source_segment(build, base)
+    assert base_text
+    assert "$.policies.operating_hours" in base_text
+    assert "$.policies.holiday_exceptions" in base_text
     assert '"phone": F.col("phone")' in partner
     assert '"email": F.col("email")' in partner
     assert '"holiday_exceptions": F.col("_holiday")' in partner
@@ -765,3 +780,14 @@ def test_create_ddl_contact_edge_patch():
     assert free(state["owner"], state["lock_at"], now)
     state = {"owner": "new", "lock_at": now}
     assert state["owner"] != "old"
+
+
+def test_partner_i18n_driving():
+    build = _nb_cell("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb", "b1entitybuild")
+    assert 'vi.join(svc, "id", "left")' in build
+    assert 'F.coalesce("_vi_name", "_svc_name")' in build
+    assert 'F.coalesce("_vi_am", "_svc_am")' in build
+    assert "$.policies.holiday_exceptions" in build
+    assert "svc.join(vi, \"id\")." not in build
+    assert "không dòng nào có bản i18n vi" not in build
+    assert 'ctx.warn("partner_without_service"' in build

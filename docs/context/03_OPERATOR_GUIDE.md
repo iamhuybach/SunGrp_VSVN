@@ -238,6 +238,8 @@ Mỗi bảng gold một hình. Hộp trái là bảng nguồn, hộp phải là 
 
 Ghi bằng `APPEND`.
 
+[SỬA 04/11] Không còn `time_to_spend`, `best_time`, `cost_vnd`; `cost` giữ nguyên. Nguồn không đổi.
+
 | Nguồn | Kiểu join |
 |---|---|
 | `slv_poi_entity_non_enrich` | Bảng gốc, sau `left_semi` với tập `poi_id` đổi |
@@ -263,6 +265,8 @@ Ghi bằng `APPEND`.
 ### 2.2 `gld_enr_poi_review`
 
 Ghi bằng `APPEND`.
+
+[SỬA 04/11] Luồng đang tắt: mọi cạnh tới `gld_enr_poi_review` có `is_active = 0`, `NB_ENR_POI_REVIEW` không chạy. Bảng và dữ liệu giữ nguyên. Hình dưới là lineage khi cạnh bật.
 
 | Nguồn | Kiểu join |
 |---|---|
@@ -330,14 +334,14 @@ Ghi bằng `MERGE`. Không join. Đọc một bảng rồi `select`.
 
 Ghi bằng `MERGE`.
 
+[SỬA 04/11] Không đọc `slv_enr_poi_review_multi_lang`. Không có `lang`; `title` NULL; `review_text` = `text`.
+
 | Nguồn | Kiểu join |
 |---|---|
-| `slv_enr_poi_review_multi_lang` | Bảng gốc |
-| `slv_3p_poi_review` | `inner` join theo `review_id` |
+| `slv_3p_poi_review` | Bảng gốc |
 | `slv_3p_poi_rating` | `left` join theo `poi_id` |
 
 <table>
-<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_enr_poi_review_multi_lang</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_review</code></td></tr>
 <tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_review</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_review</code></td></tr>
 <tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_rating</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_review</code></td></tr>
 </table>

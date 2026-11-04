@@ -309,14 +309,16 @@ def test_columns_match_sources():
         assert by_fq[fq]["cols"] == source["cols"]
         assert by_fq[fq]["partition"] == source["partition"]
     flag = _cell(ddl, "enrflagpy")
-    ml_cols = _assign(_cell(ddl, "mlexppy"), "TABLE_COLS")
+    ml_cols = {**_assign(_cell(ddl, "mlexppy"), "TABLE_COLS"), **_assign(_cell(ddl, "mlsrcpy"), "TABLE_COLS")}
     rev = _assign(_cell(ddl, "srvrevpy"), "TABLE_COLS")
-    for fq, name in {
-        "lh_vv_gold.enr.gld_enr_poi_info": "INFO_COLS",
-        "lh_vv_gold.enr.gld_enr_poi_review": "REVIEW_COLS",
-    }.items():
-        assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in _assign(flag, name)]
-        assert by_fq[fq]["props"] == PROPS
+    info_cols = _assign(_cell(ddl, "rvi18nenrpy"), "INFO_COLS")
+    review_cols = _assign(_cell(ddl, "rvi18ngldpy"), "REVIEW_COLS")
+    assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["cols"] == [(col, dtype, None) for col, dtype in info_cols]
+    assert by_fq["lh_vv_gold.enr.gld_enr_poi_review"]["cols"] == [
+        (col, dtype, None) for col, dtype in _assign(flag, "REVIEW_COLS")
+    ]
+    assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["props"] == PROPS
+    assert by_fq["lh_vv_gold.enr.gld_enr_poi_review"]["props"] == PROPS
     dest = "lh_vv_silver.dbo.slv_enr_poi_destination"
     srv = _cell(ddl, "srvpoipy")
     for fq, cols in _assign(flag, "LANDING_COLS").items():
@@ -331,7 +333,7 @@ def test_columns_match_sources():
     gold = _assign(srv, "GOLD_COLS")
     gold["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(_cell(ddl, "srvratepy"), "INFO_COLS")
     gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = ml_cols["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
-    gold["lh_vv_gold.dbo.gld_srv_poi_review"] = rev["lh_vv_gold.dbo.gld_srv_poi_review"]
+    gold["lh_vv_gold.dbo.gld_srv_poi_review"] = review_cols
     for fq, cols in gold.items():
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
@@ -492,6 +494,8 @@ def test_pipeline_config_rows_match_sources():
     flagged = _assign(_cell(ddl, "enrflagpy"), "EDGES_ON")
     hours_off = {(src, target) for src, _schema, target in _assign(_cell(ddl, "ohpasspy"), "EDGES_OFF")}
     hours_on = _assign(_cell(ddl, "ohpasspy"), "EDGES_ON")
+    review_off = {(src, target) for src, _schema, target in _assign(_cell(ddl, "rvi18nenrpy"), "EDGES_OFF")}
+    srv_off = {(src, target) for src, _schema, target in _assign(_cell(ddl, "rvi18ngldpy"), "EDGES_OFF")}
     deleted = {(src, target) for src, _schema, target in _assign(_cell(ddl, "mvpoipy"), "EDGES_DELETE")}
     bronze, silver = "lh_vv_bronze.dbo", "lh_vv_silver.dbo"
     flow = "PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00"
@@ -508,7 +512,7 @@ def test_pipeline_config_rows_match_sources():
     for _seq, src, schema, target, mode, notebook, priority in edges:
         if (src, target) in deleted:
             continue
-        active = 0 if (src, target) in off or (src, target) in hours_off else 1
+        active = 0 if (src, target) in off or (src, target) in hours_off or (src, target) in review_off else 1
         expected.append((enr, silver, src, schema, target, active, priority, mode, None, None, notebook))
     for seq, src, schema, target, mode, notebook, priority in added:
         if (src, target) in deleted:
@@ -518,7 +522,7 @@ def test_pipeline_config_rows_match_sources():
     for seq, src, schema, target, mode, notebook, priority in flagged:
         if (src, target) in deleted:
             continue
-        expected.append((enr, silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        expected.append((enr, silver, src, schema, target, 0 if (src, target) in review_off else 1, priority, mode, None, None, notebook))
         assert seq > 0
     for src in (
         "slv_3p_poi", "slv_3p_poi_address", "ref_dictionary_place_type",
@@ -546,12 +550,25 @@ def test_pipeline_config_rows_match_sources():
         expected.append(("PL_VV_TRANS_SLV_TO_GLD_1H", silver, src, schema, target, 1, priority, mode, None, None, notebook))
         assert seq > 0
     for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "srvrevpy"), "EDGES_ON"):
-        expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        expected.append((gld, silver, src, schema, target, 0 if (src, target) in srv_off else 1, priority, mode, None, None, notebook))
         assert seq > 0
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
     assert len(expected) == 69
+
+
+def test_review_edges_inactive_in_seed():
+    namespace: dict = {}
+    exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
+    rows = namespace["PIPELINE_CONFIG_ROWS"]
+    review = [row for row in rows if row[4] == "gld_enr_poi_review"]
+    assert review and all(row[5] == 0 for row in review)
+    srv = [row for row in rows if row[4] == "gld_srv_poi_review"]
+    inactive = {row[2] for row in srv if row[5] == 0}
+    active = {row[2] for row in srv if row[5] == 1}
+    assert inactive == {"slv_enr_poi_review_multi_lang"}
+    assert active == {"slv_3p_poi_review", "slv_3p_poi_rating"}
 
 
 def test_watermark_rows_match_source():
@@ -635,14 +652,14 @@ def test_flag_patch_create_matches_init():
     env: dict = {}
     exec(ast.unparse(ast.Module(body=selected, type_ignores=[])), env)  # noqa: S102
     contracts = {
-        "lh_vv_gold.enr.gld_enr_poi_info": _assign(patch, "INFO_COLS"),
+        "lh_vv_gold.enr.gld_enr_poi_info": _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "rvi18nenrpy"), "INFO_COLS"),
         "lh_vv_gold.enr.gld_enr_poi_review": _assign(patch, "REVIEW_COLS"),
         **_assign(patch, "LANDING_COLS"),
     }
     dest = "lh_vv_silver.dbo.slv_enr_poi_destination"
     extra = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "srvpoipy"), "DEST_NEW_COLS")
     ml = "lh_vv_silver.dbo.slv_enr_poi_info_multi_lang"
-    ml_cols = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "mlexppy"), "TABLE_COLS")
+    ml_cols = {**_assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "mlexppy"), "TABLE_COLS"), **_assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "mlsrcpy"), "TABLE_COLS")}
     rev = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "srvrevpy"), "TABLE_COLS")
     create_sql = namespace["create_sql"]
     for fq, cols in contracts.items():
@@ -702,7 +719,10 @@ def test_gld_srv_review_patch_create_matches_init():
     env: dict = {}
     exec(ast.unparse(ast.Module(body=selected, type_ignores=[])), env)  # noqa: S102
     create_sql = namespace["create_sql"]
-    for fq, cols in env["TABLE_COLS"].items():
+    cols_by_fq = dict(env["TABLE_COLS"])
+    cols_by_fq["lh_vv_gold.dbo.gld_srv_poi_review"] = _assign(
+        _cell(_notebook("NB_CREATE_DDL.ipynb"), "rvi18ngldpy"), "REVIEW_COLS")
+    for fq, cols in cols_by_fq.items():
         spec = next(item for item in specs if item["fq"] == fq)
         assert env["_create_sql"](fq, cols) == create_sql(spec)
     landing = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "enrflagpy"), "LANDING_COLS")[env["ML_FQ"]]
@@ -737,7 +757,7 @@ def test_gld_srv_review_patch_guards():
     exec(_by_id(_initial())["init_seed_ctrl"], seed)  # noqa: S102
     got = [row for row in seed["PIPELINE_CONFIG_ROWS"] if row[4] == "gld_srv_poi_review"]
     assert got == [
-        (seed["_GLD30"], seed["_S"], src, schema, trg, 1, priority, mode, None, None, nb)
+        (seed["_GLD30"], seed["_S"], src, schema, trg, 0 if src == "slv_enr_poi_review_multi_lang" else 1, priority, mode, None, None, nb)
         for _seq, src, schema, trg, mode, nb, priority in edges
     ]
 
@@ -760,7 +780,7 @@ def test_gld_srv_patch_guards():
 
 
 def test_enr_initial_edge_state():
-    from test_enr_poi_contract import INFO_INPUTS, REVIEW_INPUTS
+    from test_enr_poi_contract import INFO_INPUTS
 
     seed = _by_id(_initial())["init_seed_ctrl"]
     namespace: dict = {}
@@ -779,7 +799,7 @@ def test_enr_initial_edge_state():
         if trg == "gld_enr_poi_review" and active_flag == 1
     }
     assert active == set(INFO_INPUTS)
-    assert review_active == set(REVIEW_INPUTS)
+    assert review_active == set()
     assert not any(row[0] == "PL_VV_TRANS_SLV_TO_SLV_1H" for row in rows)
     assert not any(src in removed or trg in removed for _pl, _ss, src, _ts, trg, *_rest in rows)
     assert not any((src, trg) in old_info for _pl, _ss, src, _ts, trg, *_rest in rows)
@@ -845,7 +865,7 @@ def test_pl_cadence_seed():
 
 def test_pl_cadence_patch_cell():
     ddl = _notebook("NB_CREATE_DDL.ipynb")
-    assert [c.get("id") for c in ddl["cells"]][-6:-4] == ["plcadmd", "plcadpy"]
+    assert [c.get("id") for c in ddl["cells"]][-12:-10] == ["plcadmd", "plcadpy"]
     assert _cell(ddl, "plcadmd").startswith("# [THÊM 26/10] 20261026-pl-name-cadence-suffix")
     patch, renames, minutes = _cell(ddl, "plcadpy"), _renames(), _cadence()
     seed: dict = {}

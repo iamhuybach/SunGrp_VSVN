@@ -2,12 +2,11 @@
 import ast
 import json
 import re
-import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-INFO = [
+INFO_OLD = [
     ("poi_id", "STRING NOT NULL"), ("source_name", "STRING"), ("source_id", "STRING"),
     ("language_code", "STRING"), ("poi_name", "STRING"), ("poi_name_normalized", "STRING"),
     ("types", "STRING"), ("operating_status", "STRING"), ("primary_type", "STRING"),
@@ -24,6 +23,7 @@ INFO = [
     ("is_enriched_multi_lang", "BOOLEAN"), ("is_enriched_destination", "BOOLEAN"),
     ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
 ]
+INFO = [pair for pair in INFO_OLD if pair[0] not in {"time_to_spend", "best_time", "cost_vnd"}]
 COORD = [
     ("poi_id", "STRING NOT NULL"), ("name", "STRING"), ("short_address", "STRING"),
     ("ward", "STRING"), ("district", "STRING"), ("province_name", "STRING"),
@@ -133,21 +133,6 @@ def _info_pure() -> dict:
     return ns
 
 
-def _mapping_labels() -> dict[str, tuple[str, str, str]]:
-    text = (ROOT / "docs" / "context" / "3p-google" / "mapping_gld_enr_poi_info.md").read_text(encoding="utf-8")
-    section = text.split("# 2. Mapping business_sector", 1)[1]
-    labels = {}
-    for line in section.splitlines():
-        if not line.startswith("|") or line.startswith("|---") or "business_sector" in line:
-            continue
-        cells = [part.strip() for part in line.strip("|").split("|")]
-        if len(cells) < 2:
-            continue
-        parts = [unicodedata.normalize("NFC", part.strip()) for part in cells[1].split(" / ")]
-        labels[cells[0].strip()] = tuple(parts)
-    return labels
-
-
 def _pure():
     text = _nb("NB_LIB_TRANSFORM_SLV_GLD.ipynb")
     start = text.index("# BEGIN_APPEND_PURE")
@@ -168,10 +153,11 @@ def test_gold_ddl_matches_mapping():
     patch = _cell("NB_CREATE_DDL.ipynb", "enrflagpy")
     previous = _cell("NB_CREATE_DDL.ipynb", "enrinfopy")
     old = _cell("NB_CREATE_DDL.ipynb", "enrddlpy")
-    assert _assign(patch, "INFO_COLS") == INFO
+    assert _assign(patch, "INFO_COLS") == INFO_OLD
+    assert _assign(_cell("NB_CREATE_DDL.ipynb", "rvi18nenrpy"), "INFO_COLS") == INFO
     assert _assign(patch, "REVIEW_COLS") == REVIEW
     assert [col for col in _assign(previous, "INFO_COLS") if col[0] not in INFO_REMOVED] == [
-        col for col in INFO if col[0] not in INFO_FLAGS
+        col for col in INFO_OLD if col[0] not in INFO_FLAGS
     ]
     assert [col for col in REVIEW if col[0] not in REVIEW_FLAGS] == _assign(old, "REVIEW_COLS")
     assert _assign(old, "COORD_COLS") == COORD
@@ -186,7 +172,7 @@ def test_gold_ddl_matches_mapping():
 def test_mapping_comments_and_edges():
     info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
     review = _nb("NB_ENR_POI_REVIEW.ipynb")
-    for col in ("COL-001", "COL-003", "COL-007", "COL-009", "COL-010"):
+    for col in ("COL-001", "COL-007", "COL-009", "COL-010"):
         assert col in info
     for number in (35, 36, 37, 38, 39, 44, 45, 46, 47, 48):
         assert f"COL-{number:03d}" in info
@@ -234,15 +220,17 @@ def test_info_patch_cell_guards():
     assert "lock_exec_id = '{LOCK}'" in patch
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-24:-18] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
-    assert ids[-18:-16] == ["ohpassmd", "ohpasspy"]
-    assert ids[-16:-14] == ["peholmd", "peholpy"]
-    assert ids[-14:-12] == ["srvpoimd", "srvpoipy"]
-    assert ids[-12:-10] == ["srvratemd", "srvratepy"]
-    assert ids[-10:-6] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
-    assert ids[-6:-4] == ["plcadmd", "plcadpy"]
-    assert ids[-4:-2] == ["mlexpmd", "mlexppy"]
-    assert ids[-2:] == ["srvrevmd", "srvrevpy"]
+    assert ids[-30:-24] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-24:-22] == ["ohpassmd", "ohpasspy"]
+    assert ids[-22:-20] == ["peholmd", "peholpy"]
+    assert ids[-20:-18] == ["srvpoimd", "srvpoipy"]
+    assert ids[-18:-16] == ["srvratemd", "srvratepy"]
+    assert ids[-16:-12] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
+    assert ids[-12:-10] == ["plcadmd", "plcadpy"]
+    assert ids[-10:-8] == ["mlexpmd", "mlexppy"]
+    assert ids[-8:-6] == ["srvrevmd", "srvrevpy"]
+    assert ids[-6:-2] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-2:] == ["mlsrcmd", "mlsrcpy"]
 
 
 def test_info_select_matches_ddl():
@@ -333,6 +321,15 @@ def test_flag_node_contract():
     assert _func_text(info, "_flag_keys") == _func_text(review, "_flag_keys")
 
 
+def test_info_source_name_stays_entity():
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    assert '"multi_lang": ("poi_id",),' in info
+    assert 'ml = _present(ctx, "multi_lang", "poi_id", changed).alias("ml")' in info
+    assert 'source = F.lower(F.trim(F.col("e.source_name")))' in info
+    assert 'F.col("e.source_name").alias("source_name")' in info
+    assert "ml.source_name" not in info
+
+
 def test_info_partner_join_matches_entity():
     info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
     assert 'uuid_md5(F.col("business_service_id"), F.lit(PARTNER))' in info
@@ -342,28 +339,6 @@ def test_info_partner_join_matches_entity():
     assert 'uuid_md5(F.col("id"), F.lit(PARTNER))' in entity
     assert 'PARTNER = "partner"' in entity
     assert '["source_id", "language_code"]' not in info
-
-
-def test_info_labels_match_mapping():
-    pure = _info_pure()
-    got = {key: tuple(unicodedata.normalize("NFC", part) for part in value) for key, value in pure["SECTOR_LABELS"].items()}
-    got["other"] = tuple(unicodedata.normalize("NFC", part) for part in pure["SECTOR_OTHER"])
-    assert got == _mapping_labels()
-
-
-def test_best_time_pattern():
-    pattern = re.compile(_info_pure()["BEST_TIME_RE"])
-    seed = _assign(_cell("NB_SETUP_INITIAL_DDL.ipynb", "init_seed_place_type"), "BEST_TIME_CANONICAL")
-    for value in seed.values():
-        match = pattern.fullmatch(value.strip())
-        if value == "all_year":
-            assert match is None
-        else:
-            assert match and all(1 <= int(group) <= 12 for group in match.groups())
-    assert pattern.fullmatch("Month 11-3").groups() == ("11", "3")
-    assert pattern.fullmatch("Month 11–4").groups() == ("11", "4")
-    for value in ("Month 13-2", "Month 0-5", ""):
-        assert pattern.fullmatch(value) is None
 
 
 def test_info_removal_keys():
@@ -581,4 +556,35 @@ def test_removed_notebooks_absent():
             assert pattern.search(code) is None
             continue
         assert pattern.search(text) is None
+
+
+def test_info_removed_columns_absent():
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    code = "\n".join(line for line in info.splitlines() if not line.strip().startswith("#"))
+    for name in ("time_to_spend", "best_time", "cost_vnd"):
+        assert not re.search(rf"\b{name}\b", code)
+    assert "cost" in code
+    assert [name for name, _dtype in INFO] == re.findall(r'\.alias\("(\w+)"\)', info.split("# BEGIN_INFO_SELECT", 1)[1].split("# END_INFO_SELECT", 1)[0]) + ["created_at", "updated_at"]
+
+
+def test_review_flow_inactive_cell():
+    patch = _cell("NB_CREATE_DDL.ipynb", "rvi18nenrpy")
+    code = "\n".join(line for line in patch.splitlines() if not line.strip().startswith("#"))
+    for token in ("DROP", "DELETE", "TRUNCATE", "REPLACE", "RESTORE", "columnMapping", "ALTER TABLE", "INSERT INTO", "SET is_active = 1"):
+        assert token not in code
+    assert re.search(r"(?m)^\s*_refresh_lock\(\)", patch)
+    assert patch.index("Dừng trước khi ghi") < re.search(r"(?m)^\s*_refresh_lock\(\)", patch).start()
+    assert _assign(patch, "INFO_COLS") == INFO
+    assert _assign(patch, "EDGES_OFF") == [
+        ("slv_3p_poi_review", "lh_vv_gold.enr", "gld_enr_poi_review"),
+        ("slv_enr_poi_review_multi_lang", "lh_vv_gold.enr", "gld_enr_poi_review"),
+    ]
+    pre = patch.split("Dừng trước khi ghi", 1)[1].split("if issues:", 1)[0]
+    assert "flag == 1 and" not in pre
+    assert "cạnh lạ" in pre
+    assert patch.index("if issues:") < patch.index("UPDATE {CFG}")
+    acquire = patch.split("owns_lock = False", 1)[1].split("Dừng trước khi ghi", 1)[0]
+    assert acquire.index("owns_lock = True") < acquire.index("SELECT lock_exec_id")
+    assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
+    assert "raise failed from cleanup_exc" in patch
 

@@ -1,0 +1,74 @@
+schema_version: 1
+task:
+  id: 20261104-gld-srv-multi-lang-i18n-without-enr
+  title: Partner i18n rows in gld_srv_poi_multi_lang without enrich multi-lang
+  status: user_decision
+  owner: user
+  created_at: '2026-11-04'
+  updated_at: '2026-11-04'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: false
+  runtime_required: false
+  signals:
+  - data_model_change
+  - stateful_logic
+  - idempotency
+scope:
+  systems:
+  - lib transform/gold
+  - DDL/registry
+  - ctrl
+  files:
+  - notebooks/NB_GLD_SRV_POI_MULTI_LANG.ipynb
+  - docs/context/mapping_gld_srv_poi_multi_lang.md
+  - tests/test_gld_srv_poi_contract.py
+  - notebooks/NB_ENR_POI_INFO.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_SETUP_INITIAL_DDL.ipynb
+  - docs/context/gld_enr_poi_info_review.md
+  - tests/test_enr_poi_contract.py
+  - tests/test_initial_ddl_contract.py
+  - tests/test_poi_entity_contract.py
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - state-correctness-reviewer
+  - spark-runtime-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: pass
+  runtime: not_required
+rounds:
+  verification: 0
+  review: 2
+  architecture: 1
+  runtime_failure: 0
+open_findings: []

@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MAPPING = ROOT / "docs" / "context" / "mapping_gld_srv_poi_info.md"
+ML_MAPPING = ROOT / "docs" / "context" / "mapping_gld_srv_poi_multi_lang.md"
 TECH = ("row_hash", "created_at", "updated_at", "deleted_at")
 INFO_FQ = "lh_vv_gold.dbo.gld_srv_poi_info"
 NEW_INFO = [("rating_overall", "DECIMAL(4,2)"), ("rating_count", "INT"), ("review_count", "INT")]
@@ -235,27 +236,29 @@ def test_review_node_spec():
     code = "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
     assert "lh_vv_gold" not in code
     assert "deleted" not in code
-    assert ".cast(" not in source
+    assert ".cast(" not in "\n".join(line for line in source.splitlines() if not line.strip().startswith("#")).replace(
+        'F.lit(None).cast("string").alias("title")', "", 1)
+    assert source.count(".cast(") == 1
+    assert 'F.lit(None).cast("string").alias("title")' in source
+    assert 'F.col("text").alias("review_text")' in source
     spec = _spec(source)
     kwargs = {kw.arg: ast.literal_eval(kw.value) for kw in spec.keywords if kw.arg != "build"}
     assert kwargs["write_mode"] == "MERGE"
     assert kwargs["pk"] == ("review_id",)
     assert kwargs["inputs"] == {
-        "multi_lang": "slv_enr_poi_review_multi_lang",
         "review": "slv_3p_poi_review",
         "rating": "slv_3p_poi_rating",
     }
-    assert kwargs["required_inputs"] == ("multi_lang", "review")
+    assert kwargs["required_inputs"] == ("review",)
     types = _assign(source, "SOURCE_TYPES")
     assert types["slv_3p_poi_review"] == {"rating": "decimal(4,2)"}
     assert types["slv_3p_poi_rating"] == {"rating_overall": "decimal(4,2)", "rating_count": "bigint"}
 
 
 def test_review_build_columns_match_ddl():
-    cols = _assign(_cell("NB_CREATE_DDL.ipynb", "srvrevpy"), "TABLE_COLS")
+    cols = _assign(_cell("NB_CREATE_DDL.ipynb", "rvi18ngldpy"), "REVIEW_COLS")
     out = _assign(_cell("NB_GLD_SRV_POI_REVIEW.ipynb", "srvrvbuild"), "OUT_COLS")
-    fq = "lh_vv_gold.dbo.gld_srv_poi_review"
-    assert list(out) + list(TECH) == [name for name, _dtype in cols[fq]]
+    assert list(out) + list(TECH) == [name for name, _dtype in cols]
 
 
 def test_review_mapping_targets():
@@ -268,13 +271,15 @@ def test_review_mapping_targets():
 
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-14:-6] == [
+    assert ids[-20:-12] == [
         "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
         "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
     ]
-    assert ids[-6:-4] == ["plcadmd", "plcadpy"]
-    assert ids[-4:-2] == ["mlexpmd", "mlexppy"]
-    assert ids[-2:] == ["srvrevmd", "srvrevpy"]
+    assert ids[-12:-10] == ["plcadmd", "plcadpy"]
+    assert ids[-10:-8] == ["mlexpmd", "mlexppy"]
+    assert ids[-8:-6] == ["srvrevmd", "srvrevpy"]
+    assert ids[-6:-2] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-2:] == ["mlsrcmd", "mlsrcpy"]
     patch = _cell("NB_CREATE_DDL.ipynb", "srvratepy")
     base = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")[INFO_FQ]
     assert _assign(patch, "INFO_NEW_COLS") == NEW_INFO
@@ -389,4 +394,113 @@ def test_multi_lang_experience_rule():
     assert rule in source
     assert '("business_service_id", "locale", "bio", "usps")' in source
     assert "hash_exclude" not in source
+
+
+def test_multi_lang_i18n_only_branch():
+    source = _cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild")
+    code = "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
+    assert _assign(source, "MEASURE_COLS") == ("time_to_spend", "best_time", "cost_vnd")
+    assert _assign(source, "I18N_ONLY_WARN") == "multi_lang_i18n_only_rows"
+    assert _assign(source, "I18N_KEY_BLANK_WARN") == "multi_lang_i18n_key_blank"
+    assert "source_name" not in _assign(source, "ML_COLS")
+    for line in (
+        'bio = i18n.select(uuid_md5(F.col("business_service_id"), F.lit(PARTNER)).alias("_pid"),',
+        'partner = F.coalesce(F.lower(F.trim(F.col("source_name"))) == PARTNER, F.lit(False))',
+        'rows = (ml.select(*ML_COLS).join(ent.select("poi_id", "source_name"), "poi_id", "left")',
+        '.join(bio, partner & (F.col("poi_id") == F.col("_pid")) & (F.col("lang") == F.col("_loc")), "left"))',
+        'ctx.warn("multi_lang_source_name_null", rows.where(F.col("source_name").isNull()).count())',
+        'description = F.when(partner, F.coalesce(F.col("bio"), F.col("description"))).otherwise(F.col("description"))',
+        'p1 = (rows.withColumn("description", description).withColumn("experience", experience)',
+        "return p1.unionByName(_i18n_only(ctx, ml, i18n, p1.schema))",
+    ):
+        assert line in source
+    assert code.count("unionByName") == 1
+    assert 'return F.coalesce(F.trim(F.col(name).cast("string")), F.lit("")) != ""' in source
+    branch = source.split("def _i18n_only", 1)[1].split("\ndef ", 1)[0]
+    for line in (
+        'key_ok = _filled("business_service_id") & _filled("locale")',
+        "ctx.warn(I18N_KEY_BLANK_WARN, i18n.where(~key_ok).count())",
+        'ml_keys = ml.select(F.col("poi_id").alias("_pid"), F.col("lang").alias("_loc"))',
+        'only = keyed.join(ml_keys, ["_pid", "_loc"], "left_anti")',
+        'F.lit(PARTNER).alias("source_name"), *[F.lit(None).alias(c) for c in MEASURE_COLS],',
+        'F.col("bio").alias("description"), F.col("usps").alias("experience"))',
+        ".select(*[F.col(c).cast(types[c]).alias(c) for c in OUT_COLS]))",
+        "ctx.warn(I18N_ONLY_WARN, p2.count())",
+    ):
+        assert line in branch
+    assert 'F.col("source_name")' not in branch and "partner &" not in branch
+    assert "coalesce(F.col(" not in branch and not re.search(r"\bent\b", branch)
+    assert ".isin(" not in code and '"vi"' not in code
+
+
+def test_multi_lang_mapping_targets():
+    text = ML_MAPPING.read_text(encoding="utf-8")
+    handling = text.split("### 1.1. Xử lý", 1)[1].split("### 1.2", 1)[0]
+    for token in ("left_anti", "(poi_id, lang)", "'partner'", "mọi `locale`", "chỉ DDL", "mlsrcpy",
+                  "multi_lang_i18n_only_rows", "multi_lang_i18n_key_blank", "`required_inputs`"):
+        assert token in handling
+    table = text.split("### 1.2. Field Mapping", 1)[1]
+    rows = [line.split("|")[1:-1] for line in table.splitlines() if line.startswith("|")][2:]
+    out = _assign(_cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild"), "OUT_COLS")
+    assert [cells[3].strip() for cells in rows] == list(out) + ["created_at", "updated_at"]
+    transform = {cells[3].strip(): cells[2] for cells in rows}
+    for name in out:
+        assert "P2:" in transform[name]
+    for name in _assign(_cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild"), "MEASURE_COLS"):
+        assert "P2: null" in transform[name]
+
+
+def test_multi_lang_source_name_patch():
+    patch = _cell("NB_CREATE_DDL.ipynb", "mlsrcpy")
+    ml = "lh_vv_silver.dbo.slv_enr_poi_info_multi_lang"
+    new = ("source_name", "STRING")
+    assert _assign(patch, "NEW_COL") == new and _assign(patch, "ML_FQ") == ml
+    tables = _assign(patch, "TABLE_COLS")
+    assert list(tables) == [ml]
+    base = _assign(_cell("NB_CREATE_DDL.ipynb", "mlexppy"), "TABLE_COLS")[ml]
+    assert tables[ml] == _insert_after(base, "experience", new)
+    assert _assign(patch, "PL") == _assign(_cell("NB_CREATE_DDL.ipynb", "plcadpy"), "RENAMES")[1][1]
+    assert "LEASE_MINUTES = 90" in patch and "lock_exec_id = '{LOCK}'" in patch
+    order = ["held = True", "Dừng trước khi ghi", "_refresh_lock()", "ALTER TABLE", "Sau khi ghi", "finally:"]
+    positions = [patch.index(token) for token in order]
+    assert positions == sorted(positions)
+    code = "\n".join(line for line in patch.splitlines() if not line.strip().startswith("#"))
+    for token in ("CREATE TABLE", "INSERT INTO", "UPDATE {CFG}", "MERGE INTO", "DROP", "DELETE", "TRUNCATE",
+                  "REPLACE", "RESTORE", "columnMapping", "lh_vv_gold"):
+        assert token not in code
+    assert code.count("ALTER TABLE") == 1 and " AFTER " in code
+    acquire = patch.split("held = False", 1)[1].split("issues = []", 1)[0]
+    assert acquire.index("held = True") < acquire.index("SELECT lock_exec_id")
+    assert acquire.index("held = False") < acquire.index("raise RuntimeError")
+    assert "raise failed from cleanup_exc" in patch
+
+
+def test_review_text_and_title_rule():
+    source = _cell("NB_GLD_SRV_POI_REVIEW.ipynb", "srvrvbuild")
+    assert "slv_enr_poi_review_multi_lang" not in source
+    assert '"lang"' not in source
+    assert 'F.col("text").alias("review_text")' in source
+    assert 'F.lit(None).cast("string").alias("title")' in source
+
+
+def test_review_source_patch_cell():
+    patch = _cell("NB_CREATE_DDL.ipynb", "rvi18ngldpy")
+    code = "\n".join(line for line in patch.splitlines() if not line.strip().startswith("#"))
+    for token in ("DROP", "DELETE", "TRUNCATE", "REPLACE", "RESTORE", "columnMapping", "ALTER TABLE", "INSERT INTO", "SET is_active = 1"):
+        assert token not in code
+    assert re.search(r"(?m)^\s*_refresh_lock\(\)", patch)
+    assert patch.index("Dừng trước khi ghi") < re.search(r"(?m)^\s*_refresh_lock\(\)", patch).start()
+    assert _assign(patch, "EDGES_OFF") == [("slv_enr_poi_review_multi_lang", "lh_vv_gold.dbo", "gld_srv_poi_review")]
+    assert _assign(patch, "EDGES_KEEP") == ("slv_3p_poi_review", "slv_3p_poi_rating")
+    strange = patch.split("for (pl, src_schema, src, flag), n in rows.items():", 1)[1].split("flags =", 1)[0]
+    assert "flag == 1" not in strange
+    assert "cạnh lạ" in strange
+    assert patch.index("if issues:") < patch.index("UPDATE {CFG}")
+    acquire = patch.split("owns_lock = False", 1)[1].split("issues = []", 1)[0]
+    assert acquire.index("owns_lock = True") < acquire.index("SELECT lock_exec_id")
+    assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
+    assert "raise failed from cleanup_exc" in patch
+    ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
+    assert ids[-6:-2] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-2:] == ["mlsrcmd", "mlsrcpy"]
 

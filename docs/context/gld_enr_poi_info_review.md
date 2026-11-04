@@ -9,7 +9,8 @@ Hai bảng gold enrich POI. Cột và kiểu lấy từ `NB_ENR_POI_INFO`, `NB_E
 | Schema | `lh_vv_gold.enr` |
 | Grain | Một dòng một `poi_id` |
 | Notebook | `NB_ENR_POI_INFO` |
-| Nguồn đang dùng | `lh_vv_silver.dbo.slv_poi_entity_non_enrich` (spine, bắt buộc), `slv_poi_amenity`, `slv_3p_poi_rating`, `slv_3p_poi_price`, `slv_3p_poi_opening_hours`, `slv_3p_poi_review`, `slv_pn_business_service_i18ns`. [SỬA 22/10] Thêm `slv_enr_poi_info_multi_lang` và `slv_enr_poi_destination`, chỉ đọc `poi_id` để tính cờ. Không chép nội dung enrich sang gold |
+| Nguồn đang dùng | `lh_vv_silver.dbo.slv_poi_entity_non_enrich` (spine, bắt buộc), `slv_poi_amenity`, `slv_3p_poi_rating`, `slv_3p_poi_price`, `slv_3p_poi_opening_hours`, `slv_3p_poi_review`, `slv_pn_business_service_i18ns`. [SỬA 22/10] Thêm `slv_enr_poi_info_multi_lang` và `slv_enr_poi_destination`, chỉ đọc `poi_id` để tính cờ. Không chép nội dung enrich sang gold. [SỬA 04/11] `slv_enr_poi_info_multi_lang` có thêm cột `source_name` (chỉ DDL); node vẫn chỉ đọc `poi_id`, `source_name` của gold vẫn lấy `slv_poi_entity_non_enrich.source_name` (D-ML-NOMATCH) |
+| Cột đã bỏ | [SỬA 04/11] `time_to_spend`, `best_time`, `cost_vnd` không còn trong DDL, `select`, và mapping. `cost` giữ nguyên |
 
 `enrich_type` là nhóm trong tài liệu này, không phải cột Delta. Một cột có thể thuộc nhiều nhóm. Ô trống là cột không nằm trong ba rule.
 
@@ -32,7 +33,7 @@ Hai bảng gold enrich POI. Cột và kiểu lấy từ `NB_ENR_POI_INFO`, `NB_E
 | `full_address`             | `STRING`          | Địa chỉ đầy đủ.                                                       | enrich description, enrich destination |
 | `lat`                      | `DOUBLE`          | Vĩ độ.                                                                | enrich destination                     |
 | `lng`                      | `DOUBLE`          | Kinh độ.                                                              | enrich destination                     |
-| `business_sector`          | `STRING`          | Mã nhóm ngành, dùng để chọn nhãn câu chữ.                             | enrich description                     |
+| `business_sector`          | `STRING`          | Mã nhóm ngành.                                                        | enrich description                     |
 | `business_category`        | `STRING`          | Nhóm danh mục.                                                        | enrich description                     |
 | `business_category_vi`     | `STRING`          | Nhóm danh mục tiếng Việt.                                             |                                        |
 | `category_group`           | `STRING`          | Nhóm category.                                                        | enrich description                     |
@@ -44,12 +45,9 @@ Hai bảng gold enrich POI. Cột và kiểu lấy từ `NB_ENR_POI_INFO`, `NB_E
 | `rating`                   | `DECIMAL(4,2)`    | Điểm rating tổng; chỉ điền khi nguồn là `google`.                     | enrich description                     |
 | `user_rating_count`        | `BIGINT`          | Số lượt rating; chỉ điền khi nguồn là `google`.                       | enrich description                     |
 | `price_level`              | `INT`             | Mức giá; chỉ điền khi nguồn là `google`.                              | enrich description                     |
-| `opening_hours_text`       | `STRING`          | Giờ mở cửa: `periods_json` nếu `google`, giờ i18n `vi` nếu `partner`. | enrich description                     |
+| `opening_hours_text`       | `STRING`          | Giờ mở cửa: `periods_json` nếu `google`, giờ trong `amentities` đã chọn (i18n `vi`, NULL thì của service) nếu `partner`. | enrich description                     |
 | `review_json`              | `STRING`          | JSON tối đa 20 review; chỉ `google`, không có thì `[]`.               | enrich description                     |
-| `time_to_spend`            | `STRING`          | JSON một nhãn theo sector và câu thời lượng từ `avg_range_min`.       | enrich description, enrich multi-lang  |
-| `best_time`                | `STRING`          | JSON một nhãn theo sector và câu mùa từ `canonical_candidate`.        | enrich description, enrich multi-lang  |
 | `cost`                     | `BIGINT`          | Trung bình làm tròn của `price_min` và `price_max` khi đủ cả hai.     | enrich description                     |
-| `cost_vnd`                 | `STRING`          | JSON câu giá VND theo sector; `cost` null thì chuỗi `null`.           | enrich description, enrich multi-lang  |
 | `service_flag`             | `STRING`          | JSON mảng `service_flags` phân biệt, đã sort; không có thì `[]`.      | enrich description                     |
 | `is_enriched_multi_lang`   | `BOOLEAN`         | True khi `poi_id` có ít nhất một dòng trong `slv_enr_poi_info_multi_lang`, ngược lại false. Notebook ghi true hoặc false. |                                        |
 | `is_enriched_destination`  | `BOOLEAN`         | True khi `poi_id` có ít nhất một dòng trong `slv_enr_poi_destination`, ngược lại false. Notebook ghi true hoặc false. |                                        |
@@ -64,6 +62,7 @@ Hai bảng gold enrich POI. Cột và kiểu lấy từ `NB_ENR_POI_INFO`, `NB_E
 | Grain | Một dòng một `review_id` |
 | Notebook | `NB_ENR_POI_REVIEW` |
 | Nguồn đang dùng | `lh_vv_silver.dbo.slv_3p_poi_review` (chỉ third-party). [SỬA 22/10] Thêm `slv_enr_poi_review_multi_lang`, chỉ đọc `review_id` để tính cờ. Không chép `review_text` sang gold |
+| Trạng thái | [SỬA 04/11] Luồng tắt: mọi cạnh tới bảng này có `is_active = 0` trên `PL_VV_TRANS_SLV_TO_ENR_15M`. Notebook không chạy. Bảng và dữ liệu giữ nguyên, không DROP, không xoá dòng |
 
 | Cột | Kiểu | Ý nghĩa |
 |---|---|---|
