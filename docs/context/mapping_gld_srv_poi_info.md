@@ -303,9 +303,9 @@ Dừng, không ghi `operating_hours`, khi: `GOOGLE_INVALID_JSON`, `GOOGLE_NOT_AR
 
 **Source Field:** `slv_poi_entity_non_enrich.opening_hours_text`
 
-Chuỗi này là object JSON, cùng path `$.policies.operating_hours` đã ghi vào entity. Probe `partner_hours_shape` (2026-10-24): 36 giá trị không null, toàn object. 33 object có bảy key `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday`; mỗi key có `status` boolean và `hours` là mảng `{open_time, close_time}` kiểu string. 3 object chỉ có bảy `status`, không có `hours`. Probe không trả giá trị `status`, không trả độ dài mảng, không trả dạng chuỗi giờ. Rule không đọc `status`.
+Chuỗi này là object JSON, cùng path `$.policies.operating_hours` đã ghi vào entity. Probe `partner_hours_shape` (2026-10-24): 36 giá trị không null, toàn object. 33 object có bảy key `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday`; mỗi key có `status` boolean và `hours` là mảng `{open_time, close_time}` kiểu string. 3 object chỉ có bảy `status`, không có `hours`. Probe không trả giá trị `status`, không trả độ dài mảng, không trả dạng chuỗi giờ. Rule không đọc `status`. Probe `partner_multi_hours` (2026-11-04, task 20261104-poi-review-src-and-partner-i18n): 8 dòng có `hours` dài 2, không dòng nào dài hơn 2.
 
-JSON đích cùng dạng mục 1.4: bảy phần tử, thứ tự Thứ Hai → Chủ Nhật.
+JSON đích cùng dạng mục 1.4, thứ tự Thứ Hai → Chủ Nhật. Mỗi ngày một phần tử. Ngày có hai phần tử `hours` ra hai phần tử liền nhau.
 
 | Key nguồn | day_of_week | label |
 |---|---|---|
@@ -319,8 +319,9 @@ JSON đích cùng dạng mục 1.4: bảy phần tử, thứ tự Thứ Hai → 
 
 - `opening_hours_text` null thì `operating_hours` null.
 - Đúng một phần tử `hours`: `open_time` và `close_time` lấy nguyên chuỗi nguồn, không tách giờ/phút. `value` = `open_time` + ` - ` + `close_time`. `is_closed = false`. `is_open_all_day = false`.
+- Đúng hai phần tử `hours`: ra hai object cùng `day_of_week`, mỗi object theo rule một phần tử ở trên, giữ thứ tự mảng nguồn (`hours[0]` rồi `hours[1]`), không sắp theo giờ, không ghép chuỗi. Ví dụ `monday` `08:00`–`09:00` và `11:00`–`22:00` ra hai object Thứ Hai `08:00 - 09:00` rồi `11:00 - 22:00`. Một phần tử sai kiểu thì dừng `PARTNER_BAD_HOURS`.
 - Không có key ngày, không có `hours`, hoặc `hours` rỗng: cùng object ngày đóng của case 1. `is_closed = true`. `is_open_all_day = false`. `value` = `Đóng cửa`. Không ghi `open_time`, `close_time`.
-- Nhiều hơn một phần tử `hours` trong một ngày: dừng `PARTNER_MULTI_HOURS`, không chọn phần tử, không ghép chuỗi.
+- Hơn hai phần tử `hours` trong một ngày: dừng `PARTNER_MULTI_HOURS`, không chọn phần tử, không ghép chuỗi.
 - JSON không đọc được: `PARTNER_INVALID_JSON`. Không phải object: `PARTNER_NOT_OBJECT`. Ngày không phải object: `PARTNER_BAD_DAY`. `hours` không phải list, hoặc `open_time` / `close_time` không phải string: `PARTNER_BAD_HOURS`.
 
 ---

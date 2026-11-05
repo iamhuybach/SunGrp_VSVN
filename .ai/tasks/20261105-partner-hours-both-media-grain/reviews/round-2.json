@@ -1,0 +1,24 @@
+{
+  "round": 2,
+  "verdict": "USER_DECISION",
+  "findings": [
+    {
+      "id": "GATE-001",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-003",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/mapping_gld_srv_poi_info.md": "c94270553db400e2087a35287a133aa2cde9eec70e8ce5531b78788a88b9ca0e",
+    "docs/context/mapping_poi_media_info.md": "e00b350d81d9e85299d7126f6cfe25942be0b15fa96861ea3d07733e4ead4dc4",
+    "notebooks/NB_GLD_SRV_POI_INFO.ipynb": "adce64c6e8e175df20e51d008b6ea6973345e7d3ecee5269b27a78a2be7fcced",
+    "notebooks/NB_GLD_SRV_POI_MEDIA_GALLERY.ipynb": "59cc2ac3d2b6f01e4b980a5c1af9a1e5e7df9c99974d984cf56473a05905f8c6",
+    "notebooks/NB_SLV_POI_MEDIA_INFO.ipynb": "dc03f7052358e3f9ed713f2181c96007a4ec15f8ffae0d41cc22d08e4da74974",
+    "tests/test_gld_srv_poi_contract.py": "3574f85eb7e33b4477047c07ee5275bf105e6874c215d104fb272de1ad4910c2",
+    "tests/test_poi_media_amenity_contract.py": "6ac58474b6ff6fdc1b4f844328e09faaad98f9d50ceda74fe46d593ef6e71bc2"
+  },
+  "elapsed_seconds": 148
+}

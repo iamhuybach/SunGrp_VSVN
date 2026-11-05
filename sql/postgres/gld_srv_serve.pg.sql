@@ -86,7 +86,7 @@ CREATE TABLE apps.srv_poi_amenity (
 
 CREATE TABLE apps.srv_poi_media_gallery (
     media_id text NOT NULL,
-    poi_id text,
+    poi_id text NOT NULL,
     source_name text,
     photo_api_uri text,
     display_order integer,
@@ -101,7 +101,7 @@ CREATE TABLE apps.srv_poi_media_gallery (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     deleted_at timestamp without time zone,
-    PRIMARY KEY (media_id)
+    PRIMARY KEY (media_id, poi_id)
 );
 
 CREATE TABLE apps.srv_poi_review (

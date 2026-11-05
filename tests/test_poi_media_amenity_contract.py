@@ -73,7 +73,7 @@ def test_node_specs():
         "i18n": "slv_pn_business_service_i18ns",
         "services": "slv_pn_business_services",
     }
-    assert silver["pk"] == ("media_id",)
+    assert silver["pk"] == ("media_id", "poi_id")
     assert silver["required_inputs"] == ("media_3p", "i18n")
     assert silver["unique_checks"] == (("one_cover_per_poi", ("poi_id",), "is_cover"),)
     assert silver["block_checks"] == (
@@ -83,7 +83,7 @@ def test_node_specs():
     assert silver["write_mode"] == "MERGE"
     assert gallery["trg_tbl"] == "gld_srv_poi_media_gallery"
     assert gallery["inputs"] == {"media": "slv_poi_media_info"}
-    assert gallery["pk"] == ("media_id",)
+    assert gallery["pk"] == ("media_id", "poi_id")
     assert gallery["required_inputs"] == ("media",)
     assert "unique_checks" not in gallery and "block_checks" not in gallery
     assert gallery["soft_delete_set"] == {"is_active": "false"}
@@ -233,6 +233,9 @@ def test_media_build_static():
     for token in (
         "posexplode", "asc_nulls_last", 'startswith("[")', 'isin("", "null")', 'concat_ws("|",', "sha2(",
         '"google"', '"partner"',
+        'Window.partitionBy("media_id", "poi_id")', 'F.col("_src_ts").desc_nulls_last()',
+        'F.col("updated_at").cast("timestamp").alias("_ui")', 'F.col("updated_at").cast("timestamp").alias("_us")',
+        'F.when(empty_i, F.col("_us")).otherwise(F.col("_ui"))', 'ctx.metrics["partner_media_collapsed"]',
     ):
         assert token in source
     assert "256" in source
@@ -246,6 +249,34 @@ def test_media_build_static():
     blob = next(line for line in source.splitlines() if "blob_url" in line)
     assert "trim" not in blob
     assert 'url.alias("blob_url")' in source
+    assert 'ctx.mode == "DRY_RUN"' in source
+    assert source.index('ctx.mode == "DRY_RUN"') < source.index("countDistinct")
+    for token in ("src_updated_at", "last_updated_at", "dropDuplicates"):
+        assert token not in source
+
+
+def test_media_collapse_before_cover():
+    source = _cell("NB_SLV_POI_MEDIA_INFO.ipynb", "slvmediabuild")
+    fn = next(ast.unparse(n) for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name == "collapse")
+    tail = fn.split("orderBy(", 1)[1]
+    order = ["_src_ts", "display_order", "_pos", "blob_url", "photo_api_uri", "width_px", "height_px",
+             "photographer", "source_name"]
+    positions = [tail.index(f"'{name}'") for name in order]
+    assert positions == sorted(positions)
+    assert "row_number()" in fn and "== 1" in fn and "'_src_ts'" in fn.split(".drop(", 1)[1]
+    body = _build(source)
+    assert body.index("collapse(") < body.index("with_cover(")
+    assert "'updated_at'" in body
+
+
+def test_media_key_mapping_text():
+    text = (ROOT / "docs" / "context" / "mapping_poi_media_info.md").read_text(encoding="utf-8")
+    s11 = text.split("## 1.1.", 1)[1].split("## 1.2.", 1)[0]
+    s2 = text.split("# 2.", 1)[1]
+    assert "là `media_id`." not in s11 and "Khóa MERGE `media_id`." not in s2
+    assert "(`media_id`, `poi_id`)" in s11 and "(`media_id`, `poi_id`)" in s2
+    assert "`updated_at` nguồn lớn nhất" in s11 and "src_updated_at" in s11
+    assert "(`media_id`, `poi_id`)" in _cell("NB_SLV_POI_MEDIA_INFO.ipynb", "slvmediamd")
 
 
 def test_setup_patch_guards():

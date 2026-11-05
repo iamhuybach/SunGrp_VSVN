@@ -10,7 +10,8 @@ Append `slv_3p_poi_media` và:
 - `media` của i18n là SQL null, chuỗi trắng, JSON `null`, hoặc `[]` thì lấy `slv_pn_business_services.media` của `poi_id` tương ứng. Bỏ dòng `deleted` của bảng services.
 - `url` của nguồn đã chọn null hoặc trắng: bỏ phần tử.
 - Chuỗi `media` chỉ parse khi bắt đầu bằng `[`. Không parse được thì không ra phần tử và notebook cảnh báo `partner_media_unparsed`.
-- `poi_id` đã có công thức tính cho 2 bảng này. Khóa MERGE của bảng này và `gld_srv_poi_media_gallery` là `media_id`. `write_mode = MERGE`. Nullability của `slv_3p_poi_media.media_dedup_key`: `MISSING`. Target `media_id` là `STRING NOT NULL`. `quality_gate` chặn `media_id` null.
+- `poi_id` đã có công thức tính cho 2 bảng này. Khóa MERGE của bảng này và `gld_srv_poi_media_gallery` là (`media_id`, `poi_id`). `write_mode = MERGE`. Nullability của `slv_3p_poi_media.media_dedup_key`: `MISSING`. Target `media_id` là `STRING NOT NULL`. `quality_gate` chặn `media_id` hoặc `poi_id` null (`pk_null`).
+- Gộp nguồn trước `quality_gate`: một dòng mỗi (`media_id`, `poi_id`), giữ dòng có `updated_at` nguồn lớn nhất. `updated_at` nguồn là cột kỹ thuật extract của dòng cha đã nổ mảng: i18n khi dùng `media` của i18n, services khi lấy fallback, `slv_3p_poi_media` với Google. Không dùng `src_updated_at`, `last_updated_at`. Null xếp sau mọi mốc. Hòa `updated_at` thì xếp tiếp theo `display_order`, `_pos`, `blob_url`, `photo_api_uri`, `width_px`, `height_px`, `photographer`, `source_name` tăng, null cuối. Dòng còn hòa giống nhau ở mọi cột đích nên chạy lại cho cùng kết quả. `is_cover` tính sau bước gộp. Notebook ghi metric `partner_media_collapsed` khi `p_mode = DRY_RUN`.
 - `SPEC.inputs`: `media_3p` = `slv_3p_poi_media`, `i18n` = `slv_pn_business_service_i18ns`, `services` = `slv_pn_business_services`. `required_inputs` = (`media_3p`, `i18n`). `services` không bắt buộc. `soft_delete_set`: `is_active` = false.
 - Pipeline hiện hành `PL_VV_TRANS_SLV_TO_GLD_30M` (`plcadpy` đổi từ `PL_VV_TRANS_SLV_TO_GLD_30P`; cell `mediaddlpy` còn literal `30P`). `load_mode = RECOMPUTE`, `priority = 1`. Ba cạnh `slv_3p_poi_media`, `slv_pn_business_service_i18ns`, `slv_pn_business_services` → `slv_poi_media_info`, `nb_name = NB_SLV_POI_MEDIA_INFO`. Markdown notebook ghi RECOMPUTE.
 
@@ -37,7 +38,7 @@ Append `slv_3p_poi_media` và:
 
 # 2. Table: `gld_srv_poi_media_gallery`
 
-`NB_GLD_SRV_POI_MEDIA_GALLERY` RECOMPUTE `lh_vv_gold.dbo.gld_srv_poi_media_gallery`. Bản 1-1: `build` trả `select(*OUT_COLS)` từ `slv_poi_media_info`. `SPEC.inputs`: `media` = `slv_poi_media_info`. `required_inputs` = (`media`,). Khóa MERGE `media_id`. `write_mode = MERGE`. `soft_delete_set`: `is_active` = false.
+`NB_GLD_SRV_POI_MEDIA_GALLERY` RECOMPUTE `lh_vv_gold.dbo.gld_srv_poi_media_gallery`. Bản 1-1: `build` trả `select(*OUT_COLS)` từ `slv_poi_media_info`. `SPEC.inputs`: `media` = `slv_poi_media_info`. `required_inputs` = (`media`,). Khóa MERGE (`media_id`, `poi_id`), như silver. `write_mode = MERGE`. `soft_delete_set`: `is_active` = false.
 
 Notebook không gán `created_at` hay `updated_at`. `sql_merge_target` ghi `row_hash`, `created_at`, `updated_at`, `deleted_at`.
 

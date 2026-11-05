@@ -1,0 +1,71 @@
+schema_version: 1
+task:
+  id: 20261105-partner-hours-both-media-grain
+  title: Emit both partner hour intervals and key media by media_id plus poi_id
+  status: user_decision
+  owner: user
+  created_at: '2026-11-05'
+  updated_at: '2026-11-05'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: false
+  runtime_required: false
+  signals:
+  - data_model_change
+  - stateful_logic
+  - idempotency
+  - cross_state_impact
+scope:
+  systems:
+  - lib transform/gold
+  - mapping
+  files:
+  - notebooks/NB_GLD_SRV_POI_INFO.ipynb
+  - notebooks/NB_SLV_POI_MEDIA_INFO.ipynb
+  - notebooks/NB_GLD_SRV_POI_MEDIA_GALLERY.ipynb
+  - docs/context/mapping_gld_srv_poi_info.md
+  - docs/context/mapping_poi_media_info.md
+  - tests/test_gld_srv_poi_contract.py
+  - tests/test_poi_media_amenity_contract.py
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  - state-correctness-reviewer
+  - spark-runtime-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: user_decision
+  risk_gate: user_decision
+  runtime: not_required
+rounds:
+  verification: 0
+  review: 2
+  architecture: 1
+  runtime_failure: 0
+open_findings: []

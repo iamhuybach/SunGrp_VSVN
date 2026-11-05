@@ -1,0 +1,54 @@
+# Verification 2026-11-05 11:09:03 — PASS
+Files (7): docs/context/mapping_gld_srv_poi_info.md, docs/context/mapping_poi_media_info.md, notebooks/NB_GLD_SRV_POI_INFO.ipynb, notebooks/NB_GLD_SRV_POI_MEDIA_GALLERY.ipynb, notebooks/NB_SLV_POI_MEDIA_INFO.ipynb, tests/test_gld_srv_poi_contract.py, tests/test_poi_media_amenity_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 33%]
+........................................................................ [ 66%]
+........................................................................ [ 99%]
+..                                                                       [100%]
+218 passed in 2.46s
+
+## task-state: PASS
+
+# Verification 2026-11-05 11:30:31 — PASS
+Files (7): docs/context/mapping_gld_srv_poi_info.md, docs/context/mapping_poi_media_info.md, notebooks/NB_GLD_SRV_POI_INFO.ipynb, notebooks/NB_GLD_SRV_POI_MEDIA_GALLERY.ipynb, notebooks/NB_SLV_POI_MEDIA_INFO.ipynb, tests/test_gld_srv_poi_contract.py, tests/test_poi_media_amenity_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 33%]
+........................................................................ [ 66%]
+........................................................................ [ 99%]
+..                                                                       [100%]
+218 passed in 2.91s
+
+## task-state: PASS
+

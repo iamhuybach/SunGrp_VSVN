@@ -164,14 +164,40 @@ def test_partner_closed_forms():
 
 def test_partner_stop_codes():
     fn = _hours()["partner_hours"]
-    two = _week(monday={"hours": [{"open_time": "08:00", "close_time": "12:00"},
-                                  {"open_time": "13:00", "close_time": "17:00"}]})
-    assert fn(two)[1] == "PARTNER_MULTI_HOURS"
+    three = _week(monday={"hours": [{"open_time": "08:00", "close_time": "09:00"}] * 3})
+    assert fn(three)[1] == "PARTNER_MULTI_HOURS"
     assert fn(_week(tuesday={"hours": None}))[1] == "PARTNER_BAD_HOURS"
     raw = json.loads(_week())
     raw["wednesday"] = None
     assert fn(json.dumps(raw))[1] == "PARTNER_BAD_DAY"
     assert fn(_week(thursday={"hours": [{"open_time": 8, "close_time": "17:00"}]}))[1] == "PARTNER_BAD_HOURS"
+
+
+def test_partner_two_hours():
+    fn = _hours()["partner_hours"]
+    single = json.loads(fn(_week())[0])[0]
+    two = _week(monday={"status": True, "hours": [{"open_time": "08:00", "close_time": "09:00"},
+                                                  {"open_time": "11:00", "close_time": "22:00"}]})
+    out, err = fn(two)
+    assert err is None
+    got = json.loads(out)
+    assert [row["day_of_week"] for row in got] == [1, 1, 2, 3, 4, 5, 6, 7]
+    assert [row["value"] for row in got[:2]] == ["08:00 - 09:00", "11:00 - 22:00"]
+    assert all(list(row) == list(single) and row["label"] == "Thứ Hai" and not row["is_closed"]
+               and not row["is_open_all_day"] for row in got[:2])
+    swapped = _week(monday={"hours": [{"open_time": "11:00", "close_time": "22:00"},
+                                      {"open_time": "08:00", "close_time": "09:00"}]})
+    assert [row["open_time"] for row in json.loads(fn(swapped)[0])[:2]] == ["11:00", "08:00"]
+    bad = _week(monday={"hours": [{"open_time": "08:00", "close_time": "09:00"},
+                                  {"open_time": 11, "close_time": "22:00"}]})
+    assert fn(bad) == (None, "PARTNER_BAD_HOURS")
+
+
+def test_partner_hours_mapping_text():
+    section = MAPPING.read_text(encoding="utf-8").split("### 1.5.", 1)[1].split("\n---\n", 1)[0]
+    assert "Nhiều hơn một phần tử `hours`" not in section
+    assert "Đúng hai phần tử `hours`" in section and "Hơn hai phần tử `hours`" in section
+    assert "PARTNER_MULTI_HOURS" in section
 
 
 def test_unknown_source_stops():
