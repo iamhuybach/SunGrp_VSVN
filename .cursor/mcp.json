@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "vv-serving-postgres-local": {
+      "command": "uvx",
+      "args": [
+        "--with", "mcp==1.30.0",
+        "--overrides", "${workspaceFolder}/.cursor/postgres-mcp-overrides.txt",
+        "--from", "postgres-mcp==0.3.0",
+        "postgres-mcp", "--access-mode=restricted"
+      ],
+      "env": {
+        "DATABASE_URI": "${env:VV_SERVING_PG_URL}"
+      }
+    }
+  }
+}

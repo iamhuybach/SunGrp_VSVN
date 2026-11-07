@@ -23,6 +23,7 @@ AUTHOR_KIND_LANES = {
 AUTHOR_EFFORTS = {kind: AUTHOR_LANE_EFFORTS[lane] for kind, lane in AUTHOR_KIND_LANES.items()}
 REVIEW_MODEL = "gpt-5.6-sol"
 REVIEW_EFFORT = "medium"
+HONOR_EXCEPTIONS = True  # D-07: external-smoke passed with claude-fable-5-1 on 2026-11-06
 VERDICTS = {"PASS", "FIX_REQUIRED", "EVIDENCE_REQUIRED", "USER_DECISION"}
 
 
@@ -52,6 +53,37 @@ class ReviewResult:
     risk_gate_run: bool
     findings: tuple[dict[str, str], ...]
     executable: Path
+
+
+@dataclass(frozen=True)
+class Lane:
+    model: str
+    effort: str
+    source: str  # "default" or the exception id
+
+
+LANE_DEFAULTS = {
+    "architect": (ARCHITECT_MODEL, ARCHITECT_EFFORT),
+    "review": (REVIEW_MODEL, REVIEW_EFFORT),
+    "author": (AUTHOR_MODEL, AUTHOR_LANE_EFFORTS["author"]),
+    "author_proposal": (AUTHOR_MODEL, AUTHOR_LANE_EFFORTS["author_proposal"]),
+}
+
+
+def resolve_lane(exceptions: Any, role: str, honor: bool | None = None) -> Lane:
+    model, effort = LANE_DEFAULTS[role]
+    if not (HONOR_EXCEPTIONS if honor is None else honor) or not isinstance(exceptions, list):
+        return Lane(model, effort, "default")
+    for item in exceptions:
+        if not isinstance(item, dict) or item.get("kind") != "model_override":
+            continue
+        if item.get("role") != role or item.get("approved_by") != "user":
+            continue
+        candidate = item.get("model")
+        candidate_effort = item.get("effort")
+        if isinstance(candidate, str) and candidate.strip() and candidate_effort in {"low", "medium", "high"}:
+            return Lane(candidate.strip(), candidate_effort, str(item.get("id", "exception")))
+    return Lane(model, effort, "default")
 
 
 def _natural_key(path: Path) -> tuple[int, ...]:
@@ -137,7 +169,7 @@ def _git_snapshot(repo: Path) -> bytes:
     )
     if result.returncode:
         raise RunnerError(f"Cannot capture Git status: {result.stderr.decode(errors='replace').strip()}")
-    return result.stdout
+    return b"\0".join(e for e in result.stdout.split(b"\0") if e and not e[3:].startswith(b".ai/.tmp/"))
 
 
 def _assert_repo_unchanged(repo: Path, before: bytes, label: str) -> None:
@@ -229,7 +261,10 @@ def architecture_warnings(document: str) -> tuple[str, ...]:
     return ()
 
 
-def run_architecture(repo: Path, prompt: str, timeout_seconds: int = 1800) -> ArchitectureResult:
+def run_architecture(
+    repo: Path, prompt: str, timeout_seconds: int = 1800, *,
+    model: str = ARCHITECT_MODEL, effort: str = ARCHITECT_EFFORT,
+) -> ArchitectureResult:
     executable = discover_executable("claude")
     schema = _architecture_schema()
     automation_contract = """
@@ -246,8 +281,8 @@ Do not wrap the JSON or document in Markdown fences.
     command = [
         str(executable),
         "-p",
-        "--model", ARCHITECT_MODEL,
-        "--effort", ARCHITECT_EFFORT,
+        "--model", model,
+        "--effort", effort,
         "--output-format", "json",
         "--json-schema", json.dumps(schema, separators=(",", ":")),
         "--max-turns", "80",
@@ -283,9 +318,13 @@ Do not wrap the JSON or document in Markdown fences.
     )
 
 
-def run_author(repo: Path, prompt: str, kind: str, timeout_seconds: int = 1800) -> AuthorResult:
+def run_author(
+    repo: Path, prompt: str, kind: str, timeout_seconds: int = 1800, *,
+    model: str = AUTHOR_MODEL, effort: str | None = None,
+) -> AuthorResult:
     if kind not in AUTHOR_EFFORTS:
         raise RunnerError(f"Unknown author kind: {kind}")
+    effort = effort or AUTHOR_EFFORTS[kind]
     executable = discover_executable("claude")
     schema = _author_schema()
     automation_contract = """
@@ -300,8 +339,8 @@ in Markdown fences.
     command = [
         str(executable),
         "-p",
-        "--model", AUTHOR_MODEL,
-        "--effort", AUTHOR_EFFORTS[kind],
+        "--model", model,
+        "--effort", effort,
         "--output-format", "json",
         "--json-schema", json.dumps(schema, separators=(",", ":")),
         "--max-turns", "40",
@@ -323,12 +362,14 @@ in Markdown fences.
     return AuthorResult(document=document, executable=executable)
 
 
-def _review_schema(reviewers: list[str]) -> dict[str, Any]:
+def _review_schema(
+    reviewers: list[str], model: str = REVIEW_MODEL, effort: str = REVIEW_EFFORT,
+) -> dict[str, Any]:
     return {
         "type": "object",
         "properties": {
-            "model": {"type": "string", "enum": [REVIEW_MODEL]},
-            "reasoning_effort": {"type": "string", "enum": [REVIEW_EFFORT]},
+            "model": {"type": "string", "enum": [model]},
+            "reasoning_effort": {"type": "string", "enum": [effort]},
             "reviewers_run": {
                 "type": "array",
                 "items": {"type": "string", "enum": reviewers or ["none"]},
@@ -386,9 +427,12 @@ def run_review(
     required_reviewers: list[str],
     risk_gate_required: bool,
     timeout_seconds: int = 1800,
+    *,
+    model: str = REVIEW_MODEL,
+    effort: str = REVIEW_EFFORT,
 ) -> ReviewResult:
     executable = discover_executable("codex")
-    schema = _review_schema(required_reviewers)
+    schema = _review_schema(required_reviewers, model, effort)
     automation_contract = f"""
 
 ## Automated execution contract
@@ -412,8 +456,8 @@ Markdown review. Never edit repository files.
             "--strict-config",
             "--ephemeral",
             "--json",
-            "--model", REVIEW_MODEL,
-            "-c", f'model_reasoning_effort="{REVIEW_EFFORT}"',
+            "--model", model,
+            "-c", f'model_reasoning_effort="{effort}"',
             "-c", 'approval_policy="never"',
             "--sandbox", "read-only",
             "--cd", str(repo),
@@ -431,7 +475,7 @@ Markdown review. Never edit repository files.
         payload = _parse_json_text(output_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise RunnerError("Codex final result must be a JSON object.")
-    if payload.get("model") != REVIEW_MODEL or payload.get("reasoning_effort") != REVIEW_EFFORT:
+    if payload.get("model") != model or payload.get("reasoning_effort") != effort:
         raise RunnerError("Codex reported a model or reasoning-effort mismatch.")
     reviewers_run = validate_reviewer_manifest(payload.get("reviewers_run"), required_reviewers)
     if payload.get("risk_gate_run") is not risk_gate_required:

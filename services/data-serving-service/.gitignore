@@ -1,0 +1,16 @@
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# Local environment files: never commit credentials
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath

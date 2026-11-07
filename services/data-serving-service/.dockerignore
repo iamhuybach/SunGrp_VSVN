@@ -1,0 +1,27 @@
+# Keeps the build context small and prevents local secrets from leaking into images
+.env
+.env.local
+.env.*.local
+
+# Build output
+target/
+*.jar
+*.war
+
+# Git metadata
+.git/
+.gitignore
+.gitattributes
+
+# IDE and OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Tooling and docs
+docs/
+openspec/
+.agents/
+.agent/
+

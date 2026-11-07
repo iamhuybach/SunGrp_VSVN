@@ -41,3 +41,27 @@ cases:
     expected_reviewers: []
     expected_risk_gate: false
     required_topics: [fast_lane]
+  - id: api-dto-exposes-missing-gold-column
+    summary: A review DTO adds a source field that no gold or PostgreSQL column provides.
+    expected_reviewers: [api-contract-reviewer]
+    expected_risk_gate: false
+    expected_verdict: FIX_REQUIRED
+    required_topics: [contract, gold_alignment]
+  - id: api-specification-string-concat
+    summary: A sort parameter is concatenated into a JPQL order clause and the list endpoint has no page size cap.
+    expected_reviewers: [app-security-reviewer, api-contract-reviewer]
+    expected_risk_gate: false
+    expected_verdict: FIX_REQUIRED
+    required_topics: [injection, pagination]
+  - id: api-gallery-n-plus-one
+    summary: Compact POI listing loads media per POI inside a loop instead of one batched query.
+    expected_reviewers: [jpa-performance-reviewer]
+    expected_risk_gate: false
+    expected_verdict: FIX_REQUIRED
+    required_topics: [n_plus_one, batch_fetch]
+  - id: api-key-change-without-runbook
+    summary: An entity switches to a composite @IdClass while the PostgreSQL DDL and runbook keep the old key.
+    expected_reviewers: [api-contract-reviewer, sql-data-reviewer]
+    expected_risk_gate: true
+    expected_verdict: FIX_REQUIRED
+    required_topics: [key_change, rollback, contract]

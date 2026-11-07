@@ -60,6 +60,7 @@ SIGNALS = {
 REVIEWERS = {
     "state-correctness-reviewer", "spark-runtime-reviewer",
     "sql-data-reviewer", "fabric-pipeline-reviewer",
+    "api-contract-reviewer", "app-security-reviewer", "jpa-performance-reviewer",
 }
 AUTHOR_LANES = agent_runner.AUTHOR_KIND_LANES
 AUTHOR_OUTPUTS = {
@@ -787,7 +788,7 @@ def _next_context(task_id: str, status: str) -> str:
         "reviewing": f"python scripts/vv.py run-gate {task_id}",
         "waiting_runtime": f"python scripts/vv.py closeout {task_id}",
         "user_decision": "wait for the named user decision",
-        "ready_to_merge": "user commit/merge only",
+        "ready_to_merge": "user push/merge; commit on request",
         "blocked": "resolve the named blocker",
     }
     return commands[status]
@@ -847,6 +848,13 @@ def build_context(task_id: str, phase: str = "auto", max_lines: int = 400) -> st
             labels.append("large: use toc/show")
         suffix = f" | {', '.join(labels)}" if labels else ""
         task_files.append(f"- {relative} | {path.stat().st_size} bytes{suffix}")
+    if "poi-serving-api" in ((state.get("scope") or {}).get("systems") or []):
+        blocks.append(("API", "\n".join([
+            f"service: {SERVICE_DIR.as_posix()} (rules: {SERVICE_DIR.as_posix()}/AGENTS.md)",
+            "test: cd services/data-serving-service && mvnw.cmd -q -B test  (JDK 26, Docker)",
+            f"jdk: {_java_major() or 'missing'} | docker: {'up' if _docker_available() else 'down'}",
+            "runtime: user-run docker compose per runtime-runbook.md (D-12)",
+        ])))
     blocks.append(("FILES", "\n".join(task_files) or "none"))
     blocks.append(("NEXT", _next_context(task_id, state["task"]["status"])))
     output = f"# Context {task_id} | phase={selected_phase}\n\n" + "\n\n".join(
@@ -1101,9 +1109,11 @@ def _set_task_status(state: dict[str, Any], status: str) -> None:
     state["task"]["updated_at"] = dt.date.today().isoformat()
 
 
-def architecture_state_after(state: dict[str, Any], verdict: str) -> dict[str, Any]:
+def architecture_state_after(
+    state: dict[str, Any], verdict: str, model: str = agent_runner.ARCHITECT_MODEL,
+) -> dict[str, Any]:
     candidate = copy.deepcopy(state)
-    candidate["models"]["architect"]["actual"] = agent_runner.ARCHITECT_MODEL
+    candidate["models"]["architect"]["actual"] = model
     candidate["rounds"]["architecture"] += 1
     if verdict == "PASS":
         candidate["gates"]["architecture"] = "pass"
@@ -1120,9 +1130,10 @@ def architecture_state_after(state: dict[str, Any], verdict: str) -> dict[str, A
 
 def review_state_after(
     state: dict[str, Any], result: agent_runner.ReviewResult, round_number: int,
+    model: str = agent_runner.REVIEW_MODEL,
 ) -> dict[str, Any]:
     candidate = copy.deepcopy(state)
-    candidate["models"]["review"]["actual"] = agent_runner.REVIEW_MODEL
+    candidate["models"]["review"]["actual"] = model
     candidate["review_plan"]["round"] = round_number
     candidate["rounds"]["review"] = round_number
     candidate["open_findings"] = [dict(item) for item in result.findings]
@@ -1180,7 +1191,11 @@ the business Delta MERGE commits, the process crashes before watermark update, a
 Produce a concise architecture document covering transaction boundaries, idempotency, watermark ownership,
 retry/recovery, evidence requirements, and verification. Do not edit any repository file.
 """
-        architecture = agent_runner.run_architecture(repo, architecture_prompt, timeout_seconds=args.timeout)
+        print(f"Architect model: {args.architect_model} {args.architect_effort}")
+        architecture = agent_runner.run_architecture(
+            repo, architecture_prompt, timeout_seconds=args.timeout,
+            model=args.architect_model, effort=args.architect_effort,
+        )
         review_prompt = """# Automated Codex multi-agent smoke test
 
 Follow AGENTS.md as the VSVN Review Coordinator. Review this synthetic scenario only:
@@ -1198,12 +1213,20 @@ Do not edit any repository file. The purpose is to validate custom-agent executi
     except agent_runner.RunnerError as exc:
         fail(f"EXTERNAL SMOKE FAIL: {exc}")
     print("EXTERNAL SMOKE PASS")
-    print(f"Claude: {details['claude_version']} / architecture verdict {architecture.verdict}")
+    print(
+        f"Claude: {details['claude_version']} / model {args.architect_model} {args.architect_effort}"
+        f" / architecture verdict {architecture.verdict}"
+    )
     print(f"Codex: {details['codex_version']} / review verdict {review.verdict}")
     print(f"Reviewers: {', '.join(review.reviewers_run)}")
     print("Risk gate: run")
     print("Repository changes: none")
     return 0
+
+
+def _print_lane(lane: agent_runner.Lane) -> None:
+    label = "MODEL" if lane.source == "default" else "MODEL OVERRIDE"
+    print(f"{label} {lane.source}: {lane.model} {lane.effort}")
 
 
 def cmd_run_gate(args: argparse.Namespace) -> int:
@@ -1234,14 +1257,18 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
                         f"Run: python scripts/vv.py run-author {args.task} --kind model"
                     )
             handoff, prompt = render_prompt(args.task, "architect")
+            lane = agent_runner.resolve_lane(state.get("exceptions", []), "architect")
+            _print_lane(lane)
             print(f"Running Claude Architect from {handoff.as_posix()}...")
             started = time.monotonic()
             try:
-                result = agent_runner.run_architecture(repo_root(), prompt, timeout_seconds=args.timeout)
+                result = agent_runner.run_architecture(
+                    repo_root(), prompt, timeout_seconds=args.timeout, model=lane.model, effort=lane.effort,
+                )
             finally:
                 elapsed_seconds = int(time.monotonic() - started)
                 print(f"Elapsed: {elapsed_seconds} s")
-            candidate = architecture_state_after(state, result.verdict)
+            candidate = architecture_state_after(state, result.verdict, model=lane.model)
             _validate_candidate_state(args.task, candidate)
             architecture = directory / "architecture.md"
             architecture.write_text(result.document, encoding="utf-8")
@@ -1275,16 +1302,19 @@ def cmd_run_gate(args: argparse.Namespace) -> int:
             reviewers = list(state["review_plan"]["required_reviewers"])
             risk_required = state["classification"]["risk_level"] in {"high", "critical"}
             reviewed_files = {path: _file_digest(path) for path in _review_files(args.task, state)}
+            lane = agent_runner.resolve_lane(state.get("exceptions", []), "review")
+            _print_lane(lane)
             print(f"Running Codex review from {handoff.as_posix()}...")
             started = time.monotonic()
             try:
                 result = agent_runner.run_review(
                     repo_root(), prompt, reviewers, risk_required, timeout_seconds=args.timeout,
+                    model=lane.model, effort=lane.effort,
                 )
             finally:
                 elapsed_seconds = int(time.monotonic() - started)
                 print(f"Elapsed: {elapsed_seconds} s")
-            candidate = review_state_after(state, result, round_number)
+            candidate = review_state_after(state, result, round_number, model=lane.model)
             _validate_candidate_state(args.task, candidate)
             review_path = directory / "reviews" / f"round-{round_number}.md"
             review_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1341,10 +1371,15 @@ def cmd_run_author(args: argparse.Namespace) -> int:
     prompt = f"{prompt.rstrip()}\n\n## Author input\n\n{author_input.rstrip()}\n"
     key = AUTHOR_LANES[args.kind]
     effort = agent_runner.AUTHOR_EFFORTS[args.kind]
+    lane = agent_runner.resolve_lane(state.get("exceptions", []), key)
+    _print_lane(lane)
     started = time.monotonic()
     try:
         try:
-            result = agent_runner.run_author(repo_root(), prompt, args.kind, timeout_seconds=args.timeout)
+            result = agent_runner.run_author(
+                repo_root(), prompt, args.kind, timeout_seconds=args.timeout,
+                model=lane.model, effort=lane.effort,
+            )
         finally:
             elapsed_seconds = int(time.monotonic() - started)
             print(f"Elapsed: {elapsed_seconds} s")
@@ -1354,7 +1389,7 @@ def cmd_run_author(args: argparse.Namespace) -> int:
     author = candidate["models"].setdefault(
         key, {"expected": agent_runner.AUTHOR_MODEL, "effort": effort, "actual": ""},
     )
-    author["actual"] = agent_runner.AUTHOR_MODEL
+    author["actual"] = lane.model
     _validate_candidate_state(args.task, candidate)
     output, collision = _author_output_path(
         directory, args.task, str(state["task"].get("created_at", "")), args.kind,
@@ -1364,7 +1399,7 @@ def cmd_run_author(args: argparse.Namespace) -> int:
     if collision:
         print(f"NOTICE: Existing artifact preserved; Main must merge {output.as_posix()}.")
     print(f"AUTHOR OUTPUT: {output.as_posix()}")
-    print(f"Model: {agent_runner.AUTHOR_MODEL} effort {effort}")
+    print(f"Model: {lane.model} effort {lane.effort}")
     print(f"Lane: models.{key}")
     print(f"Executable: {result.executable}")
     return 0
@@ -1429,7 +1464,9 @@ def _materialize_target(path_text: str, allowed: set[str]) -> Path:
     return path
 
 
-def materialize_blocks(task_id: str, source_name: str, write: bool = False) -> list[str]:
+def materialize_blocks(
+    task_id: str, source_name: str, write: bool = False, only: list[str] | None = None,
+) -> list[str]:
     directory = task_dir(task_id)
     if source_name not in {"architecture.md", "proposal.md"}:
         fail("--source must be architecture.md or proposal.md")
@@ -1440,7 +1477,14 @@ def materialize_blocks(task_id: str, source_name: str, write: bool = False) -> l
     allowed = {str(item).replace("\\", "/") for item in state["scope"].get("files", [])}
     planned: list[tuple[Path, bytes, str, str]] = []
     output: list[str] = []
-    for path_text, body in parse_file_blocks(source.read_bytes()):
+    selected = {item.replace("\\", "/") for item in only} if only else None
+    blocks = parse_file_blocks(source.read_bytes())
+    if selected is not None:
+        missing = selected - {path_text.replace("\\", "/") for path_text, _ in blocks}
+        if missing:
+            fail(f"--only path has no file block: {', '.join(sorted(missing))}")
+        blocks = [(path_text, body) for path_text, body in blocks if path_text.replace("\\", "/") in selected]
+    for path_text, body in blocks:
         target = _materialize_target(path_text, allowed)
         status = "new" if not target.exists() else ("identical" if target.read_bytes() == body else "changed")
         digest = hashlib.sha256(body).hexdigest()[:12]
@@ -1541,11 +1585,11 @@ def build_closeout(task_id: str) -> str:
             if isinstance(finding, dict) and finding.get("severity") in {"P0", "P1"}:
                 waits.append(f"decision/accept-risk: {finding.get('id')} ({finding.get('severity')})")
     if changed:
-        waits.append("commit: " + ", ".join(changed))
+        waits.append("commit (on your request): " + ", ".join(changed))
 
     run_text = "\n\n".join(run_blocks) if run_blocks else "Không có."
     wait_text = "\n".join(f"- {item}" for item in waits) if waits else "Không có."
-    substantive_waits = [item for item in waits if not item.startswith("commit:")]
+    substantive_waits = [item for item in waits if not item.startswith("commit ")]
     if not substantive_waits:
         ending = "Lượt này đã xong trong repository."
     else:
@@ -1581,7 +1625,7 @@ def cmd_context(args: argparse.Namespace) -> int:
 
 
 def cmd_materialize(args: argparse.Namespace) -> int:
-    lines = materialize_blocks(args.task, args.source, args.write)
+    lines = materialize_blocks(args.task, args.source, args.write, args.only)
     print("\n".join(lines) if lines else "No file blocks found.")
     return 0
 
@@ -1598,6 +1642,56 @@ def has_module(name: str) -> bool:
 def run(command: list[str]) -> tuple[int, str]:
     result = subprocess.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace")
     return result.returncode, (result.stdout + result.stderr).strip()
+
+
+SERVICE_DIR = Path("services/data-serving-service")
+SECRET_RE = re.compile(r"(?i)(?:\b|_)(password|passwd|secret|token|pwd)\b[\"']?\s*[:=]\s*[\"']?(?!\$\{)[A-Za-z0-9_./+@-]{4,}")
+
+
+def _probe_tool(command: list[str]) -> tuple[int, str]:
+    try:
+        result = subprocess.run(
+            command, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return 1, ""
+    return result.returncode, (result.stdout + result.stderr).strip()
+
+
+def _java_major() -> int | None:
+    code, output = _probe_tool(["java", "-version"])
+    match = re.search(r'version "(\d+)', output)
+    return int(match.group(1)) if code == 0 and match else None
+
+
+def _docker_available() -> bool:
+    return _probe_tool(["docker", "info"])[0] == 0
+
+
+def maven_lane(targets: list[str], allow_no_docker: bool) -> tuple[str, str, str]:
+    if not targets:
+        return ("maven", "SKIP", "no relevant files")
+    if not (SERVICE_DIR / "pom.xml").is_file():
+        return ("maven", "SKIP", f"no pom.xml in {SERVICE_DIR.as_posix()}")
+    major = _java_major()
+    if major is None or major < 26:
+        return ("maven", "FAIL", f"JDK 26 required for {SERVICE_DIR.as_posix()}; found {major or 'none'} (D-11)")
+    wrapper = (SERVICE_DIR / ("mvnw.cmd" if os.name == "nt" else "mvnw")).resolve()
+    command = [str(wrapper), "-q", "-B", "test"]
+    label = "PASS"
+    if not _docker_available():
+        if not allow_no_docker:
+            return ("maven", "FAIL", "Docker is not running; Testcontainers tests need it. Start Docker or pass --allow-no-docker for a diagnostic run.")
+        command += ["-Dtest=!*IntegrationTest,!DataServingApplicationTests", "-Dsurefire.failIfNoSpecifiedTests=false"]
+        label = "PASS (docker tests skipped: --allow-no-docker)"
+    try:
+        result = subprocess.run(
+            command, cwd=SERVICE_DIR, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800,
+        )
+    except subprocess.TimeoutExpired:
+        return ("maven", "FAIL", f"{wrapper.name} -q -B test timed out after 1800 s")
+    output = (result.stdout + result.stderr).strip().splitlines()
+    return ("maven", label if result.returncode == 0 else "FAIL", "\n".join(output[-40:]))
 
 
 CHILD_LISTS = ("activities", "ifTrueActivities", "ifFalseActivities", "defaultActivities")
@@ -1676,8 +1770,9 @@ def format_compact_verification(
 def cmd_verify(args: argparse.Namespace) -> int:
     files = changed_files(args.all)
     python_files = [path for path in files if path.endswith(".py")]
-    postgres_sql = [path for path in files if path.endswith(".pg.sql")]
-    spark_sql = [path for path in files if path.endswith(".sql") and not path.endswith(".pg.sql")]
+    postgres_sql = [path for path in files if path.endswith(".pg.sql") or (path.endswith(".sql") and "/db/migration/" in path)]
+    spark_sql = [path for path in files if path.endswith(".sql") and path not in postgres_sql]
+    java_targets = [path for path in files if path.startswith(SERVICE_DIR.as_posix() + "/")]
     json_files = [path for path in files if path.endswith(".json") and not path.startswith(".vscode/")]
     toml_files = [path for path in files if path.endswith(".toml")]
     tests = Path("tests")
@@ -1691,7 +1786,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
             status = "SKIP" if args.allow_missing else "FAIL"
             results.append((name, status, f"missing module {module!r}; install requirements-dev.txt"))
         else:
-            code, output = run([sys.executable, "-m", module, *command, *targets])
+            code, output = run([sys.executable, "-X", "utf8", "-m", module, *command, *targets])
             results.append((name, "PASS" if code == 0 else "FAIL", output))
 
     tool("ruff", "ruff", ["check", "--no-cache"], python_files)
@@ -1704,6 +1799,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
         ["-q", "--no-header", "-p", "no:cacheprovider", "--basetemp", ".ai/.tmp/pytest"],
         [str(tests)] if has_tests else [],
     )
+    results.append(maven_lane(java_targets, args.allow_no_docker))
 
     task_errors: list[str] = []
     if args.task:
@@ -1832,6 +1928,30 @@ def cmd_doctor(_: argparse.Namespace) -> int:
         warnings.append(f"prompt sample budget exceeded: {samples.as_posix()} is {samples.stat().st_size} bytes (limit 25600)")
     if not Path(".cursorindexingignore").is_file():
         warnings.append(".cursorindexingignore is missing")
+    services = Path("services")
+    for nested in sorted(services.glob("*/AGENTS.md")) if services.is_dir() else []:
+        if nested.stat().st_size > 4096:
+            warnings.append(f"instruction budget exceeded: {nested.as_posix()} is {nested.stat().st_size} bytes (limit 4096)")
+    for ignore in sorted(services.glob("*/.gitignore")) if services.is_dir() else []:
+        if any(line.strip() == ".claude" for line in ignore.read_text(encoding="utf-8").splitlines()):
+            errors.append(f"{ignore.as_posix()} must not ignore .claude")
+    if services.is_dir():
+        rule = Path(".cursor/rules/40-java-api.mdc")
+        if not rule.is_file():
+            errors.append("missing required file: .cursor/rules/40-java-api.mdc")
+        elif re.search(r"(?m)^alwaysApply:\s*true\s*$", rule.read_text(encoding="utf-8")):
+            errors.append(".cursor/rules/40-java-api.mdc must not be alwaysApply")
+    secret_candidates = [
+        Path(".cursor/mcp.json"), Path(".mcp.json"),
+        *sorted(services.glob("*/docker-compose.yml")),
+        *sorted(services.glob("*/src/main/resources/application*.yml")),
+    ]
+    for candidate in secret_candidates:
+        if candidate.is_file():
+            for number, line in enumerate(candidate.read_text(encoding="utf-8").splitlines(), start=1):
+                if SECRET_RE.search(line):
+                    errors.append(f"literal secret in {candidate.as_posix()}:{number}")
+    print(f"INFO: java {_java_major() or 'missing'}; docker {'up' if _docker_available() else 'down'}")
     for warning in warnings:
         print(f"WARN: {warning}")
     for error in errors:
@@ -1882,6 +2002,7 @@ def main() -> int:
     command.add_argument("task")
     command.add_argument("--source", default="architecture.md", choices=("architecture.md", "proposal.md"))
     command.add_argument("--write", action="store_true")
+    command.add_argument("--only", action="append", metavar="PATH", help="limit to this file block; repeatable")
     command.set_defaults(function=cmd_materialize)
     command = subcommands.add_parser("closeout", help="build the Vietnamese task closeout skeleton")
     command.add_argument("task")
@@ -1891,6 +2012,10 @@ def main() -> int:
     command.add_argument("--all", action="store_true")
     command.add_argument("--allow-missing", action="store_true")
     command.add_argument("--full", action="store_true")
+    command.add_argument(
+        "--allow-no-docker", action="store_true",
+        help="diagnostic maven run without Testcontainers tests; never a gate pass",
+    )
     command.set_defaults(function=cmd_verify)
     command = subcommands.add_parser("doctor", help="check agent-system installation")
     command.set_defaults(function=cmd_doctor)
@@ -1899,16 +2024,18 @@ def main() -> int:
     command.set_defaults(function=cmd_external_doctor)
     command = subcommands.add_parser("external-smoke", help="run a read-only Claude and Codex integration smoke test")
     command.add_argument("--timeout", type=int, default=1800)
+    command.add_argument("--architect-model", default=agent_runner.ARCHITECT_MODEL)
+    command.add_argument("--architect-effort", default=agent_runner.ARCHITECT_EFFORT, choices=("low", "medium", "high"))
     command.set_defaults(function=cmd_external_smoke)
     command = subcommands.add_parser("run-gate", help="run the current Architect or review gate non-interactively")
     command.add_argument("task")
     command.add_argument("--round", type=int, choices=(1, 2))
-    command.add_argument("--timeout", type=int, default=1800)
+    command.add_argument("--timeout", type=int, default=2700)
     command.set_defaults(function=cmd_run_gate)
     command = subcommands.add_parser("run-author", help="run the Claude proposal or runbook author lane")
     command.add_argument("task")
     command.add_argument("--kind", required=True, choices=tuple(AUTHOR_LANES))
-    command.add_argument("--timeout", type=int, default=1800)
+    command.add_argument("--timeout", type=int, default=2700)
     command.set_defaults(function=cmd_run_author)
     args = parser.parse_args()
     return args.function(args)

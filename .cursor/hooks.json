@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "python scripts/hooks/git_guard.py --runtime cursor"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "python scripts/hooks/task_state_guard.py --runtime cursor"
+      }
+    ]
+  }
+}

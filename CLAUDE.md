@@ -22,4 +22,4 @@ The Architect artifact must define system invariants, state ownership, transacti
 
 If required evidence is missing, set the architecture result to `EVIDENCE_REQUIRED`, identify the affected decisions, provide exact probe requirements, and stop. Never fill gaps with assumptions.
 
-Do not edit source code, task state, decisions, or any file other than the role's artifact. Do not commit or push.
+Do not edit source code, task state, decisions, or any file other than the role's artifact. Do not push. Commit only when the user's current turn asks for it.

@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: data-serving-service
+
+  threads:
+    virtual:
+      enabled: true
+
+  datasource:
+    url: ${POSTGRES__DP_POI__URL:jdbc:postgresql://${POSTGRES__DP_POI__HOST:localhost}:${POSTGRES__DP_POI__PORT:5432}/${POSTGRES__DP_POI__DBNAME:vv_data_serving}?currentSchema=apps&sslmode=${POSTGRES__DP_POI__SSLMODE:disable}}
+    username: ${POSTGRES__DP_POI__USERNAME}
+    password: ${POSTGRES__DP_POI__PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE:20}
+      minimum-idle: ${HIKARI_MIN_IDLE:2}
+      connection-timeout: 30000
+      idle-timeout: 120000
+      max-lifetime: 180000
+      keepalive-time: 45000
+      validation-timeout: 5000
+      leak-detection-threshold: 60000
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: apps
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: data-serving-service
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    vn.visitvietnam.dataserving: ${LOG_LEVEL:INFO}
+  pattern:
+    console: "%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSXXX}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}){} %clr(${PID:-}){magenta} %clr(--- %esb(){APPLICATION_NAME}%esb{APPLICATION_GROUP}[%15.15t] ${LOG_CORRELATION_PATTERN:-}){faint}%clr(%-40.40logger{39}){cyan} %clr(:){faint} %kvp %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+

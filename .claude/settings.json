@@ -17,19 +17,37 @@
       "WebFetch(domain:learn.microsoft.com)",
       "WebFetch(domain:docs.delta.io)",
       "WebFetch(domain:spark.apache.org)",
-      "WebFetch(domain:debezium.io)"
+      "WebFetch(domain:debezium.io)",
+      "WebFetch(domain:docs.spring.io)",
+      "WebFetch(domain:docs.oracle.com)",
+      "WebFetch(domain:java.testcontainers.org)",
+      "WebFetch(domain:hibernate.org)",
+      "WebFetch(domain:www.postgresql.org)"
     ],
     "deny": [
-      "Bash(git add *)",
-      "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(git reset *)",
+      "Bash(git rebase *)",
       "Bash(git restore *)",
       "Bash(git checkout *)",
       "Bash(git stash *)",
+      "Bash(git clean *)",
       "Bash(rm *)",
       "Bash(del *)",
       "Bash(Remove-Item *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python scripts/hooks/git_guard.py --runtime claude"
+          }
+        ]
+      }
     ]
   }
 }

@@ -1,0 +1,202 @@
+schema_version: 1
+task:
+  id: 20261106-agent-system-unify-api
+  title: Unify API code into SunGrp_VSVN and redesign the agent system for Fabric
+    and API work
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-11-06'
+  updated_at: '2026-11-07'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - cross_system
+  - design_tradeoffs
+  - deep_reasoning_required
+scope:
+  systems:
+  - agent-system
+  - poi-serving-api
+  files:
+  - .ai/tasks/20261106-agent-system-unify-api/evidence/agent-system-inventory.md
+  - .ai/tasks/20261106-agent-system-unify-api/evidence/api-source-inventory.md
+  - .ai/tasks/20261106-agent-system-unify-api/evidence/user-action-inventory.md
+  - .ai/tasks/20261106-agent-system-unify-api/evidence/probes/user_actions_scan.py
+  - .ai/tasks/20261106-agent-system-unify-api/evidence/probes/api_schema_diff.py
+  - .ai/tasks/20261106-agent-system-unify-api/handoffs/fable-input.md
+  - .ai/tasks/20261106-agent-system-unify-api/proposal.md
+  - .ai/tasks/20261106-agent-system-unify-api/handoffs/fable-architecture-input.md
+  - scripts/agent_runner.py
+  - scripts/vv.py
+  - tests/test_vv.py
+  - .cursor/rules/00-main-orchestrator.mdc
+  - AGENTS.md
+  - CLAUDE.md
+  - .cursor/rules/20-data-pipeline.mdc
+  - .cursor/rules/30-sql.mdc
+  - .cursor/rules/40-java-api.mdc
+  - services/data-serving-service/AGENTS.md
+  - services/data-serving-service/CLAUDE.md
+  - services/data-serving-service/.gitignore
+  - .cursorindexingignore
+  - docs/agent-system/WORKFLOW.md
+  - tests/test_vv_context.py
+  - docs/context/00_README.md
+  - services/data-serving-service/**
+  - docs/poi-serving-api/**
+  - services/data-serving-service/docker-compose.yml
+  - services/data-serving-service/src/main/resources/application.yml
+  - services/data-serving-service/pom.xml
+  - services/data-serving-service/src/test/resources/application.yml
+  - services/data-serving-service/src/main/resources/db/migration/V1__init_srv_poi_tables.sql
+  - services/data-serving-service/src/test/resources/db/00_create_schema_apps.sql
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMediaGalleryId.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java
+  - tests/test_srv_poi_serving_contract.py
+  - .ai/tasks/20261106-agent-system-unify-api/handoffs/author-input.md
+  - .ai/tasks/20261106-agent-system-unify-api/runtime-runbook.md
+  - .codex/agents/api-contract-reviewer.toml
+  - .codex/agents/app-security-reviewer.toml
+  - .codex/agents/jpa-performance-reviewer.toml
+  - .codex/agents/risk-gate.toml
+  - .ai/evals/cases.yaml
+  - .cursor/hooks.json
+  - scripts/hooks/git_guard.py
+  - scripts/hooks/task_state_guard.py
+  - .claude/settings.json
+  - .codex/hooks.json
+  - .cursor/skills/vsvn-task-workflow/SKILL.md
+  - .cursor/skills/vsvn-api-service/SKILL.md
+  - docs/AGENT_PROMPT_SAMPLES.md
+  - docs/agent-system/TOKEN_OPTIMIZATION_PLAN.md
+  - .cursor/mcp.json
+  - .cursor/postgres-mcp-overrides.txt
+  - docs/poi-serving-api/API-GAPS.md
+  - docs/poi-serving-api/DESIGN-AND-PLAN.md
+  - docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md
+  - docs/poi-serving-api/HANDOFF.md
+  - docs/poi-serving-api/scripts/check-gaps.py
+  - docs/poi-serving-api/scripts/list-repos.sh
+  - services/data-serving-service/.dockerignore
+  - services/data-serving-service/.gitattributes
+  - services/data-serving-service/.mvn/wrapper/maven-wrapper.properties
+  - services/data-serving-service/Dockerfile
+  - services/data-serving-service/mvnw
+  - services/data-serving-service/mvnw.cmd
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java
+review_plan:
+  required_reviewers: []
+  round: 3
+  extra_round_approved_on: '2026-11-06'
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: claude-opus-5-5
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-fable-5-1
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-fable-5-1
+exceptions:
+- id: EX-01
+  kind: model_override
+  role: author_proposal
+  model: claude-fable-5-1
+  effort: high
+  runtime: claude-code-extension
+  approved_by: user
+  approved_on: '2026-11-06'
+  scope: proposal.md of this task. Written by a Fable exception session, not by run-author.
+- id: EX-02
+  kind: model_override
+  role: architect
+  model: claude-fable-5-1
+  effort: high
+  runtime: claude-code-extension
+  approved_by: user
+  approved_on: '2026-11-06'
+  scope: architecture.md of this task. Written by a Fable exception session, not by
+    run-gate.
+- id: EX-03
+  kind: model_override
+  role: main
+  model: claude-opus-5-5
+  effort: medium
+  runtime: cursor
+  approved_by: user
+  approved_on: '2026-11-06'
+  scope: 'Main of this task (triage, ledger, implement, remediate, closeout) and Main
+    of the agent-system child tasks CT-1..CT-8 from proposal.md section h. Not API
+    feature tasks or CT-9: those use Main grok-4.7 medium per D-06.'
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: not_required
+  risk_gate: pass
+  runtime: pass
+rounds:
+  verification: 0
+  review: 3
+  architecture: 1
+  runtime_failure: 0
+open_findings: []

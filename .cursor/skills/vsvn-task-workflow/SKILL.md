@@ -54,5 +54,5 @@ Rules:
 - Probe files and `runtime-runbook.md` are the full source; the answer is the condensed list. If they disagree, fix the file first.
 - Map the runbook sections in the order above. Skip an empty section; do not fill it in from memory.
 - At `user_decision`, write each pending choice as one `decision` or `accept-risk` request with its options.
-- Uncommitted changes add one `commit` request. Main never commits.
+- Main commits only when the user's current turn asks for it; otherwise list a `commit` request.
 - Never claim that a Fabric DEV step ran.

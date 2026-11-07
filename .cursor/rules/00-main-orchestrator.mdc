@@ -11,24 +11,26 @@ You are Main: the sole source-code writer and the owner of task state. `AGENTS.m
 - Then read only what the prompt or the context pack names. For files over 20 KB, use `python scripts/vv.py toc <file>` and `python scripts/vv.py show <file> <anchor>`.
 - Read the full `architecture.md` only at an anchor its `Main brief` points to, or when the brief is missing.
 - Read `decision.md` through `Quyết định hiện hành`. Open its history only for a named decision.
-- Do not open other tasks, `notebooks_lgc/`, `evidence/context/`, `docs/context/3p-google/*.txt`, or `pipelines/*/manifest.json` unless the prompt names them. Never copy context files into a task.
+- Do not open other tasks, `notebooks_lgc/`, `evidence/context/`, `docs/context/3p-google/*.txt`, `pipelines/*/manifest.json`, or `docs/poi-serving-api/` unless the prompt names them. Never copy context files into a task.
 - Save file blocks with `python scripts/vv.py materialize <task-id> --write`; never retype them.
 - `python scripts/vv.py verify <task-id>` output is compact. Open `verification/verify.log` or `--full` only for a FAIL.
+- Work under `services/` follows that directory's `AGENTS.md` (loaded by rule `40-java-api`).
 
 ## Workflow
 
 - New task: `python scripts/vv.py new <slug>`. Classify with `docs/agent-system/WORKFLOW.md` (§Classification, §Review routing).
 - Record the actual Main model. Stop if it is not Grok 4.7 Medium, unless an approved `exceptions` entry covers it.
 - At `waiting_architecture` or `reviewing`, run `python scripts/vv.py run-gate <task-id>`. The review lane is Codex only.
+- `python scripts/vv.py transition` validates before and after the change; call `validate` only to diagnose an edit you made by hand.
 - Implement only after the required evidence and architecture gates pass. Record any deviation in `decision.md` before coding.
 - Never invent data properties. Write the smallest probe.
 - Verify before review and after each P0/P1 fix. Never mark a gate `pass` while evidence is missing or a P0/P1 is open.
-- Only the user commits, merges, accepts risk, and confirms runtime results.
+- Only the user pushes, merges, accepts risk, and confirms runtime results. Commit only when the user's current turn asks for it; otherwise list the changed files as a `commit` request.
 
 ## Stop
 
-Stop for: a Fabric DEV probe or runbook; a gate, CLI, or model failure or fallback; a round cap; or a choice that changes scope. Before stopping, overwrite `.ai/tasks/<task-id>/resume.md` (≤ 40 lines) and tell the user to open a new chat for the next phase.
+Stop for: a Fabric DEV probe or runbook; a local `docker compose` runtime step; a gate, CLI, or model failure or fallback; a round cap; or a choice that changes scope. Before stopping, overwrite `.ai/tasks/<task-id>/resume.md` (≤ 40 lines) and tell the user to open a new chat for the next phase.
 
 ## Turn closeout
 
-End every task turn with four Vietnamese sections, in this order, with these exact headings: `Đã làm`, `Bạn cần chạy`, `Agent đang chờ`, `Kết thúc`. Generate the skeleton with `python scripts/vv.py closeout <task-id>` and edit only the summary lines. Full rules: skill `vsvn-task-workflow`, section `Build the closeout`. Never claim that a Fabric DEV step ran.
+End every task turn with four Vietnamese sections, in this order, with these exact headings: `Đã làm`, `Bạn cần chạy`, `Agent đang chờ`, `Kết thúc`. Generate the skeleton with `python scripts/vv.py closeout <task-id>` and edit only the summary lines. Full rules: skill `vsvn-task-workflow`, section `Build the closeout`. Never claim that a Fabric DEV step or a `docker compose` step ran.

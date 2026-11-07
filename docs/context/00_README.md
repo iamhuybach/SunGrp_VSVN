@@ -20,6 +20,7 @@
 | `99_PAIN_POINTS.md` | Pain point, root cause, lỗi đã gặp, vấn đề còn mở, bài học | Trước khi đề xuất giải pháp (tránh lặp lỗi cũ) |
 | `gld_enr_poi_info_review.md` | Hợp đồng `gld_enr_poi_info` và `gld_enr_poi_review` | Khi sửa hai bảng gold `lh_vv_gold.enr` |
 | `3p-google/README.md` | Sample raw/normalized, rule ngành, amenity, và map xã phường | Khi sửa extract 3rd-party hoặc L2 phân loại / địa chỉ |
+| `../poi-serving-api/HANDOFF.md` | Bàn giao serving API `services/data-serving-service/`: endpoint, bảng `apps.srv_poi_*`, cách chạy local (có từ CT-3) | Khi làm task API Java hoặc đổi bảng `gld_srv_poi_*` |
 
 ## Thứ tự đọc
 

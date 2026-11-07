@@ -112,7 +112,8 @@ Rules:
 7. Round 2 checks unresolved P0/P1 findings and regressions caused by fixes.
 8. A maximum of two verification/remediation rounds and two review rounds is allowed. Exceeding a cap routes to `user_decision`.
 9. Runtime failures are classified as `code`, `data`, `architecture`, or `unclear`; route respectively to implementation, evidence, architecture, or user decision.
-10. Only the user may accept risk and mark a task ready for merge after required runtime verification.
+10. Only the user may accept risk, push, merge, and mark a task ready for merge after required runtime verification. Main commits only when the user's current turn asks for that commit.
+    b. A `verify` run whose `maven` lane reads `PASS (docker tests skipped: --allow-no-docker)` is diagnostic only; it never sets `gates.local_verification: pass`.
 
 ## 7. Review routing
 
@@ -120,7 +121,10 @@ Rules:
 - `spark-runtime-reviewer`: PySpark, Fabric notebook contracts, concurrency, Delta writes, logging, and F16 performance.
 - `sql-data-reviewer`: owns statement-level correctness for Spark SQL, Delta DDL, SQL/Delta MERGE match keys and clauses, MERGE-source uniqueness, deterministic rerun behavior, joins, windows, types, grain, and PostgreSQL SQL. Route it whenever a SQL/Delta MERGE implementation is in scope, including retry scenarios reviewed for state correctness.
 - `fabric-pipeline-reviewer`: pipeline expressions, parameters, pre-check, Switch, dependencies, ForEach concurrency, timeout/retry, failure propagation, and notebook exit contracts.
-- `risk-gate`: cross-system invariants and unresolved high-impact risks after specialist review.
+- `api-contract-reviewer`: HTTP contract of `services/data-serving-service` (paths, DTO fields and JSON names, error envelope, paging, `lang` resolution, OpenAPI annotations) against the entities and the gold contract (`tests/test_srv_poi_serving_contract.py`). Route when the diff touches `api/`, `dto/`, `domain/entity/`, `OpenApiConfig`, or `sql/postgres/gld_srv_serve.pg.sql`.
+- `app-security-reviewer`: input validation, dynamic JPQL/Specification construction, actuator exposure, request-id handling, personal data in logs or responses, configuration and dependency secrets. Route when the diff touches `common/web/`, `config/`, `application*.yml`, `pom.xml`, `Dockerfile`, or `docker-compose.yml`.
+- `jpa-performance-reviewer`: N+1 and fetch plans, mandatory pagination, index coverage of Specifications, read-only transactions, Hikari pool settings, batch settings. Route when the diff touches `domain/repository/`, `service/`, entities, or DDL indexes.
+- `risk-gate`: cross-system invariants and unresolved high-impact risks after specialist review, across the data platform and the PostgreSQL serving API (`services/data-serving-service`).
 
 Severity is impact-based:
 
@@ -142,14 +146,15 @@ python scripts/vv.py transition <task-id> <status>
 python scripts/vv.py prompt <task-id> architect
 python scripts/vv.py prompt <task-id> review --round N
 python scripts/vv.py external-doctor
-python scripts/vv.py external-smoke
+python scripts/vv.py external-smoke [--architect-model M --architect-effort E] [--timeout S]
 python scripts/vv.py run-gate <task-id> [--round N]
 python scripts/vv.py verify <task-id>
+python scripts/vv.py verify <task-id> --allow-no-docker
 python scripts/vv.py doctor
 python scripts/vv.py toc <path>
 python scripts/vv.py show <path> <anchor> [--max-lines N]
 python scripts/vv.py context <task-id> [--phase P] [--max-lines N]
-python scripts/vv.py materialize <task-id> [--source F] [--write]
+python scripts/vv.py materialize <task-id> [--source F] [--only PATH ...] [--write]
 python scripts/vv.py closeout <task-id>
 python scripts/vv.py verify <task-id> --full
 python scripts/vv.py run-author <task-id> --kind analysis|proposal|model|runbook
@@ -179,3 +184,4 @@ python scripts/vv.py run-author <task-id> --kind analysis|proposal|model|runbook
 | `proposal.md` | Proposal author lane `models.author_proposal` (`claude-opus-5-5`, effort `high`), `run-author --kind proposal` | Vietnamese | Solution proposal for the user; cites `problem-analysis.md`. `decision.md` ledger rows point to it. |
 | `model-design.md` | Author lane `models.author` (`claude-opus-5-5`, effort `medium`), `run-author --kind model` | English | Model design: entities, grain, keys, columns, lineage. Input to the Architect, who never writes it. Required before `run-gate` when signal `data_model_change` is set. |
 | `handoffs/author-input.md` | Main | English, user comments verbatim | At most 60 lines: user comments verbatim, files and anchors the author may read, constraints. Overwritten before each `run-author` kind. |
+| `runtime-runbook.md` for `services/data-serving-service/` | Main or `run-author --kind runbook` | Vietnamese | API runtime proof is local: the user runs `docker compose` and the smoke calls on their machine (D-12), with credentials only from environment variables, and records the result before `gates.runtime` is set. Fabric DEV steps do not apply. |

@@ -1,0 +1,1039 @@
+# Verification 2026-11-06 14:05:42 — PASS
+Files (1): notebooks_lgc/cms_transform/nb_cms_transformation.ipynb
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 33%]
+........................................................................ [ 66%]
+........................................................................ [ 99%]
+..                                                                       [100%]
+218 passed in 6.20s
+
+## task-state: PASS
+
+# Verification 2026-11-06 15:43:17 — PASS
+Files (1): notebooks_lgc/cms_transform/nb_cms_transformation.ipynb
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 33%]
+........................................................................ [ 66%]
+........................................................................ [ 99%]
+..                                                                       [100%]
+218 passed in 3.10s
+
+## task-state: PASS
+
+# Verification 2026-11-06 17:24:17 — PASS
+Files (1): notebooks_lgc/cms_transform/nb_cms_transformation.ipynb
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 33%]
+........................................................................ [ 66%]
+........................................................................ [ 99%]
+..                                                                       [100%]
+218 passed in 2.38s
+
+## task-state: PASS
+
+# Verification 2026-11-06 17:27:06 — PASS
+Files (4): notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, tests/test_vv.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 32%]
+........................................................................ [ 64%]
+........................................................................ [ 96%]
+........                                                                 [100%]
+224 passed in 2.86s
+
+## task-state: PASS
+
+# Verification 2026-11-06 19:58:29 — PASS
+Files (6): .cursor/rules/00-main-orchestrator.mdc, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 32%]
+........................................................................ [ 64%]
+........................................................................ [ 96%]
+.........                                                                [100%]
+225 passed in 6.21s
+
+## task-state: PASS
+
+# Verification 2026-11-06 20:17:37 — PASS
+Files (17): .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, services/data-serving-service/.gitignore, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 31%]
+........................................................................ [ 62%]
+........................................................................ [ 93%]
+...............                                                          [100%]
+231 passed in 8.16s
+
+## maven: SKIP
+no pom.xml in services/data-serving-service
+
+## task-state: PASS
+
+# Verification 2026-11-06 21:19:01 — PASS
+Files (17): .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, services/data-serving-service/.gitignore, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 31%]
+........................................................................ [ 62%]
+........................................................................ [ 93%]
+................                                                         [100%]
+232 passed in 2.80s
+
+## maven: SKIP
+no pom.xml in services/data-serving-service
+
+## task-state: PASS
+
+# Verification 2026-11-06 21:30:32 — PASS
+Files (17): .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, services/data-serving-service/.gitignore, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 31%]
+........................................................................ [ 62%]
+........................................................................ [ 93%]
+...............                                                          [100%]
+231 passed in 3.00s
+
+## maven: SKIP
+no pom.xml in services/data-serving-service
+
+## task-state: PASS
+
+# Verification 2026-11-06 21:51:17 — FAIL
+Files (78): .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/main/resources/db/migration/V1__init_srv_poi_tables.sql, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: FAIL
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\__main__.py", line 6, in <module>
+    cli()  # pragma: no cover
+    ~~~^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\click\core.py", line 1569, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\click\core.py", line 1490, in main
+    rv = self.invoke(ctx)
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\click\core.py", line 1970, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\click\core.py", line 1353, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\click\core.py", line 907, in invoke
+    return callback(*args, **kwargs)
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\cli\commands.py", line 756, in lint
+    apply_recursion_limit(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        recursion_limit,
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        kwargs=kwargs,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\cli\commands.py", line 64, in apply_recursion_limit
+    config = get_config(
+        extra_config_path,
+    ...<2 lines>...
+        **(kwargs or {}),
+    )
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\cli\commands.py", line 552, in get_config
+    return FluffConfig.from_root(
+           ~~~~~~~~~~~~~~~~~~~~~^
+        extra_config_path=extra_config_path,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        require_dialect=kwargs.pop("require_dialect", True),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\fluffconfig.py", line 307, in from_root
+    configs = load_config_up_to_path(
+        path=".",
+        extra_config_path=extra_config_path,
+        ignore_local_config=ignore_local_config,
+    )
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\loader.py", line 325, in load_config_up_to_path
+    config_stack = [load_config_at_path(str(p.resolve())) for p in config_paths]
+                    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\loader.py", line 255, in load_config_at_path
+    configs = load_config_file(p, fname, configs=configs)
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\loader.py", line 129, in load_config_file
+    raw_config = load_config_file_as_dict(file_path)
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\file.py", line 116, in load_config_file_as_dict
+    raw_config = _load_raw_file_as_dict(filepath)
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlfluff\core\config\file.py", line 45, in _load_raw_file_as_dict
+    return load_ini_string(file.read())
+                           ~~~~~~~~~^^
+  File "C:\Users\bachnh\AppData\Local\Programs\Python\Python314\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x81 in position 50: character maps to <undefined>
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 31%]
+........................................................................ [ 62%]
+........................................................................ [ 93%]
+...............                                                          [100%]
+231 passed in 2.98s
+
+## maven: PASS
+2026-11-06T21:51:14.051+07:00  INFO 21320 --- [           main] o.f.core.internal.database.base.Schema   : Creating schema "apps" ...
+2026-11-06T21:51:14.061+07:00  INFO 21320 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "apps"."flyway_schema_history" ...
+2026-11-06T21:51:14.113+07:00  INFO 21320 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "apps": null
+2026-11-06T21:51:14.124+07:00  INFO 21320 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "apps" to version "1 - init srv poi tables"
+2026-11-06T21:51:14.128+07:00  WARN 21320 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: schema "apps" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+2026-11-06T21:51:14.180+07:00  INFO 21320 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema "apps", now at version v1 (execution time 00:00.047s)
+2026-11-06T21:51:14.200+07:00  INFO 21320 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-06T21:51:14.219+07:00  INFO 21320 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-06T21:51:14.219+07:00  INFO 21320 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-06T21:51:14.240+07:00  INFO 21320 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@51a6748f
+2026-11-06T21:51:14.240+07:00  INFO 21320 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-06T21:51:14.258+07:00  INFO 21320 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:60490/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-06T21:51:14.350+07:00  INFO 21320 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-06T21:51:14.352+07:00  INFO 21320 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-06T21:51:14.528+07:00  WARN 21320 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-06T21:51:14.711+07:00  INFO 21320 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-06T21:51:14.721+07:00  INFO 21320 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 4.403 seconds (process running for 61.589)
+2026-11-06T21:51:14.724+07:00  WARN 21320 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-06T21:51:14.724+07:00  WARN 21320 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by lombok.permit.Permit
+WARNING: Please consider reporting this to the maintainers of class lombok.permit.Permit
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-06 21:53:16 — PASS
+Files (78): .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/main/resources/db/migration/V1__init_srv_poi_tables.sql, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: PASS
+All Finished!
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 31%]
+........................................................................ [ 62%]
+........................................................................ [ 93%]
+...............                                                          [100%]
+231 passed in 2.85s
+
+## maven: PASS
+2026-11-06T21:53:11.025+07:00  INFO 8084 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: ec30ced726152fcfba3318a39fc88fa913a0312cfdded055d33e1f4a76e2685f
+2026-11-06T21:53:12.774+07:00  INFO 8084 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT1.9838895S
+2026-11-06T21:53:12.775+07:00  INFO 8084 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:61829/test?loggerLevel=OFF)
+2026-11-06T21:53:12.946+07:00  INFO 8084 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:61829/test?loggerLevel=OFF (PostgreSQL 18.6)
+2026-11-06T21:53:12.970+07:00  INFO 8084 --- [           main] o.f.core.internal.database.base.Schema   : Creating schema "apps" ...
+2026-11-06T21:53:12.980+07:00  INFO 8084 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "apps"."flyway_schema_history" ...
+2026-11-06T21:53:13.048+07:00  INFO 8084 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "apps": null
+2026-11-06T21:53:13.060+07:00  INFO 8084 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "apps" to version "1 - init srv poi tables"
+2026-11-06T21:53:13.064+07:00  WARN 8084 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: schema "apps" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+2026-11-06T21:53:13.126+07:00  INFO 8084 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema "apps", now at version v1 (execution time 00:00.055s)
+2026-11-06T21:53:13.151+07:00  INFO 8084 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-06T21:53:13.169+07:00  INFO 8084 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-06T21:53:13.170+07:00  INFO 8084 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-06T21:53:13.187+07:00  INFO 8084 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@67164dba
+2026-11-06T21:53:13.188+07:00  INFO 8084 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-06T21:53:13.201+07:00  INFO 8084 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:61829/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-06T21:53:13.279+07:00  INFO 8084 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-06T21:53:13.280+07:00  INFO 8084 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-06T21:53:13.424+07:00  WARN 8084 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-06T21:53:13.568+07:00  INFO 8084 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-06T21:53:13.582+07:00  INFO 8084 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 3.866 seconds (process running for 25.577)
+2026-11-06T21:53:13.583+07:00  WARN 8084 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-06T21:53:13.583+07:00  WARN 8084 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-06 22:19:04 — PASS
+Files (79): .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/main/resources/db/migration/V1__init_srv_poi_tables.sql, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: PASS
+All Finished!
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 31%]
+........................................................................ [ 62%]
+........................................................................ [ 93%]
+...............                                                          [100%]
+231 passed in 2.96s
+
+## maven: PASS
+2026-11-06T22:19:00.705+07:00  INFO 3420 --- [           main] o.f.core.internal.database.base.Schema   : Creating schema "apps" ...
+2026-11-06T22:19:00.713+07:00  INFO 3420 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "apps"."flyway_schema_history" ...
+2026-11-06T22:19:00.763+07:00  INFO 3420 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "apps": null
+2026-11-06T22:19:00.775+07:00  INFO 3420 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "apps" to version "1 - init srv poi tables"
+2026-11-06T22:19:00.778+07:00  WARN 3420 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: schema "apps" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+2026-11-06T22:19:00.830+07:00  INFO 3420 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema "apps", now at version v1 (execution time 00:00.046s)
+2026-11-06T22:19:00.852+07:00  INFO 3420 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-06T22:19:00.867+07:00  INFO 3420 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-06T22:19:00.868+07:00  INFO 3420 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-06T22:19:00.884+07:00  INFO 3420 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@10481c77
+2026-11-06T22:19:00.885+07:00  INFO 3420 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-06T22:19:00.896+07:00  INFO 3420 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:54067/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-06T22:19:01.010+07:00  INFO 3420 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-06T22:19:01.011+07:00  INFO 3420 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-06T22:19:01.161+07:00  WARN 3420 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-06T22:19:01.389+07:00  INFO 3420 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-06T22:19:01.400+07:00  INFO 3420 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 4.177 seconds (process running for 30.39)
+2026-11-06T22:19:01.401+07:00  WARN 3420 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-06T22:19:01.401+07:00  WARN 3420 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by lombok.permit.Permit
+WARNING: Please consider reporting this to the maintainers of class lombok.permit.Permit
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-06 22:30:54 — PASS
+Files (79): .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/main/resources/db/migration/V1__init_srv_poi_tables.sql, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: PASS
+All Finished!
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 31%]
+........................................................................ [ 62%]
+........................................................................ [ 93%]
+...............                                                          [100%]
+231 passed in 3.00s
+
+## maven: PASS
+2026-11-06T22:30:49.177+07:00  INFO 20068 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: 14a2aa4c51ee796917e7b0531df74d042323d125dca0537ad277269a068f1dcd
+2026-11-06T22:30:50.836+07:00  INFO 20068 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT1.8892244S
+2026-11-06T22:30:50.837+07:00  INFO 20068 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:63882/test?loggerLevel=OFF)
+2026-11-06T22:30:50.992+07:00  INFO 20068 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:63882/test?loggerLevel=OFF (PostgreSQL 18.6)
+2026-11-06T22:30:51.016+07:00  INFO 20068 --- [           main] o.f.core.internal.database.base.Schema   : Creating schema "apps" ...
+2026-11-06T22:30:51.025+07:00  INFO 20068 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "apps"."flyway_schema_history" ...
+2026-11-06T22:30:51.082+07:00  INFO 20068 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "apps": null
+2026-11-06T22:30:51.094+07:00  INFO 20068 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "apps" to version "1 - init srv poi tables"
+2026-11-06T22:30:51.097+07:00  WARN 20068 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: schema "apps" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+2026-11-06T22:30:51.151+07:00  INFO 20068 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema "apps", now at version v1 (execution time 00:00.047s)
+2026-11-06T22:30:51.175+07:00  INFO 20068 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-06T22:30:51.191+07:00  INFO 20068 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-06T22:30:51.191+07:00  INFO 20068 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-06T22:30:51.207+07:00  INFO 20068 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@1ce585c9
+2026-11-06T22:30:51.207+07:00  INFO 20068 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-06T22:30:51.219+07:00  INFO 20068 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63882/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-06T22:30:51.312+07:00  INFO 20068 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-06T22:30:51.313+07:00  INFO 20068 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-06T22:30:51.446+07:00  WARN 20068 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-06T22:30:51.634+07:00  INFO 20068 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-06T22:30:51.652+07:00  INFO 20068 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 3.426 seconds (process running for 29.165)
+2026-11-06T22:30:51.653+07:00  WARN 20068 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-06T22:30:51.653+07:00  WARN 20068 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-06 23:28:38 — PASS
+Files (81): .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMediaGalleryId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, services/data-serving-service/src/test/resources/db/00_create_schema_apps.sql, tests/test_srv_poi_serving_contract.py, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: PASS
+All Finished!
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 30%]
+........................................................................ [ 61%]
+........................................................................ [ 91%]
+...................                                                      [100%]
+235 passed in 2.64s
+
+## maven: PASS
+2026-11-06T23:28:32.961+07:00  INFO 28144 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-06T23:28:32.992+07:00  INFO 28144 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 30 ms. Found 5 JPA repository interfaces.
+2026-11-06T23:28:33.068+07:00  INFO 28144 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-06T23:28:33.386+07:00  INFO 28144 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: 9d8441480e939793cf2973545afb35df0c9905adeec2ef59bfce158b1419ce2e
+2026-11-06T23:28:35.364+07:00  INFO 28144 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT2.2958718S
+2026-11-06T23:28:35.365+07:00  INFO 28144 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:53899/test?loggerLevel=OFF)
+2026-11-06T23:28:35.445+07:00  INFO 28144 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-06T23:28:35.461+07:00  INFO 28144 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-06T23:28:35.462+07:00  INFO 28144 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-06T23:28:35.496+07:00  INFO 28144 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@273b3afc
+2026-11-06T23:28:35.496+07:00  INFO 28144 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-06T23:28:35.510+07:00  INFO 28144 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:53899/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-06T23:28:35.605+07:00  INFO 28144 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-06T23:28:35.606+07:00  INFO 28144 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-06T23:28:35.722+07:00  WARN 28144 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-06T23:28:35.855+07:00  INFO 28144 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-06T23:28:35.867+07:00  INFO 28144 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 3.598 seconds (process running for 30.861)
+2026-11-06T23:28:35.869+07:00  WARN 28144 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-06T23:28:35.869+07:00  WARN 28144 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by lombok.permit.Permit
+WARNING: Please consider reporting this to the maintainers of class lombok.permit.Permit
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-06 23:47:05 — PASS
+Files (85): .codex/agents/api-contract-reviewer.toml, .codex/agents/app-security-reviewer.toml, .codex/agents/jpa-performance-reviewer.toml, .codex/agents/risk-gate.toml, .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMediaGalleryId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, services/data-serving-service/src/test/resources/db/00_create_schema_apps.sql, tests/test_srv_poi_serving_contract.py, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: PASS
+All Finished!
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: PASS
+
+## pytest: PASS
+........................................................................ [ 30%]
+........................................................................ [ 61%]
+........................................................................ [ 91%]
+...................                                                      [100%]
+235 passed in 3.03s
+
+## maven: PASS
+ :: Spring Boot ::                (v4.1.1)
+
+2026-11-06T23:46:58.657+07:00  INFO 4596 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Starting PoiRepositoryIntegrationTest using Java 26.0.2.1 with PID 4596 (started by bachnh in D:\git\SunGrp_VSVN\services\data-serving-service)
+2026-11-06T23:46:58.658+07:00  INFO 4596 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-11-06T23:46:59.250+07:00  INFO 4596 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-06T23:46:59.296+07:00  INFO 4596 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 43 ms. Found 5 JPA repository interfaces.
+2026-11-06T23:46:59.375+07:00  INFO 4596 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-06T23:46:59.658+07:00  INFO 4596 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: 67d0d64fccbf166f75a59425ea81f3855089ca5469e0c2c78962012d67505197
+2026-11-06T23:47:01.531+07:00  INFO 4596 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT2.1563677S
+2026-11-06T23:47:01.531+07:00  INFO 4596 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:53552/test?loggerLevel=OFF)
+2026-11-06T23:47:01.611+07:00  INFO 4596 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-06T23:47:01.626+07:00  INFO 4596 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-06T23:47:01.627+07:00  INFO 4596 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-06T23:47:01.651+07:00  INFO 4596 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@4ae8bf28
+2026-11-06T23:47:01.651+07:00  INFO 4596 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-06T23:47:01.663+07:00  INFO 4596 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:53552/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-06T23:47:01.762+07:00  INFO 4596 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-06T23:47:01.763+07:00  INFO 4596 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-06T23:47:01.909+07:00  WARN 4596 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-06T23:47:02.076+07:00  INFO 4596 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-06T23:47:02.092+07:00  INFO 4596 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 3.49 seconds (process running for 29.679)
+2026-11-06T23:47:02.093+07:00  WARN 4596 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-06T23:47:02.093+07:00  WARN 4596 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-06 23:58:00 — PASS
+Files (90): .claude/settings.json, .codex/agents/api-contract-reviewer.toml, .codex/agents/app-security-reviewer.toml, .codex/agents/jpa-performance-reviewer.toml, .codex/agents/risk-gate.toml, .cursor/hooks.json, .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursor/skills/vsvn-task-workflow/SKILL.md, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/hooks/git_guard.py, scripts/hooks/task_state_guard.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMediaGalleryId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, services/data-serving-service/src/test/resources/db/00_create_schema_apps.sql, tests/test_srv_poi_serving_contract.py, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: PASS
+All Finished!
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: PASS
+
+## pytest: PASS
+........................................................................ [ 30%]
+........................................................................ [ 60%]
+........................................................................ [ 90%]
+......................                                                   [100%]
+238 passed in 3.86s
+
+## maven: PASS
+ :: Spring Boot ::                (v4.1.1)
+
+2026-11-06T23:57:54.255+07:00  INFO 31876 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Starting PoiRepositoryIntegrationTest using Java 26.0.2.1 with PID 31876 (started by bachnh in D:\git\SunGrp_VSVN\services\data-serving-service)
+2026-11-06T23:57:54.255+07:00  INFO 31876 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-11-06T23:57:54.735+07:00  INFO 31876 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-06T23:57:54.780+07:00  INFO 31876 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 42 ms. Found 5 JPA repository interfaces.
+2026-11-06T23:57:54.881+07:00  INFO 31876 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-06T23:57:55.144+07:00  INFO 31876 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: 19c56d1ae26b1796bcc035d6a7c95cb5f3a8e329957028a38cda76de1a2ebd5c
+2026-11-06T23:57:56.734+07:00  INFO 31876 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT1.8522128S
+2026-11-06T23:57:56.734+07:00  INFO 31876 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:57841/test?loggerLevel=OFF)
+2026-11-06T23:57:56.805+07:00  INFO 31876 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-06T23:57:56.820+07:00  INFO 31876 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-06T23:57:56.821+07:00  INFO 31876 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-06T23:57:56.845+07:00  INFO 31876 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@f9a4e75
+2026-11-06T23:57:56.845+07:00  INFO 31876 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-06T23:57:56.855+07:00  INFO 31876 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:57841/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-06T23:57:56.922+07:00  INFO 31876 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-06T23:57:56.924+07:00  INFO 31876 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-06T23:57:57.054+07:00  WARN 31876 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-06T23:57:57.193+07:00  INFO 31876 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-06T23:57:57.207+07:00  INFO 31876 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 2.972 seconds (process running for 25.918)
+2026-11-06T23:57:57.208+07:00  WARN 31876 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-06T23:57:57.208+07:00  WARN 31876 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-07 00:08:33 — PASS
+Files (91): .claude/settings.json, .codex/agents/api-contract-reviewer.toml, .codex/agents/app-security-reviewer.toml, .codex/agents/jpa-performance-reviewer.toml, .codex/agents/risk-gate.toml, .codex/hooks.json, .cursor/hooks.json, .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursor/skills/vsvn-task-workflow/SKILL.md, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/hooks/git_guard.py, scripts/hooks/task_state_guard.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMediaGalleryId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, services/data-serving-service/src/test/resources/db/00_create_schema_apps.sql, tests/test_srv_poi_serving_contract.py, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: PASS
+All Finished!
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: PASS
+
+## pytest: PASS
+........................................................................ [ 30%]
+........................................................................ [ 60%]
+........................................................................ [ 90%]
+.......................                                                  [100%]
+239 passed in 5.69s
+
+## maven: PASS
+ :: Spring Boot ::                (v4.1.1)
+
+2026-11-07T00:08:27.271+07:00  INFO 28648 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Starting PoiRepositoryIntegrationTest using Java 26.0.2.1 with PID 28648 (started by bachnh in D:\git\SunGrp_VSVN\services\data-serving-service)
+2026-11-07T00:08:27.272+07:00  INFO 28648 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-11-07T00:08:27.770+07:00  INFO 28648 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-07T00:08:27.809+07:00  INFO 28648 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 36 ms. Found 5 JPA repository interfaces.
+2026-11-07T00:08:27.926+07:00  INFO 28648 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-07T00:08:28.200+07:00  INFO 28648 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: 7de29775ec0cf3fb69681ae3c9e78deec57264987cd39e072ceac80ea834a519
+2026-11-07T00:08:29.902+07:00  INFO 28648 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT1.9767127S
+2026-11-07T00:08:29.903+07:00  INFO 28648 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:54609/test?loggerLevel=OFF)
+2026-11-07T00:08:29.974+07:00  INFO 28648 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-07T00:08:29.989+07:00  INFO 28648 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-07T00:08:29.990+07:00  INFO 28648 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-07T00:08:30.015+07:00  INFO 28648 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@1f2fc50
+2026-11-07T00:08:30.015+07:00  INFO 28648 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-07T00:08:30.024+07:00  INFO 28648 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:54609/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-07T00:08:30.091+07:00  INFO 28648 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-07T00:08:30.092+07:00  INFO 28648 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-07T00:08:30.315+07:00  WARN 28648 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-07T00:08:30.570+07:00  INFO 28648 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-07T00:08:30.582+07:00  INFO 28648 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 3.331 seconds (process running for 26.491)
+2026-11-07T00:08:30.583+07:00  WARN 28648 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-07T00:08:30.584+07:00  WARN 28648 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-07 00:41:35 — PASS
+Files (91): .claude/settings.json, .codex/agents/api-contract-reviewer.toml, .codex/agents/app-security-reviewer.toml, .codex/agents/jpa-performance-reviewer.toml, .codex/agents/risk-gate.toml, .codex/hooks.json, .cursor/hooks.json, .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursor/skills/vsvn-task-workflow/SKILL.md, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/hooks/git_guard.py, scripts/hooks/task_state_guard.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMediaGalleryId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, services/data-serving-service/src/test/resources/db/00_create_schema_apps.sql, tests/test_srv_poi_serving_contract.py, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: PASS
+All Finished!
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: PASS
+
+## pytest: PASS
+........................................................................ [ 30%]
+........................................................................ [ 60%]
+........................................................................ [ 90%]
+.......................                                                  [100%]
+239 passed in 5.86s
+
+## maven: PASS
+ :: Spring Boot ::                (v4.1.1)
+
+2026-11-07T00:41:28.866+07:00  INFO 32708 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Starting PoiRepositoryIntegrationTest using Java 26.0.2.1 with PID 32708 (started by bachnh in D:\git\SunGrp_VSVN\services\data-serving-service)
+2026-11-07T00:41:28.866+07:00  INFO 32708 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-11-07T00:41:29.357+07:00  INFO 32708 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-07T00:41:29.400+07:00  INFO 32708 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 39 ms. Found 5 JPA repository interfaces.
+2026-11-07T00:41:29.515+07:00  INFO 32708 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-07T00:41:29.806+07:00  INFO 32708 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: faa63646979f9b6c4d461c5e823d275fda96e5a17bbe9895eb228c90b5006b69
+2026-11-07T00:41:31.774+07:00  INFO 32708 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT2.2590891S
+2026-11-07T00:41:31.775+07:00  INFO 32708 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:65192/test?loggerLevel=OFF)
+2026-11-07T00:41:31.843+07:00  INFO 32708 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-07T00:41:31.857+07:00  INFO 32708 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-07T00:41:31.858+07:00  INFO 32708 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-07T00:41:31.882+07:00  INFO 32708 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@aa09e8d
+2026-11-07T00:41:31.882+07:00  INFO 32708 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-07T00:41:31.893+07:00  INFO 32708 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:65192/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-07T00:41:31.960+07:00  INFO 32708 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-07T00:41:31.961+07:00  INFO 32708 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-07T00:41:32.050+07:00  WARN 32708 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-07T00:41:32.174+07:00  INFO 32708 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-07T00:41:32.187+07:00  INFO 32708 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 3.351 seconds (process running for 28.167)
+2026-11-07T00:41:32.189+07:00  WARN 32708 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-07T00:41:32.190+07:00  WARN 32708 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-07 00:46:18 — PASS
+Files (93): .claude/settings.json, .codex/agents/api-contract-reviewer.toml, .codex/agents/app-security-reviewer.toml, .codex/agents/jpa-performance-reviewer.toml, .codex/agents/risk-gate.toml, .codex/hooks.json, .cursor/hooks.json, .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursor/skills/vsvn-api-service/SKILL.md, .cursor/skills/vsvn-task-workflow/SKILL.md, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/AGENT_PROMPT_SAMPLES.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/hooks/git_guard.py, scripts/hooks/task_state_guard.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMediaGalleryId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, services/data-serving-service/src/test/resources/db/00_create_schema_apps.sql, tests/test_srv_poi_serving_contract.py, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: PASS
+All Finished!
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: PASS
+
+## pytest: PASS
+........................................................................ [ 30%]
+........................................................................ [ 60%]
+........................................................................ [ 90%]
+.......................                                                  [100%]
+239 passed in 6.25s
+
+## maven: PASS
+ :: Spring Boot ::                (v4.1.1)
+
+2026-11-07T00:46:12.159+07:00  INFO 3832 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Starting PoiRepositoryIntegrationTest using Java 26.0.2.1 with PID 3832 (started by bachnh in D:\git\SunGrp_VSVN\services\data-serving-service)
+2026-11-07T00:46:12.159+07:00  INFO 3832 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-11-07T00:46:12.599+07:00  INFO 3832 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-07T00:46:12.630+07:00  INFO 3832 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 28 ms. Found 5 JPA repository interfaces.
+2026-11-07T00:46:12.745+07:00  INFO 3832 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-07T00:46:13.081+07:00  INFO 3832 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: d7962969010a091f45baf82f6849ccd9eefbf4b2c801a7d0797979e1122166d9
+2026-11-07T00:46:14.702+07:00  INFO 3832 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT1.9573331S
+2026-11-07T00:46:14.703+07:00  INFO 3832 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:60556/test?loggerLevel=OFF)
+2026-11-07T00:46:14.771+07:00  INFO 3832 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-07T00:46:14.787+07:00  INFO 3832 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-07T00:46:14.788+07:00  INFO 3832 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-07T00:46:14.812+07:00  INFO 3832 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@246f4044
+2026-11-07T00:46:14.812+07:00  INFO 3832 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-07T00:46:14.824+07:00  INFO 3832 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:60556/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-07T00:46:14.888+07:00  INFO 3832 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-07T00:46:14.889+07:00  INFO 3832 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-07T00:46:15.004+07:00  WARN 3832 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-07T00:46:15.124+07:00  INFO 3832 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-07T00:46:15.136+07:00  INFO 3832 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 3.004 seconds (process running for 18.862)
+2026-11-07T00:46:15.138+07:00  WARN 3832 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-07T00:46:15.138+07:00  WARN 3832 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-07 01:04:06 — PASS
+Files (95): .claude/settings.json, .codex/agents/api-contract-reviewer.toml, .codex/agents/app-security-reviewer.toml, .codex/agents/jpa-performance-reviewer.toml, .codex/agents/risk-gate.toml, .codex/hooks.json, .cursor/hooks.json, .cursor/mcp.json, .cursor/postgres-mcp-overrides.txt, .cursor/rules/00-main-orchestrator.mdc, .cursor/rules/20-data-pipeline.mdc, .cursor/rules/30-sql.mdc, .cursor/rules/40-java-api.mdc, .cursor/skills/vsvn-api-service/SKILL.md, .cursor/skills/vsvn-task-workflow/SKILL.md, .cursorindexingignore, AGENTS.md, CLAUDE.md, docs/AGENT_PROMPT_SAMPLES.md, docs/agent-system/WORKFLOW.md, docs/context/00_README.md, docs/poi-serving-api/API-GAPS.md, docs/poi-serving-api/DESIGN-AND-PLAN.md, docs/poi-serving-api/FEED-SERVICE-GROUND-TRUTH.md, docs/poi-serving-api/HANDOFF.md, docs/poi-serving-api/scripts/check-gaps.py, docs/poi-serving-api/scripts/list-repos.sh, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, scripts/agent_runner.py, scripts/hooks/git_guard.py, scripts/hooks/task_state_guard.py, scripts/vv.py, services/data-serving-service/.dockerignore, services/data-serving-service/.gitattributes, services/data-serving-service/.gitignore, services/data-serving-service/.mvn/wrapper/maven-wrapper.properties, services/data-serving-service/AGENTS.md, services/data-serving-service/CLAUDE.md, services/data-serving-service/Dockerfile, services/data-serving-service/docker-compose.yml, services/data-serving-service/mvnw, services/data-serving-service/mvnw.cmd, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/DataServingApplication.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiErrorDetail.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/ApiResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PageResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/dto/PaginationMeta.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/exception/ResourceNotFoundException.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestContext.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/RequestIdFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiAmenityId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMediaGalleryId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/PoiMultiLangId.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiAmenityRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMultiLangRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiReviewRepository.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionary.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/LanguageResolver.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParser.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/TestcontainersConfiguration.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/dto/ApiResponseTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/RequestIdFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/BusinessSectorDictionaryTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/LanguageResolverTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/util/SubcategoryTagsParserTest.java, services/data-serving-service/src/test/resources/application.yml, services/data-serving-service/src/test/resources/db/00_create_schema_apps.sql, tests/test_srv_poi_serving_contract.py, tests/test_vv.py, tests/test_vv_context.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: PASS
+All Finished!
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: PASS
+
+## pytest: PASS
+........................................................................ [ 30%]
+........................................................................ [ 60%]
+........................................................................ [ 90%]
+.......................                                                  [100%]
+239 passed in 6.19s
+
+## maven: PASS
+ :: Spring Boot ::                (v4.1.1)
+
+2026-11-07T01:04:00.418+07:00  INFO 26496 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Starting PoiRepositoryIntegrationTest using Java 26.0.2.1 with PID 26496 (started by bachnh in D:\git\SunGrp_VSVN\services\data-serving-service)
+2026-11-07T01:04:00.419+07:00  INFO 26496 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-11-07T01:04:00.966+07:00  INFO 26496 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-07T01:04:01.006+07:00  INFO 26496 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 37 ms. Found 5 JPA repository interfaces.
+2026-11-07T01:04:01.131+07:00  INFO 26496 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-07T01:04:01.416+07:00  INFO 26496 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: 05ed1e4f31a32dc3573b04a84426aa30f86a683185ab3eb55c29a673216b8e83
+2026-11-07T01:04:02.955+07:00  INFO 26496 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT1.8247342S
+2026-11-07T01:04:02.955+07:00  INFO 26496 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:60166/test?loggerLevel=OFF)
+2026-11-07T01:04:03.027+07:00  INFO 26496 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-07T01:04:03.043+07:00  INFO 26496 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-07T01:04:03.044+07:00  INFO 26496 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-07T01:04:03.068+07:00  INFO 26496 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@aa09e8d
+2026-11-07T01:04:03.068+07:00  INFO 26496 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-07T01:04:03.080+07:00  INFO 26496 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:60166/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-07T01:04:03.145+07:00  INFO 26496 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-07T01:04:03.146+07:00  INFO 26496 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-07T01:04:03.278+07:00  WARN 26496 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-07T01:04:03.691+07:00  INFO 26496 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-07T01:04:03.703+07:00  INFO 26496 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 3.306 seconds (process running for 27.477)
+2026-11-07T01:04:03.704+07:00  WARN 26496 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-07T01:04:03.704+07:00  WARN 26496 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+

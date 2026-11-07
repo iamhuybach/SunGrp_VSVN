@@ -5,3 +5,4 @@ docs/context/3p-google/*.txt
 .ai/tasks/*/verification/
 .ai/tasks/*/handoffs/
 pipelines/*/manifest.json
+services/*/target/

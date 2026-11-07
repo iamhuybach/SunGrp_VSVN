@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import argparse
 import copy
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -325,6 +328,34 @@ def test_materialize_write_succeeds_while_implementing(
     assert (tmp_path / "output" / "result.txt").read_text(encoding="utf-8") == "result\n"
 
 
+def test_materialize_only_writes_selected_block(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    task_id = "20261106-materialize-only"
+    task = tmp_path / ".ai" / "tasks" / task_id
+    task.mkdir(parents=True)
+    (task / "task-state.yaml").write_text(
+        yaml.safe_dump({"task": {"status": "implementing"}, "scope": {"files": ["output/one.txt"]}}),
+        encoding="utf-8",
+    )
+    (task / "architecture.md").write_text(
+        "FILE: output/one.txt\none\nEND_FILE\n"
+        "FILE: output/out-of-scope.txt\nother\nEND_FILE\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(vv, "TASKS_ROOT", Path(".ai/tasks"))
+
+    with pytest.raises(SystemExit, match="has no file block: output/missing.txt"):
+        vv.materialize_blocks(task_id, "architecture.md", write=True, only=["output/missing.txt"])
+    lines = vv.materialize_blocks(task_id, "architecture.md", write=True, only=["output\\one.txt"])
+
+    assert len(lines) == 1
+    assert lines[0].startswith("output/one.txt | ") and lines[0].endswith(" | new")
+    assert (tmp_path / "output" / "one.txt").read_text(encoding="utf-8") == "one\n"
+    assert not (tmp_path / "output" / "out-of-scope.txt").exists()
+
+
 def test_compact_verify_formatting() -> None:
     output = vv.format_compact_verification(
         "# Verification — FAIL",
@@ -452,3 +483,219 @@ def test_review_round_two_without_snapshot_falls_back_to_report_and_full_diff(
     assert "- SQL-007 P1 wrong merge key" in text
     assert "SQL-008" not in text
     assert "No round-1 snapshot" in text
+
+
+def verify_args(**overrides: object) -> argparse.Namespace:
+    values = {"task": None, "all": False, "allow_missing": False, "full": True, "allow_no_docker": False}
+    values.update(overrides)
+    return argparse.Namespace(**values)
+
+
+def test_verify_routes_migration_sql_to_postgres_lane(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    migration = "services/data-serving-service/src/main/resources/db/migration/V1__init.sql"
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(vv, "changed_files", lambda _: [migration, "sql/spark_view.sql", "sql/postgres/a.pg.sql"])
+    monkeypatch.setattr(vv, "has_module", lambda _: True)
+    monkeypatch.setattr(vv, "maven_lane", lambda *_: ("maven", "SKIP", "stub"))
+    commands: list[list[str]] = []
+    monkeypatch.setattr(vv, "run", lambda command: (commands.append(command), (0, ""))[1])
+
+    assert vv.cmd_verify(verify_args()) == 0
+
+    spark = next(command for command in commands if "sparksql" in command)
+    postgres = next(command for command in commands if "postgres" in command)
+    assert spark[-1:] == ["sql/spark_view.sql"]
+    assert postgres[-2:] == [migration, "sql/postgres/a.pg.sql"]
+    assert all(command[1:4] == ["-X", "utf8", "-m"] for command in (spark, postgres))
+
+
+def test_verify_maven_lane_requires_docker(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    target = ["services/data-serving-service/AGENTS.md"]
+    assert vv.maven_lane(target, False) == ("maven", "SKIP", "no pom.xml in services/data-serving-service")
+    (tmp_path / "services" / "data-serving-service").mkdir(parents=True)
+    (tmp_path / "services" / "data-serving-service" / "pom.xml").write_text("<project/>", encoding="utf-8")
+    monkeypatch.setattr(vv, "_java_major", lambda: 21)
+    name, status, output = vv.maven_lane(target, False)
+    assert (name, status) == ("maven", "FAIL") and "JDK 26 required" in output
+    monkeypatch.setattr(vv, "_java_major", lambda: 26)
+    monkeypatch.setattr(vv, "_docker_available", lambda: False)
+    monkeypatch.setattr(vv.subprocess, "run", lambda *_, **__: pytest.fail("maven must not run without Docker"))
+    name, status, output = vv.maven_lane(target, False)
+    assert (name, status) == ("maven", "FAIL") and "Docker is not running" in output
+    assert vv.maven_lane([], False) == ("maven", "SKIP", "no relevant files")
+
+
+def test_verify_maven_lane_allow_no_docker_marks_log(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+) -> None:
+    service = tmp_path / "services" / "data-serving-service"
+    service.mkdir(parents=True)
+    (service / "pom.xml").write_text("<project/>", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(vv, "changed_files", lambda _: ["services/data-serving-service/pom.xml"])
+    monkeypatch.setattr(vv, "_java_major", lambda: 26)
+    monkeypatch.setattr(vv, "_docker_available", lambda: False)
+    calls: list[list[str]] = []
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(command)
+        assert kwargs["cwd"] == vv.SERVICE_DIR
+        return subprocess.CompletedProcess(command, 0, "unit tests ok", "")
+
+    monkeypatch.setattr(vv.subprocess, "run", fake_run)
+
+    assert vv.cmd_verify(verify_args(allow_no_docker=True)) == 0
+
+    assert "-Dtest=!*IntegrationTest,!DataServingApplicationTests" in calls[0]
+    assert Path(calls[0][0]).name in {"mvnw.cmd", "mvnw"}
+    assert "## maven: PASS (docker tests skipped: --allow-no-docker)" in capsys.readouterr().out
+
+
+def test_context_api_block_for_poi_serving_api(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    data = state()
+    data["task"].update(status="implementing", owner="main")
+    data["models"]["main"]["actual"] = "grok-4.7"
+    plain_id = write_task(tmp_path, data)
+    api = state("20261014-test-api-context")
+    api["task"].update(status="implementing", owner="main")
+    api["models"]["main"]["actual"] = "grok-4.7"
+    api["scope"]["systems"] = ["poi-serving-api"]
+    api_id = write_task(tmp_path, api)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(vv, "_java_major", lambda: 26)
+    monkeypatch.setattr(vv, "_docker_available", lambda: True)
+
+    output = vv.build_context(api_id)
+
+    assert "## API" in output
+    assert output.index("## API") < output.index("## FILES")
+    assert "service: services/data-serving-service (rules: services/data-serving-service/AGENTS.md)" in output
+    assert "jdk: 26 | docker: up" in output
+    assert "## API" not in vv.build_context(plain_id)
+
+
+def doctor_output(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> str:
+    monkeypatch.setattr(vv, "_java_major", lambda: None)
+    monkeypatch.setattr(vv, "_docker_available", lambda: False)
+    vv.cmd_doctor(argparse.Namespace())
+    return capsys.readouterr().out
+
+
+def test_doctor_nested_agents_budget(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+) -> None:
+    big = tmp_path / "services" / "big-service"
+    small = tmp_path / "services" / "small-service"
+    big.mkdir(parents=True)
+    small.mkdir(parents=True)
+    (big / "AGENTS.md").write_text("x" * 4097, encoding="utf-8")
+    (small / "AGENTS.md").write_text("x" * 4096, encoding="utf-8")
+    (small / ".gitignore").write_text("target/\n.claude\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    output = doctor_output(monkeypatch, capsys)
+
+    assert "WARN: instruction budget exceeded: services/big-service/AGENTS.md is 4097 bytes (limit 4096)" in output
+    assert "services/small-service/AGENTS.md" not in output
+    assert "FAIL: services/small-service/.gitignore must not ignore .claude" in output
+    assert "FAIL: missing required file: .cursor/rules/40-java-api.mdc" in output
+    assert "INFO: java missing; docker down" in output
+
+
+def test_doctor_rejects_literal_secret(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+) -> None:
+    service = tmp_path / "services" / "svc"
+    (service / "src" / "main" / "resources").mkdir(parents=True)
+    (service / "docker-compose.yml").write_text(
+        "    POSTGRES_PASSWORD: hunter22\n    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set it}\n",
+        encoding="utf-8",
+    )
+    (service / "src" / "main" / "resources" / "application.yml").write_text(
+        "    username: ${POSTGRES__DP_POI__USERNAME}\n    password: ${POSTGRES__DP_POI__PASSWORD}\n",
+        encoding="utf-8",
+    )
+    rules = tmp_path / ".cursor" / "rules"
+    rules.mkdir(parents=True)
+    (rules / "40-java-api.mdc").write_text("---\nalwaysApply: true\n---\n", encoding="utf-8")
+    (tmp_path / ".cursor" / "mcp.json").write_text(
+        '{"env": {"DATABASE_URI": "${env:VV_SERVING_PG_URL}", "token": "abcd1234"}}\n', encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+
+    output = doctor_output(monkeypatch, capsys)
+
+    assert "FAIL: literal secret in services/svc/docker-compose.yml:1" in output
+    assert "docker-compose.yml:2" not in output
+    assert "application.yml" not in output
+    assert "FAIL: literal secret in .cursor/mcp.json:1" in output
+    assert "FAIL: .cursor/rules/40-java-api.mdc must not be alwaysApply" in output
+
+
+def run_git_guard(runtime: str, command: str) -> subprocess.CompletedProcess:
+    payload = {"command": command} if runtime == "cursor" else {"tool_input": {"command": command}}
+    return subprocess.run(
+        [sys.executable, "scripts/hooks/git_guard.py", "--runtime", runtime],
+        input=json.dumps(payload), capture_output=True, text=True, check=False,
+    )
+
+
+def test_git_guard_denies_push_reset_rebase_amend_recursive_delete() -> None:
+    from scripts.hooks import git_guard
+
+    for command in [
+        "git push origin main", "git -C . push", "git -c core.x=y push --dry-run",
+        "git status && git reset --hard HEAD", "git rebase main", "git commit --amend -m x",
+        "git filter-branch --all", "git clean -fdx", "rm -rf target", "rd /s /q target",
+        "Remove-Item -Recurse -Force target", "del /s *.tmp", "(git push)",
+    ]:
+        assert git_guard.find_violation(command), command
+    cursor = run_git_guard("cursor", "git -C . push")
+    assert json.loads(cursor.stdout)["permission"] == "deny"
+    claude = run_git_guard("claude", "git status; git push")
+    assert claude.returncode == 2
+    assert "git push is reserved for the user" in claude.stderr
+    codex = run_git_guard("codex", "git reset --hard")
+    assert codex.returncode == 0
+    assert json.loads(codex.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_git_guard_codex_hook_command_runs_from_subdirectory() -> None:
+    config = json.loads(Path(".codex/hooks.json").read_text(encoding="utf-8"))
+    (entry,) = config["hooks"]["PreToolUse"]
+    assert entry["matcher"] == "Bash"
+    command = entry["hooks"][0]["command"]
+    for text, denied in [("git push", True), ("git status", False)]:
+        result = subprocess.run(
+            command, shell=True, cwd="services/data-serving-service",
+            input=json.dumps({"tool_input": {"command": text}}), capture_output=True, text=True, check=False,
+        )
+        assert result.returncode == 0, (text, result.stderr)
+        assert ('"permissionDecision": "deny"' in result.stdout) is denied, (text, result.stdout)
+
+
+def test_git_guard_allows_commit_and_status() -> None:
+    from scripts.hooks import git_guard
+
+    for command in [
+        "git status --short", "git commit -m \"ct-6\"", "git add scripts/vv.py", "git diff --stat",
+        "git log -5 --oneline", "git -C D:/repo status", "rm file.txt", "Remove-Item file.txt",
+    ]:
+        assert git_guard.find_violation(command) is None, command
+    cursor = run_git_guard("cursor", "git status")
+    assert json.loads(cursor.stdout) == {"permission": "allow"}
+    assert run_git_guard("claude", "git commit -m x").returncode == 0
+
+
+def test_closeout_commit_request_wording(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    data = state()
+    task_id = write_task(tmp_path, data)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(vv, "_scoped_status_files", lambda *_: ["scripts/vv.py"])
+    output = vv.build_closeout(task_id)
+    assert "- commit (on your request): scripts/vv.py" in output
+    assert "commit: " not in output
+    assert output.endswith("Lượt này đã xong trong repository.")

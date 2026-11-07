@@ -430,3 +430,67 @@ def test_run_gate_review_writes_round_snapshot(tmp_path: Path, monkeypatch: pyte
     assert snapshot["files"] == {"src.py": vv._file_digest("src.py")}
     assert isinstance(snapshot["elapsed_seconds"], int)
     assert snapshot["elapsed_seconds"] >= 0
+
+
+FABLE_ARCHITECT = {
+    "id": "EX-02", "kind": "model_override", "role": "architect", "model": "claude-fable-5-1",
+    "effort": "high", "runtime": "claude-code-extension", "approved_by": "user",
+    "approved_on": "2026-11-06", "scope": "architecture.md",
+}
+
+
+def test_resolve_lane_defaults_when_flag_off() -> None:
+    lane = agent_runner.resolve_lane([FABLE_ARCHITECT], "architect", honor=False)
+    assert lane == agent_runner.Lane("claude-opus-5-5", "high", "default")
+    review = agent_runner.resolve_lane(None, "review", honor=True)
+    assert review == agent_runner.Lane("gpt-5.6-sol", "medium", "default")
+
+
+def test_resolve_lane_prefers_user_approved_exception() -> None:
+    unapproved = {**FABLE_ARCHITECT, "id": "EX-00", "approved_by": "main"}
+    other_role = {**FABLE_ARCHITECT, "id": "EX-09", "role": "review"}
+    lane = agent_runner.resolve_lane([unapproved, other_role, FABLE_ARCHITECT], "architect", honor=True)
+    assert lane == agent_runner.Lane("claude-fable-5-1", "high", "EX-02")
+    bad_effort = {**FABLE_ARCHITECT, "effort": "max"}
+    assert agent_runner.resolve_lane([bad_effort], "architect", honor=True).source == "default"
+    author = agent_runner.resolve_lane([], "author_proposal", honor=True)
+    assert author == agent_runner.Lane("claude-opus-5-5", "high", "default")
+
+
+def test_review_schema_uses_resolved_model() -> None:
+    schema = agent_runner._review_schema(["sql-data-reviewer"], "claude-opus-5-5", "high")
+    assert schema["properties"]["model"]["enum"] == ["claude-opus-5-5"]
+    assert schema["properties"]["reasoning_effort"]["enum"] == ["high"]
+    state = template_state()
+    candidate = vv.architecture_state_after(state, "PASS", model="claude-fable-5-1")
+    assert candidate["models"]["architect"]["actual"] == "claude-fable-5-1"
+
+
+def test_repo_snapshot_ignores_ai_tmp(monkeypatch: pytest.MonkeyPatch) -> None:
+    outputs = [
+        b"?? src.py\0?? .ai/.tmp/vsvn-review-1/review-schema.json\0",
+        b"?? src.py\0",
+    ]
+
+    def fake_run(*_args, **_kwargs):
+        return subprocess.CompletedProcess([], 0, stdout=outputs.pop(0), stderr=b"")
+
+    monkeypatch.setattr(agent_runner.subprocess, "run", fake_run)
+    assert agent_runner._git_snapshot(Path(".")) == b"?? src.py"
+    agent_runner._assert_repo_unchanged(Path("."), b"?? src.py", "Codex review")
+
+
+@pytest.mark.parametrize("command", ["run-gate", "run-author"])
+def test_run_gate_timeout_default_2700(monkeypatch: pytest.MonkeyPatch, command: str) -> None:
+    captured: dict[str, Namespace] = {}
+
+    def capture(args: Namespace) -> int:
+        captured["args"] = args
+        return 0
+
+    monkeypatch.setattr(vv, "cmd_run_gate", capture)
+    monkeypatch.setattr(vv, "cmd_run_author", capture)
+    argv = ["vv.py", command, "20261007-test-task"] + (["--kind", "analysis"] if command == "run-author" else [])
+    monkeypatch.setattr("sys.argv", argv)
+    assert vv.main() == 0
+    assert captured["args"].timeout == 2700

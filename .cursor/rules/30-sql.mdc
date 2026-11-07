@@ -4,7 +4,7 @@ globs: **/*.sql
 alwaysApply: false
 ---
 
-- `*.sql` uses Spark SQL. `*.pg.sql` uses PostgreSQL. Lint with the matching dialect.
+- `*.sql` uses Spark SQL. `*.pg.sql` uses PostgreSQL. Lint with the matching dialect. A `.sql` file under a `db/migration/` path is PostgreSQL.
 - List target columns explicitly in INSERT and MERGE. Do not write `SELECT *` into a target table.
 - A MERGE source must be unique on the full match key. Deduplicate with a deterministic `row_number()` ordering before MERGE.
 - The MERGE predicate contains entity keys plus required ownership or partition keys; do not hide business filters in the predicate.

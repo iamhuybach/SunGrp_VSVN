@@ -19,7 +19,7 @@ Shared source of truth for Cursor, Claude Code, Codex, and human operators. Keep
 | Review Coordinator and specialists | Codex, GPT-5.6 Sol Medium | Read-only review; the consolidated result goes under `reviews/`. Never fixes code. |
 | Local Verifier | `python scripts/vv.py verify` | Deterministic validation. |
 | External Gate Runner | `python scripts/vv.py run-gate` / `run-author` | Calls the configured CLI non-interactively, validates structured output and repository immutability, persists the owned artifact, and updates state on behalf of Main. |
-| User | Fabric DEV and Git | Runs probes and runbooks, accepts risk, commits and merges. |
+| User | Fabric DEV and Git | Runs probes and runbooks, accepts risk, pushes and merges; asks for a commit when one is wanted. |
 
 - Single code writer plus explicit artifact ownership. Only Main edits source, notebooks, pipelines, schemas, deployment configuration, and `task-state.yaml`.
 - There is no `writer: claude` mode. A per-task role or model exception exists only as a user-approved `exceptions` entry in `task-state.yaml`, mirrored in `decision.md`.
@@ -63,15 +63,14 @@ Shared source of truth for Cursor, Claude Code, Codex, and human operators. Keep
 - Silver prefixes: `slv_pn_` for partner and `slv_3p_` for third party. Gold prefix: `gld_`.
 - The POI identifier is `poi_id`. It never includes language. Do not use `poi_uid`.
 - Third-party `poi_id = uuid_format(md5(concat(source_name, source_id)))` (`HASH_MD5_UUID`).
-- Partner `poi_id = uuid_format(md5(concat(id, 'partner')))` 8-4-4-4-12. `slv_pn_business_services.id` or `slv_pn_business_service_i18ns.business_service_id`. uuid_md5(id, lit('partner')): NB_SLV_POI_ENTITY_NON_ENRICH, NB_ENR_POI_INFO, NB_GLD_SRV_POI_MULTI_LANG.
-- Notebook roles follow `docs/context/02_NAMING_CONVENTION.md`. `NB_LIB_*` is a `%run` library. `NB_EXTRACT_*_CDC_BRZ_TO_SLV` is one extract notebook per raw source. `NB_00_ORCHES_*` is the shared orchestrator, selected by `p_pl_name`, with two copies in the repo: `NB_00_ORCHES_SLV_TO_ENR` and `NB_00_ORCHES_SLV_TO_GLD`. `NB_<UPPER(trg_tbl)>` is one node notebook per target table. `NB_SETUP_*` is a manual one-shot setup notebook. `NB_SETUP_INITIAL_DDL` builds an empty environment and `NB_CREATE_DDL` patches an existing one; every DDL or configuration-insert change updates both (§2.1). No deeper orchestration tier.
-- `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` has no Switch. Its notebook activity is `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV_BK` with `partner_raw_data` fixed. `run_id` may be empty so the notebook uses `exec_id` and the other activity parameters. Other sources are handled by a script outside this pipeline.
-- Pipeline pre-check reads `ctrl_mng_pipeline_config` and `ctrl_mng_watermark`, then inspects `_delta_log` through `Files/_delta_src/<table>`. No new data means no Spark startup.
+- Partner `poi_id = uuid_format(md5(concat(id, 'partner')))` 8-4-4-4-12 from `slv_pn_business_services.id` or `slv_pn_business_service_i18ns.business_service_id` (`uuid_md5(id, lit('partner'))`).
+- Notebook roles and the `NB_SETUP_INITIAL_DDL` / `NB_CREATE_DDL` rule: `docs/context/02_NAMING_CONVENTION.md` §2–§2.1 and `.cursor/rules/10-fabric-notebook.mdc`. Pipeline FL_00 and pre-check contract: `.cursor/rules/20-data-pipeline.mdc` and §3 of the same convention.
 - Control-table semantics belong in `docs/context/CTRL_TABLES_CONTEXT.md`. If that file is missing or incomplete, changes to `ctrl_*` require evidence and user action.
+- Serving API `services/data-serving-service/` reads only PostgreSQL `apps.srv_poi_*`, derived from `lh_vv_gold.dbo.gld_srv_poi_*`; gold DDL and NodeSpec `pk` are the contract. Its rules are in that directory's `AGENTS.md`. The repo DDL is `sql/postgres/gld_srv_serve.pg.sql`; the API ships no Flyway.
 
 ## 8. Prohibited actions
 
-- Agents do not commit, push, merge, or rewrite Git history.
+- Agents never push, merge, rebase, amend, reset, or rewrite Git history. An agent commits only when the user's current turn asks for that commit.
 - Do not delete or rename Fabric tables without rollback and forward-recovery steps in `runtime-runbook.md`.
 - Do not place secrets, tokens, personal data, or production extracts in task artifacts.
 - Do not bypass required evidence, architecture, review, or runtime gates.

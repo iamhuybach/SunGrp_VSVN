@@ -1,0 +1,12 @@
+---
+description: VSVN POI serving API (Spring Boot, JPA, PostgreSQL apps schema) implementation rules
+globs: services/**/*.java, services/**/pom.xml, services/**/application*.yml, services/**/Dockerfile, services/**/docker-compose.yml, services/**/db/migration/*.sql, services/**/src/test/resources/**
+alwaysApply: false
+---
+
+Cursor loads `services/data-serving-service/AGENTS.md` for files in that directory; it is the service constitution, shared with Codex and Claude Code. Then:
+
+- Change a column, key, or table only through a data task (`data_model_change`, `run-author --kind model`); the API follows gold, never the reverse.
+- Run `cd services/data-serving-service && mvnw.cmd -q -B test` (Docker running) before `python scripts/vv.py verify <task-id>`; `verify` repeats it in the `maven` lane.
+- Keep `tests/test_srv_poi_serving_contract.py` green; it compares gold DDL, `sql/postgres/gld_srv_serve.pg.sql`, and the entities.
+- Route review by path: `api/`, `dto/`, entities → `api-contract-reviewer`; `common/web/`, `config/`, `application*.yml`, `pom.xml`, Docker files → `app-security-reviewer`; `domain/repository/`, `service/` → `jpa-performance-reviewer`.

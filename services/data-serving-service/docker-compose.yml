@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: data-serving-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vv_data_serving
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    ports:
+      - "${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d vv_data_serving"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  data-serving-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: data-serving-service:latest
+    container_name: data-serving-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES__DP_POI__URL: jdbc:postgresql://postgres:5432/vv_data_serving?currentSchema=apps&sslmode=disable
+      POSTGRES__DP_POI__USERNAME: ${POSTGRES_USER:?}
+      POSTGRES__DP_POI__PASSWORD: ${POSTGRES_PASSWORD:?}
+      SERVER_PORT: 8080
+      LOG_LEVEL: INFO
+
+volumes:
+  postgres_data:
