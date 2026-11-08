@@ -2,10 +2,10 @@
 
 Status: ready_to_merge
 
-Done this session: Incremental DEV run `3223bc96-48ec-41e8-ac7d-0d4a2150078c` was `INCREMENTAL`. Every previously loaded row was stale. `inserted=0` and `updated=0`. It pinned source version 1488 with `error` null, so the watermark advances at the end of that run.
+Done this session: `ed1e8c9` is on `origin/main` (`03b2257..ed1e8c9`). The CMS extract, seeds, tests, and the recorded DEV runs are in that commit.
 
-Next action: The user commits when ready. Do not schedule the notebook. The next incremental run should read only versions after 1488.
+Next action: None for this task. Do not schedule the notebook.
 
 Read next: `.ai/tasks/20261104-extract-cms-raw-data/runtime-runbook.md` — `## Kết quả người dùng ghi nhận`
 
-Waiting on: a commit, if the user asks for one.
+Waiting on: nothing.
