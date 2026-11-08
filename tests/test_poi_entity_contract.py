@@ -632,17 +632,18 @@ def test_section_1_9_preserved():
 def test_create_ddl_patch():
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-30:-24] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
-    assert ids[-24:-22] == ["ohpassmd", "ohpasspy"]
-    assert ids[-22:-20] == ["peholmd", "peholpy"]
-    assert ids[-20:-18] == ["srvpoimd", "srvpoipy"]
-    assert ids[-18:-16] == ["srvratemd", "srvratepy"]
-    assert ids[-16:-12] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
-    assert ids[-12:-10] == ["plcadmd", "plcadpy"]
-    assert ids[-10:-8] == ["mlexpmd", "mlexppy"]
-    assert ids[-8:-6] == ["srvrevmd", "srvrevpy"]
-    assert ids[-6:-2] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
-    assert ids[-2:] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-32:-26] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-26:-24] == ["ohpassmd", "ohpasspy"]
+    assert ids[-24:-22] == ["peholmd", "peholpy"]
+    assert ids[-22:-20] == ["srvpoimd", "srvpoipy"]
+    assert ids[-20:-18] == ["srvratemd", "srvratepy"]
+    assert ids[-18:-14] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
+    assert ids[-14:-12] == ["plcadmd", "plcadpy"]
+    assert ids[-12:-10] == ["mlexpmd", "mlexppy"]
+    assert ids[-10:-8] == ["srvrevmd", "srvrevpy"]
+    assert ids[-8:-4] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-4:-2] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-2:] == ["cmscfgmd", "cmscfgpy"]
     assert ids[ids.index("entwebpy") - 1] == "entwebmd"
     assert ids.index("entwebpy") < ids.index("enrinfomd")
 

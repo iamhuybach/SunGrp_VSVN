@@ -1,0 +1,144 @@
+# Verification 2026-11-08 23:05:58 — FAIL
+Files (8): docs/context/CTRL_TABLES_CONTEXT.md, docs/context/NB_EXTRACT_CMS_CDC_BRZ_TO_SLV.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_EXTRACT_CMS_CDC_BRZ_TO_SLV.ipynb, notebooks/NB_SETUP_INITIAL_DDL.ipynb, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, tests/test_cms_l1_contract.py, tests/test_initial_ddl_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: FAIL
+...............................F....................................F... [ 28%]
+......F................................................................. [ 56%]
+..............F......................................................... [ 84%]
+.........................................                                [100%]
+================================== FAILURES ===================================
+_________________________ test_info_patch_cell_guards _________________________
+
+    def test_info_patch_cell_guards():
+        patch = _cell("NB_CREATE_DDL.ipynb", "enrinfopy")
+        old = _cell("NB_CREATE_DDL.ipynb", "enrddlpy")
+        assert list(_assign(patch, "OLD_INFO_NAMES")) == [name for name, _dtype in _assign(old, "INFO_COLS")]
+        for token in ("DROP", "DELETE", "TRUNCATE", "ALTER TABLE", "REPLACE", "RESTORE"):
+            assert token not in patch
+        order = [
+            "held = True", "tableExists(INFO_FQ)", "OLD_INFO_NAMES]",
+            "STATE-001:", "INSERT INTO {CFG}", "SET is_active = 0", "finally:",
+        ]
+        positions = [patch.index(token) for token in order]
+        assert positions == sorted(positions)
+        assert "SET is_active = 1" not in patch
+        assert "lock_exec_id = '{LOCK}'" in patch
+        nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
+        ids = [cell.get("id") for cell in nb["cells"]]
+>       assert ids[-30:-24] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+E       AssertionError: assert ['mvpoimd', '...', 'ohpasspy'] == ['enrinfomd',..., 'enrflagpy']
+E         
+E         At index 0 diff: 'mvpoimd' != 'enrinfomd'
+E         Use -v to get more diff
+
+tests\test_enr_poi_contract.py:223: AssertionError
+___________________________ test_info_rating_patch ____________________________
+
+    def test_info_rating_patch():
+        ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
+>       assert ids[-20:-12] == [
+            "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
+            "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
+        ]
+E       AssertionError: assert ['srvratemd',...enddlpy', ...] == ['srvpoimd', ...iaddlpy', ...]
+E         
+E         At index 0 diff: 'srvratemd' != 'srvpoimd'
+E         Use -v to get more diff
+
+tests\test_gld_srv_poi_contract.py:300: AssertionError
+________________________ test_review_source_patch_cell ________________________
+
+    def test_review_source_patch_cell():
+        patch = _cell("NB_CREATE_DDL.ipynb", "rvi18ngldpy")
+        code = "\n".join(line for line in patch.splitlines() if not line.strip().startswith("#"))
+        for token in ("DROP", "DELETE", "TRUNCATE", "REPLACE", "RESTORE", "columnMapping", "ALTER TABLE", "INSERT INTO", "SET is_active = 1"):
+            assert token not in code
+        assert re.search(r"(?m)^\s*_refresh_lock\(\)", patch)
+        assert patch.index("Dừng trước khi ghi") < re.search(r"(?m)^\s*_refresh_lock\(\)", patch).start()
+        assert _assign(patch, "EDGES_OFF") == [("slv_enr_poi_review_multi_lang", "lh_vv_gold.dbo", "gld_srv_poi_review")]
+        assert _assign(patch, "EDGES_KEEP") == ("slv_3p_poi_review", "slv_3p_poi_rating")
+        strange = patch.split("for (pl, src_schema, src, flag), n in rows.items():", 1)[1].split("flags =", 1)[0]
+        assert "flag == 1" not in strange
+        assert "cạnh lạ" in strange
+        assert patch.index("if issues:") < patch.index("UPDATE {CFG}")
+        acquire = patch.split("owns_lock = False", 1)[1].split("issues = []", 1)[0]
+        assert acquire.index("owns_lock = True") < acquire.index("SELECT lock_exec_id")
+        assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
+        assert "raise failed from cleanup_exc" in patch
+        ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
+>       assert ids[-6:-2] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+E       AssertionError: assert ['rvi18ngldmd...d', 'mlsrcpy'] == ['rvi18nenrmd...'rvi18ngldpy']
+E         
+E         At index 0 diff: 'rvi18ngldmd' != 'rvi18nenrmd'
+E         Use -v to get more diff
+
+tests\test_gld_srv_poi_contract.py:530: AssertionError
+____________________________ test_create_ddl_patch ____________________________
+
+    def test_create_ddl_patch():
+        nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
+        ids = [cell.get("id") for cell in nb["cells"]]
+>       assert ids[-30:-24] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+E       AssertionError: assert ['mvpoimd', '...', 'ohpasspy'] == ['enrinfomd',..., 'enrflagpy']
+E         
+E         At index 0 diff: 'mvpoimd' != 'enrinfomd'
+E         Use -v to get more diff
+
+tests\test_poi_entity_contract.py:635: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_enr_poi_contract.py::test_info_patch_cell_guards - Assertio...
+FAILED tests/test_gld_srv_poi_contract.py::test_info_rating_patch - Assertion...
+FAILED tests/test_gld_srv_poi_contract.py::test_review_source_patch_cell - As...
+FAILED tests/test_poi_entity_contract.py::test_create_ddl_patch - AssertionEr...
+4 failed, 253 passed in 11.01s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-08 23:07:11 — PASS
+Files (11): docs/context/CTRL_TABLES_CONTEXT.md, docs/context/NB_EXTRACT_CMS_CDC_BRZ_TO_SLV.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_EXTRACT_CMS_CDC_BRZ_TO_SLV.ipynb, notebooks/NB_SETUP_INITIAL_DDL.ipynb, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, tests/test_cms_l1_contract.py, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_poi_entity_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 28%]
+........................................................................ [ 56%]
+........................................................................ [ 84%]
+.........................................                                [100%]
+257 passed in 9.42s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+

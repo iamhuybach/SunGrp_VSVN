@@ -509,6 +509,10 @@ def test_pipeline_config_rows_match_sources():
             flow, bronze, "brz_3rd_crawler_poi_stream", silver, target, int(active), 1, mode,
             _sql_string(align), _sql_string(dedup), None,
         ))
+    for target in (
+        "slv_cms_blog", "slv_cms_destination", "slv_cms_news", "slv_cms_promotion_article",
+    ):
+        expected.append((flow, bronze, "cms_raw_data", silver, target, 1, 1, "DOC", None, None, None))
     for _seq, src, schema, target, mode, notebook, priority in edges:
         if (src, target) in deleted:
             continue
@@ -555,7 +559,26 @@ def test_pipeline_config_rows_match_sources():
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 69
+    assert len(expected) == 73
+
+
+def test_cms_seed_rows_present():
+    initial = _by_id(_initial())
+    env: dict = {}
+    exec(_marker(initial["init_registry_pure"], "# BEGIN_REGISTRY_PURE", "# END_REGISTRY_PURE"), env)  # noqa: S102
+    exec(initial["init_cfg_3p"], env)  # noqa: S102
+    exec(initial["init_cfg_cms"], env)  # noqa: S102
+    rows = env["flatten_table_configs"](env["TABLE_CONFIGS_CMS"], "lh_vv_bronze.dbo", "cms_raw_data")
+    env["validate_rows"](env["TABLE_CONFIGS_CMS"], rows)
+    tables = {cfg["target_table"] for cfg in env["TABLE_CONFIGS_CMS"]}
+    assert tables == {
+        "slv_cms_blog", "slv_cms_destination", "slv_cms_news", "slv_cms_promotion_article",
+    }
+    assert all(cfg["source_table"] == "$" for cfg in env["TABLE_CONFIGS_CMS"])
+    seed = initial["init_seed_ctrl"]
+    for table in tables:
+        assert f"'cms_raw_data', _S, '{table}', 1, 1, 'DOC'" in seed
+    assert "wm_transform_cms_raw_data" in seed
 
 
 def test_review_edges_inactive_in_seed():
@@ -581,6 +604,8 @@ def test_watermark_rows_match_source():
          "INITIALIZED", "NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV", -1),
         ("wm_transform_brz_3rd_crawler_poi_stream", "lh_vv_bronze.dbo", "brz_3rd_crawler_poi_stream", "crawled_at",
          "INITIALIZED", "NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV", -1),
+        ("wm_transform_cms_raw_data", "lh_vv_bronze.dbo", "cms_raw_data", "crawled_at",
+         "INITIALIZED", "NB_EXTRACT_CMS_CDC_BRZ_TO_SLV", -1),
     ]
     for row in rows:
         assert row[0] in source and row[3] in source and row[5] in source
@@ -865,7 +890,7 @@ def test_pl_cadence_seed():
 
 def test_pl_cadence_patch_cell():
     ddl = _notebook("NB_CREATE_DDL.ipynb")
-    assert [c.get("id") for c in ddl["cells"]][-12:-10] == ["plcadmd", "plcadpy"]
+    assert [c.get("id") for c in ddl["cells"]][-14:-12] == ["plcadmd", "plcadpy"]
     assert _cell(ddl, "plcadmd").startswith("# [THÊM 26/10] 20261026-pl-name-cadence-suffix")
     patch, renames, minutes = _cell(ddl, "plcadpy"), _renames(), _cadence()
     seed: dict = {}

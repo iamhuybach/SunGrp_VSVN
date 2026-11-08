@@ -1,0 +1,66 @@
+schema_version: 1
+task:
+  id: 20261104-extract-cms-raw-data
+  title: Extract cms_raw_data with existing load modes
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-11-04'
+  updated_at: '2026-11-08'
+classification:
+  complexity: low
+  risk_level: low
+  architecture_required: true
+  evidence_required: true
+  runtime_required: false
+  signals:
+  - data_model_change
+scope:
+  systems:
+  - lh_vv_bronze
+  - lh_vv_silver
+  - lh_vv_ctrl
+  files:
+  - notebooks/NB_EXTRACT_CMS_CDC_BRZ_TO_SLV.ipynb
+  - notebooks/NB_SETUP_INITIAL_DDL.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+  - tests/test_cms_l1_contract.py
+  - tests/test_initial_ddl_contract.py
+  - docs/context/NB_EXTRACT_CMS_CDC_BRZ_TO_SLV.md
+  - docs/context/CTRL_TABLES_CONTEXT.md
+review_plan:
+  required_reviewers: []
+  round: 0
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: ''
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: not_required
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 1
+  review: 0
+  architecture: 2
+  runtime_failure: 0
+open_findings: []

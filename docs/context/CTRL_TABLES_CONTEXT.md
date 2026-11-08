@@ -112,6 +112,15 @@ Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (ch�
 | `slv_3p_poi_media` | DOC_ARRAY | | `display_order ASC` | 1 |
 | `slv_3p_poi_price` | DOC | | | 1 |
 
+**`PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` — nguồn `cms_raw_data`** (priority 1, `load_mode = DOC`, `align_path` NULL, `nb_name` NULL, seed `NB_SETUP_INITIAL_DDL`). Bốn dòng này không đổi pre-check partner vì pre-check lọc `src_tbl = partner_raw_data`. Không có activity pipeline cho nguồn này.
+
+| trg_tbl | load_mode | is_active |
+|---|---|---|
+| `slv_cms_blog` | DOC | 1 |
+| `slv_cms_destination` | DOC | 1 |
+| `slv_cms_news` | DOC | 1 |
+| `slv_cms_promotion_article` | DOC | 1 |
+
 **`PL_VV_TRANS_SLV_TO_ENR_15M`** (`NB_00_ORCHES_SLV_TO_ENR`). Cạnh quyết định thứ tự: `slv_poi_entity_non_enrich` → `slv_poi_amenity` → `gld_enr_poi_info`.
 
 `slv_poi_entity_non_enrich` (`load_mode = RECOMPUTE`, `trg_schema = lh_vv_silver.dbo`, `is_active = 1`, `priority = 1`, `nb_name` NULL nên lib lấy `NB_SLV_POI_ENTITY_NON_ENRICH`):
@@ -215,8 +224,9 @@ Luật ghi:
 |---|---|---|
 | `wm_transform_partner_raw_data` | Tạo lại 03/10 (INITIALIZED) → rerun FULL 04/10 (exec `de379b89`, 313 s, 1,52 triệu event). `last_src_version`, `watermark_value` sau rerun **chưa có số** — raw partner dừng nhận từ 17/09 nên `watermark_value` dự kiến ≈ 17/09 `[chưa xác nhận]` | Log rerun 04/10 |
 | `wm_transform_poi_raw_event` | Tạo lại → rerun 04/10 (exec `88ea49e7`, 213 s, 21.168 tài liệu). Lần FULL trước đó (exec `43cae547`) ghi version 1043, `watermark_value` 2026-09-16 11:01:11 — raw 3P không nhận dữ liệu từ 16/09 nên giá trị sau rerun dự kiến như vậy `[chưa xác nhận]` | `POI_3P_EXTRACT_REDESIGN.md` §5.8 |
+| `wm_transform_cms_raw_data` | Dòng seed `INITIALIZED`, cột `crawled_at`, `flow_name = NB_EXTRACT_CMS_CDC_BRZ_TO_SLV`. Chưa có số đo runtime | Seed `NB_SETUP_INITIAL_DDL` |
 
-Tổng biết được trong repo: **2 dòng** nguồn extract.
+Tổng biết được trong repo: **3 dòng** nguồn extract.
 
 ### Thao tác thường gặp
 
@@ -284,6 +294,8 @@ COMMENT 'Mapping cột JSON sang bảng đích (CDC partner, snapshot 3rd-party)
 | Cột inactive bị bỏ qua (bảng đích không có cột đó) | Mọi bảng |
 
 ### Dữ liệu hiện có (seed `NB_CREATE_DDL`, cấu hình chốt 04/10 chiều)
+
+**CMS** (`src_tbl = cms_raw_data`, `src_object = $`, `load_mode = DOC`): 4 bảng, 59 cột registry. Khoá mỗi bảng là `document_id`, `locale`. `first_publish_date` là `date` / `NONE`. Không có `DATE_DAYS`. `locale` là `NONE`, không `LOWER_TRIM`. Cột thời điểm CMS dùng `ISO_UTC_TS`.
 
 **Partner** (`src_tbl = partner_raw_data`, `src_object_schema = public`): 23 bảng, **301 cột**, 61 cột `is_toast`. Instant epoch và ISO lưu `timestamp`. `EPOCH_MS_TS`: `orders.expire_at`, `orders.src_created_at`, `orders.src_updated_at`, và `src_created_at` / `src_updated_at` của `order_refs` cùng ba bảng `order_item_*`. `EPOCH_S_TS`: mọi instant số còn lại, gồm `last_verify_at`, `validity_from`, `validity_to`. `ISO_UTC_TS`: `usage_date`, `valid_from`, `valid_to` của vé, `check_in_date`, `checkout_date`, `departure_time`, `arrival_time`. Số `0` thành NULL, không tính cast-null. `deleted_at` nguồn vẫn `string` + `NONE`. `DECIMAL_BASE64`: `orders.total_payment`, `order_refs.total_payment`, `order_refs.sub_total`. `json_path` của `src_created_at` / `src_updated_at` vẫn là `created_at` / `updated_at`.
 
@@ -569,6 +581,7 @@ FROM lh_vv_ctrl.dbo.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 OR
 | 21/10 | Hai node silver thuộc ENR_15P; xoá cạnh/watermark slv_pn_poi, gld_enr_poi_coordinate, info cũ; DROP hai bảng trên DEV |
 | 22/10 | Bảng 3P ở §3 còn 9 dòng `DOC` / `DOC_ARRAY` theo seed `NB_SETUP_INITIAL_DDL` cell 7. Hai mode ngôn ngữ cũ không còn trong seed |
 | 26/10 | Đổi hậu tố nhịp `pl_name` P → M cho luồng enrich 15 phút và gold 30 phút (`plcadpy`): đổi `pl_name` dòng cấu hình, id và `src_tbl` dòng `wm_flow__`. Không đổi `wm_e__`, log. Tên cũ ở các mục trên là lịch sử |
+| 08/11 | Thêm nguồn `cms_raw_data`: 4 dòng `DOC` tới `slv_cms_*`, watermark `wm_transform_cms_raw_data`, 59 cột registry. Không gắn activity FL_00 |
 
 ## 11. Việc còn lại liên quan ctrl
 
