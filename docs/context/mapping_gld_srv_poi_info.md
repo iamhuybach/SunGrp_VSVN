@@ -8,20 +8,21 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 
 ### 1.1. Xử lý
 
-- `SPEC.inputs`: `entity` = `slv_poi_entity_non_enrich`, `destination` = `slv_enr_poi_destination`, `multi_lang` = `slv_enr_poi_info_multi_lang`, `rating` = `slv_3p_poi_rating`, `review` = `slv_3p_poi_review`. `required_inputs` = (`entity`,). `entity`, `destination`, `multi_lang` gọi `live_only=False`. `rating` và `review`: notebook không truyền `live_only`. `write_mode = MERGE`.
+- `SPEC.inputs`: `entity` = `slv_poi_entity_non_enrich`, `destination` = `slv_enr_poi_destination`, `multi_lang` = `slv_enr_poi_info_multi_lang`, `rating` = `slv_3p_poi_rating`, `review` = `slv_3p_poi_review`, `media` = `slv_poi_media_info`. `required_inputs` = (`entity`,). `entity`, `destination`, `multi_lang` gọi `live_only=False`. `rating`, `review` và `media`: notebook không truyền `live_only` (chỉ dòng `deleted_at IS NULL`). `write_mode = MERGE`.
 - `source_name` lấy từ `ent.source_name`. `DEST_COLS` không có `source_name`.
 - So khớp nguồn bằng `lower(trim(source_name))`. Dòng không phải `google` được giữ. Dòng `google` chỉ khi `poi_id` có trong cả `slv_enr_poi_destination` và `slv_enr_poi_info_multi_lang`.
 - Sau lọc, LEFT JOIN `des` theo `poi_id`.
 - D-SRV-22. `is_partner` = `coalesce(lower(trim(source_name)) = 'partner', false)`. Sau `_destination`, dòng destination còn lại gắn `_has_dest = true`. Không có dòng cùng `poi_id` khi `_has_dest` null sau LEFT JOIN. Dòng destination còn nhưng cột null vẫn `_has_dest` true, không thuộc nhánh này.
 - Nhánh `is_partner` và `_has_dest` null: mỗi cột trong `DEST_COLS` trừ `poi_id` và `updated_at`, tên có trong `ENTITY_OUT_COLS` thì lấy `_e_<cột>` từ `slv_poi_entity_non_enrich` rồi cast về `des.dtypes`; tên không có thì null. Không đọc bảng khác. Không coalesce với destination.
 - `ENTITY_OUT_COLS` là bản chép `OUT_COLS` của `NB_SLV_POI_ENTITY_NON_ENRICH`. `FROM_ENTITY` = tên `DEST_COLS[2:]` nằm trong `ENTITY_OUT_COLS`: `full_address`, `street`, `ward`, `city`, `lat`, `lng`. Null trên nhánh này: `destination_id`, `district`, `country_code`, `postal_code`.
-- Partner đã có dòng destination, Google, nguồn khác: cột destination vẫn 1-1 từ `slv_enr_poi_destination`. `operating_hours`, `holiday_exceptions`, `is_verified`, `is_recommended`, `is_bookable`, `rating_overall`, `rating_count`, `review_count` không đổi.
+- Partner đã có dòng destination, Google, nguồn khác: cột destination vẫn 1-1 từ `slv_enr_poi_destination`. `operating_hours`, `holiday_exceptions`, `is_verified`, `is_recommended`, `is_bookable`, `rating_overall`, `rating_count`, `review_count`, `cover_id`, `cover_blob_url` không đổi.
 - Lý do nghiệp vụ trong notebook: MISSING.
 - Kiểu literal của cột entity trong notebook gold: MISSING. Notebook cast về `des.dtypes` của cột destination.
 - `NB_CREATE_DDL` cell `srvpoipy` thêm `destination_id`, `country_code`, `postal_code`, `lat`, `lng` vào `slv_enr_poi_destination`. Gold lấy 1-1 các cột đó.
 - Grain một dòng `poi_id`. MERGE theo `poi_id`. `poi_id` nguồn `slv_poi_entity_non_enrich` là `STRING`; DDL không ghi `NOT NULL`. Target `gld_srv_poi_info.poi_id` là `STRING NOT NULL`. `quality_gate` chặn khóa NULL.
 - `des` nhiều dòng cùng `poi_id`: giữ dòng `updated_at` lớn nhất khi max duy nhất và không có `updated_at` null. Có `updated_at` null hoặc nhiều dòng cùng max thì dừng, không chọn dòng.
-- `pl_name` hiện hành: `PL_VV_TRANS_SLV_TO_GLD_30M` (`plcadpy` đổi từ `PL_VV_TRANS_SLV_TO_GLD_30P`). `load_mode = RECOMPUTE`, `priority = 1`. Cạnh: `slv_poi_entity_non_enrich`, `slv_enr_poi_destination`, `slv_enr_poi_info_multi_lang`, `slv_3p_poi_rating`, `slv_3p_poi_review` → `gld_srv_poi_info`, `nb_name = NB_GLD_SRV_POI_INFO`. Không gắn `PL_VV_TRANS_SLV_TO_ENR_15M`.
+- `pl_name` hiện hành: `PL_VV_TRANS_SLV_TO_GLD_30M` (`plcadpy` đổi từ `PL_VV_TRANS_SLV_TO_GLD_30P`). `load_mode = RECOMPUTE`, `priority = 1`. Cạnh: `slv_poi_entity_non_enrich`, `slv_enr_poi_destination`, `slv_enr_poi_info_multi_lang`, `slv_3p_poi_rating`, `slv_3p_poi_review`, `slv_poi_media_info` → `gld_srv_poi_info`, `nb_name = NB_GLD_SRV_POI_INFO`. Không gắn `PL_VV_TRANS_SLV_TO_ENR_15M`.
+- `cover_id`, `cover_blob_url` (D-01): LEFT JOIN dòng `slv_poi_media_info` có `is_cover = true` cùng `poi_id`, cùng dòng `gld_srv_poi_media_gallery` chiếu. `is_cover` do `with_cover` của `NB_SLV_POI_MEDIA_INFO` tính; notebook gold không tính lại. Mọi nguồn. Không có dòng cover thì cả hai null, vẫn giữ một dòng `poi_id`. Hơn một dòng cover cho một `poi_id` thì dừng, không chọn dòng. Metric `cover_matched`. Không thuộc `required_inputs`.
 
 ### 1.2. Field Mapping
 
@@ -55,6 +56,8 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 | slv_3p_poi_rating.rating_overall | decimal(4,2) | transform 1-1 | rating_overall |
 | slv_3p_poi_rating.rating_count | integer | transform 1-1 | rating_count |
 | slv_3p_poi_review | integer | count review theo poi_id | review_count |
+| slv_poi_media_info.media_id | string | LEFT JOIN dòng is_cover = true cùng poi_id; không có dòng thì null | cover_id |
+| slv_poi_media_info.blob_url | string | cùng dòng cover với cover_id, transform 1-1; không có dòng thì null | cover_blob_url |
 | | timestamp | field hệ thống | created_at |
 | | timestamp | field hệ thống | updated_at |
 

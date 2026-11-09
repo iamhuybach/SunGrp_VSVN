@@ -14,6 +14,7 @@
 -- apps.srv_poi_review không có cột lang (decision.md D-LANG). Gold gld_srv_poi_review vẫn giữ lang.
 -- Schema apps phải có sẵn. File không tạo schema, index, view hay quyền.
 -- Chạy: psql -v ON_ERROR_STOP=1 -f <file>. Chạy lại sẽ lỗi "already exists" và rollback, không đổi gì.
+-- DB đã có apps.srv_poi_info trước 20261108-gld-srv-poi-info-cover: chạy tay ALTER TABLE apps.srv_poi_info ADD COLUMN cover_id text, ADD COLUMN cover_blob_url text;
 
 BEGIN;
 
@@ -46,6 +47,8 @@ CREATE TABLE apps.srv_poi_info (
     rating_overall numeric(4, 2),
     rating_count integer,
     review_count integer,
+    cover_id text,
+    cover_blob_url text,
     row_hash text,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,

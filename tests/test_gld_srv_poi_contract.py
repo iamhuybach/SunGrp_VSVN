@@ -222,7 +222,7 @@ def test_node_specs():
             "pk": ("poi_id",),
             "inputs": {"entity": "slv_poi_entity_non_enrich", "destination": "slv_enr_poi_destination",
                        "multi_lang": "slv_enr_poi_info_multi_lang", "rating": "slv_3p_poi_rating",
-                       "review": "slv_3p_poi_review"},
+                       "review": "slv_3p_poi_review", "media": "slv_poi_media_info"},
             "required_inputs": ("entity",),
         },
     }
@@ -245,7 +245,7 @@ def test_node_specs():
 
 def test_build_columns_match_ddl():
     gold = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")
-    gold[INFO_FQ] = _assign(_cell("NB_CREATE_DDL.ipynb", "srvratepy"), "INFO_COLS")
+    gold[INFO_FQ] = _assign(_cell("NB_CREATE_DDL.ipynb", "srvcoverpy"), "INFO_COLS")
     gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = _assign(
         _cell("NB_CREATE_DDL.ipynb", "mlexppy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     pairs = {
@@ -297,16 +297,17 @@ def test_review_mapping_targets():
 
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-22:-14] == [
+    assert ids[-24:-16] == [
         "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
         "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
     ]
-    assert ids[-14:-12] == ["plcadmd", "plcadpy"]
-    assert ids[-12:-10] == ["mlexpmd", "mlexppy"]
-    assert ids[-10:-8] == ["srvrevmd", "srvrevpy"]
-    assert ids[-8:-4] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
-    assert ids[-4:-2] == ["mlsrcmd", "mlsrcpy"]
-    assert ids[-2:] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-16:-14] == ["plcadmd", "plcadpy"]
+    assert ids[-14:-12] == ["mlexpmd", "mlexppy"]
+    assert ids[-12:-10] == ["srvrevmd", "srvrevpy"]
+    assert ids[-10:-6] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-6:-4] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-4:-2] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-2:] == ["srvcovermd", "srvcoverpy"]
     patch = _cell("NB_CREATE_DDL.ipynb", "srvratepy")
     base = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")[INFO_FQ]
     assert _assign(patch, "INFO_NEW_COLS") == NEW_INFO
@@ -528,7 +529,8 @@ def test_review_source_patch_cell():
     assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
     assert "raise failed from cleanup_exc" in patch
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-8:-4] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
-    assert ids[-4:-2] == ["mlsrcmd", "mlsrcpy"]
-    assert ids[-2:] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-10:-6] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-6:-4] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-4:-2] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-2:] == ["srvcovermd", "srvcoverpy"]
 

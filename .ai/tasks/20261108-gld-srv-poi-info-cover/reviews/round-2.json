@@ -1,0 +1,19 @@
+{
+  "round": 2,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "docs/context/mapping_gld_srv_poi_info.md": "98adb1db7c12329d50180c3dafd45241f253afda0e68c815947e244f6d87c50f",
+    "notebooks/NB_CREATE_DDL.ipynb": "2beeea057022fc6c74989c347e131f701184333c893a0b7c94be787c515a4822",
+    "notebooks/NB_GLD_SRV_POI_INFO.ipynb": "ceb5cccecd12c5b452ae7df5d22aa3263f5f29defc44ab93fcafceec1e44d0ea",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "c3704a9878df2df979ecfa743316395e1aebb2ccf17b960a7167e4cbfde81ee7",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java": "b5a3a864beae890fea029ae8be0762a03dddb19b5985c2a01882602e92f344d5",
+    "sql/postgres/gld_srv_serve.pg.sql": "9d54e5f68747258b180739437d0036acf33ba0e8974ca56f75da0773f593c87f",
+    "tests/test_enr_poi_contract.py": "cf84c5235955c7a603bb9ae5bb0941d1899c53762cf254a9cd9bd985d107a4bf",
+    "tests/test_gld_srv_poi_contract.py": "72ba9679252c3f7939bc93bebdeb9cb7e640eab81b54c8f4a3ff1f050f8d3b57",
+    "tests/test_initial_ddl_contract.py": "e40b3d0ab51737d510f6d93296ee010377c1ff91228a2455b111af5e3ba00fe4",
+    "tests/test_poi_entity_contract.py": "bcbd65a424d9c5e8dca02e9b43aa7aaf337a84bfd15369a4f5aaa49d8765d85d",
+    "tests/test_srv_poi_serving_contract.py": "f53497824bfdb5b6e4b9a9b54ae600ae15e5484dc498220fb0c45457b2d80ca9"
+  },
+  "elapsed_seconds": 94
+}

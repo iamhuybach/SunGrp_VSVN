@@ -1,0 +1,75 @@
+schema_version: 1
+task:
+  id: 20261108-gld-srv-poi-info-cover
+  title: Add cover_id and cover_blob_url to gld_srv_poi_info
+  status: user_decision
+  owner: user
+  created_at: '2026-11-08'
+  updated_at: '2026-11-09'
+classification:
+  complexity: medium
+  risk_level: medium
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - data_model_change
+  - cross_system
+scope:
+  systems:
+  - gold
+  - postgresql
+  - data-serving-service
+  files:
+  - notebooks/NB_GLD_SRV_POI_INFO.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+  - notebooks/NB_SETUP_INITIAL_DDL.ipynb
+  - sql/postgres/gld_srv_serve.pg.sql
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java
+  - docs/context/mapping_gld_srv_poi_info.md
+  - tests/test_srv_poi_serving_contract.py
+  - tests/test_gld_srv_poi_contract.py
+  - tests/test_initial_ddl_contract.py
+  - tests/test_enr_poi_contract.py
+  - tests/test_poi_entity_contract.py
+review_plan:
+  required_reviewers:
+  - spark-runtime-reviewer
+  - sql-data-reviewer
+  - api-contract-reviewer
+  - jpa-performance-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: pass
+rounds:
+  verification: 1
+  review: 2
+  architecture: 1
+  runtime_failure: 0
+open_findings: []

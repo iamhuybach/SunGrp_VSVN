@@ -1,0 +1,69 @@
+# Verification 2026-11-09 09:06:58 — PASS
+Files (12): docs/context/mapping_gld_srv_poi_info.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_GLD_SRV_POI_INFO.ipynb, notebooks/NB_SETUP_INITIAL_DDL.ipynb, notebooks_lgc/cms_transform/nb_cms_transformation.ipynb, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, sql/postgres/gld_srv_serve.pg.sql, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: PASS
+All Finished!
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 27%]
+........................................................................ [ 55%]
+........................................................................ [ 82%]
+.............................................                            [100%]
+261 passed in 13.36s
+
+## maven: PASS
+ :: Spring Boot ::                (v4.1.1)
+
+2026-11-09T09:06:43.455+07:00  INFO 30700 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Starting PoiRepositoryIntegrationTest using Java 26.0.2.1 with PID 30700 (started by bachnh in D:\git\SunGrp_VSVN\services\data-serving-service)
+2026-11-09T09:06:43.455+07:00  INFO 30700 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-11-09T09:06:44.511+07:00  INFO 30700 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-09T09:06:44.617+07:00  INFO 30700 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 100 ms. Found 5 JPA repository interfaces.
+2026-11-09T09:06:44.928+07:00  INFO 30700 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-09T09:06:45.431+07:00  INFO 30700 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: 594b686eef2a3312217d5f10987dedbc4510f093274b7aa69ea877a7d8fe962e
+2026-11-09T09:06:49.988+07:00  INFO 30700 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT5.059101S
+2026-11-09T09:06:49.988+07:00  INFO 30700 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:62457/test?loggerLevel=OFF)
+2026-11-09T09:06:50.156+07:00  INFO 30700 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-09T09:06:50.230+07:00  INFO 30700 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-09T09:06:50.236+07:00  INFO 30700 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-09T09:06:50.275+07:00  INFO 30700 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@ae11512
+2026-11-09T09:06:50.276+07:00  INFO 30700 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-09T09:06:50.294+07:00  INFO 30700 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:62457/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-09T09:06:50.749+07:00  INFO 30700 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-09T09:06:50.763+07:00  INFO 30700 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-09T09:06:51.314+07:00  WARN 30700 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-09T09:06:51.864+07:00  INFO 30700 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-09T09:06:51.896+07:00  INFO 30700 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 8.509 seconds (process running for 66.97)
+2026-11-09T09:06:51.902+07:00  WARN 30700 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-09T09:06:51.903+07:00  WARN 30700 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+

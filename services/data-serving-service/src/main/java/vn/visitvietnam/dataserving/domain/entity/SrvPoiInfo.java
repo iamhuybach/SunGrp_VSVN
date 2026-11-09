@@ -110,6 +110,12 @@ public class SrvPoiInfo {
     @Column(name = "review_count")
     private Integer reviewCount;
 
+    @Column(name = "cover_id")
+    private String coverId;
+
+    @Column(name = "cover_blob_url")
+    private String coverBlobUrl;
+
     @Column(name = "row_hash")
     private String rowHash;
 

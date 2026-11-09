@@ -161,3 +161,103 @@ def test_no_flyway_in_service():
     assert "flyway" not in (SERVICE / "pom.xml").read_text(encoding="utf-8").lower()
     for yml in SERVICE.rglob("application*.yml"):
         assert "flyway" not in yml.read_text(encoding="utf-8").lower(), yml
+
+
+COVER = [("cover_id", "STRING"), ("cover_blob_url", "STRING")]
+TECH = ("row_hash", "created_at", "updated_at", "deleted_at")
+INFO_SOURCES = ("slv_poi_entity_non_enrich", "slv_enr_poi_destination", "slv_enr_poi_info_multi_lang",
+                "slv_3p_poi_rating", "slv_3p_poi_review")
+COVER_EDGE = (1, "slv_poi_media_info", "lh_vv_gold.dbo", "gld_srv_poi_info", "RECOMPUTE", "NB_GLD_SRV_POI_INFO", 1)
+
+
+def _literal(source: str, name: str):
+    node = next(n for n in ast.parse(source).body
+                if isinstance(n, ast.Assign) and any(getattr(t, "id", None) == name for t in n.targets))
+    return ast.literal_eval(node.value)
+
+
+def _code(source: str) -> str:
+    return "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
+
+
+def _info_spec() -> dict:
+    tree = ast.parse(_cell_source("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"))
+    call = next(n.value for n in ast.walk(tree)
+                if isinstance(n, ast.Assign) and any(getattr(t, "id", None) == "SPEC" for t in n.targets))
+    return {kw.arg: ast.literal_eval(kw.value) for kw in call.keywords if kw.arg != "build"}
+
+
+def test_info_cover_patch_cell():
+    ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
+    assert ids[-2:] == ["srvcovermd", "srvcoverpy"]
+    patch = _cell_source("NB_CREATE_DDL.ipynb", "srvcoverpy")
+    base = _literal(_cell_source("NB_CREATE_DDL.ipynb", "srvratepy"), "INFO_COLS")
+    at = [name for name, _dtype in base].index("review_count") + 1
+    assert _literal(patch, "INFO_NEW_COLS") == COVER
+    assert _literal(patch, "INFO_COLS") == base[:at] + COVER + base[at:]
+    assert _literal(patch, "EDGES_ON") == [COVER_EDGE]
+    assert _literal(patch, "EDGES_KEEP") == INFO_SOURCES
+    assert _literal(patch, "PL") == _literal(_cell_source("NB_CREATE_DDL.ipynb", "plcadpy"), "RENAMES")[1][1]
+    order = ["held = True", "Dừng trước khi ghi", "ALTER TABLE", "INSERT INTO {CFG}", "Sau khi ghi", "finally:"]
+    assert [patch.index(t) for t in order] == sorted(patch.index(t) for t in order)
+    code = _code(patch)
+    for token in ("DROP", "DELETE", "TRUNCATE", "UPDATE {CFG}", "REPLACE", "RESTORE", "columnMapping", "_30P"):
+        assert token not in code
+    assert code.count("ALTER TABLE") == 1 and " AFTER " in code
+    calls = [m.start() for m in re.finditer(r"(?m)^\s*_refresh_lock\(\)", patch)]
+    alter, insert = patch.index("ALTER TABLE"), patch.index("INSERT INTO {CFG}")
+    assert len(calls) == 2 and calls[0] < alter < calls[1] < insert
+    assert "LEASE_MINUTES = 90" in patch and "lock_exec_id = '{LOCK}'" in patch
+    assert "raise failed from cleanup_exc" in patch
+
+
+def test_info_cover_build_rule():
+    source = _cell_source("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    code = _code(source)
+    assert _literal(source, "OUT_COLS")[-3:] == ("review_count", "cover_id", "cover_blob_url")
+    assert _literal(source, "COVER_COLS") == ("poi_id", "media_id", "blob_url", "is_cover")
+    assert 'md = ctx.input("media")' in code
+    assert '.where(F.col("is_cover"))' in code
+    assert 'F.col("media_id").alias("cover_id")' in code
+    assert 'F.col("blob_url").alias("cover_blob_url")' in code
+    assert 'join(cover, "poi_id", "left")' in code
+    assert "có hơn một cover" in code
+    for token in ("with_cover", "row_number", "is_active", "lh_vv_gold", "deleted"):
+        assert token not in code
+    spec = _info_spec()
+    assert spec["pk"] == ("poi_id",) and spec["write_mode"] == "MERGE"
+    assert spec["required_inputs"] == ("entity",)
+    assert spec["inputs"]["media"] == "slv_poi_media_info"
+    assert tuple(v for k, v in spec["inputs"].items() if k != "media") == INFO_SOURCES
+
+
+def test_info_cover_seed_and_init_ddl():
+    seed: dict = {}
+    exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_seed_ctrl"), seed)  # noqa: S102
+    rows = [r for r in seed["PIPELINE_CONFIG_ROWS"] if r[4] == "gld_srv_poi_info"]
+    assert seed["PIPELINE_CONFIG_ROWS"][-1] == (
+        seed["_GLD30"], seed["_S"], "slv_poi_media_info", seed["_G"], "gld_srv_poi_info",
+        1, 1, "RECOMPUTE", None, None, "NB_GLD_SRV_POI_INFO")
+    assert sorted(r[2] for r in rows if r[5] == 1) == sorted(_info_spec()["inputs"].values())
+    assert {r[0] for r in rows} == {"PL_VV_TRANS_SLV_TO_GLD_30M"}
+    init: dict = {}
+    exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
+    spec = next(s for s in init["TABLE_SPECS"] if s["fq"] == "lh_vv_gold.dbo.gld_srv_poi_info")
+    patch = _cell_source("NB_CREATE_DDL.ipynb", "srvcoverpy")
+    assert [(c[0], c[1]) for c in spec["cols"]] == _literal(patch, "INFO_COLS")
+    out = _literal(_cell_source("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"), "OUT_COLS")
+    assert list(out) + list(TECH) == [c[0] for c in spec["cols"]]
+
+
+def test_info_cover_mapping_and_pg_ddl():
+    text = (ROOT / "docs" / "context" / "mapping_gld_srv_poi_info.md").read_text(encoding="utf-8")
+    table = text.split("### 1.2. Field Mapping", 1)[1].split("### 1.3", 1)[0]
+    rows = {line.split("|")[4].strip(): line for line in table.splitlines() if line.startswith("|")}
+    assert "slv_poi_media_info.media_id" in rows["cover_id"] and "is_cover" in rows["cover_id"]
+    assert "slv_poi_media_info.blob_url" in rows["cover_blob_url"]
+    handling = text.split("### 1.1. Xử lý", 1)[1].split("### 1.2", 1)[0]
+    assert "`media` = `slv_poi_media_info`" in handling and "cover_matched" in handling
+    pg = PG_DDL.read_text(encoding="utf-8")
+    body = re.search(r"CREATE TABLE apps\.srv_poi_info \((.*?)\n\);", pg, re.S).group(1)
+    assert "    review_count integer,\n    cover_id text,\n    cover_blob_url text,\n" in body
+    assert not re.search(r"(?m)^\s*ALTER\s", pg)

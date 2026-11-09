@@ -331,7 +331,7 @@ def test_columns_match_sources():
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
     gold = _assign(srv, "GOLD_COLS")
-    gold["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(_cell(ddl, "srvratepy"), "INFO_COLS")
+    gold["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(_cell(ddl, "srvcoverpy"), "INFO_COLS")
     gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = ml_cols["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     gold["lh_vv_gold.dbo.gld_srv_poi_review"] = review_cols
     for fq, cols in gold.items():
@@ -556,10 +556,13 @@ def test_pipeline_config_rows_match_sources():
     for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "srvrevpy"), "EDGES_ON"):
         expected.append((gld, silver, src, schema, target, 0 if (src, target) in srv_off else 1, priority, mode, None, None, notebook))
         assert seq > 0
+    for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "srvcoverpy"), "EDGES_ON"):
+        expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        assert seq > 0
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 73
+    assert len(expected) == 74
 
 
 def test_cms_seed_rows_present():
@@ -718,7 +721,7 @@ def test_gld_srv_patch_create_matches_init():
     contracts = {fq: cols for fq, cols in env["GOLD_COLS"].items()}
     contracts[dest] = env["DEST_BASE"] + env["DEST_NEW_COLS"]
     contracts["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(
-        _cell(_notebook("NB_CREATE_DDL.ipynb"), "srvratepy"), "INFO_COLS")
+        _cell(_notebook("NB_CREATE_DDL.ipynb"), "srvcoverpy"), "INFO_COLS")
     contracts["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = _assign(
         _cell(_notebook("NB_CREATE_DDL.ipynb"), "mlexppy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     for fq, cols in contracts.items():
@@ -890,7 +893,7 @@ def test_pl_cadence_seed():
 
 def test_pl_cadence_patch_cell():
     ddl = _notebook("NB_CREATE_DDL.ipynb")
-    assert [c.get("id") for c in ddl["cells"]][-14:-12] == ["plcadmd", "plcadpy"]
+    assert [c.get("id") for c in ddl["cells"]][-16:-14] == ["plcadmd", "plcadpy"]
     assert _cell(ddl, "plcadmd").startswith("# [THÊM 26/10] 20261026-pl-name-cadence-suffix")
     patch, renames, minutes = _cell(ddl, "plcadpy"), _renames(), _cadence()
     seed: dict = {}
