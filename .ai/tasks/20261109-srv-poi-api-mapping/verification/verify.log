@@ -1,0 +1,30 @@
+# Verification 2026-11-09 11:37:15 — PASS
+Files (5): docs/context/api-mapping/MAPPING_SAMPLE.md, docs/context/api-mapping/amenities.md, docs/context/api-mapping/compact.md, docs/context/api-mapping/gallery.md, docs/context/api-mapping/reviews.md
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 27%]
+........................................................................ [ 55%]
+........................................................................ [ 82%]
+.............................................                            [100%]
+261 passed in 6.70s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
