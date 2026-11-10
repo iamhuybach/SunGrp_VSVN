@@ -1,0 +1,26 @@
+{
+  "round": 2,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "docs/context/01_DATA_MODEL.md": "93be50a46e2c63740a6e8168c8eac5df10c700c5f68e420f5e0ecf4e1bd97012",
+    "docs/context/api-mapping/amenities.md": "c5fe6f9c3550c2fae511dd8284d18f3ecee3d11c18fbcc088383bb9d757d053d",
+    "docs/context/mapping_gld_srv_poi_amenity.md": "1c5817367ed26a10ee76d99433a8267d9835f4aea4a1b45983a3b297194657c2",
+    "notebooks/NB_CREATE_DDL.ipynb": "1d9092190561352e4654a489180b94eeadfdb6f9e0dec2c22b20436185b5d7b6",
+    "notebooks/NB_GLD_SRV_POI_AMENITY.ipynb": "1002a5800830daa28afef17501310350af57025d86a5395f72dee392bb95c58a",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "54c4ec4200c930200638bd15d48b8cccfdf714f5cf8950d99078cfad6b4f0fc1",
+    "notebooks/NB_SETUP_POI_AMENITY.ipynb": "691ce7ab72051422de55b2ca1a47c43c58ff23670d311b11d2dcf4a2d098eeee",
+    "notebooks/NB_SLV_POI_AMENITY.ipynb": "b0e9f4bb5aa1cbeebb9af951a6d4be2ba5db9dafa87aa2f24b588f4a94894e2d",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java": "4c4e2a4f1a4dae48c80d26ffff022548998e61c7173e8d80a191679680515d09",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java": "4763620e59e5e58879cdaf9b927856676866c622b9390043c293aef8ee338016",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java": "7d950c055dde942171ae2268c8bd8b2211b661aa4ae5c0c4bf5668e794956a9f",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java": "1f4d06ee177c7c26716e9cd79b5889593930c3f1617ba3fab2d18cb7db860fb6",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java": "5ac20eeafe7d0b0181c2850a57c08f6e549976dc4878e8b25f8f390f9cc3afb2",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java": "c53044615f688b2d4322917fd20613a043cb606c64656ffb952ff022e6e9ea99",
+    "sql/postgres/gld_srv_serve.pg.sql": "d9516666b7e579c8bf27716440e5ddfb108869a2354d62e189fd204612113c55",
+    "tests/test_poi_amenity_contract.py": "0e6c571e1e78d12d60382cba1ff67be6abb94e8700a3522c8c21b4b858a9f39c",
+    "tests/test_poi_media_amenity_contract.py": "a1ca8e096fa45b7ce81537f0c468912c67be61ce0fe0b630e6104bbce9bc352c",
+    "tests/test_srv_poi_serving_contract.py": "53ddcf643e6d35d4575f73be0d77380bb1e1cbfe4e9365fb73c6d67d6b7315c7"
+  },
+  "elapsed_seconds": 143
+}

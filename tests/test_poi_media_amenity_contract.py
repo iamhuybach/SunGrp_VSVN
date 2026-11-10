@@ -14,6 +14,7 @@ AMENITY_COLS = [
     ("amenity_group", "STRING NOT NULL", None),
     ("amenity_raw", "STRING NOT NULL", None),
     ("amenity", "STRING", None),
+    ("amenity_en", "STRING", None),
     ("amenity_vi", "STRING", None),
     ("service_flags", "STRING", None),
     ("row_hash", "STRING", None),

@@ -4,7 +4,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Description | Truy vấn tiện ích của một POI theo nhóm. Chỉ dòng `apps.srv_poi_amenity.deleted_at` null, và bỏ dòng `amenity_raw` chứa `json_type`. POI phải còn trong `apps.srv_poi_info` với `deleted_at` null. |
+| Description | Truy vấn tiện ích của một POI theo nhóm. Chỉ dòng `apps.srv_poi_amenity.deleted_at` null, và bỏ dòng `amenity_raw` chứa `json_type`. Không kiểm tra `apps.srv_poi_info`. |
 | Method | GET |
 | Endpoint | /api/v1/pois/{poi_id}/amenities |
 
@@ -12,15 +12,13 @@
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | Accept-Language | string | không | Dùng khi query `lang` trống. `LanguageResolver` lấy tag đầu tiên, cắt subtag. Cả hai trống thì `vi`. Nhãn nhóm và nhãn item dùng map tiếng Anh khi lang resolve là `en`, các lang khác dùng map tiếng Việt. |
-| 2 | X-Request-Id | string | không | `RequestIdFilter` đọc header này, hoặc `X-Request-ID`, ghi vào `meta.trace_id`. Thiếu thì server tạo UUID. |
+| 1 | X-Request-Id | string | không | `RequestIdFilter` đọc header này, hoặc `X-Request-ID`, ghi vào `meta.trace_id`. Thiếu thì server tạo UUID. Endpoint này không đọc `Accept-Language`. |
 
 ## Request param
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | poi_id | string | có | path. `apps.srv_poi_info.poi_id`. |
-| 2 | lang | string | không | query. Ưu tiên hơn `Accept-Language`. Rỗng thì fallback `vi`. |
+| 1 | poi_id | string | có | path. Khóa đọc `apps.srv_poi_amenity.poi_id`. Không có query `lang`. |
 
 ## Response
 
@@ -29,13 +27,13 @@
 | 1 | success | boolean | có | envelope | `true` khi HTTP 200. |
 | 2 | code | integer | có | envelope | Số HTTP trong body. Thành công là `200`. |
 | 3 | message | string | có | envelope | Thành công: `POI amenities retrieved successfully`. |
-| 4 | data | array | có | envelope | Danh sách `PoiAmenityGroupResponse`. Rỗng khi POI tồn tại mà không còn dòng hợp lệ. Null khi lỗi. |
-| 5 | data[].amenity_group | string | có | apps.srv_poi_amenity.amenity_group | `amenity_group` null thì giá trị JSON là `GENERAL`. |
-| 6 | data[].amenity_vi | string | có | không có cột | Nhãn nhóm. Lang `en` lấy `AMENITY_GROUP_LABELS_EN`, lang khác lấy `AMENITY_GROUP_LABELS_VI`. Không có trong map thì trả lại mã nhóm. Không lấy cột `amenity_vi`. |
-| 7 | data[].items | array | có | không có cột | Các dòng trong nhóm. |
-| 8 | data[].items[].amenity_code | string | có | apps.srv_poi_amenity.amenity; apps.srv_poi_amenity.amenity_raw | `amenity` khi khác blank, còn lại `amenity_raw`. |
-| 9 | data[].items[].amenity_label | string | có | apps.srv_poi_amenity.amenity_vi; apps.srv_poi_amenity.amenity; apps.srv_poi_amenity.amenity_raw | Lang `en`: `amenity`, rồi `amenity_vi`, rồi `amenity_raw`. Lang khác: `amenity_vi`, rồi `amenity`, rồi `amenity_raw`. Bỏ qua giá trị blank. |
-| 10 | data[].items[].service_flags | string | có | apps.srv_poi_amenity.service_flags | Giá trị có thể null. |
+| 4 | data | array | có | envelope | Danh sách `PoiAmenityGroupResponse`. Rỗng khi không còn dòng amenity hợp lệ. |
+| 5 | data[].amenity_group | string | có | apps.srv_poi_amenity.amenity_group | Khóa nhóm. Không fallback `GENERAL`. |
+| 6 | data[].items | array | có | không có cột | Các dòng trong nhóm, sắp theo `amenity_code` rồi `amenity_raw`. |
+| 7 | data[].items[].amenity_code | string | có | apps.srv_poi_amenity.amenity | Đúng cột `amenity`. Không fallback `amenity_raw`. |
+| 8 | data[].items[].amenity_label_en | string | có | apps.srv_poi_amenity.amenity_en | Nhãn tiếng Anh. Có thể null. |
+| 9 | data[].items[].amenity_label_vi | string | có | apps.srv_poi_amenity.amenity_vi | Nhãn tiếng Việt. Có thể null. |
+| 10 | data[].items[].service_flags | string | có | apps.srv_poi_amenity.service_flags | Đúng cột `service_flags`, không lấy `amenity_vi`. Có thể null. |
 | 11 | meta | object | có | envelope | |
 | 12 | meta.timestamp | string | có | envelope | ISO-8601 UTC. |
 | 13 | meta.trace_id | string | có | envelope | Từ `X-Request-Id` hoặc UUID server tạo. |
@@ -52,7 +50,7 @@
 |---|---|---|
 | 200 | null | Truy vấn thành công. `meta.error_code` null. |
 | 400 | ERR_BAD_REQUEST | Handler map `MethodArgumentTypeMismatchException` và `IllegalArgumentException`. `errors` null. |
-| 404 | POI_NOT_FOUND | `@ApiResponses` ghi không tìm thấy POI. `validatePoiExists` ném `ResourceNotFoundException` khi không có `apps.srv_poi_info.poi_id` với `deleted_at` null. Message `POI not found with id: ` cộng `poi_id`. |
+| 404 | không có | Amenities không trả 404 khi thiếu `srv_poi_info`. |
 | 409 | STATE_CONFLICT | Handler map `IllegalStateException`. Message là message của exception. |
 | 422 | ERR_VALIDATION_FAILED | Handler map các exception validation. Message `Validation failed`. Method này không gắn `@Min` `@Max`. |
 | 500 | INTERNAL_SERVER_ERROR | Handler map `Exception` còn lại. Message `An unexpected error occurred. Please contact support with the trace ID.` |
@@ -63,8 +61,7 @@
 ## Sample request
 
 ```http
-GET /api/v1/pois/11111111-1111-1111-1111-111111111111/amenities?lang=vi HTTP/1.1
-Accept-Language: vi
+GET /api/v1/pois/11111111-1111-1111-1111-111111111111/amenities HTTP/1.1
 X-Request-Id: 22222222-2222-2222-2222-222222222222
 ```
 
@@ -77,12 +74,12 @@ X-Request-Id: 22222222-2222-2222-2222-222222222222
   "message": "POI amenities retrieved successfully",
   "data": [
     {
-      "amenity_group": "FACILITY",
-      "amenity_vi": "Tiện nghi cơ sở",
+      "amenity_group": "facilities_and_services",
       "items": [
         {
           "amenity_code": "ma_mau",
-          "amenity_label": "Nhan mau",
+          "amenity_label_en": "Nhan mau",
+          "amenity_label_vi": "Amenity sample",
           "service_flags": "mau"
         }
       ]

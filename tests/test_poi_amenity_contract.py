@@ -3,6 +3,8 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 MAPPING = ROOT / "docs" / "context" / "3p-google" / "mapping_amenities.md"
 SECTOR = {"1": "accommodation", "2": "f_n_b", "3": "attraction", "4": "shopping_n_retail"}
@@ -540,7 +542,11 @@ def test_amenity_node_contract():
     out = re.search(r"OUT_COLS = \(([^)]*)\)", src)
     cols = [part.strip().strip('"') for part in out.group(1).split(",") if part.strip()]
     assert cols[-1] == "service_flags"
+    assert cols[cols.index("amenity") + 1] == "amenity_en"
     assert "service_flags string, _kind" in src
+    assert "c[-4] is not None" in src[src.index("def build"):]
+    assert "amenity_en STRING" in src
+    assert "dict_amenity_en_blank=" in src
     assert 'c[-3] == "flag"' in src
     assert 'c[5] == "flag"' not in src[src.index("def build"):]
 
@@ -568,7 +574,7 @@ def test_setup_contract():
     src = _nb("NB_SETUP_POI_AMENITY.ipynb")
     assert 'p_apply = "false"' in src
     for column in (
-        "source_name", "business_sector", "amenity_group", "amenity_raw", "amenity", "amenity_vi", "service_flags",
+        "source_name", "business_sector", "amenity_group", "amenity_raw", "amenity", "amenity_en", "amenity_vi", "service_flags",
         "is_active", "updated_at", "poi_id", "row_hash", "created_at", "deleted_at",
     ):
         assert column in src
@@ -579,6 +585,8 @@ def test_setup_contract():
     merge = src.split("def _seed_merge", 1)[1].split("missing_before", 1)[0]
     assert "WHEN NOT MATCHED" in merge
     assert "WHEN MATCHED" not in merge
+    assert "ADD COLUMNS (amenity_en STRING AFTER amenity)" in src
+    assert "s.amenity_en" in merge
     assert "PL_VV_TRANS_SLV_TO_ENR_15M" in src
     assert "PL_VV_TRANS_SLV_TO_SLV_1H" not in src
     assert "pl_name IS NULL" in src
@@ -604,3 +612,68 @@ def test_setup_contract():
         assert token in pre
     assert "stale_keys" in src
     assert '"stale": STALE' in src
+
+
+def test_amenity_code_rule_cases():
+    code = _seed_ns()["amenity_code"]
+    pairs = {
+        "Free Street Parking": "free_street_parking",
+        "24-hour Front Desk": "24_hour_front_desk",
+        "Spa & Wellness": "spa_wellness",
+        "Private Room (VIP)": "private_room_vip",
+        "Yakiniku / Teppanyaki": "yakiniku_teppanyaki",
+        "Pet Café": "pet_cafe",
+        "Pet Cafe\u0301": "pet_cafe",
+        "servesWine": "serves_wine",
+        "servesVegetarianFood": "serves_vegetarian_food",
+        "pureServiceAreaBusiness": "pure_service_area_business",
+        "acceptsNfc": "accepts_nfc",
+        "EV Charging Station": "ev_charging_station",
+        "Free Wi-Fi": "free_wi_fi",
+        "E-Wallet": "e_wallet",
+        "takeout": "takeout",
+        "Good for Children": "good_for_children",
+        "Family Friendly": "family_friendly",
+        "": "",
+        None: "",
+    }
+    for raw, expected in pairs.items():
+        assert code(raw) == expected
+    rows = _seed_ns()["SEED_ROWS"]
+    assert all(code(code(row[4])) == code(row[4]) for row in rows)
+
+
+def test_seed_rows_with_code_shape():
+    ns = _seed_ns()
+    rows = ns["SEED_ROWS"]
+    coded = ns["amenity_seed_rows"](rows)
+    shape = ns["AMENITY_CODE_SHAPE"]
+    assert len(rows) == len(coded) == 175
+    for raw, out in zip(rows, coded, strict=True):
+        assert len(out) == 8
+        assert out[5] == raw[4]
+        assert out[4] == ns["amenity_code"](out[5])
+        assert shape.fullmatch(out[4])
+    keys = [row[:5] for row in coded]
+    assert len(keys) == len(set(keys))
+    ns["validate_seed"](rows)
+    bad = [rows[0][:4] + ("Đỗ",) + rows[0][5:]]
+    with pytest.raises(ValueError, match="snake_case"):
+        ns["validate_seed"](bad)
+    with pytest.raises(ValueError, match="trùng khoá"):
+        ns["validate_seed"](rows + [rows[0]])
+
+
+def test_match_conditions_carries_amenity_en():
+    ns = _seed_ns()
+    match = _match_ns()
+    coded = ns["amenity_seed_rows"]([row for row in ns["SEED_ROWS"] if row[0] == "google"])
+    rows = [row[1:] for row in coded]
+    conds, _dup, _legacy = match["match_conditions"](rows)
+    src = {row[:3]: row for row in rows}
+    assert conds
+    for cond in conds:
+        row = src[cond[:3]]
+        assert cond[4] == row[4]
+        assert cond[-4] == row[6]
+

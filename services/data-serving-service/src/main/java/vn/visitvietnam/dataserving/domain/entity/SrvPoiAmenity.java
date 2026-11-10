@@ -45,6 +45,9 @@ public class SrvPoiAmenity {
     @Column(name = "amenity")
     private String amenity;
 
+    @Column(name = "amenity_en")
+    private String amenityEn;
+
     @Column(name = "amenity_vi")
     private String amenityVi;
 

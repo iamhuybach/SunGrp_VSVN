@@ -118,22 +118,14 @@ public class PoiController {
 
     @Operation(summary = "Truy vấn danh sách tiện ích của POI theo nhóm", description = "Trả về danh sách nhóm tiện ích (amenity_group) kèm các tiện nghi chi tiết")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Truy vấn thành công"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Không tìm thấy POI", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Truy vấn thành công. Data rỗng khi không có dòng amenity còn hiệu lực.")
     })
     @GetMapping("/{poi_id}/amenities")
     public ResponseEntity<ApiResponse<List<PoiAmenityGroupResponse>>> getAmenities(
             @Parameter(description = "Mã định danh của POI", example = "poi_01jk9a7b")
-            @PathVariable("poi_id") String poiId,
-
-            @Parameter(description = "Mã ngôn ngữ yêu cầu (vd: vi, en, ko, ja)")
-            @RequestParam(name = "lang", required = false) String lang,
-
-            @Parameter(description = "Header ngôn ngữ ưu tiên của trình duyệt/ứng dụng (vd: en-US,en;q=0.9,vi;q=0.8)")
-            @RequestHeader(name = "Accept-Language", required = false) String acceptLanguage
+            @PathVariable("poi_id") String poiId
     ) {
-        String resolvedLang = languageResolver.resolveLanguage(lang, acceptLanguage);
-        List<PoiAmenityGroupResponse> amenities = poiService.getAmenities(poiId, resolvedLang);
+        List<PoiAmenityGroupResponse> amenities = poiService.getAmenities(poiId);
         return ResponseEntity.ok(ApiResponse.success(amenities, "POI amenities retrieved successfully"));
     }
 }

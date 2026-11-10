@@ -78,6 +78,7 @@ CREATE TABLE apps.srv_poi_amenity (
     amenity_group text NOT NULL,
     amenity_raw text NOT NULL,
     amenity text,
+    amenity_en text,
     amenity_vi text,
     service_flags text,
     row_hash text,

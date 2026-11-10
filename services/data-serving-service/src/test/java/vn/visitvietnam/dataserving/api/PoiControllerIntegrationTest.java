@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -258,15 +259,15 @@ class PoiControllerIntegrationTest {
     // ── API 10: Amenities Endpoint Tests ─────────────────────────────────────
 
     @Test
-    @DisplayName("GET /api/v1/pois/{poi_id}/amenities trả về 200 OK với nhóm tiện ích và hiển thị null tường minh")
+    @DisplayName("GET /api/v1/pois/{poi_id}/amenities trả cây D-01")
     void shouldReturnAmenitiesSuccessfully() throws Exception {
         PoiAmenityGroupResponse group = new PoiAmenityGroupResponse(
-                "FACILITY",
-                "Tiện nghi cơ sở",
-                List.of(new PoiAmenityGroupResponse.Item("parking", "Bãi đỗ xe", null))
+                "facilities_and_services",
+                List.of(new PoiAmenityGroupResponse.Item(
+                        "free_street_parking", "Free Street Parking", "Đỗ xe trên phố", "Parking"))
         );
 
-        when(poiService.getAmenities("poi_01", "vi")).thenReturn(List.of(group));
+        when(poiService.getAmenities("poi_01")).thenReturn(List.of(group));
 
         mockMvc.perform(get("/api/v1/pois/poi_01/amenities"))
                 .andExpect(status().isOk())
@@ -274,39 +275,35 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.message").value("POI amenities retrieved successfully"))
                 .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].amenity_group").value("FACILITY"))
-                .andExpect(jsonPath("$.data[0].amenity_vi").value("Tiện nghi cơ sở"))
-                .andExpect(jsonPath("$.data[0].items[0].amenity_code").value("parking"))
-                .andExpect(jsonPath("$.data[0].items[0].amenity_label").value("Bãi đỗ xe"))
-                .andExpect(jsonPath("$.data[0].items[0].service_flags").value(nullValue()))
+                .andExpect(jsonPath("$.data[0].amenity_group").value("facilities_and_services"))
+                .andExpect(jsonPath("$.data[0].amenity_vi").doesNotExist())
+                .andExpect(jsonPath("$.data[0].items[0].amenity_code").value("free_street_parking"))
+                .andExpect(jsonPath("$.data[0].items[0].amenity_label_en").value("Free Street Parking"))
+                .andExpect(jsonPath("$.data[0].items[0].amenity_label_vi").value("Đỗ xe trên phố"))
+                .andExpect(jsonPath("$.data[0].items[0].amenity_label").doesNotExist())
+                .andExpect(jsonPath("$.data[0].items[0].service_flags").value("Parking"))
                 .andExpect(jsonPath("$.meta.trace_id").isNotEmpty())
                 .andExpect(jsonPath("$.meta.timestamp").isNotEmpty())
                 .andExpect(jsonPath("$.errors").value(nullValue()));
     }
 
     @Test
-    @DisplayName("GET /api/v1/pois/{poi_id}/amenities hỗ trợ đa ngôn ngữ qua query param lang và Accept-Language")
-    void shouldSupportAmenitiesMultiLanguage() throws Exception {
-        PoiAmenityGroupResponse group = new PoiAmenityGroupResponse(
-                "FACILITY",
-                "Facilities",
-                List.of(new PoiAmenityGroupResponse.Item("parking", "Parking Lot", "free"))
-        );
-
-        when(poiService.getAmenities("poi_01", "en")).thenReturn(List.of(group));
+    @DisplayName("GET amenities bỏ qua lang và Accept-Language")
+    void shouldIgnoreLangQueryAndAcceptLanguageForAmenities() throws Exception {
+        when(poiService.getAmenities("poi_01")).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/pois/poi_01/amenities")
+                        .param("lang", "en")
                         .header("Accept-Language", "en-US,en;q=0.9"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data[0].amenity_vi").value("Facilities"))
-                .andExpect(jsonPath("$.data[0].items[0].amenity_label").value("Parking Lot"));
+                .andExpect(status().isOk());
+
+        verify(poiService).getAmenities("poi_01");
     }
 
     @Test
     @DisplayName("GET /api/v1/pois/{poi_id}/amenities trả về 200 OK với data rỗng khi POI không có tiện ích")
     void shouldReturnEmptyListWhenPoiHasNoAmenities() throws Exception {
-        when(poiService.getAmenities("poi_empty", "vi")).thenReturn(Collections.emptyList());
+        when(poiService.getAmenities("poi_empty")).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/v1/pois/poi_empty/amenities"))
                 .andExpect(status().isOk())
@@ -319,17 +316,15 @@ class PoiControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /api/v1/pois/{poi_id}/amenities trả về 404 Not Found khi POI không tồn tại hoặc đã bị xóa mềm")
-    void shouldReturn404WhenAmenitiesPoiNotFound() throws Exception {
-        when(poiService.getAmenities("poi_unknown", "vi"))
-                .thenThrow(new ResourceNotFoundException("POI not found with id: poi_unknown"));
+    @DisplayName("GET /api/v1/pois/{poi_id}/amenities trả 200 và data rỗng khi service không có dòng amenity")
+    void shouldReturn200WhenAmenitiesAreEmptyForUnknownPoi() throws Exception {
+        when(poiService.getAmenities("poi_unknown")).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/v1/pois/poi_unknown/amenities"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(404))
-                .andExpect(jsonPath("$.meta.error_code").value("POI_NOT_FOUND"))
-                .andExpect(jsonPath("$.data").value(nullValue()))
-                .andExpect(jsonPath("$.errors").value(nullValue()));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data").isEmpty());
     }
 }

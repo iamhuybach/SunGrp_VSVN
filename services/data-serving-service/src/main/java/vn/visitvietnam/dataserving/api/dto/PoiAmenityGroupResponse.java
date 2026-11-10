@@ -10,13 +10,10 @@ import java.util.List;
 @Schema(description = "Nhóm tiện ích của POI")
 public record PoiAmenityGroupResponse(
         @JsonProperty("amenity_group")
-        @Schema(description = "Mã nhóm tiện ích", example = "FACILITY")
+        @Schema(description = "Mã nhóm tiện ích", example = "facilities_and_services")
         String amenityGroup,
 
-        @JsonProperty("amenity_vi")
-        @Schema(description = "Tên nhóm tiếng Việt", example = "Tiện nghi cơ sở")
-        String amenityVi,
-
+        @JsonProperty("items")
         @Schema(description = "Danh sách các tiện ích trong nhóm")
         List<Item> items
 ) {
@@ -25,15 +22,19 @@ public record PoiAmenityGroupResponse(
     @Schema(description = "Mục tiện ích chi tiết của POI")
     public record Item(
             @JsonProperty("amenity_code")
-            @Schema(description = "Mã tiện ích chuẩn", example = "parking")
+            @Schema(description = "Mã tiện ích snake_case", example = "free_street_parking")
             String amenityCode,
 
-            @JsonProperty("amenity_label")
-            @Schema(description = "Tên hiển thị tiếng Việt của tiện ích", example = "Bãi đỗ xe")
-            String amenityLabel,
+            @JsonProperty("amenity_label_en")
+            @Schema(description = "Nhãn tiếng Anh", example = "Free Street Parking")
+            String amenityLabelEn,
+
+            @JsonProperty("amenity_label_vi")
+            @Schema(description = "Nhãn tiếng Việt", example = "Đỗ xe trên phố")
+            String amenityLabelVi,
 
             @JsonProperty("service_flags")
-            @Schema(description = "Đặc tính dịch vụ (vd: free, paid)", example = "free")
+            @Schema(description = "Nhóm cờ dịch vụ", example = "Parking")
             String serviceFlags
     ) {}
 }

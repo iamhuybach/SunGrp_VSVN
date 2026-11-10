@@ -149,6 +149,25 @@ def test_entities_match_gold_columns_types_and_keys():
         assert entity["id_class"] == (len(spec["pk"]) > 1), f"{name}: @IdClass must match composite pk"
 
 
+def test_amenity_en_order_across_layers():
+    namespace: dict = {}
+    exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), namespace)  # noqa: S102
+    for fq in ("lh_vv_silver.dbo.slv_poi_amenity", "lh_vv_gold.dbo.gld_srv_poi_amenity"):
+        spec = next(item for item in namespace["TABLE_SPECS"] if item["fq"] == fq)
+        names = [col[0] for col in spec["cols"]]
+        assert names[names.index("amenity") + 1] == "amenity_en"
+    amenity_cols = _cell_source("NB_CREATE_DDL.ipynb", "amenddlpy").split("AMENITY_COLS = [", 1)[1].split("]", 1)[0]
+    assert amenity_cols.index("'amenity_en'") > amenity_cols.index("'amenity'")
+    pg = pg_tables()["srv_poi_amenity"]["cols"]
+    pg_names = list(pg)
+    assert pg_names[pg_names.index("amenity") + 1] == "amenity_en"
+    entity = (ENTITY_DIR / "SrvPoiAmenity.java").read_text(encoding="utf-8")
+    amenity_at = entity.index('@Column(name = "amenity")')
+    amenity_en_at = entity.index('@Column(name = "amenity_en")')
+    amenity_vi_at = entity.index('@Column(name = "amenity_vi")')
+    assert amenity_at < amenity_en_at < amenity_vi_at
+
+
 def test_review_entity_has_no_source_or_lang():
     _require_service()
     text = (ENTITY_DIR / "SrvPoiReview.java").read_text(encoding="utf-8")

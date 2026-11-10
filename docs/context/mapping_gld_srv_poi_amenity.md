@@ -17,14 +17,27 @@ Nguồn: `notebooks/NB_SLV_POI_AMENITY.ipynb` (markdown đầu, `OUT_COLS`, `bui
 - Cạnh `slv_poi_entity` → `slv_poi_amenity`: `RETIRE`, `is_active = 0`.
 - `nb_name` trên cạnh: `NB_SETUP_POI_AMENITY` ghi `NULL` khi cột tồn tại.
 - `SPEC.inputs`: `amenity` = `slv_3p_poi_amenity`, `entity` = `slv_poi_entity_non_enrich`, `dict` = `ref_dictionary_amenities`. `required_inputs` là cả ba.
-- Cột nghiệp vụ `OUT_COLS`: `poi_id`, `business_sector`, `amenity_group`, `amenity_raw`, `amenity`, `amenity_vi`, `service_flags`.
-- DDL: bốn cột khóa `STRING NOT NULL`. `amenity`, `amenity_vi`, `service_flags` là `STRING` nullable. Cột kỹ thuật nullable: `row_hash STRING`, `created_at TIMESTAMP`, `updated_at TIMESTAMP`, `deleted_at TIMESTAMP`.
+- Cột nghiệp vụ `OUT_COLS`: `poi_id`, `business_sector`, `amenity_group`, `amenity_raw`, `amenity`, `amenity_en`, `amenity_vi`, `service_flags`.
+- DDL: bốn cột khóa `STRING NOT NULL`. `amenity`, `amenity_en`, `amenity_vi`, `service_flags` là `STRING` nullable. Cột kỹ thuật nullable: `row_hash STRING`, `created_at TIMESTAMP`, `updated_at TIMESTAMP`, `deleted_at TIMESTAMP`.
+- `amenity_en` lấy từ `ref_dictionary_amenities.amenity_en` của dòng điều kiện đã khớp. `amenity` lấy từ `ref_dictionary_amenities.amenity`. Quy tắc U-1: `amenity = amenity_code(amenity_en)` (NFKD, bỏ dấu kết hợp, tách camelCase, viết thường, cụm ký tự không phải chữ/số thành `_`).
 - Markdown đầu: RECOMPUTE. Key cờ google khớp `source_flags_json` = true. Key tách từ `types[] =` khớp đúng một phần tử `types_json`. `json_type = 'a'` và `json_type in (...)` khớp một phần tử trong danh sách, cùng `types_json` của `slv_poi_entity_non_enrich`. `business_sector` từ `slv_poi_entity_non_enrich`.
 - `build`: từ điển `source_name` google và `is_active = true`. `service_flags` lấy từ dòng điều kiện đã khớp. Không có `business_category`. DataFrame rỗng khi không khớp là trạng thái hợp lệ để RECOMPUTE soft-delete. Test cấm `explode_outer` và `get_json_object`.
 
 # 1. Table: `gld_srv_poi_amenity`
 
-`NB_GLD_SRV_POI_AMENITY` RECOMPUTE `lh_vv_gold.dbo.gld_srv_poi_amenity`. Bản 1-1 của `slv_poi_amenity`: `build` trả `select(*OUT_COLS)`. Grain và khóa MERGE: (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`). `write_mode = MERGE`. `SPEC.inputs`: `amenity` = `slv_poi_amenity`. `required_inputs` = (`amenity`,).
+`NB_GLD_SRV_POI_AMENITY` RECOMPUTE `lh_vv_gold.dbo.gld_srv_poi_amenity`. Bản 1-1 của `slv_poi_amenity`: `build` trả `select(*OUT_COLS)`. Grain và khóa MERGE: (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`). `write_mode = MERGE`. `SPEC.inputs`: `amenity` = `slv_poi_amenity`. `required_inputs` = (`amenity`,). `amenity_en` đi cùng `OUT_COLS`, ngay sau `amenity`.
+
+JSON `GET /api/v1/pois/{poi_id}/amenities`, không query `lang`:
+
+| JSON | Cột `apps.srv_poi_amenity` |
+|---|---|
+| `data[].amenity_group` | `amenity_group` |
+| `data[].items[].amenity_code` | `amenity` |
+| `data[].items[].amenity_label_en` | `amenity_en` |
+| `data[].items[].amenity_label_vi` | `amenity_vi` |
+| `data[].items[].service_flags` | `service_flags` |
+
+Đổi seed: người dùng DROP `ref_dictionary_amenities`, `gld_srv_poi_amenity`, và `apps.srv_poi_amenity`, rồi chạy lại init. `slv_poi_amenity` thêm cột bằng `ALTER TABLE ... ADD COLUMNS (amenity_en STRING AFTER amenity)`.
 
 Notebook không gán `created_at` hay `updated_at`. `sql_merge_target` trong `NB_LIB_TRANSFORM_SLV_GLD` ghi `row_hash`, `created_at`, `updated_at`, `deleted_at`.
 

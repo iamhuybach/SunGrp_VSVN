@@ -28,6 +28,7 @@ import vn.visitvietnam.dataserving.service.util.LanguageResolver;
 import vn.visitvietnam.dataserving.service.util.SubcategoryTagsParser;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,36 +42,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PoiService {
-
-    private static final Map<String, String> AMENITY_GROUP_LABELS_VI = Map.ofEntries(
-            Map.entry("FACILITY", "Tiện nghi cơ sở"),
-            Map.entry("GENERAL", "Tiện ích chung"),
-            Map.entry("ROOM", "Tiện nghi phòng"),
-            Map.entry("ACTIVITY", "Hoạt động & Trải nghiệm"),
-            Map.entry("FOOD_DRINK", "Ẩm thực & Đồ uống"),
-            Map.entry("ACCESSIBILITY", "Tiếp cận & Hỗ trợ"),
-            Map.entry("SERVICE", "Dịch vụ hỗ trợ"),
-            Map.entry("SAFETY", "An toàn & Vệ sinh"),
-            Map.entry("SPACE_AND_SERVICES", "Không gian & Dịch vụ"),
-            Map.entry("SPECIALTY_TAGS", "Đặc trưng & Tiện ích nổi bật"),
-            Map.entry("GENERAL_AMENITIES", "Tiện ích chung"),
-            Map.entry("FACILITIES_AND_SERVICES", "Cơ sở vật chất & Dịch vụ")
-    );
-
-    private static final Map<String, String> AMENITY_GROUP_LABELS_EN = Map.ofEntries(
-            Map.entry("FACILITY", "Facilities"),
-            Map.entry("GENERAL", "General Amenities"),
-            Map.entry("ROOM", "Room Amenities"),
-            Map.entry("ACTIVITY", "Activities & Experiences"),
-            Map.entry("FOOD_DRINK", "Food & Drink"),
-            Map.entry("ACCESSIBILITY", "Accessibility"),
-            Map.entry("SERVICE", "Services"),
-            Map.entry("SAFETY", "Safety & Hygiene"),
-            Map.entry("SPACE_AND_SERVICES", "Space & Services"),
-            Map.entry("SPECIALTY_TAGS", "Specialty Tags"),
-            Map.entry("GENERAL_AMENITIES", "General Amenities"),
-            Map.entry("FACILITIES_AND_SERVICES", "Facilities & Services")
-    );
 
     private final SrvPoiInfoRepository poiInfoRepository;
     private final SrvPoiMediaGalleryRepository mediaGalleryRepository;
@@ -172,20 +143,17 @@ public class PoiService {
     // ── API 10: POI Amenities ────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public List<PoiAmenityGroupResponse> getAmenities(String poiId, String targetLang) {
-        validatePoiExists(poiId);
-
+    public List<PoiAmenityGroupResponse> getAmenities(String poiId) {
         List<SrvPoiAmenity> amenities = amenityRepository.findByPoiIdAndDeletedAtIsNull(poiId);
         if (amenities.isEmpty()) {
             return Collections.emptyList();
         }
 
-        String lang = targetLang != null && !targetLang.isBlank() ? targetLang : LanguageResolver.DEFAULT_LANG;
-        boolean isEnglish = "en".equalsIgnoreCase(lang);
-
-        // Lọc bỏ các bản ghi bẩn chứa biểu thức SQL (Gap G3)
         List<SrvPoiAmenity> validAmenities = amenities.stream()
                 .filter(a -> a.getAmenityRaw() == null || !a.getAmenityRaw().toLowerCase().contains("json_type"))
+                .sorted(Comparator.comparing(SrvPoiAmenity::getAmenityGroup)
+                        .thenComparing(SrvPoiAmenity::getAmenity, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(SrvPoiAmenity::getAmenityRaw))
                 .toList();
 
         if (validAmenities.isEmpty()) {
@@ -194,40 +162,22 @@ public class PoiService {
 
         Map<String, List<SrvPoiAmenity>> grouped = validAmenities.stream()
                 .collect(Collectors.groupingBy(
-                        a -> a.getAmenityGroup() != null ? a.getAmenityGroup() : "GENERAL",
+                        SrvPoiAmenity::getAmenityGroup,
                         LinkedHashMap::new,
                         Collectors.toList()
                 ));
 
         return grouped.entrySet().stream()
-                .map(entry -> {
-                    String groupCode = entry.getKey();
-                    String groupLabel = isEnglish
-                            ? AMENITY_GROUP_LABELS_EN.getOrDefault(groupCode.toUpperCase(), groupCode)
-                            : AMENITY_GROUP_LABELS_VI.getOrDefault(groupCode.toUpperCase(), groupCode);
-
-                    List<PoiAmenityGroupResponse.Item> items = entry.getValue().stream()
-                            .map(a -> {
-                                String code = a.getAmenity() != null && !a.getAmenity().isBlank() ? a.getAmenity() : a.getAmenityRaw();
-                                String label;
-                                if (isEnglish) {
-                                    label = (a.getAmenity() != null && !a.getAmenity().isBlank()) ? a.getAmenity()
-                                            : ((a.getAmenityVi() != null && !a.getAmenityVi().isBlank()) ? a.getAmenityVi() : a.getAmenityRaw());
-                                } else {
-                                    label = (a.getAmenityVi() != null && !a.getAmenityVi().isBlank()) ? a.getAmenityVi()
-                                            : ((a.getAmenity() != null && !a.getAmenity().isBlank()) ? a.getAmenity() : a.getAmenityRaw());
-                                }
-                                return new PoiAmenityGroupResponse.Item(code, label, a.getServiceFlags());
-                            })
-                            .toList();
-
-                    return new PoiAmenityGroupResponse(groupCode, groupLabel, items);
-                })
+                .map(entry -> new PoiAmenityGroupResponse(
+                        entry.getKey(),
+                        entry.getValue().stream()
+                                .map(a -> new PoiAmenityGroupResponse.Item(
+                                        a.getAmenity(),
+                                        a.getAmenityEn(),
+                                        a.getAmenityVi(),
+                                        a.getServiceFlags()))
+                                .toList()))
                 .toList();
-    }
-
-    public List<PoiAmenityGroupResponse> getAmenities(String poiId) {
-        return getAmenities(poiId, LanguageResolver.DEFAULT_LANG);
     }
 
     // ── Shared Helpers ───────────────────────────────────────────────────────

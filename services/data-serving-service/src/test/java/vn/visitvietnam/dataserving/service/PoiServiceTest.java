@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -263,68 +264,103 @@ class PoiServiceTest {
     // ── API 10: Amenities Tests ──────────────────────────────────────────────
 
     @Test
-    @DisplayName("API 10: Lấy và gom nhóm tiện ích theo amenity_group, lọc dữ liệu bẩn và đa ngôn ngữ")
-    void shouldReturnGroupedAmenitiesSuccessfully() {
-        when(poiInfoRepository.existsByPoiIdAndDeletedAtIsNull("poi_01")).thenReturn(true);
-
-        SrvPoiAmenity a1 = SrvPoiAmenity.builder()
+    @DisplayName("API 10: map cột amenity sang cây D-01, service_flags khác amenity_vi")
+    void shouldMapAmenityColumnsToD01Fields() {
+        SrvPoiAmenity row = SrvPoiAmenity.builder()
                 .poiId("poi_01")
-                .businessSector("ACCOMMODATION")
-                .amenityGroup("FACILITY")
-                .amenityRaw("free_parking")
-                .amenity("Parking Lot")
-                .amenityVi("Bãi đỗ xe")
-                .serviceFlags("free")
+                .businessSector("accommodation")
+                .amenityGroup("facilities_and_services")
+                .amenityRaw("outdoorSeating")
+                .amenity("outdoor_seating")
+                .amenityEn("Outdoor Seating")
+                .amenityVi("Không gian ngoài trời")
+                .serviceFlags("Food/service")
                 .build();
 
-        SrvPoiAmenity dirty = SrvPoiAmenity.builder()
-                .poiId("poi_01")
-                .businessSector("ACCOMMODATION")
-                .amenityGroup("FACILITY")
-                .amenityRaw("json_type in ('bar','pub')")
-                .amenity("Bar")
-                .amenityVi("Quán bar")
-                .build();
+        when(amenityRepository.findByPoiIdAndDeletedAtIsNull("poi_01")).thenReturn(List.of(row));
 
-        when(amenityRepository.findByPoiIdAndDeletedAtIsNull("poi_01"))
-                .thenReturn(List.of(a1, dirty));
-
-        // Test tiếng Việt mặc định
-        List<PoiAmenityGroupResponse> viAmenities = poiService.getAmenities("poi_01", "vi");
-        assertThat(viAmenities).hasSize(1);
-        assertThat(viAmenities.getFirst().amenityGroup()).isEqualTo("FACILITY");
-        assertThat(viAmenities.getFirst().amenityVi()).isEqualTo("Tiện nghi cơ sở");
-        assertThat(viAmenities.getFirst().items()).hasSize(1);
-        assertThat(viAmenities.getFirst().items().getFirst().amenityCode()).isEqualTo("Parking Lot");
-        assertThat(viAmenities.getFirst().items().getFirst().amenityLabel()).isEqualTo("Bãi đỗ xe");
-        assertThat(viAmenities.getFirst().items().getFirst().serviceFlags()).isEqualTo("free");
-
-        // Test tiếng Anh
-        List<PoiAmenityGroupResponse> enAmenities = poiService.getAmenities("poi_01", "en");
-        assertThat(enAmenities).hasSize(1);
-        assertThat(enAmenities.getFirst().amenityGroup()).isEqualTo("FACILITY");
-        assertThat(enAmenities.getFirst().amenityVi()).isEqualTo("Facilities");
-        assertThat(enAmenities.getFirst().items()).hasSize(1);
-        assertThat(enAmenities.getFirst().items().getFirst().amenityLabel()).isEqualTo("Parking Lot");
+        List<PoiAmenityGroupResponse> amenities = poiService.getAmenities("poi_01");
+        assertThat(amenities).hasSize(1);
+        assertThat(amenities.getFirst().amenityGroup()).isEqualTo("facilities_and_services");
+        PoiAmenityGroupResponse.Item item = amenities.getFirst().items().getFirst();
+        assertThat(item.amenityCode()).isEqualTo("outdoor_seating");
+        assertThat(item.amenityLabelEn()).isEqualTo("Outdoor Seating");
+        assertThat(item.amenityLabelVi()).isEqualTo("Không gian ngoài trời");
+        assertThat(item.serviceFlags()).isEqualTo("Food/service");
+        assertThat(item.serviceFlags()).isNotEqualTo(item.amenityLabelVi());
     }
 
     @Test
-    @DisplayName("API 10: Trả về danh sách rỗng khi POI tồn tại nhưng không có tiện ích")
+    @DisplayName("API 10: sắp amenity_group rồi amenity_code rồi amenity_raw")
+    void shouldOrderAmenityGroupsAndItemsDeterministically() {
+        SrvPoiAmenity laterGroup = amenity("facilities_and_services", "wifi", "free_wi_fi");
+        SrvPoiAmenity second = amenity("accessibility", "ramp_b", "wheelchair_ramp");
+        SrvPoiAmenity first = amenity("accessibility", "ramp_a", "step_free");
+
+        when(amenityRepository.findByPoiIdAndDeletedAtIsNull("poi_01"))
+                .thenReturn(List.of(laterGroup, second, first));
+
+        List<PoiAmenityGroupResponse> amenities = poiService.getAmenities("poi_01");
+        assertThat(amenities).extracting(PoiAmenityGroupResponse::amenityGroup)
+                .containsExactly("accessibility", "facilities_and_services");
+        assertThat(amenities.getFirst().items()).extracting(PoiAmenityGroupResponse.Item::amenityCode)
+                .containsExactly("step_free", "wheelchair_ramp");
+    }
+
+    @Test
+    @DisplayName("API 10: bỏ dòng amenity_raw chứa json_type")
+    void shouldFilterJsonTypeAmenityRows() {
+        SrvPoiAmenity kept = amenity("accessibility", "ramp", "step_free");
+        SrvPoiAmenity dirty = SrvPoiAmenity.builder()
+                .poiId("poi_01")
+                .businessSector("accommodation")
+                .amenityGroup("accessibility")
+                .amenityRaw("json_type in ('bar','pub')")
+                .amenity("bar")
+                .amenityEn("Bar")
+                .amenityVi("Quán bar")
+                .build();
+
+        when(amenityRepository.findByPoiIdAndDeletedAtIsNull("poi_01")).thenReturn(List.of(kept, dirty));
+
+        List<PoiAmenityGroupResponse> amenities = poiService.getAmenities("poi_01");
+        assertThat(amenities.getFirst().items()).hasSize(1);
+        assertThat(amenities.getFirst().items().getFirst().amenityCode()).isEqualTo("step_free");
+    }
+
+    @Test
+    @DisplayName("API 10: Trả về danh sách rỗng khi không có tiện ích")
     void shouldReturnEmptyListWhenPoiHasNoAmenities() {
-        when(poiInfoRepository.existsByPoiIdAndDeletedAtIsNull("poi_empty")).thenReturn(true);
         when(amenityRepository.findByPoiIdAndDeletedAtIsNull("poi_empty")).thenReturn(Collections.emptyList());
 
-        List<PoiAmenityGroupResponse> amenities = poiService.getAmenities("poi_empty", "vi");
+        List<PoiAmenityGroupResponse> amenities = poiService.getAmenities("poi_empty");
         assertThat(amenities).isNotNull().isEmpty();
     }
 
     @Test
-    @DisplayName("API 10: Ném ResourceNotFoundException khi POI không tồn tại")
-    void shouldThrowWhenPoiNotFoundInAmenities() {
-        when(poiInfoRepository.existsByPoiIdAndDeletedAtIsNull("poi_unknown")).thenReturn(false);
+    @DisplayName("API 10: trả amenity khi không có dòng srv_poi_info")
+    void shouldReturnAmenitiesWhenInfoRowIsAbsent() {
+        when(amenityRepository.findByPoiIdAndDeletedAtIsNull("poi_amenity_only"))
+                .thenReturn(List.of(amenity("accessibility", "ramp", "step_free")));
 
-        assertThatThrownBy(() -> poiService.getAmenities("poi_unknown", "vi"))
-                .isInstanceOf(ResourceNotFoundException.class);
+        List<PoiAmenityGroupResponse> amenities = poiService.getAmenities("poi_amenity_only");
+
+        assertThat(amenities).hasSize(1);
+        assertThat(amenities.getFirst().items().getFirst().amenityCode()).isEqualTo("step_free");
+        verifyNoInteractions(poiInfoRepository);
+    }
+
+    private static SrvPoiAmenity amenity(String group, String raw, String code) {
+        return SrvPoiAmenity.builder()
+                .poiId("poi_01")
+                .businessSector("accommodation")
+                .amenityGroup(group)
+                .amenityRaw(raw)
+                .amenity(code)
+                .amenityEn(code)
+                .amenityVi(code)
+                .serviceFlags("Suitability")
+                .build();
     }
 }
 

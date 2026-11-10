@@ -1,0 +1,138 @@
+# Verification 2026-11-09 16:19:21 — PASS
+Files (18): docs/context/01_DATA_MODEL.md, docs/context/api-mapping/amenities.md, docs/context/mapping_gld_srv_poi_amenity.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_GLD_SRV_POI_AMENITY.ipynb, notebooks/NB_SETUP_INITIAL_DDL.ipynb, notebooks/NB_SETUP_POI_AMENITY.ipynb, notebooks/NB_SLV_POI_AMENITY.ipynb, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, sql/postgres/gld_srv_serve.pg.sql, tests/test_poi_amenity_contract.py, tests/test_poi_media_amenity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: PASS
+All Finished!
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 27%]
+........................................................................ [ 54%]
+........................................................................ [ 81%]
+.................................................                        [100%]
+265 passed in 6.39s
+
+## maven: PASS
+ :: Spring Boot ::                (v4.1.1)
+
+2026-11-09T16:19:13.744+07:00  INFO 31172 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Starting PoiRepositoryIntegrationTest using Java 26.0.2.1 with PID 31172 (started by bachnh in D:\git\SunGrp_VSVN\services\data-serving-service)
+2026-11-09T16:19:13.745+07:00  INFO 31172 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-11-09T16:19:14.480+07:00  INFO 31172 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-09T16:19:14.533+07:00  INFO 31172 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 49 ms. Found 5 JPA repository interfaces.
+2026-11-09T16:19:14.709+07:00  INFO 31172 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-09T16:19:15.027+07:00  INFO 31172 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: f97b4c802563d1c91ae75dad866e17783ae657414671a271caf8715f19b4e97a
+2026-11-09T16:19:17.543+07:00  INFO 31172 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT2.8341302S
+2026-11-09T16:19:17.544+07:00  INFO 31172 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:65187/test?loggerLevel=OFF)
+2026-11-09T16:19:17.626+07:00  INFO 31172 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-09T16:19:17.648+07:00  INFO 31172 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-09T16:19:17.649+07:00  INFO 31172 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-09T16:19:17.671+07:00  INFO 31172 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@715b237d
+2026-11-09T16:19:17.672+07:00  INFO 31172 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-09T16:19:17.682+07:00  INFO 31172 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:65187/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-09T16:19:17.762+07:00  INFO 31172 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-09T16:19:17.763+07:00  INFO 31172 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-09T16:19:17.891+07:00  WARN 31172 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-09T16:19:18.083+07:00  INFO 31172 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-09T16:19:18.099+07:00  INFO 31172 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 4.381 seconds (process running for 31.335)
+2026-11-09T16:19:18.100+07:00  WARN 31172 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-09T16:19:18.101+07:00  WARN 31172 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-09 16:31:40 — PASS
+Files (18): docs/context/01_DATA_MODEL.md, docs/context/api-mapping/amenities.md, docs/context/mapping_gld_srv_poi_amenity.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_GLD_SRV_POI_AMENITY.ipynb, notebooks/NB_SETUP_INITIAL_DDL.ipynb, notebooks/NB_SETUP_POI_AMENITY.ipynb, notebooks/NB_SLV_POI_AMENITY.ipynb, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiAmenityGroupResponse.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java, sql/postgres/gld_srv_serve.pg.sql, tests/test_poi_amenity_contract.py, tests/test_poi_media_amenity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: PASS
+All Finished!
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 27%]
+........................................................................ [ 54%]
+........................................................................ [ 81%]
+.................................................                        [100%]
+265 passed in 6.95s
+
+## maven: PASS
+ :: Spring Boot ::                (v4.1.1)
+
+2026-11-09T16:31:30.045+07:00  INFO 33532 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Starting PoiRepositoryIntegrationTest using Java 26.0.2.1 with PID 33532 (started by bachnh in D:\git\SunGrp_VSVN\services\data-serving-service)
+2026-11-09T16:31:30.046+07:00  INFO 33532 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-11-09T16:31:30.626+07:00  INFO 33532 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-09T16:31:30.684+07:00  INFO 33532 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 55 ms. Found 5 JPA repository interfaces.
+2026-11-09T16:31:30.849+07:00  INFO 33532 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-09T16:31:31.507+07:00  INFO 33532 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: bb39ac11efa08f189d545343ec79f79046b7e0d0ba5b3c412732b49b2da0e5e5
+2026-11-09T16:31:33.707+07:00  INFO 33532 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT2.8576619S
+2026-11-09T16:31:33.707+07:00  INFO 33532 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:54673/test?loggerLevel=OFF)
+2026-11-09T16:31:33.907+07:00  INFO 33532 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-09T16:31:34.010+07:00  INFO 33532 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-09T16:31:34.014+07:00  INFO 33532 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-09T16:31:34.072+07:00  INFO 33532 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@6690629e
+2026-11-09T16:31:34.073+07:00  INFO 33532 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-09T16:31:34.096+07:00  INFO 33532 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:54673/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-09T16:31:34.292+07:00  INFO 33532 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-09T16:31:34.296+07:00  INFO 33532 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-09T16:31:34.648+07:00  WARN 33532 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-09T16:31:35.233+07:00  INFO 33532 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-09T16:31:35.258+07:00  INFO 33532 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 5.24 seconds (process running for 32.631)
+2026-11-09T16:31:35.261+07:00  WARN 33532 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-09T16:31:35.261+07:00  WARN 33532 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
