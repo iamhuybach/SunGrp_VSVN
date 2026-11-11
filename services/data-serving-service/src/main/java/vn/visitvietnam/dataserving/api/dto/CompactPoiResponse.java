@@ -44,31 +44,13 @@ public record CompactPoiResponse(
     @Schema(description = "Ảnh đại diện (Cover) của POI")
     public record Cover(
             @JsonProperty("id")
-            @Schema(description = "Mã định danh media ảnh cover", example = "med_01jk9a7b")
-            String mediaId,
+            @Schema(description = "apps.srv_poi_info.cover_id", example = "med_01jk9a7b")
+            String id,
 
             @JsonProperty("file_key")
-            @Schema(description = "URL / key ảnh CDN", example = "https://cdn.visitvietnam.gov.vn/media/pois/cover_01.jpg")
-            String fileKey,
-
-            @Schema(description = "Chiều rộng pixel", example = "1920")
-            Integer width,
-
-            @Schema(description = "Chiều cao pixel", example = "1080")
-            Integer height,
-
-            @JsonProperty("mime_type")
-            @Schema(description = "Mime type", example = "image/jpeg")
-            String mimeType,
-
-            @JsonProperty("blur_hash")
-            @Schema(description = "BlurHash đại diện ảnh mờ khi tải", example = "LEHV6nWB2yk8pyo0adR*.7kCMdnj")
-            String blurHash
-    ) {
-        public Cover(String mediaId, String fileKey, Integer width, Integer height, String mimeType) {
-            this(mediaId, fileKey, width, height, mimeType, null);
-        }
-    }
+            @Schema(description = "apps.srv_poi_info.cover_blob_url", example = "pois/mau/cover.jpg")
+            String fileKey
+    ) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @Schema(description = "Tổng hợp xếp hạng đánh giá của POI")
@@ -92,10 +74,6 @@ public record CompactPoiResponse(
             @Schema(description = "Mã ngành chính / sector", example = "tour_n_activities")
             String businessSector,
 
-            @JsonProperty("business_sector_label")
-            @Schema(description = "Nhãn hiển thị tiếng Việt của ngành chính", example = "Tour & Hoạt động")
-            String businessSectorLabel,
-
             @JsonProperty("business_category")
             @Schema(description = "Mã phân loại chi tiết", example = "attraction")
             String businessCategory,
@@ -105,7 +83,6 @@ public record CompactPoiResponse(
             List<String> subcategoryTags
     ) {
         public String primaryCategory() { return businessCategory != null ? businessCategory : businessSector; }
-        public String primaryCategoryLabel() { return businessSectorLabel; }
         public List<String> subcategories() { return subcategoryTags; }
     }
 

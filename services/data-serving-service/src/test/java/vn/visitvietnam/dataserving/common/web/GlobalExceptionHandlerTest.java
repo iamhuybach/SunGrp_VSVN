@@ -9,6 +9,8 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mock.http.MockHttpInputMessage;
 import vn.visitvietnam.dataserving.common.dto.ApiResponse;
 import vn.visitvietnam.dataserving.common.exception.ResourceNotFoundException;
 
@@ -106,6 +108,20 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody().meta().errorCode()).isEqualTo("INTERNAL_SERVER_ERROR");
         assertThat(response.getBody().data()).isNull();
         assertThat(response.getBody().errors()).isNull();
+    }
+
+    @Test
+    @DisplayName("handleNotReadable trả về 400 ERR_BAD_REQUEST và không echo message gốc")
+    void shouldHandleNotReadable() {
+        HttpMessageNotReadableException ex = new HttpMessageNotReadableException("secret payload", new MockHttpInputMessage(new byte[0]));
+
+        ResponseEntity<ApiResponse<Void>> response = handler.handleNotReadable(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().message()).isEqualTo("Malformed or missing request body.");
+        assertThat(response.getBody().meta().errorCode()).isEqualTo("ERR_BAD_REQUEST");
+        assertThat(response.getBody().message()).doesNotContain("secret");
     }
 
     @SuppressWarnings("unused")

@@ -1,0 +1,73 @@
+{
+  "http_status": 200,
+  "body": {
+    "success": true,
+    "code": 200,
+    "message": "POI practical info retrieved successfully",
+    "data": {
+      "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+      "name": "POI Attraction",
+      "description": "Mo ta vi",
+      "business_sector": "attraction",
+      "time_to_spend": {
+        "label": "Thoi gian",
+        "value": "1 gio"
+      },
+      "cost": null,
+      "best_time": null,
+      "cover": {
+        "id": "media-a",
+        "file_key": "pois/gallery-a.jpg"
+      },
+      "ratings": {
+        "source": "partner",
+        "ratings_count": null,
+        "ratings_avg_score": null
+      },
+      "business_tags": {
+        "business_sector": "attraction",
+        "business_category": "landmark"
+      },
+      "status": {
+        "operating_status": null,
+        "is_verified": true,
+        "is_recommended": true,
+        "is_bookable": null
+      },
+      "operating_hours": null,
+      "holiday_exceptions": [
+        {
+          "date": "02/09/2026",
+          "hours": [
+            "08:00-17:00"
+          ],
+          "title": "Quoc khanh",
+          "status": false
+        }
+      ],
+      "address": {
+        "full_address": "1 Pho Fixture",
+        "street": null,
+        "ward": null,
+        "district": null,
+        "city": null,
+        "country_code": null
+      },
+      "geo_location": {
+        "latitude": 21.02,
+        "longitude": 105.85
+      },
+      "phone": null,
+      "email": null,
+      "website_url": null,
+      "destinations": {
+        "id": "dest-1"
+      }
+    },
+    "meta": {
+      "timestamp": "2026-11-11T04:06:10.580914857Z",
+      "trace_id": "22222222-2222-2222-2222-222222222222"
+    },
+    "errors": null
+  }
+}

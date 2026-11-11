@@ -1,0 +1,9 @@
+{
+  "http_status": 405,
+  "body": {
+    "timestamp": "2026-11-11T03:49:18.565Z",
+    "status": 405,
+    "error": "Method Not Allowed",
+    "path": "/api/v1/pois/compact"
+  }
+}

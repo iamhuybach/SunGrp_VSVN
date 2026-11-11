@@ -1,0 +1,123 @@
+{
+  "http_status": 200,
+  "body": {
+    "success": true,
+    "code": 200,
+    "message": "Featured POIs retrieved successfully",
+    "data": [
+      {
+        "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+        "name": "POI Attraction",
+        "description": "Mo ta vi",
+        "cover": {
+          "id": "cover-a",
+          "file_key": "pois/a.jpg"
+        },
+        "ratings": [],
+        "business_tags": {
+          "business_sector": "attraction",
+          "business_category": "landmark",
+          "subcategory_tags": null
+        },
+        "status": {
+          "operating_status": null,
+          "is_verified": true,
+          "is_recommended": true,
+          "is_bookable": null
+        },
+        "operating_hours": null,
+        "address": {
+          "full_address": "1 Pho Fixture",
+          "street": null,
+          "ward": null,
+          "district": null,
+          "city": null,
+          "country_code": null
+        },
+        "geo_location": {
+          "latitude": 21.02,
+          "longitude": 105.85
+        }
+      },
+      {
+        "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
+        "name": "POI FnB",
+        "description": null,
+        "cover": {
+          "id": null,
+          "file_key": null
+        },
+        "ratings": [],
+        "business_tags": {
+          "business_sector": "f_n_b",
+          "business_category": "restaurant",
+          "subcategory_tags": null
+        },
+        "status": {
+          "operating_status": null,
+          "is_verified": true,
+          "is_recommended": true,
+          "is_bookable": null
+        },
+        "operating_hours": null,
+        "address": null,
+        "geo_location": null
+      },
+      {
+        "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3",
+        "name": "POI Event",
+        "description": null,
+        "cover": {
+          "id": "cover-c",
+          "file_key": "pois/c.jpg"
+        },
+        "ratings": [
+          {
+            "source": "other",
+            "ratings_count": 120,
+            "ratings_avg_score": 4.8
+          }
+        ],
+        "business_tags": {
+          "business_sector": "event",
+          "business_category": "show",
+          "subcategory_tags": null
+        },
+        "status": {
+          "operating_status": null,
+          "is_verified": false,
+          "is_recommended": false,
+          "is_bookable": null
+        },
+        "operating_hours": [
+          {
+            "day_of_week": 1,
+            "open_time": "09:00",
+            "close_time": "18:00",
+            "is_open_all_day": false,
+            "is_closed": false
+          }
+        ],
+        "address": null,
+        "geo_location": {
+          "latitude": 10.0,
+          "longitude": 106.0
+        }
+      }
+    ],
+    "meta": {
+      "timestamp": "2026-11-11T03:49:18.949939886Z",
+      "trace_id": "22222222-2222-2222-2222-222222222222",
+      "pagination": {
+        "type": "offset",
+        "page": 0,
+        "per_page": 10,
+        "total_items": 3,
+        "total_pages": 1,
+        "has_next": false,
+        "has_prev": false
+      }
+    },
+    "errors": null
+  }
+}

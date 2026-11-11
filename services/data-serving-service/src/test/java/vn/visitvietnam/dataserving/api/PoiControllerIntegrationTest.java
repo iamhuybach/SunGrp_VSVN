@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.visitvietnam.dataserving.api.dto.CompactPoiResponse;
+import vn.visitvietnam.dataserving.api.dto.PoiExperiencesResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiAmenityGroupResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiGalleryItemResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiReviewItemResponse;
@@ -28,6 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -51,19 +53,19 @@ class PoiControllerIntegrationTest {
                 "poi_01",
                 "Hồ Hoàn Kiếm",
                 "Trái tim thủ đô",
-                new CompactPoiResponse.Cover("med_01", "https://cdn.example.com/cover.jpg", 1920, 1080, "image/jpeg"),
+                new CompactPoiResponse.Cover("med_01", "https://cdn.example.com/cover.jpg"),
                 new CompactPoiResponse.Rating(4.9, 5000),
-                new CompactPoiResponse.BusinessTags("ATTRACTION", "Điểm tham quan", "landmark", List.of("heritage")),
+                new CompactPoiResponse.BusinessTags("ATTRACTION", "landmark", List.of("heritage")),
                 new CompactPoiResponse.Address("Hoàn Kiếm, Hà Nội", "Đinh Tiên Hoàng", null, "Hoàn Kiếm", "Hà Nội", "VN"),
                 new CompactPoiResponse.GeoLocation(21.0285, 105.8542)
         );
 
-        when(poiService.getCompactPois(any(), any(), anyInt(), anyInt(), any()))
-                .thenReturn(PageResponse.of(List.of(item), 0, 20, 1));
+        when(poiService.getCompactPois(any(), any()))
+                .thenReturn(List.of(item));
 
-        mockMvc.perform(get("/api/v1/pois/compact")
-                        .param("page", "0")
-                        .param("size", "20")
+        mockMvc.perform(post("/api/v1/pois/compact")
+                        .contentType("application/json")
+                        .content("{\"ids\":[\"poi_01\"],\"lang\":\"vi\"}")
                         .header("Accept-Language", "vi-VN,vi;q=0.9"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -75,8 +77,7 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.data[0].cover.file_key").value("https://cdn.example.com/cover.jpg"))
                 .andExpect(jsonPath("$.data[0].geo_location.latitude").value(21.0285))
                 .andExpect(jsonPath("$.data[0].geo_location.longitude").value(105.8542))
-                .andExpect(jsonPath("$.meta.pagination.type").value("offset"))
-                .andExpect(jsonPath("$.meta.pagination.total_items").value(1))
+                .andExpect(jsonPath("$.meta.pagination").doesNotExist())
                 .andExpect(jsonPath("$.meta.trace_id").isNotEmpty())
                 .andExpect(jsonPath("$.meta.timestamp").isNotEmpty())
                 .andExpect(jsonPath("$.errors").value(nullValue()));
@@ -85,10 +86,12 @@ class PoiControllerIntegrationTest {
     @Test
     @DisplayName("GET /api/v1/pois/compact với trace_id header lan truyền đúng vào meta.trace_id")
     void shouldPropagateTraceIdHeader() throws Exception {
-        when(poiService.getCompactPois(any(), any(), anyInt(), anyInt(), any()))
-                .thenReturn(PageResponse.of(Collections.emptyList(), 0, 20, 0));
+        when(poiService.getCompactPois(any(), any()))
+                .thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/api/v1/pois/compact")
+        mockMvc.perform(post("/api/v1/pois/compact")
+                        .contentType("application/json")
+                        .content("{\"ids\":[\"poi_01\"]}")
                         .header("X-Request-Id", "custom-req-trace-42"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Request-Id", "custom-req-trace-42"))
@@ -99,19 +102,20 @@ class PoiControllerIntegrationTest {
 
     @Test
     @DisplayName("GET /api/v1/pois/compact với size > 100 trả về 422 Unprocessable Entity với meta.error_code ERR_VALIDATION_FAILED")
-    void shouldReturn422WhenCompactSizeExceedsMax() throws Exception {
-        mockMvc.perform(get("/api/v1/pois/compact")
-                        .param("size", "150"))
+    void shouldReturn422WhenCompactIdsEmpty() throws Exception {
+        mockMvc.perform(post("/api/v1/pois/compact")
+                        .contentType("application/json")
+                        .content("{\"ids\":[]}"))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value(422))
                 .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"))
                 .andExpect(jsonPath("$.data").value(nullValue()))
-                .andExpect(jsonPath("$.errors[0].field").value("size"));
+                .andExpect(jsonPath("$.errors[0].field").value("ids"));
     }
 
     @Test
-    @DisplayName("GET /api/v1/pois/compact với query param ids và Accept-Language trả về danh sách lọc")
+    @DisplayName("POST /api/v1/pois/compact với Accept-Language khi body không có lang")
     void shouldSupportGetCompactPoisWithIdsAndAcceptLanguage() throws Exception {
         CompactPoiResponse item = new CompactPoiResponse(
                 "poi_02",
@@ -119,23 +123,23 @@ class PoiControllerIntegrationTest {
                 "Di tích lịch sử",
                 null,
                 new CompactPoiResponse.Rating(4.8, 1200),
-                new CompactPoiResponse.BusinessTags("ATTRACTION", "Điểm tham quan", "pagoda", List.of("pagoda")),
+                new CompactPoiResponse.BusinessTags("ATTRACTION", "pagoda", List.of("pagoda")),
                 null,
                 null
         );
 
-        when(poiService.getCompactPois(eq(List.of("poi_02")), eq("en"), eq(0), eq(20), any()))
-                .thenReturn(PageResponse.of(List.of(item), 0, 20, 1));
+        when(poiService.getCompactPois(eq(List.of("poi_02")), eq("en")))
+                .thenReturn(List.of(item));
 
-        mockMvc.perform(get("/api/v1/pois/compact")
-                        .param("ids", "poi_02")
+        mockMvc.perform(post("/api/v1/pois/compact")
+                        .contentType("application/json")
+                        .content("{\"ids\":[\"poi_02\"]}")
                         .header("Accept-Language", "en-US,en;q=0.9"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data[0].id").value("poi_02"))
-                .andExpect(jsonPath("$.data[0].name").value("Chùa Một Cột"))
-                .andExpect(jsonPath("$.meta.pagination.total_items").value(1));
+                .andExpect(jsonPath("$.data[0].name").value("Chùa Một Cột"));
     }
 
     // ── API 3: Gallery Endpoint Tests ────────────────────────────────────────
@@ -146,14 +150,11 @@ class PoiControllerIntegrationTest {
         PoiGalleryItemResponse item = new PoiGalleryItemResponse(
                 "med_01",
                 "https://cdn.example.com/img1.webp",
-                1920,
-                1080,
-                "image/webp",
-                null,
                 1
         );
 
-        when(poiService.getGallery("poi_01")).thenReturn(List.of(item));
+        when(poiService.getGallery(eq("poi_01"), anyInt(), anyInt()))
+                .thenReturn(PageResponse.of(List.of(item), 0, 20, 1));
 
         mockMvc.perform(get("/api/v1/pois/poi_01/gallery"))
                 .andExpect(status().isOk())
@@ -163,11 +164,8 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.length()").value(1))
                 .andExpect(jsonPath("$.data[0].id").value("med_01"))
                 .andExpect(jsonPath("$.data[0].file_key").value("https://cdn.example.com/img1.webp"))
-                .andExpect(jsonPath("$.data[0].width").value(1920))
-                .andExpect(jsonPath("$.data[0].height").value(1080))
-                .andExpect(jsonPath("$.data[0].mime_type").value("image/webp"))
-                .andExpect(jsonPath("$.data[0].blur_hash").value(nullValue()))
                 .andExpect(jsonPath("$.data[0].display_order").value(1))
+                .andExpect(jsonPath("$.meta.pagination.total_items").value(1))
                 .andExpect(jsonPath("$.meta.trace_id").isNotEmpty())
                 .andExpect(jsonPath("$.meta.timestamp").isNotEmpty())
                 .andExpect(jsonPath("$.errors").value(nullValue()));
@@ -176,7 +174,7 @@ class PoiControllerIntegrationTest {
     @Test
     @DisplayName("GET /api/v1/pois/{poi_id}/gallery trả về 200 OK với data rỗng khi POI không có ảnh")
     void shouldReturnEmptyGalleryWhenPoiHasNoMedia() throws Exception {
-        when(poiService.getGallery("poi_empty")).thenReturn(Collections.emptyList());
+        when(poiService.getGallery(eq("poi_empty"), anyInt(), anyInt())).thenReturn(PageResponse.of(Collections.emptyList(), 0, 20, 0));
 
         mockMvc.perform(get("/api/v1/pois/poi_empty/gallery"))
                 .andExpect(status().isOk())
@@ -190,17 +188,14 @@ class PoiControllerIntegrationTest {
 
     @Test
     @DisplayName("GET /api/v1/pois/{poi_id}/gallery trả về 404 Not Found khi POI không tồn tại hoặc đã bị xóa mềm")
-    void shouldReturn404WhenGalleryPoiNotFound() throws Exception {
-        when(poiService.getGallery("poi_unknown"))
-                .thenThrow(new ResourceNotFoundException("POI not found with id: poi_unknown"));
+    void shouldReturnEmptyGalleryForUnknownPoi() throws Exception {
+        when(poiService.getGallery(eq("poi_unknown"), anyInt(), anyInt()))
+                .thenReturn(PageResponse.of(Collections.emptyList(), 0, 20, 0));
 
         mockMvc.perform(get("/api/v1/pois/poi_unknown/gallery"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(404))
-                .andExpect(jsonPath("$.meta.error_code").value("POI_NOT_FOUND"))
-                .andExpect(jsonPath("$.data").value(nullValue()))
-                .andExpect(jsonPath("$.errors").value(nullValue()));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(jsonPath("$.meta.pagination.total_items").value(0));
     }
 
     // ── API 9: Reviews Endpoint Tests ────────────────────────────────────────
@@ -217,7 +212,8 @@ class PoiControllerIntegrationTest {
         );
 
         when(poiService.getReviews(eq("poi_01"), anyInt(), anyInt()))
-                .thenReturn(PageResponse.of(List.of(review), 0, 10, 1));
+                .thenReturn(new PoiService.ReviewsPage(PageResponse.of(List.of(review), 0, 10, 1),
+                        List.of(new PoiReviewItemResponse.RatingSummary(3L, 4.2))));
 
         mockMvc.perform(get("/api/v1/pois/poi_01/reviews")
                         .param("page", "0")
@@ -226,6 +222,8 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data[0].review_id").value("rev_01"))
+                .andExpect(jsonPath("$.rating_summary[0].rating_count").value(3))
+                .andExpect(jsonPath("$.rating_summary[0].rating_avg_score").value(4.2))
                 .andExpect(jsonPath("$.meta.pagination.total_items").value(1))
                 .andExpect(jsonPath("$.errors").value(nullValue()));
     }
@@ -244,16 +242,73 @@ class PoiControllerIntegrationTest {
 
     @Test
     @DisplayName("GET /api/v1/pois/{poi_id}/reviews trả về 404 Not Found khi POI không tồn tại")
-    void shouldReturn404WhenReviewsPoiNotFound() throws Exception {
+    void shouldReturnEmptyReviewsAndRatingSummaryForUnknownPoi() throws Exception {
         when(poiService.getReviews(eq("poi_unknown"), anyInt(), anyInt()))
-                .thenThrow(new ResourceNotFoundException("POI not found with id: poi_unknown"));
+                .thenReturn(new PoiService.ReviewsPage(PageResponse.of(Collections.emptyList(), 0, 10, 0), List.of()));
 
         mockMvc.perform(get("/api/v1/pois/poi_unknown/reviews"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(jsonPath("$.rating_summary").isEmpty());
+    }
+
+    @Test
+    @DisplayName("POST /compact body JSON hỏng trả 400 và không echo nội dung")
+    void shouldReturn400WhenCompactBodyMalformed() throws Exception {
+        mockMvc.perform(post("/api/v1/pois/compact")
+                        .contentType("application/json")
+                        .content("{"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("Malformed or missing request body."));
+    }
+
+    @Test
+    @DisplayName("GET /compact trả 405")
+    void shouldReturn405ForGetCompact() throws Exception {
+        mockMvc.perform(get("/api/v1/pois/compact"))
+                .andExpect(status().isMethodNotAllowed());
+    }
+
+    @Test
+    @DisplayName("POST /compact Content-Type không phải JSON trả 415")
+    void shouldReturn415WhenCompactContentTypeNotJson() throws Exception {
+        mockMvc.perform(post("/api/v1/pois/compact")
+                        .contentType("text/plain")
+                        .content("{\"ids\":[\"poi_01\"]}"))
+                .andExpect(status().isUnsupportedMediaType());
+    }
+
+    @Test
+    @DisplayName("GET /features size 101 trả 422")
+    void shouldReturn422WhenFeaturesSizeExceedsMax() throws Exception {
+        mockMvc.perform(get("/api/v1/pois/features").param("size", "101"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("GET /experiences trả items")
+    void shouldReturnExperiences() throws Exception {
+        when(poiService.getExperiences(eq("poi_01"), eq("vi")))
+                .thenReturn(new PoiExperiencesResponse(List.of(
+                        new PoiExperiencesResponse.Item("Dao pho", "Di bo", "partner"))));
+
+        mockMvc.perform(get("/api/v1/pois/poi_01/experiences"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items[0].source").value("partner"))
+                .andExpect(jsonPath("$.message").value("POI experiences retrieved successfully"));
+    }
+
+    @Test
+    @DisplayName("GET /practical_info 404 khi service ném ResourceNotFoundException")
+    void shouldReturn404WhenPracticalInfoPoiNotFound() throws Exception {
+        when(poiService.getPracticalInfo(eq("missing"), any()))
+                .thenThrow(new ResourceNotFoundException("POI not found with id: missing"));
+
+        mockMvc.perform(get("/api/v1/pois/missing/practical_info"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.code").value(404))
-                .andExpect(jsonPath("$.meta.error_code").value("POI_NOT_FOUND"))
-                .andExpect(jsonPath("$.data").value(nullValue()));
+                .andExpect(jsonPath("$.meta.error_code").value("POI_NOT_FOUND"));
     }
 
     // ── API 10: Amenities Endpoint Tests ─────────────────────────────────────

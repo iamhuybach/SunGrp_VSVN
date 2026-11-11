@@ -1,0 +1,37 @@
+{
+  "round": 1,
+  "verdict": "USER_DECISION",
+  "findings": [
+    {
+      "id": "API-002",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/api-mapping/compact.md": "c2efdce969279e0a658d49b7ce56a8ea6147d30ceb7f87edd1dbd7d2edb1421b",
+    "docs/context/api-mapping/experiences.md": "18ec852c5c457c8c1de7ec0b2066771a1afa992c692257c47641deb1d31d61d8",
+    "docs/context/api-mapping/features.md": "4d5f2023422de825012bbb712ae0d1af36a27773ce5218bbebc98d06dc751f5d",
+    "docs/context/api-mapping/gallery.md": "6a292833135308c745edf5c4494041a422d40e2af203853198a025f498dc994b",
+    "docs/context/api-mapping/practical_info.md": "635621722a6f91ec5181990f98889f18069c2b1b1c2fbfe699cab6237575ca23",
+    "docs/context/api-mapping/reviews.md": "e9744d38c7e949030ee1c2adf640ec874208f0617b140efa3ce0490a3d33b260",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java": "8956c400d3e4c93e4f06f8681f892a81a62f5af06c31b8d7da121dc5ffaeebf9",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiRequest.java": "9b3b5451be6d53b803c0f2cc8420a25beff2f463fad9036dc175ffeb841bfa11",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java": "83bb599092af3a26184ace971eb2138eff6c649b1bfb5b30b5ce5f1f6601a7e7",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiExperiencesResponse.java": "f83a74202c0222377d99270f61bba8c1bca978d0598f5ec2874615355bf74a3a",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiFeatureResponse.java": "820df83bbf731c700600284b57e1702c9cba65bbcb7670cbcdc0dcda46923fd3",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiGalleryItemResponse.java": "b4942f24eb7c9a9eb13ce800a7e36a32ab0c32b8423f53639fe8928f6034385f",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiPracticalInfoResponse.java": "1c491ed9d9591fc94fcafb9b05eb4b1546a2cdaccd12fd9fc879e6c15e13c5fc",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PoiReviewItemResponse.java": "1096deb7959eca76015170858ad1a4aa4e7e4bdbdc380f2672623f2869bd8cc6",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandler.java": "31912686c7af8be6c015829a96ea4ffcbc510e9aababc06255e94d1470aba82c",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiInfoRepository.java": "8f7a867db3b7361de8693489bdce2948153b08498d1cafb286538a986b07c93f",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java": "5d5439ec2f3444a9137c80f183eb3736e615430212a7ebc5fe0222443d88b073",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java": "9864bcfbc55ea7b47ae0fa5e745876e94601dba094d74fb8a55538d58c8e95a6",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/StoredJsonParser.java": "efd4fc57ee9aeb79b0a8248c7c4f228bc1ca3300a70a4d9dfda4d12b1245082d",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java": "12c759b34f26cfa046cf3788bac0a678dca757d26bb4d529139e634bd1c07a50",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/GlobalExceptionHandlerTest.java": "19c834d301004403d2be38b846391a1d5c59145d9014dbf978bd786378e4c28d",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java": "ec036c4633141578c115bcbcd3d979f3b353a6af9482f6604a12bc32645f03d1",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java": "ca6ef69e43480d06354a03d42161974c79e65e96db4e4c0c8b1391371ca34e80",
+    "tests/test_srv_poi_api_mapping_required.py": "867128edc15ae01a8fab4081476ede1f86cfbefa9bc07749e4e9283bb47039c7"
+  },
+  "elapsed_seconds": 345
+}

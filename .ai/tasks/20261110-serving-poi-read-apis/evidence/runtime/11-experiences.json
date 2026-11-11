@@ -1,0 +1,22 @@
+{
+  "http_status": 200,
+  "body": {
+    "success": true,
+    "code": 200,
+    "message": "POI experiences retrieved successfully",
+    "data": {
+      "items": [
+        {
+          "title": "Dao pho",
+          "description": "Di bo",
+          "source": "partner"
+        }
+      ]
+    },
+    "meta": {
+      "timestamp": "2026-11-11T03:49:19.009652623Z",
+      "trace_id": "22222222-2222-2222-2222-222222222222"
+    },
+    "errors": null
+  }
+}

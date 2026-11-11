@@ -1,0 +1,42 @@
+{
+  "http_status": 200,
+  "body": {
+    "success": true,
+    "code": 200,
+    "message": "Compact POIs retrieved successfully",
+    "data": [
+      {
+        "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+        "name": "POI Attraction",
+        "description": "Mo ta vi",
+        "cover": {
+          "id": "cover-a",
+          "file_key": "pois/a.jpg"
+        },
+        "rating": null,
+        "business_tags": {
+          "business_sector": "attraction",
+          "business_category": "landmark",
+          "subcategory_tags": null
+        },
+        "address": {
+          "full_address": "1 Pho Fixture",
+          "street": null,
+          "ward": null,
+          "district": null,
+          "city": null,
+          "country_code": null
+        },
+        "geo_location": {
+          "latitude": 21.02,
+          "longitude": 105.85
+        }
+      }
+    ],
+    "meta": {
+      "timestamp": "2026-11-11T03:49:19.138383665Z",
+      "trace_id": "22222222-2222-2222-2222-222222222222"
+    },
+    "errors": null
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "http_status": 200,
+  "body": {
+    "success": true,
+    "code": 200,
+    "message": "POI reviews retrieved successfully",
+    "data": [],
+    "rating_summary": [],
+    "meta": {
+      "timestamp": "2026-11-11T03:49:18.784450676Z",
+      "trace_id": "22222222-2222-2222-2222-222222222222",
+      "pagination": {
+        "type": "offset",
+        "page": 0,
+        "per_page": 10,
+        "total_items": 0,
+        "total_pages": 0,
+        "has_next": false,
+        "has_prev": false
+      }
+    },
+    "errors": null
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "http_status": 404,
+  "body": {
+    "success": false,
+    "code": 404,
+    "message": "POI not found with id: 00000000-0000-0000-0000-000000000000",
+    "data": null,
+    "meta": {
+      "timestamp": "2026-11-11T03:49:19.108129997Z",
+      "trace_id": "22222222-2222-2222-2222-222222222222",
+      "error_code": "POI_NOT_FOUND"
+    },
+    "errors": null
+  }
+}

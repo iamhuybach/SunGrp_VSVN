@@ -242,4 +242,71 @@ class PoiRepositoryIntegrationTest {
         assertThat(reviewPage.getContent()).extracting(SrvPoiReview::getAuthorName)
                 .containsExactlyInAnyOrder("Nguyen Van A", "John Doe");
     }
+
+    @Test
+    @DisplayName("Gallery page sorts display_order then media_id, and cover is the first active cover")
+    void shouldPageGalleryByDisplayOrderThenMediaId() {
+        poiMediaGalleryRepository.saveAll(List.of(
+                gallery("media-z", 2, false),
+                gallery("media-a", null, false),
+                gallery("media-m", 1, true),
+                gallery("media-c", 0, true)
+        ));
+        poiMediaGalleryRepository.flush();
+
+        Page<SrvPoiMediaGallery> page = poiMediaGalleryRepository.findActivePageByPoiId(TEST_POI_ID, PageRequest.of(0, 10));
+        assertThat(page.getContent()).extracting(SrvPoiMediaGallery::getMediaId)
+                .containsExactly("media-c", "media-m", "media-z", "media-a");
+
+        List<SrvPoiMediaGallery> covers = poiMediaGalleryRepository.findActiveCoverByPoiId(TEST_POI_ID, PageRequest.of(0, 1));
+        assertThat(covers).extracting(SrvPoiMediaGallery::getMediaId).containsExactly("media-c");
+    }
+
+    @Test
+    @DisplayName("Features round-robin prefers recommended rows, then rating fallback, and honors rating_source")
+    void shouldRoundRobinFeaturesBySectorPriority() {
+        poiInfoRepository.saveAll(List.of(
+                feature("a-1", "attraction", true, null, null, "partner"),
+                feature("a-2", "attraction", false, "4.80", 200, "partner"),
+                feature("b-1", "f_n_b", true, null, null, "partner"),
+                feature("e-1", "event", false, "4.90", 150, "other"),
+                feature("e-low", "event", false, "4.00", 10, "partner"),
+                feature("acc-1", "accommodation", true, null, null, "partner"),
+                feature("blank-1", "  ", true, null, null, "partner")
+        ));
+        poiInfoRepository.flush();
+
+        List<String> ids = poiInfoRepository.findFeatureIds(
+                "attraction,f_n_b,event", new BigDecimal("4.5"), 100, "", 10, 0);
+        assertThat(ids).containsExactly("a-1", "b-1", "e-1", "a-2");
+        assertThat(poiInfoRepository.countFeatures("attraction,f_n_b,event", new BigDecimal("4.5"), 100, "")).isEqualTo(4);
+
+        List<String> partnerOnly = poiInfoRepository.findFeatureIds(
+                "attraction,f_n_b,event", new BigDecimal("4.5"), 100, "partner", 10, 0);
+        assertThat(partnerOnly).containsExactly("a-1", "b-1", "a-2");
+    }
+
+    private SrvPoiMediaGallery gallery(String mediaId, Integer displayOrder, boolean cover) {
+        return SrvPoiMediaGallery.builder()
+                .mediaId(mediaId)
+                .poiId(TEST_POI_ID)
+                .displayOrder(displayOrder)
+                .blobUrl("pois/" + mediaId + ".jpg")
+                .isActive(true)
+                .isCover(cover)
+                .build();
+    }
+
+    private SrvPoiInfo feature(String poiId, String sector, boolean recommended, String rating, Integer count, String source) {
+        return SrvPoiInfo.builder()
+                .poiId(poiId)
+                .poiName(poiId)
+                .sourceName(source)
+                .businessSector(sector)
+                .isRecommended(recommended)
+                .ratingOverall(rating == null ? null : new BigDecimal(rating))
+                .ratingCount(count)
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
 }

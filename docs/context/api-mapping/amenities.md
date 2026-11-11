@@ -61,11 +61,13 @@
 ## Sample request
 
 ```http
-GET /api/v1/pois/11111111-1111-1111-1111-111111111111/amenities HTTP/1.1
+GET /api/v1/pois/10b414f0-1089-8014-a0a1-612cda96cdc5/amenities HTTP/1.1
 X-Request-Id: 22222222-2222-2222-2222-222222222222
 ```
 
 ## Sample response
+
+Lấy từ Dev ngày 2026-11-11.
 
 ```json
 {
@@ -74,19 +76,72 @@ X-Request-Id: 22222222-2222-2222-2222-222222222222
   "message": "POI amenities retrieved successfully",
   "data": [
     {
-      "amenity_group": "facilities_and_services",
+      "amenity_group": "accessibility",
       "items": [
         {
-          "amenity_code": "ma_mau",
-          "amenity_label_en": "Nhan mau",
-          "amenity_label_vi": "Amenity sample",
-          "service_flags": "mau"
+          "amenity_code": "accessible_parking",
+          "amenity_label_en": "Accessible Parking",
+          "amenity_label_vi": "Bãi đỗ xe cho người khuyết tật",
+          "service_flags": "Accessibility"
+        },
+        {
+          "amenity_code": "wheelchair_accessible_entrance",
+          "amenity_label_en": "Wheelchair Accessible Entrance",
+          "amenity_label_vi": "Lối đi xe lăn",
+          "service_flags": "Accessibility"
+        },
+        {
+          "amenity_code": "wheelchair_accessible_restroom",
+          "amenity_label_en": "Wheelchair Accessible Restroom",
+          "amenity_label_vi": "Nhà vệ sinh có tay vịn",
+          "service_flags": "Accessibility"
+        },
+        {
+          "amenity_code": "wheelchair_accessible_seating",
+          "amenity_label_en": "Wheelchair Accessible Seating",
+          "amenity_label_vi": "Chỗ ngồi cho người khuyết tật",
+          "service_flags": "Accessibility"
+        }
+      ]
+    },
+    {
+      "amenity_group": "general_amenities",
+      "items": [
+        {
+          "amenity_code": "free_street_parking",
+          "amenity_label_en": "Free Street Parking",
+          "amenity_label_vi": "Đỗ xe trên phố",
+          "service_flags": "Parking"
+        },
+        {
+          "amenity_code": "good_for_children",
+          "amenity_label_en": "Good for Children",
+          "amenity_label_vi": "Thân thiện trẻ em",
+          "service_flags": "Suitability"
+        },
+        {
+          "amenity_code": "outdoor_seating",
+          "amenity_label_en": "Outdoor Seating",
+          "amenity_label_vi": "Không gian ngoài trời",
+          "service_flags": "Food/service"
+        },
+        {
+          "amenity_code": "parking",
+          "amenity_label_en": "Parking",
+          "amenity_label_vi": "Bãi đậu xe",
+          "service_flags": "Parking"
+        },
+        {
+          "amenity_code": "restroom",
+          "amenity_label_en": "Restroom",
+          "amenity_label_vi": "Nhà vệ sinh",
+          "service_flags": "Suitability"
         }
       ]
     }
   ],
   "meta": {
-    "timestamp": "2026-11-09T04:28:00Z",
+    "timestamp": "2026-11-11T07:00:33.285893900Z",
     "trace_id": "22222222-2222-2222-2222-222222222222"
   },
   "errors": null

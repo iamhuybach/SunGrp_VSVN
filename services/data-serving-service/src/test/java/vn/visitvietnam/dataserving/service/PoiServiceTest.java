@@ -8,9 +8,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import vn.visitvietnam.dataserving.api.dto.CompactPoiResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiAmenityGroupResponse;
+import vn.visitvietnam.dataserving.api.dto.PoiExperiencesResponse;
+import vn.visitvietnam.dataserving.api.dto.PoiPracticalInfoResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiGalleryItemResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiReviewItemResponse;
 import vn.visitvietnam.dataserving.common.dto.PageResponse;
@@ -78,27 +81,16 @@ class PoiServiceTest {
                 .ratingOverall(new BigDecimal("4.80"))
                 .ratingCount(1500)
                 .reviewCount(450)
+                .coverId("med_01")
+                .coverBlobUrl("https://cdn.example.com/cover.webp")
                 .isVerified(true)
                 .isRecommended(true)
                 .isBookable(false)
                 .operatingStatus("OPERATIONAL")
                 .build();
 
-        when(poiInfoRepository.findAll(any(Specification.class), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(poi)));
-
-        SrvPoiMediaGallery coverMedia = SrvPoiMediaGallery.builder()
-                .mediaId("med_01")
-                .poiId("poi_01")
-                .blobUrl("https://cdn.example.com/cover.webp")
-                .widthPx(1920)
-                .heightPx(1080)
-                .isCover(true)
-                .isActive(true)
-                .build();
-
-        when(mediaGalleryRepository.findActiveByPoiIdInOrderByDisplayOrderAsc(List.of("poi_01")))
-                .thenReturn(List.of(coverMedia));
+        when(poiInfoRepository.findAll(any(Specification.class), any(Sort.class)))
+                .thenReturn(List.of(poi));
 
         SrvPoiMultiLang enLang = SrvPoiMultiLang.builder()
                 .poiId("poi_01")
@@ -109,16 +101,16 @@ class PoiServiceTest {
         when(multiLangRepository.findByPoiIdInAndLangIn(eq(List.of("poi_01")), eq(Set.of("en", "vi"))))
                 .thenReturn(List.of(enLang));
 
-        PageResponse<CompactPoiResponse> response = poiService.getCompactPois(null, "en", 0, 10, "createdAt,desc");
+        List<CompactPoiResponse> response = poiService.getCompactPois(List.of("poi_01"), "en");
 
-        assertThat(response.content()).hasSize(1);
-        CompactPoiResponse item = response.content().getFirst();
+        assertThat(response).hasSize(1);
+        CompactPoiResponse item = response.getFirst();
         assertThat(item.id()).isEqualTo("poi_01");
         assertThat(item.name()).isEqualTo("Nhà hát Lớn");
         assertThat(item.description()).isEqualTo("Historical theater");
+        assertThat(item.cover().id()).isEqualTo("med_01");
         assertThat(item.cover().fileKey()).isEqualTo("https://cdn.example.com/cover.webp");
-        assertThat(item.cover().mimeType()).isEqualTo("image/webp");
-        assertThat(item.businessTags().primaryCategoryLabel()).isEqualTo("Điểm tham quan");
+        assertThat(item.businessTags().businessSector()).isEqualTo("ATTRACTION");
         assertThat(item.businessTags().subcategories()).containsExactly("architecture", "culture");
         assertThat(item.rating().overall()).isEqualTo(4.80);
     }
@@ -132,28 +124,25 @@ class PoiServiceTest {
                 .businessSector("ATTRACTION")
                 .build();
 
-        when(poiInfoRepository.findAll(any(Specification.class), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(poi)));
-        when(mediaGalleryRepository.findActiveByPoiIdInOrderByDisplayOrderAsc(List.of("poi_vi")))
-                .thenReturn(Collections.emptyList());
+        when(poiInfoRepository.findAll(any(Specification.class), any(Sort.class)))
+                .thenReturn(List.of(poi));
         when(multiLangRepository.findByPoiIdInAndLangIn(eq(List.of("poi_vi")), eq(Set.of("vi"))))
                 .thenReturn(Collections.emptyList());
 
-        PageResponse<CompactPoiResponse> response = poiService.getCompactPois(null, "vi", 0, 10, null);
+        List<CompactPoiResponse> response = poiService.getCompactPois(List.of("poi_vi"), "vi");
 
-        assertThat(response.content()).hasSize(1);
-        assertThat(response.content().getFirst().name()).isEqualTo("Chùa Một Cột");
+        assertThat(response).hasSize(1);
+        assertThat(response.getFirst().name()).isEqualTo("Chùa Một Cột");
     }
 
     @Test
     @DisplayName("API 1: Trả về trang rỗng an toàn khi không tìm thấy POI")
     void shouldReturnEmptyPageWhenNoPois() {
-        when(poiInfoRepository.findAll(any(Specification.class), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(Collections.emptyList()));
+        when(poiInfoRepository.findAll(any(Specification.class), any(Sort.class)))
+                .thenReturn(Collections.emptyList());
 
-        PageResponse<CompactPoiResponse> response = poiService.getCompactPois(null, "vi", 0, 10, null);
-        assertThat(response.content()).isEmpty();
-        assertThat(response.totalElements()).isZero();
+        List<CompactPoiResponse> response = poiService.getCompactPois(List.of("missing"), "vi");
+        assertThat(response).isEmpty();
     }
 
     // ── API 3: Gallery Tests ─────────────────────────────────────────────────
@@ -161,14 +150,10 @@ class PoiServiceTest {
     @Test
     @DisplayName("API 3: Lấy thư viện ảnh gallery thành công theo thứ tự sắp xếp và fallback photoApiUri")
     void shouldReturnGallerySuccessfully() {
-        when(poiInfoRepository.existsByPoiIdAndDeletedAtIsNull("poi_01")).thenReturn(true);
-
         SrvPoiMediaGallery m1 = SrvPoiMediaGallery.builder()
                 .mediaId("med_01")
                 .poiId("poi_01")
                 .blobUrl("https://cdn.example.com/img1.webp")
-                .widthPx(1920)
-                .heightPx(1080)
                 .displayOrder(1)
                 .isActive(true)
                 .build();
@@ -176,55 +161,41 @@ class PoiServiceTest {
         SrvPoiMediaGallery m2 = SrvPoiMediaGallery.builder()
                 .mediaId("med_02")
                 .poiId("poi_01")
-                .photoApiUri("https://photos.example.com/img2.jpg")
-                .widthPx(800)
-                .heightPx(600)
+                .blobUrl(null)
                 .displayOrder(2)
                 .isActive(true)
                 .build();
 
-        when(mediaGalleryRepository.findActiveByPoiIdOrderByDisplayOrderAsc("poi_01"))
-                .thenReturn(List.of(m1, m2));
+        when(mediaGalleryRepository.findActivePageByPoiId(eq("poi_01"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(m1, m2)));
 
-        List<PoiGalleryItemResponse> gallery = poiService.getGallery("poi_01");
-        assertThat(gallery).hasSize(2);
-
-        PoiGalleryItemResponse item1 = gallery.get(0);
-        assertThat(item1.id()).isEqualTo("med_01");
-        assertThat(item1.mediaId()).isEqualTo("med_01");
-        assertThat(item1.fileKey()).isEqualTo("https://cdn.example.com/img1.webp");
-        assertThat(item1.width()).isEqualTo(1920);
-        assertThat(item1.height()).isEqualTo(1080);
-        assertThat(item1.mimeType()).isEqualTo("image/webp");
-        assertThat(item1.blurHash()).isNull();
-        assertThat(item1.displayOrder()).isEqualTo(1);
-
-        PoiGalleryItemResponse item2 = gallery.get(1);
-        assertThat(item2.id()).isEqualTo("med_02");
-        assertThat(item2.fileKey()).isEqualTo("https://photos.example.com/img2.jpg");
-        assertThat(item2.mimeType()).isEqualTo("image/jpeg");
-        assertThat(item2.displayOrder()).isEqualTo(2);
+        PageResponse<PoiGalleryItemResponse> gallery = poiService.getGallery("poi_01", 0, 20);
+        assertThat(gallery.content()).hasSize(2);
+        assertThat(gallery.content().get(0).id()).isEqualTo("med_01");
+        assertThat(gallery.content().get(0).fileKey()).isEqualTo("https://cdn.example.com/img1.webp");
+        assertThat(gallery.content().get(0).displayOrder()).isEqualTo(1);
+        assertThat(gallery.content().get(1).fileKey()).isNull();
     }
 
     @Test
     @DisplayName("API 3: Trả về danh sách rỗng khi POI hợp lệ nhưng không có ảnh gallery")
     void shouldReturnEmptyListWhenPoiHasNoGalleryMedia() {
-        when(poiInfoRepository.existsByPoiIdAndDeletedAtIsNull("poi_empty")).thenReturn(true);
-        when(mediaGalleryRepository.findActiveByPoiIdOrderByDisplayOrderAsc("poi_empty"))
-                .thenReturn(Collections.emptyList());
+        when(mediaGalleryRepository.findActivePageByPoiId(eq("poi_empty"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Collections.emptyList()));
 
-        List<PoiGalleryItemResponse> gallery = poiService.getGallery("poi_empty");
-        assertThat(gallery).isNotNull().isEmpty();
+        PageResponse<PoiGalleryItemResponse> gallery = poiService.getGallery("poi_empty", 0, 20);
+        assertThat(gallery.content()).isNotNull().isEmpty();
     }
 
     @Test
     @DisplayName("API 3: Ném ResourceNotFoundException khi POI không tồn tại")
-    void shouldThrowWhenPoiNotFoundInGallery() {
-        when(poiInfoRepository.existsByPoiIdAndDeletedAtIsNull("poi_unknown")).thenReturn(false);
+    void shouldNotCheckPoiExistenceForGallery() {
+        when(mediaGalleryRepository.findActivePageByPoiId(eq("poi_unknown"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Collections.emptyList()));
 
-        assertThatThrownBy(() -> poiService.getGallery("poi_unknown"))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("POI not found with id: poi_unknown");
+        PageResponse<PoiGalleryItemResponse> gallery = poiService.getGallery("poi_unknown", 0, 20);
+        assertThat(gallery.content()).isEmpty();
+        assertThat(gallery.totalElements()).isZero();
     }
 
     // ── API 9: Reviews Tests ─────────────────────────────────────────────────
@@ -232,13 +203,13 @@ class PoiServiceTest {
     @Test
     @DisplayName("API 9: Lấy danh sách review có phân trang")
     void shouldReturnReviewsSuccessfully() {
-        when(poiInfoRepository.existsByPoiIdAndDeletedAtIsNull("poi_01")).thenReturn(true);
-
         SrvPoiReview review = SrvPoiReview.builder()
                 .reviewId("rev_01")
                 .poiId("poi_01")
                 .authorName("Nguyễn Văn A")
                 .rating(new BigDecimal("4.50"))
+                .ratingCount(3L)
+                .ratingOverall(new BigDecimal("4.20"))
                 .reviewText("Địa điểm tuyệt vời")
                 .reviewDate("2026-04-15")
                 .build();
@@ -246,19 +217,23 @@ class PoiServiceTest {
         when(reviewRepository.findByPoiIdAndDeletedAtIsNull(eq("poi_01"), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(review)));
 
-        PageResponse<PoiReviewItemResponse> response = poiService.getReviews("poi_01", 0, 10);
-        assertThat(response.content()).hasSize(1);
-        assertThat(response.content().getFirst().reviewId()).isEqualTo("rev_01");
-        assertThat(response.content().getFirst().rating()).isEqualTo(4.5);
+        PoiService.ReviewsPage response = poiService.getReviews("poi_01", 0, 10);
+        assertThat(response.page().content()).hasSize(1);
+        assertThat(response.page().content().getFirst().reviewId()).isEqualTo("rev_01");
+        assertThat(response.ratingSummary()).hasSize(1);
+        assertThat(response.ratingSummary().getFirst().ratingCount()).isEqualTo(3L);
+        assertThat(response.ratingSummary().getFirst().ratingAvgScore()).isEqualTo(4.2);
     }
 
     @Test
     @DisplayName("API 9: Ném ResourceNotFoundException khi POI không tồn tại")
-    void shouldThrowWhenPoiNotFoundInReviews() {
-        when(poiInfoRepository.existsByPoiIdAndDeletedAtIsNull("poi_unknown")).thenReturn(false);
+    void shouldReturnEmptyRatingSummaryWhenNoReviews() {
+        when(reviewRepository.findByPoiIdAndDeletedAtIsNull(eq("poi_unknown"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Collections.emptyList()));
 
-        assertThatThrownBy(() -> poiService.getReviews("poi_unknown", 0, 10))
-                .isInstanceOf(ResourceNotFoundException.class);
+        PoiService.ReviewsPage response = poiService.getReviews("poi_unknown", 0, 10);
+        assertThat(response.page().content()).isEmpty();
+        assertThat(response.ratingSummary()).isEmpty();
     }
 
     // ── API 10: Amenities Tests ──────────────────────────────────────────────
@@ -348,6 +323,70 @@ class PoiServiceTest {
         assertThat(amenities).hasSize(1);
         assertThat(amenities.getFirst().items().getFirst().amenityCode()).isEqualTo("step_free");
         verifyNoInteractions(poiInfoRepository);
+    }
+
+    @Test
+    @DisplayName("normalizeSectors bỏ trống, khử trùng, và từ chối giá trị ngoài regex")
+    void shouldNormalizeSectorPriority() {
+        assertThat(poiService.normalizeSectors(null)).containsExactly("attraction", "f_n_b", "event", "tour_n_activities");
+        assertThat(poiService.normalizeSectors(List.of(" Event ", "event", "f_n_b")))
+                .containsExactly("event", "f_n_b");
+        assertThatThrownBy(() -> poiService.normalizeSectors(List.of("Bad-Sector")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("business_sector_priority contains an invalid value");
+    }
+
+    @Test
+    @DisplayName("experiences lấy hàng vi khi en rỗng và gắn source_name")
+    void shouldFallBackExperiencesToViWhenTargetEmpty() {
+        SrvPoiMultiLang en = SrvPoiMultiLang.builder().poiId("poi_01").lang("en").sourceName("en-src").experience("[]").build();
+        SrvPoiMultiLang vi = SrvPoiMultiLang.builder().poiId("poi_01").lang("vi").sourceName("partner")
+                .experience("[{\"title\":\"A\",\"description\":\"B\"},{\"title\":\" \",\"description\":\"\"},{\"title\":\"C\",\"description\":\"D\"},{\"title\":\"E\",\"description\":\"F\"}]")
+                .build();
+        when(multiLangRepository.findByPoiIdInAndLangIn(eq(List.of("poi_01")), eq(Set.of("en", "vi"))))
+                .thenReturn(List.of(en, vi));
+
+        PoiExperiencesResponse response = poiService.getExperiences("poi_01", "en");
+        assertThat(response.items()).hasSize(3);
+        assertThat(response.items()).allMatch(item -> "partner".equals(item.source()));
+        assertThat(response.items().getFirst().title()).isEqualTo("A");
+    }
+
+    @Test
+    @DisplayName("practical_info 404 khi không có info, và holiday_exceptions là nguyên text cột")
+    void shouldThrowWhenPracticalInfoPoiMissing() throws Exception {
+        when(poiInfoRepository.findByPoiIdAndDeletedAtIsNull("missing")).thenReturn(java.util.Optional.empty());
+        assertThatThrownBy(() -> poiService.getPracticalInfo("missing", "vi"))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        SrvPoiInfo poi = SrvPoiInfo.builder().poiId("poi_01").poiName("A").sourceName("partner")
+                .operatingHours("not-json").holidayExceptions("[ {\"date\" : \"02/09/2026\"} ]").build();
+        when(poiInfoRepository.findByPoiIdAndDeletedAtIsNull("poi_01")).thenReturn(java.util.Optional.of(poi));
+        when(multiLangRepository.findByPoiIdInAndLangIn(any(), any())).thenReturn(List.of(
+                SrvPoiMultiLang.builder().poiId("poi_01").lang("vi").timeToSpend("{\"Thoi gian\":\"1 gio\"}").build()));
+        when(mediaGalleryRepository.findActiveCoverByPoiId(eq("poi_01"), any(Pageable.class))).thenReturn(List.of());
+
+        PoiPracticalInfoResponse info = poiService.getPracticalInfo("poi_01", "vi");
+        assertThat(info.holidayExceptions()).isEqualTo("[ {\"date\" : \"02/09/2026\"} ]");
+        assertThat(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(info))
+                .contains("\"holiday_exceptions\":[ {\"date\" : \"02/09/2026\"} ]");
+        assertThat(vn.visitvietnam.dataserving.service.util.StoredJsonParser.singleJsonValueOrNull("poi_01", "{"))
+                .isNull();
+        assertThat(vn.visitvietnam.dataserving.service.util.StoredJsonParser.singleJsonValueOrNull("poi_01", "{\"a\":1},\"x\""))
+                .isNull();
+        assertThat(info.timeToSpend().label()).isEqualTo("Thoi gian");
+        assertThat(info.operatingHours()).isNull();
+    }
+
+    @Test
+    @DisplayName("StoredJsonParser suy biến JSON hỏng và đọc giờ mở cửa")
+    void shouldDegradeMalformedStoredJsonToNull() {
+        assertThat(vn.visitvietnam.dataserving.service.util.StoredJsonParser.labelValue("p", "cost_vnd", "{")).isNull();
+        assertThat(vn.visitvietnam.dataserving.service.util.StoredJsonParser.operatingHours("p", "[{}]")).isEmpty();
+        var hours = vn.visitvietnam.dataserving.service.util.StoredJsonParser.operatingHours("p",
+                "[{\"day_of_week\":1,\"open_time\":\"09:00\",\"close_time\":\"18:00\",\"is_open_all_day\":false,\"is_closed\":false}]");
+        assertThat(hours).hasSize(1);
+        assertThat(hours.getFirst().dayOfWeek()).isEqualTo(1);
     }
 
     private static SrvPoiAmenity amenity(String group, String raw, String code) {

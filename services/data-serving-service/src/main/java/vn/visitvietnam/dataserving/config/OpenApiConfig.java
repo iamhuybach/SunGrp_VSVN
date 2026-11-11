@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Configuration(proxyBeanMethods = false)
@@ -49,6 +50,27 @@ public class OpenApiConfig {
                                 .name("Proprietary — Sun Group / Visit Vietnam")
                                 .identifier("LicenseRef-SunGroup-Proprietary")))
                 .servers(servers);
+    }
+
+    @Bean
+    public OpenApiCustomizer holidayExceptionsSchemaCustomizer() {
+        return openApi -> {
+            if (openApi.getComponents() == null || openApi.getComponents().getSchemas() == null) {
+                return;
+            }
+            openApi.getComponents().getSchemas().values().forEach(schema -> {
+                if (schema.getProperties() == null || !schema.getProperties().containsKey("holiday_exceptions")) {
+                    return;
+                }
+                // Field Java là String vì @JsonRawValue. Springdoc ghi type string. Schema công bố là mảng nullable.
+                Schema<?> items = new Schema<>().additionalProperties(Boolean.TRUE);
+                Schema<?> holiday = new Schema<>()
+                        .types(new LinkedHashSet<>(List.of("array", "null")))
+                        .items(items)
+                        .description("Mảng JSON nguyên từ apps.srv_poi_info.holiday_exceptions. JSON hỏng thì null. Không đổi khóa bên trong.");
+                schema.getProperties().put("holiday_exceptions", holiday);
+            });
+        };
     }
 
     @Bean

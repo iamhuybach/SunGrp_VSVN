@@ -1,0 +1,23 @@
+{
+  "http_status": 200,
+  "body": {
+    "success": true,
+    "code": 200,
+    "message": "POI gallery retrieved successfully",
+    "data": [],
+    "meta": {
+      "timestamp": "2026-11-11T03:49:18.678505095Z",
+      "trace_id": "22222222-2222-2222-2222-222222222222",
+      "pagination": {
+        "type": "offset",
+        "page": 0,
+        "per_page": 20,
+        "total_items": 0,
+        "total_pages": 0,
+        "has_next": false,
+        "has_prev": false
+      }
+    },
+    "errors": null
+  }
+}

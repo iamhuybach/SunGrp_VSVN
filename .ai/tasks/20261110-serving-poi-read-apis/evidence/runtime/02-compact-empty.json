@@ -1,0 +1,21 @@
+{
+  "http_status": 422,
+  "body": {
+    "success": false,
+    "code": 422,
+    "message": "Validation failed",
+    "data": null,
+    "meta": {
+      "timestamp": "2026-11-11T03:49:18.477913802Z",
+      "trace_id": "22222222-2222-2222-2222-222222222222",
+      "error_code": "ERR_VALIDATION_FAILED"
+    },
+    "errors": [
+      {
+        "field": "ids",
+        "code": "NOTEMPTY",
+        "message": "must not be empty"
+      }
+    ]
+  }
+}

@@ -4,7 +4,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Description | Danh sách POI nổi bật theo số lượng BE yêu cầu, xếp theo quy tắc xoay vòng nhóm (xử lý logic fallback cho section Điểm đến nổi bật). |
+| Description | POI nổi bật, phân trang. Vòng 1 lấy `apps.srv_poi_info.is_recommended` true. Vòng 2, khi vòng 1 chưa đủ trang, lấy `apps.srv_poi_info.rating_overall` và `apps.srv_poi_info.rating_count` đạt ngưỡng. Trong mỗi vòng, chọn luân phiên theo `business_sector_priority`. Ảnh bìa lấy từ `apps.srv_poi_info`. |
 | Method | GET |
 | Endpoint | /api/v1/pois/features |
 
@@ -12,180 +12,174 @@
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | Authorization | string | có | Bearer token service-to-service của BE |
-| 2 | Accept-Language | string | không | Dùng khi query `lang` trống. Cả hai trống thì `vi`. |
-| 3 | X-Request-Id | string | không | Mã định danh request |
+| 1 | Accept-Language | string | không | Dùng khi không có query `lang`. Thiếu cả hai thì `vi`. |
+| 2 | X-Request-Id | string | không | Ghi vào `meta.trace_id`. |
 
 ## Request param
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | lang | string | không | query. Ưu tiên hơn `Accept-Language`. Rỗng thì fallback `vi`. Bản dịch lấy `apps.srv_poi_multi_lang` theo lang đó, thiếu thì fallback `vi`. |
-| 2 | page | integer | không | query. Mặc định `0`. `@Min(0)` |
-| 3 | size | integer | không | query. Mặc định `10`. `@Min(1)` `@Max(100)` |
-| 4 | business_sector_priority | array | không | query. Thứ tự ưu tiên nhóm khi xoay vòng. Default: `attraction`, `f_n_b`, `event`, `tour_n_activities` |
-| 5 | fallback_min_rating | number | không | Rating tối thiểu khi bù ngoài pool partner. Default: `4.5` |
-| 6 | fallback_min_review_count | integer | không | Số đánh giá tối thiểu khi bù ngoài pool partner. Default: `100` |
-| 7 | rating_source | string | không | Nguồn review |
+| 1 | lang | string | không | query. |
+| 2 | page | integer | không | query. Mặc định `0`. `@Min(0)`. |
+| 3 | size | integer | không | query. Mặc định `10`. `@Min(1)` `@Max(100)`. |
+| 4 | business_sector_priority | array | không | query, lặp key. Mặc định `attraction`, `f_n_b`, `event`, `tour_n_activities`. Tối đa 20. Giá trị ngoài `^[a-z0-9_]{1,64}$` trả HTTP 400, message `business_sector_priority contains an invalid value`. |
+| 5 | fallback_min_rating | number | không | query. Mặc định `4.5`. Từ 0 đến 5. So với `apps.srv_poi_info.rating_overall`. |
+| 6 | fallback_min_review_count | integer | không | query. Mặc định `100`. `@Min(0)`. So với `apps.srv_poi_info.rating_count`. |
+| 7 | rating_source | string | không | query. Tối đa 64. Rỗng nghĩa là không lọc `apps.srv_poi_info.source_name`. |
 
 ## Response
 
 | Stt | Field | Type | Required | Source Field | Description |
 |---|---|---|---|---|---|
-| 1 | code | integer | có | không có cột | `0` = success |
-| 2 | message | string | có | không có cột | `success` hoặc mô tả lỗi |
-| 3 | data | array | có | không có cột | Theo thứ tự xoay vòng, tối đa limit phần tử |
-| 4 | data[].id | string | có | `apps.srv_poi_info.poi_id` | ID của POI |
-| 5 | data[].name | string | có | `apps.srv_poi_info.poi_name` | Tên POI |
-| 6 | data[].description | string | không | `apps.srv_poi_multi_lang.description` | Mô tả ngắn (filter by lang) |
-| 7 | data[].cover | object | có | không có cột | Object rỗng nếu POI chỉ có ảnh placeholder. Lấy từ `srv_poi_media_gallery` với `is_cover = true` |
-| 8 | data[].cover.id | string | không | `apps.srv_poi_media_gallery.media_id` | Có khi `cover` khác null. Ưu tiên dòng `is_cover` = true, không thì phần tử đầu theo `display_order`. |
-| 9 | data[].cover.file_key | string | không | `apps.srv_poi_media_gallery.blob_url`; `apps.srv_poi_media_gallery.photo_api_uri` | Có khi `cover` khác null. `blob_url` khi khác blank, còn lại `photo_api_uri`. |
-| 10 | data[].ratings.source | string | có | `apps.srv_poi_info.source_name` | Nguồn đánh giá |
-| 11 | data[].ratings.ratings_count | integer | có | `apps.srv_poi_info.rating_count` | Số đánh giá của nguồn đó |
-| 12 | data[].ratings.ratings_avg_score | number | có | `apps.srv_poi_info.rating_overall` | Điểm đánh giá trung bình |
-| 13 | data[].business_tags | object | có | không có cột |  |
-| 14 | data[].business_tags.business_sector | string | có | `apps.srv_poi_info.business_sector` | Nhóm ngành kinh doanh |
-| 15 | data[].business_tags.business_category | string | có | `apps.srv_poi_info.business_category` | Danh mục kinh doanh |
-| 16 | data[].business_tags.subcategory_tags | array | không | `apps.srv_poi_info.subcategory_tags` | Các tag danh mục con |
-| 17 | data[].status | object | có | không có cột |  |
-| 18 | data[].status.operating_status | string | có | `apps.srv_poi_info.operating_status` | `operating` / `temporarily_closed` / `permanently_closed` |
-| 19 | data[].status.is_verified | boolean | có | `apps.srv_poi_info.is_verified` |  |
-| 20 | data[].status.is_recommended | boolean | có | `apps.srv_poi_info.is_recommended` |  |
-| 21 | data[].status.is_bookable | boolean | có | `apps.srv_poi_info.is_bookable` |  |
-| 22 | data[].operating_hours | array | không | `apps.srv_poi_info.operating_hours` | Giờ mở cửa cả tuần. Không có thì BE coi POI luôn hoạt động |
-| 23 | data[].operating_hours.day_of_week | integer | có | `apps.srv_poi_info.operating_hours.day_of_week` | 1 = Thứ Hai … 7 = Chủ Nhật |
-| 24 | data[].operating_hours.open_time | string | không | `apps.srv_poi_info.operating_hours.open_time` | HH:mm |
-| 25 | data[].operating_hours.close_time | string | không | `apps.srv_poi_info.operating_hours.close_time` | HH:mm |
-| 26 | data[].operating_hours.is_open_all_day | boolean | có | `apps.srv_poi_info.operating_hours.is_open_all_day` | Mở cả ngày |
-| 27 | data[].operating_hours.is_closed | boolean | có | `apps.srv_poi_info.operating_hours.is_closed` | Đóng cửa |
-| 28 | data[].address | object | không | không có cột |  |
-| 29 | data[].address.full_address | string | không | `apps.srv_poi_info.full_address` |  |
-| 30 | data[].address.street | string | không | `apps.srv_poi_info.street` |  |
-| 31 | data[].address.ward | string | không | `apps.srv_poi_info.ward` |  |
-| 32 | data[].address.district | string | không | `apps.srv_poi_info.district` |  |
-| 33 | data[].address.city | string | không | `apps.srv_poi_info.city` |  |
-| 34 | data[].address.country_code | string | có | `apps.srv_poi_info.country_code` |  |
-| 35 | data[].geo_location | object | không | không có cột |  |
-| 36 | data[].geo_location.latitude | number | có | `apps.srv_poi_info.lat` |  |
-| 37 | data[].geo_location.longitude | number | có | `apps.srv_poi_info.lng` |  |
-| 38 | meta | object | có | envelope |  |
-| 39 | meta.timestamp | integer | có | envelope | Unix timestamp. Spec nguồn gọi `server_time`. |
-| 40 | meta.trace_id | string | có | envelope | Từ `X-Request-Id`. Spec nguồn gọi `request_id`. |
-| 41 | meta.pagination | object | không | envelope |  |
-| 42 | meta.pagination.total_items | integer | không | envelope | Spec nguồn gọi `count`. |
+| 1 | success | boolean | có | envelope | `true` khi HTTP 200. |
+| 2 | code | integer | có | envelope | Thành công là `200`. |
+| 3 | message | string | có | envelope | `Featured POIs retrieved successfully`. |
+| 4 | data | array | có | envelope | Đúng thứ tự id SQL trả về. |
+| 5 | data[].id | string | có | apps.srv_poi_info.poi_id | |
+| 6 | data[].name | string | có | apps.srv_poi_info.poi_name | |
+| 7 | data[].description | string | có | apps.srv_poi_multi_lang.description | |
+| 8 | data[].cover | object | có | apps.srv_poi_info.cover_id; apps.srv_poi_info.cover_blob_url | Luôn là object. Thành viên null khi cột null. |
+| 9 | data[].ratings | array | có | apps.srv_poi_info.rating_overall; apps.srv_poi_info.rating_count | Một phần tử khi một trong hai khác null, còn lại mảng rỗng. |
+| 10 | data[].business_tags | object | có | apps.srv_poi_info.business_sector; apps.srv_poi_info.business_category; apps.srv_poi_info.subcategory_tags | |
+| 11 | data[].status | object | có | apps.srv_poi_info.operating_status; apps.srv_poi_info.is_verified; apps.srv_poi_info.is_recommended; apps.srv_poi_info.is_bookable | |
+| 12 | data[].operating_hours | array | có | apps.srv_poi_info.operating_hours | Null khi cột null hoặc JSON null. JSON hỏng thì mảng rỗng. |
+| 13 | data[].address | object | có | apps.srv_poi_info.full_address; apps.srv_poi_info.city; apps.srv_poi_info.district | |
+| 14 | data[].geo_location | object | có | apps.srv_poi_info.lat; apps.srv_poi_info.lng | |
+| 15 | meta | object | có | envelope | |
+| 16 | meta.timestamp | string | có | envelope | |
+| 17 | meta.trace_id | string | có | envelope | |
+| 18 | meta.pagination | object | có | envelope | |
+| 19 | meta.pagination.type | string | có | envelope | `offset`. |
+| 20 | meta.pagination.page | integer | có | envelope | |
+| 21 | meta.pagination.per_page | integer | có | envelope | |
+| 22 | meta.pagination.total_items | integer | có | envelope | |
+| 23 | meta.pagination.total_pages | integer | có | envelope | |
+| 24 | meta.pagination.has_next | boolean | có | envelope | |
+| 25 | meta.pagination.has_prev | boolean | có | envelope | |
+| 26 | errors | array | có | envelope | Null khi thành công. |
 
 ## Status code
 
 | HTTP | Code | Description |
 |---|---|---|
-| không có | không có | không có trong file nguồn |
+| 200 | null | Thành công. |
+| 400 | ERR_BAD_REQUEST | `business_sector_priority` có giá trị không hợp lệ. |
+| 422 | ERR_VALIDATION_FAILED | `page`, `size`, ngưỡng rating, hoặc độ dài danh sách sector ngoài khoảng. |
+| 500 | INTERNAL_SERVER_ERROR | Lỗi không phân loại. |
 
 ## Sample request
 
-```json
-{
-  "limit": 10,
-  "business_sector_priority": ["attraction", "f_n_b", "event", "tour_n_activities"],
-  "fallback_min_rating": 4.5,
-  "fallback_min_review_count": 100,
-  "rating_source": "google"
-}
+```http
+GET /api/v1/pois/features?page=0&size=1 HTTP/1.1
+Accept-Language: vi
+X-Request-Id: 22222222-2222-2222-2222-222222222222
 ```
 
 ## Sample response
 
+Lấy từ Dev ngày 2026-11-11. `size=1` để sample là đúng một response.
+
 ```json
 {
-  "code": 0,
-  "message": "success",
+  "success": true,
+  "code": 200,
+  "message": "Featured POIs retrieved successfully",
   "data": [
     {
-      "id": "c5d6e7f8-0a1b-4c2d-9e3f-4a5b6c7d8e9f",
-      "name": "Vịnh Hạ Long",
-      "description": "Di sản thiên nhiên thế giới với hàng nghìn đảo đá vôi.",
+      "id": "14b2e2c4-95a8-d851-240f-c25e4e8cdb7a",
+      "name": "French Village Ba Na Hills Viewpoint",
+      "description": "French Village Ba Na Hills Viewpoint là điểm ngắm cảnh lý tưởng với kiến trúc châu Âu cổ kính mang đến trải nghiệm như lạc bước giữa lòng nước Pháp trên đỉnh núi Bà Nà",
       "cover": {
-        "id": 918301,
-        "file_key": "pois/c5d6e7f8-0a1b-4c2d-9e3f-4a5b6c7d8e9f/media/918301.jpg"
+        "id": "743d1739d195cf9a6bb428dd1c411a3cac900b958bed055bdc713f8dfe2c990e",
+        "file_key": "partner_biz_service/2026/07/30/f4266e87-804a-43bd-8941-6eb6cb4aff9e_PsqwmsyU9R_38ada1a2-784c-49a0-b83f-0e8cc69f556f_datacollector_media_ChIJl-l3UgD3QTEREh-UpumcwQA_Ab43msK6J9g96mYK03fP.jpg"
       },
-      "ratings": [
-        {
-          "source": "google",
-          "ratings_count": 21480,
-          "ratings_avg_score": 4.8
-        }
-      ],
+      "ratings": [],
       "business_tags": {
         "business_sector": "attraction",
-        "business_category": "bay",
-        "subcategory_tags": [
-          "nature",
-          "cruise"
-        ]
+        "business_category": null,
+        "subcategory_tags": null
       },
       "status": {
-        "operating_status": "operating",
-        "is_verified": true,
+        "operating_status": "",
+        "is_verified": null,
         "is_recommended": true,
-        "is_bookable": true
+        "is_bookable": null
       },
       "operating_hours": [
         {
           "day_of_week": 1,
-          "is_open_all_day": true,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
           "is_closed": false
         },
         {
           "day_of_week": 2,
-          "is_open_all_day": true,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
           "is_closed": false
         },
         {
           "day_of_week": 3,
-          "is_open_all_day": true,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
           "is_closed": false
         },
         {
           "day_of_week": 4,
-          "is_open_all_day": true,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
           "is_closed": false
         },
         {
           "day_of_week": 5,
-          "is_open_all_day": true,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
           "is_closed": false
         },
         {
           "day_of_week": 6,
-          "is_open_all_day": true,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
           "is_closed": false
         },
         {
           "day_of_week": 7,
-          "is_open_all_day": true,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
           "is_closed": false
         }
       ],
       "address": {
-        "full_address": "Phường Hạ Long, Quảng Ninh",
-        "street": "",
-        "ward": "Phường Hạ Long",
-        "district": "",
-        "city": "Quảng Ninh",
-        "country_code": "VN"
+        "full_address": "00, Hòa Ninh, Xã Bà Nà, Thành phố Đà Nẵng",
+        "street": "Hòa Ninh",
+        "ward": "Xã Bà Nà",
+        "district": null,
+        "city": "Thành phố Đà Nẵng",
+        "country_code": null
       },
-      "geo_location": {
-        "latitude": 20.9101,
-        "longitude": 107.1839
-      }
+      "geo_location": null
     }
   ],
   "meta": {
-    "timestamp": 1791947160,
-    "trace_id": "9f1c1e2a-7a1b-4e34-9b7f-0a9d3b2c1d45",
+    "timestamp": "2026-11-11T06:59:22.449487Z",
+    "trace_id": "22222222-2222-2222-2222-222222222222",
     "pagination": {
-      "total_items": 3
+      "type": "offset",
+      "page": 0,
+      "per_page": 1,
+      "total_items": 88,
+      "total_pages": 88,
+      "has_next": true,
+      "has_prev": false
     }
-  }
+  },
+  "errors": null
 }
 ```

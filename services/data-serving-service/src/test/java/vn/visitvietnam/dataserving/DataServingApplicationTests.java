@@ -1,5 +1,7 @@
 package vn.visitvietnam.dataserving;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,10 +40,30 @@ class DataServingApplicationTests {
 	}
 
 	@Test
-	void openApiDocsEndpointReturnsOk() throws Exception {
-		mvc.perform(get("/v3/api-docs"))
+	void openApiDocsDescribeHolidayExceptionsAsNullableArray() throws Exception {
+		String body = mvc.perform(get("/v3/api-docs"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.openapi").exists());
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+		JsonNode schemas = new ObjectMapper().readTree(body).path("components").path("schemas");
+		JsonNode field = null;
+		var properties = schemas.fields();
+		while (properties.hasNext()) {
+			JsonNode candidate = properties.next().getValue().path("properties").path("holiday_exceptions");
+			if (!candidate.isMissingNode()) {
+				field = candidate;
+				break;
+			}
+		}
+		assertThat(field).as("holiday_exceptions schema").isNotNull();
+		JsonNode type = field.path("type");
+		assertThat(type.isArray()).as(field.toString()).isTrue();
+		assertThat(type).extracting(JsonNode::asText).containsExactly("array", "null");
+		JsonNode items = field.path("items");
+		assertThat(items.isObject()).isTrue();
+		assertThat(items.has("properties")).isFalse();
+		assertThat(items.path("additionalProperties").asBoolean()).isTrue();
 	}
 
 	@Test

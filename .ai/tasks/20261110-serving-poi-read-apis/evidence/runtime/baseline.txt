@@ -1,0 +1,1 @@
+2026-11-11 before fixture: data-serving-postgres healthy, apps tables present, info/gallery/review/lang row counts all 0. data-serving-service container started after image rebuild.

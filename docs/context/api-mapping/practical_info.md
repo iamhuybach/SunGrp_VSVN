@@ -4,7 +4,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Description | Một POI: header detail và thông tin cần biết. Thay `summary`, `general-information` và `must-know`. |
+| Description | Thông tin thực tế của một POI còn `apps.srv_poi_info.deleted_at` null. Không có dòng thì HTTP 404. Trường đa ngôn ngữ đọc `apps.srv_poi_multi_lang` theo ngôn ngữ đã resolve, rồi `vi` khi trường đó null. `holiday_exceptions` ghi nguyên text khi đó là đúng một giá trị JSON, còn JSON hỏng thì null. |
 | Method | GET |
 | Endpoint | /api/v1/pois/{poi_id}/practical_info |
 
@@ -12,151 +12,185 @@
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | Authorization | string | có | Bearer token service-to-service của BE |
-| 2 | Accept-Language | string | không | Dùng khi query `lang` trống. Cả hai trống thì `vi`. |
-| 3 | X-Request-Id | string | không | Mã định danh request |
+| 1 | Accept-Language | string | không | Dùng khi không có query `lang`. Thiếu cả hai thì `vi`. |
+| 2 | X-Request-Id | string | không | Ghi vào `meta.trace_id`. |
 
 ## Request param
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | poi_id | string | có | path. ID của POI |
-| 2 | lang | string | không | query. Ưu tiên hơn `Accept-Language`. Rỗng thì fallback `vi`. Bản dịch lấy `apps.srv_poi_multi_lang` theo lang đó, thiếu thì fallback `vi`. |
+| 1 | poi_id | string | có | path. `apps.srv_poi_info.poi_id`. |
+| 2 | lang | string | không | query. |
 
 ## Response
 
 | Stt | Field | Type | Required | Source Field | Description |
 |---|---|---|---|---|---|
-| 1 | code | integer | có | không có cột | `0` = success |
-| 2 | message | string | có | không có cột | `success` hoặc mô tả lỗi |
-| 3 | data | object | có | không có cột | Object thông tin POI |
-| 4 | data.id | string | có | `apps.srv_poi_info.poi_id` | poi_id |
-| 5 | data.name | string | có | `apps.srv_poi_info.poi_name` | Tên POI |
-| 6 | data.description | string | không | `apps.srv_poi_multi_lang.description` | Mô tả ngắn (filter by lang) |
-| 7 | data.business_sector | string | có | `apps.srv_poi_info.business_sector` | Quyết định bộ nhãn hiển thị |
-| 8 | data.time_to_spend | object | không | `apps.srv_poi_multi_lang.time_to_spend` |  |
-| 9 | data.cost | object | không | `apps.srv_poi_multi_lang.cost_vnd` | Cột `cost_vnd`. |
-| 10 | data.best_time | object | không | `apps.srv_poi_multi_lang.best_time` |  |
-| 11 | data.cover | object | không | không có cột | Object rỗng nếu POI chỉ có ảnh placeholder. Lấy từ `srv_poi_media_gallery` với `is_cover = true` |
-| 12 | data.cover.id | integer | có | `apps.srv_poi_media_gallery.media_id` | ID media |
-| 13 | data.cover.file_key | string | có | `apps.srv_poi_media_gallery.blob_url` | Khóa file để BE resolve URL |
-| 14 | data.ratings.source | string | có | `apps.srv_poi_info.source_name` | Nguồn đánh giá |
-| 15 | data.ratings.ratings_count | integer | có | `apps.srv_poi_info.rating_count` | Số đánh giá của nguồn đó |
-| 16 | data.ratings.ratings_avg_score | number | có | `apps.srv_poi_info.rating_overall` | Điểm đánh giá |
-| 17 | data.business_tags | object | có | không có cột |  |
-| 18 | data.business_tags.business_sector | string | có | `apps.srv_poi_info.business_sector` | Enum chuẩn từ `ref_business_category` |
-| 19 | data.business_tags.business_category | string | có | `apps.srv_poi_info.business_category` |  |
-| 20 | data.status | object | có | không có cột |  |
-| 21 | data.status.operating_status | string | có | `apps.srv_poi_info.operating_status` | `operating` / `temporarily_closed` / `permanently_closed` |
-| 22 | data.status.is_verified | boolean | có | `apps.srv_poi_info.is_verified` |  |
-| 23 | data.status.is_recommended | boolean | có | `apps.srv_poi_info.is_recommended` |  |
-| 24 | data.status.is_bookable | boolean | có | `apps.srv_poi_info.is_bookable` |  |
-| 25 | data.operating_hours | object | không | `apps.srv_poi_info.operating_hours` |  |
-| 26 | data.operating_hours.value.day_of_week | integer | có | `apps.srv_poi_info.operating_hours.day_of_week` | 1 = Thứ Hai … 7 = Chủ Nhật |
-| 27 | data.operating_hours.value.open_time | string | không | `apps.srv_poi_info.operating_hours.open_time` | HH:mm |
-| 28 | data.operating_hours.value.close_time | string | không | `apps.srv_poi_info.operating_hours.close_time` | HH:mm |
-| 29 | data.operating_hours.value.is_open_all_day | boolean | có | `apps.srv_poi_info.operating_hours.is_open_all_day` |  |
-| 30 | data.operating_hours.value.is_closed | boolean | có | `apps.srv_poi_info.operating_hours.is_closed` |  |
-| 31 | data.holiday_exceptions | array | không | `apps.srv_poi_info.holiday_exceptions` | Ngày nghỉ lễ hoặc ngoại lệ đối tác khai báo |
-| 32 | data.holiday_exceptions.date | string | có | `apps.srv_poi_info.holiday_exceptions.date` | YYYY-MM-DD |
-| 33 | data.holiday_exceptions.name | string | không | `apps.srv_poi_info.holiday_exceptions.title` | Tên ngày lễ |
-| 34 | data.holiday_exceptions.value | string | có | `apps.srv_poi_info.holiday_exceptions.value` | Giờ mở cửa dạng hiển thị hoặc "Đóng cửa" |
-| 35 | data.holiday_exceptions.open_time | string | không | `apps.srv_poi_info.holiday_exceptions.open_time` | HH:mm |
-| 36 | data.holiday_exceptions.close_time | string | không | `apps.srv_poi_info.holiday_exceptions.close_time` | HH:mm |
-| 37 | data.holiday_exceptions.is_open_all_day | boolean | có | `apps.srv_poi_info.holiday_exceptions.is_open_all_day` |  |
-| 38 | data.holiday_exceptions.is_closed | boolean | có | `apps.srv_poi_info.holiday_exceptions.is_closed` |  |
-| 39 | data.address | object | không | không có cột |  |
-| 40 | data.address.full_address | string | không | `apps.srv_poi_info.full_address` |  |
-| 41 | data.address.street | string | không | `apps.srv_poi_info.street` |  |
-| 42 | data.address.ward | string | không | `apps.srv_poi_info.ward` |  |
-| 43 | data.address.district | string | không | `apps.srv_poi_info.district` |  |
-| 44 | data.address.city | string | không | `apps.srv_poi_info.city` |  |
-| 45 | data.address.country_code | string | có | `apps.srv_poi_info.country_code` |  |
-| 46 | data.geo_location | object | không | không có cột |  |
-| 47 | data.geo_location.latitude | number | có | `apps.srv_poi_info.lat` |  |
-| 48 | data.geo_location.longitude | number | có | `apps.srv_poi_info.lng` |  |
-| 49 | data.phone | string | không | `apps.srv_poi_info.phone` | Không có thì app ẩn nút Liên hệ |
-| 50 | data.email | string | không | `apps.srv_poi_info.email` |  |
-| 51 | data.website_url | string | không | `apps.srv_poi_info.website_url` | `null` nếu chưa có |
-| 52 | data.destinations.id | string | có | `apps.srv_poi_info.destination_id` | destination_id |
-| 53 | meta | object | có | envelope |  |
-| 54 | meta.timestamp | integer | có | envelope | Spec nguồn gọi `server_time`. |
-| 55 | meta.trace_id | string | có | envelope | Từ `X-Request-Id`. Spec nguồn gọi `request_id`. |
+| 1 | success | boolean | có | envelope | `true` khi HTTP 200. |
+| 2 | code | integer | có | envelope | Thành công là `200`. |
+| 3 | message | string | có | envelope | `POI practical info retrieved successfully`. |
+| 4 | data | object | có | envelope | |
+| 5 | data.id | string | có | apps.srv_poi_info.poi_id | |
+| 6 | data.name | string | có | apps.srv_poi_info.poi_name | |
+| 7 | data.business_sector | string | có | apps.srv_poi_info.business_sector | |
+| 8 | data.description | string | có | apps.srv_poi_multi_lang.description | |
+| 9 | data.time_to_spend | object | có | apps.srv_poi_multi_lang.time_to_spend | Một key text thành `{label, value}`. Khác shape thì null. |
+| 10 | data.cost | object | có | apps.srv_poi_multi_lang.cost_vnd | Cùng quy tắc `time_to_spend`. |
+| 11 | data.best_time | object | có | apps.srv_poi_multi_lang.best_time | Cùng quy tắc `time_to_spend`. |
+| 12 | data.cover | object | có | apps.srv_poi_media_gallery.media_id; apps.srv_poi_media_gallery.blob_url | Ảnh `is_cover` true, `is_active` true, `deleted_at` null. Không có thì null. |
+| 13 | data.ratings | object | có | apps.srv_poi_info.source_name; apps.srv_poi_info.rating_overall; apps.srv_poi_info.rating_count | Luôn là object. |
+| 14 | data.business_tags | object | có | apps.srv_poi_info.business_sector; apps.srv_poi_info.business_category | |
+| 15 | data.status | object | có | apps.srv_poi_info.operating_status; apps.srv_poi_info.is_verified; apps.srv_poi_info.is_recommended; apps.srv_poi_info.is_bookable | |
+| 16 | data.operating_hours | object | có | apps.srv_poi_info.operating_hours | `{value: [...]}` hoặc null khi cột null. |
+| 17 | data.holiday_exceptions | json | có | apps.srv_poi_info.holiday_exceptions | Đúng một giá trị JSON thì ghi nguyên text cột. JSON hỏng hoặc có token thừa thì null. Không đổi khóa bên trong. |
+| 18 | data.address | object | có | apps.srv_poi_info.full_address; apps.srv_poi_info.city; apps.srv_poi_info.district | |
+| 19 | data.geo_location | object | có | apps.srv_poi_info.lat; apps.srv_poi_info.lng | |
+| 20 | data.destinations | object | có | apps.srv_poi_info.destination_id | Luôn `{id: destination_id}`. |
+| 21 | data.phone | string | có | apps.srv_poi_info.phone | Không ghi log. |
+| 22 | data.email | string | có | apps.srv_poi_info.email | Không ghi log. |
+| 23 | data.website_url | string | có | apps.srv_poi_info.website_url | Không ghi log. |
+| 24 | meta | object | có | envelope | Không có `meta.pagination`. |
+| 25 | meta.timestamp | string | có | envelope | |
+| 26 | meta.trace_id | string | có | envelope | |
+| 27 | errors | array | có | envelope | Null khi thành công. |
 
 ## Status code
 
 | HTTP | Code | Description |
 |---|---|---|
-| không có | không có | không có trong file nguồn |
+| 200 | null | POI còn hiệu lực. |
+| 404 | POI_NOT_FOUND | Không có `apps.srv_poi_info.poi_id` với `deleted_at` null. |
+| 500 | INTERNAL_SERVER_ERROR | Lỗi không phân loại. JSON hỏng ở một trường chỉ làm trường đó null hoặc mảng rỗng. |
 
 ## Sample request
 
-```json
-{
-  "poi_id": "3f1a2b9c-5d6e-4f70-8a91-b2c3d4e5f601"
-}
+```http
+GET /api/v1/pois/14b2e2c4-95a8-d851-240f-c25e4e8cdb7a/practical_info?lang=vi HTTP/1.1
+X-Request-Id: 22222222-2222-2222-2222-222222222222
 ```
 
 ## Sample response
 
+Lấy từ Dev ngày 2026-11-11. `phone` và `email` có giá trị trên Dev và được để `null` trong file này.
+
 ```json
 {
-  "code": 0,
-  "message": "success",
+  "success": true,
+  "code": 200,
+  "message": "POI practical info retrieved successfully",
   "data": {
-    "id": "3f1a2b9c-5d6e-4f70-8a91-b2c3d4e5f601",
-    "name": "Vịnh Hạ Long",
-    "description": "Di sản thiên nhiên thế giới với hàng nghìn đảo đá vôi.",
+    "id": "14b2e2c4-95a8-d851-240f-c25e4e8cdb7a",
+    "name": "French Village Ba Na Hills Viewpoint",
+    "description": "French Village Ba Na Hills Viewpoint là điểm ngắm cảnh lý tưởng với kiến trúc châu Âu cổ kính mang đến trải nghiệm như lạc bước giữa lòng nước Pháp trên đỉnh núi Bà Nà",
     "business_sector": "attraction",
-    "time_to_spend": { "label": "Thời gian tham quan", "value": "1 - 2 giờ" },
-    "cost": { "label": "Chi phí tham khảo", "value": "120.000đ" },
-    "best_time": { "label": "Mùa đẹp nhất", "value": "Tháng 10 - Tháng 4" },
+    "time_to_spend": null,
+    "cost": null,
+    "best_time": null,
     "cover": {
-      "id": 918301,
-      "file_key": "pois/c5d6e7f8-0a1b-4c2d-9e3f-4a5b6c7d8e9f/media/918301.jpg"
+      "id": "743d1739d195cf9a6bb428dd1c411a3cac900b958bed055bdc713f8dfe2c990e",
+      "file_key": "partner_biz_service/2026/07/30/f4266e87-804a-43bd-8941-6eb6cb4aff9e_PsqwmsyU9R_38ada1a2-784c-49a0-b83f-0e8cc69f556f_datacollector_media_ChIJl-l3UgD3QTEREh-UpumcwQA_Ab43msK6J9g96mYK03fP.jpg"
     },
-    "ratings": { "source": "google", "ratings_count": 21480, "ratings_avg_score": 4.8 },
+    "ratings": {
+      "source": "partner",
+      "ratings_count": null,
+      "ratings_avg_score": null
+    },
     "business_tags": {
       "business_sector": "attraction",
-      "business_category": "bay"
+      "business_category": null
     },
     "status": {
-      "operating_status": "operating",
-      "is_verified": true,
+      "operating_status": "",
+      "is_verified": null,
       "is_recommended": true,
-      "is_bookable": true
+      "is_bookable": null
     },
     "operating_hours": {
       "value": [
-        { "day_of_week": 1, "open_time": "08:00", "close_time": "17:00", "is_open_all_day": false, "is_closed": false },
-        { "day_of_week": 2, "open_time": "08:00", "close_time": "17:00", "is_open_all_day": false, "is_closed": false },
-        { "day_of_week": 3, "open_time": "08:00", "close_time": "17:00", "is_open_all_day": false, "is_closed": false },
-        { "day_of_week": 4, "open_time": "08:00", "close_time": "17:00", "is_open_all_day": false, "is_closed": false },
-        { "day_of_week": 5, "open_time": "08:00", "close_time": "17:00", "is_open_all_day": false, "is_closed": false },
-        { "day_of_week": 6, "open_time": "08:00", "close_time": "17:00", "is_open_all_day": false, "is_closed": false },
-        { "day_of_week": 7, "is_open_all_day": false, "is_closed": true }
+        {
+          "day_of_week": 1,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
+          "is_closed": false
+        },
+        {
+          "day_of_week": 2,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
+          "is_closed": false
+        },
+        {
+          "day_of_week": 3,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
+          "is_closed": false
+        },
+        {
+          "day_of_week": 4,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
+          "is_closed": false
+        },
+        {
+          "day_of_week": 5,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
+          "is_closed": false
+        },
+        {
+          "day_of_week": 6,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
+          "is_closed": false
+        },
+        {
+          "day_of_week": 7,
+          "open_time": "08:00",
+          "close_time": "22:00",
+          "is_open_all_day": false,
+          "is_closed": false
+        }
       ]
     },
     "holiday_exceptions": [
-      { "date": "2026-11-20", "name": "Ngày Nhà giáo Việt Nam", "value": "09:00 - 15:00", "open_time": "09:00", "close_time": "15:00", "is_open_all_day": false, "is_closed": false },
-      { "date": "2027-02-06", "name": "Mùng 1 Tết Nguyên Đán", "value": "Đóng cửa", "is_open_all_day": false, "is_closed": true }
+      {
+        "date": "30/07/2026",
+        "hours": [
+          {
+            "open_time": "08:00",
+            "close_time": "12:00"
+          }
+        ],
+        "title": "Quốc Khánh",
+        "status": true
+      }
     ],
     "address": {
-      "full_address": "Phường Hạ Long, Quảng Ninh",
-      "street": "",
-      "ward": "Phường Hạ Long",
-      "district": "",
-      "city": "Quảng Ninh",
-      "country_code": "VN"
+      "full_address": "00, Hòa Ninh, Xã Bà Nà, Thành phố Đà Nẵng",
+      "street": "Hòa Ninh",
+      "ward": "Xã Bà Nà",
+      "district": null,
+      "city": "Thành phố Đà Nẵng",
+      "country_code": null
     },
-    "geo_location": { "latitude": 20.9101, "longitude": 107.1839 },
+    "geo_location": null,
     "phone": null,
     "email": null,
-    "website_url": null
+    "website_url": "https://partner-portal.visitvietnam.asia/",
+    "destinations": {
+      "id": null
+    }
   },
   "meta": {
-    "timestamp": 1791947160,
-    "trace_id": "9f1c1e2a-7a1b-4e34-9b7f-0a9d3b2c1d45"
-  }
+    "timestamp": "2026-11-11T06:59:23.581325900Z",
+    "trace_id": "22222222-2222-2222-2222-222222222222"
+  },
+  "errors": null
 }
 ```

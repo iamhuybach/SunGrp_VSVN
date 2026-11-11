@@ -4,7 +4,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Description | Tối đa 3 block trải nghiệm của POI (tiêu đề, mô tả, khóa icon) cho Section [Trải nghiệm] của POI Detail. |
+| Description | Tối đa 3 trải nghiệm. Không kiểm tra POI tồn tại. Đọc `apps.srv_poi_multi_lang` theo ngôn ngữ đã resolve rồi `vi`. Dùng hàng đầu tiên có mảng experience không rỗng. `source` của mọi phần tử là `apps.srv_poi_multi_lang.source_name` của hàng đó. |
 | Method | GET |
 | Endpoint | /api/v1/pois/{poi_id}/experiences |
 
@@ -12,74 +12,79 @@
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | Authorization | string | có | Bearer token service-to-service của BE |
-| 2 | Accept-Language | string | không | Dùng khi query `lang` trống. Cả hai trống thì `vi`. |
-| 3 | X-Request-Id | string | không | Mã định danh request |
+| 1 | Accept-Language | string | không | Dùng khi không có query `lang`. Thiếu cả hai thì `vi`. |
+| 2 | X-Request-Id | string | không | Ghi vào `meta.trace_id`. |
 
 ## Request param
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | poi_id | string | có | path. ID của POI |
-| 2 | lang | string | không | query. Ưu tiên hơn `Accept-Language`. Rỗng thì fallback `vi`. Bản dịch lấy `apps.srv_poi_multi_lang` theo lang đó, thiếu thì fallback `vi`. |
+| 1 | poi_id | string | có | path. Lọc `apps.srv_poi_multi_lang.poi_id`. |
+| 2 | lang | string | không | query. |
 
 ## Response
 
 | Stt | Field | Type | Required | Source Field | Description |
 |---|---|---|---|---|---|
-| 1 | code | integer | có | không có cột | `0` = success |
-| 2 | message | string | có | không có cột | `success` hoặc mô tả lỗi |
-| 3 | data | object | có | không có cột | Không có count |
-| 4 | data.items | array | có | `apps.srv_poi_multi_lang.experience` | Tối đa 3 phần tử |
-| 5 | data.items.title | string | có | `apps.srv_poi_multi_lang.experience.title` | Tiêu đề trải nghiệm, tối đa 50 ký tự |
-| 6 | data.items.description | string | có | `apps.srv_poi_multi_lang.experience.description` | Mô tả trải nghiệm, tối đa 150 ký tự |
-| 7 | data.items.source | string | có | `apps.srv_poi_multi_lang.source` | `partner` (usp đối tác khai báo) hoặc `ai_generated` |
-| 8 | meta | object | có | envelope |  |
-| 9 | meta.timestamp | integer | có | envelope | Unix seconds. Spec nguồn gọi `server_time`. |
-| 10 | meta.trace_id | string | có | envelope | Từ `X-Request-Id`. Spec nguồn gọi `request_id`. |
+| 1 | success | boolean | có | envelope | `true` khi HTTP 200. |
+| 2 | code | integer | có | envelope | Thành công là `200`. |
+| 3 | message | string | có | envelope | `POI experiences retrieved successfully`. |
+| 4 | data | object | có | envelope | |
+| 5 | data.items | array | có | apps.srv_poi_multi_lang.experience | Mảng rỗng khi không có hàng, JSON null, JSON hỏng, hoặc không phải mảng. Bỏ phần tử không phải object và phần tử cả `title` lẫn `description` trống. |
+| 6 | data.items[].title | string | có | apps.srv_poi_multi_lang.experience | Text trong object. Không phải text thì null. |
+| 7 | data.items[].description | string | có | apps.srv_poi_multi_lang.experience | Text trong object. |
+| 8 | data.items[].source | string | có | apps.srv_poi_multi_lang.source_name | Cùng một giá trị cho mọi phần tử của hàng được chọn. |
+| 9 | meta | object | có | envelope | Không có `meta.pagination`. |
+| 10 | meta.timestamp | string | có | envelope | |
+| 11 | meta.trace_id | string | có | envelope | |
+| 12 | errors | array | có | envelope | Null khi thành công. |
 
 ## Status code
 
 | HTTP | Code | Description |
 |---|---|---|
-| không có | không có | không có trong file nguồn |
+| 200 | null | Thành công, kể cả `items` rỗng. HTTP 404 không xảy ra. JSON hỏng không trả HTTP 500. |
+| 500 | INTERNAL_SERVER_ERROR | Lỗi không phân loại. |
 
 ## Sample request
 
-```json
-{
-  "poi_id": "3f1a2b9c-5d6e-4f70-8a91-b2c3d4e5f601"
-}
+```http
+GET /api/v1/pois/00000000-0000-0000-0000-000000000001/experiences?lang=vi HTTP/1.1
+X-Request-Id: 22222222-2222-2222-2222-222222222222
 ```
 
 ## Sample response
 
+Lấy từ Dev ngày 2026-11-11.
+
 ```json
 {
-  "code": 0,
-  "message": "success",
+  "success": true,
+  "code": 200,
+  "message": "POI experiences retrieved successfully",
   "data": {
     "items": [
       {
-        "title": "Tham quan kiến trúc Pháp cổ",
-        "description": "Chiêm ngưỡng mặt tiền và sảnh chính xây từ đầu thế kỷ 20.",
-        "source": "ai_generated"
+        "title": "Di chuyển thuận tiện giữa các tỉnh",
+        "description": "Xe khách phục vụ tuyến cố định giúp hành khách dễ dàng đi lại giữa Thanh Hóa và các khu vực khác.",
+        "source": "google"
       },
       {
-        "title": "Xem biểu diễn nghệ thuật",
-        "description": "Thưởng thức nhạc kịch, hòa nhạc và ballet theo lịch diễn trong tháng.",
-        "source": "ai_generated"
+        "title": "Đặt vé nhanh chóng tại văn phòng",
+        "description": "Khách có thể mua vé trực tiếp tại văn phòng, thuận tiện cho việc lên kế hoạch di chuyển.",
+        "source": "google"
       },
       {
-        "title": "Chụp ảnh quanh quảng trường",
-        "description": "Quảng trường trước nhà hát đẹp nhất vào buổi tối khi đèn được bật.",
-        "source": "ai_generated"
+        "title": "Chuyến xe đúng giờ",
+        "description": "Dịch vụ đảm bảo thời gian xuất phát đúng giờ, phù hợp với lịch trình của hành khách.",
+        "source": "google"
       }
     ]
   },
   "meta": {
-    "timestamp": 1791947160,
-    "trace_id": "9f1c1e2a-7a1b-4e34-9b7f-0a9d3b2c1d45"
-  }
+    "timestamp": "2026-11-11T06:59:23.326835800Z",
+    "trace_id": "22222222-2222-2222-2222-222222222222"
+  },
+  "errors": null
 }
 ```

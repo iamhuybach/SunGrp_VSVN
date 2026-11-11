@@ -1,0 +1,231 @@
+[
+  {
+    "name": "health",
+    "status": 200,
+    "body": {
+      "groups": [
+        "liveness",
+        "readiness"
+      ],
+      "status": "UP"
+    }
+  },
+  {
+    "name": "features",
+    "status": 200,
+    "count": 2,
+    "ids": [
+      "14b2e2c4-95a8-d851-240f-c25e4e8cdb7a",
+      "013cbb79-4407-b2fb-e4f4-67b78d2ff69e"
+    ],
+    "pagination_keys": [
+      "has_next",
+      "has_prev",
+      "page",
+      "per_page",
+      "total_items",
+      "total_pages",
+      "type"
+    ],
+    "first_keys": [
+      "address",
+      "business_tags",
+      "cover",
+      "description",
+      "geo_location",
+      "id",
+      "name",
+      "operating_hours",
+      "ratings",
+      "status"
+    ],
+    "cover_keys": [
+      "file_key",
+      "id"
+    ],
+    "message": "Featured POIs retrieved successfully",
+    "error_code": null
+  },
+  {
+    "name": "compact",
+    "status": 200,
+    "count": 2,
+    "has_pagination": false,
+    "cover": {
+      "id": "dafb9dfa1452e0b4b3010a508d91d0d72c0fbb9ba53ac1af4ba67a02855938a2",
+      "file_key": "partner_biz_service/2026/10/15/ce8bd026-555a-4bf8-8cb8-f0204731d545_images (16).jpg"
+    },
+    "business_tag_keys": [
+      "business_category",
+      "business_sector",
+      "subcategory_tags"
+    ],
+    "message": "Compact POIs retrieved successfully"
+  },
+  {
+    "name": "gallery",
+    "status": 200,
+    "message": "POI gallery retrieved successfully",
+    "top_keys": [
+      "code",
+      "data",
+      "errors",
+      "message",
+      "meta",
+      "success"
+    ],
+    "item_keys": [
+      "display_order",
+      "file_key",
+      "id"
+    ],
+    "pagination_keys": [
+      "has_next",
+      "has_prev",
+      "page",
+      "per_page",
+      "total_items",
+      "total_pages",
+      "type"
+    ]
+  },
+  {
+    "name": "reviews",
+    "status": 200,
+    "message": "POI reviews retrieved successfully",
+    "top_keys": [
+      "code",
+      "data",
+      "errors",
+      "message",
+      "meta",
+      "rating_summary",
+      "success"
+    ],
+    "summary_len": 0,
+    "summary_keys": []
+  },
+  {
+    "name": "experiences",
+    "status": 200,
+    "message": "POI experiences retrieved successfully",
+    "top_keys": [
+      "code",
+      "data",
+      "errors",
+      "message",
+      "meta",
+      "success"
+    ],
+    "item_count": 3,
+    "item_keys": [
+      "description",
+      "source",
+      "title"
+    ],
+    "source": "partner"
+  },
+  {
+    "name": "practical_info",
+    "status": 200,
+    "message": "POI practical info retrieved successfully",
+    "top_keys": [
+      "code",
+      "data",
+      "errors",
+      "message",
+      "meta",
+      "success"
+    ],
+    "holiday_type": "list",
+    "holiday": [
+      {
+        "date": "30/07/2026",
+        "hours": [
+          {
+            "open_time": "08:00",
+            "close_time": "12:00"
+          }
+        ],
+        "title": "Quốc Khánh",
+        "status": true
+      }
+    ],
+    "data_keys": [
+      "address",
+      "best_time",
+      "business_sector",
+      "business_tags",
+      "cost",
+      "cover",
+      "description",
+      "destinations",
+      "email",
+      "geo_location",
+      "holiday_exceptions",
+      "id",
+      "name",
+      "operating_hours",
+      "phone",
+      "ratings",
+      "status",
+      "time_to_spend",
+      "website_url"
+    ]
+  },
+  {
+    "name": "amenities",
+    "status": 200,
+    "message": "POI amenities retrieved successfully",
+    "top_keys": [
+      "code",
+      "data",
+      "errors",
+      "message",
+      "meta",
+      "success"
+    ],
+    "group_count": 0
+  },
+  {
+    "name": "gallery-unknown",
+    "status": 200,
+    "error_code": null,
+    "data_len": 0
+  },
+  {
+    "name": "reviews-unknown",
+    "status": 200,
+    "error_code": null,
+    "data_len": 0
+  },
+  {
+    "name": "practical-unknown",
+    "status": 404,
+    "error_code": "POI_NOT_FOUND",
+    "data_len": null
+  },
+  {
+    "name": "compact-empty",
+    "status": 422,
+    "error_code": "ERR_VALIDATION_FAILED",
+    "message": "Validation failed"
+  },
+  {
+    "name": "compact-malformed",
+    "status": 400,
+    "error_code": "ERR_BAD_REQUEST",
+    "message": "Malformed or missing request body."
+  },
+  {
+    "name": "compact-get",
+    "status": 405,
+    "error_code": null,
+    "message": null
+  },
+  {
+    "name": "features-size",
+    "status": 422,
+    "error_code": "ERR_VALIDATION_FAILED"
+  }
+]

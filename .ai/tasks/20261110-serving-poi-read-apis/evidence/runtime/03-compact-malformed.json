@@ -1,0 +1,15 @@
+{
+  "http_status": 400,
+  "body": {
+    "success": false,
+    "code": 400,
+    "message": "Malformed or missing request body.",
+    "data": null,
+    "meta": {
+      "timestamp": "2026-11-11T03:49:18.517322489Z",
+      "trace_id": "22222222-2222-2222-2222-222222222222",
+      "error_code": "ERR_BAD_REQUEST"
+    },
+    "errors": null
+  }
+}
