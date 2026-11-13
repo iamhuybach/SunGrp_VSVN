@@ -14,8 +14,9 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 - Sau lọc, LEFT JOIN `des` theo `poi_id`.
 - D-SRV-22. `is_partner` = `coalesce(lower(trim(source_name)) = 'partner', false)`. Sau `_destination`, dòng destination còn lại gắn `_has_dest = true`. Không có dòng cùng `poi_id` khi `_has_dest` null sau LEFT JOIN. Dòng destination còn nhưng cột null vẫn `_has_dest` true, không thuộc nhánh này.
 - Nhánh `is_partner` và `_has_dest` null: mỗi cột trong `DEST_COLS` trừ `poi_id` và `updated_at`, tên có trong `ENTITY_OUT_COLS` thì lấy `_e_<cột>` từ `slv_poi_entity_non_enrich` rồi cast về `des.dtypes`; tên không có thì null. Không đọc bảng khác. Không coalesce với destination.
-- `ENTITY_OUT_COLS` là bản chép `OUT_COLS` của `NB_SLV_POI_ENTITY_NON_ENRICH`. `FROM_ENTITY` = tên `DEST_COLS[2:]` nằm trong `ENTITY_OUT_COLS`: `full_address`, `street`, `ward`, `city`, `lat`, `lng`. Null trên nhánh này: `destination_id`, `district`, `country_code`, `postal_code`.
+- `ENTITY_OUT_COLS` là bản chép `OUT_COLS` của `NB_SLV_POI_ENTITY_NON_ENRICH`. `FROM_ENTITY` = tên `DEST_COLS[2:]` nằm trong `ENTITY_OUT_COLS`: `full_address`, `street`, `ward`, `city`, `lat`, `lng`. Null trên nhánh này: `destination_id`, `destination_name`, `district`, `country_code`, `postal_code`.
 - Partner đã có dòng destination, Google, nguồn khác: cột destination vẫn 1-1 từ `slv_enr_poi_destination`. `operating_hours`, `holiday_exceptions`, `is_verified`, `is_recommended`, `is_bookable`, `rating_overall`, `rating_count`, `review_count`, `cover_id`, `cover_blob_url` không đổi.
+- `destination_name` (D-1): DDL của `slv_enr_poi_destination`, chưa có luồng ghi. Gold copy 1-1. Partner chưa có dòng destination thì null. Hiện giá trị NULL.
 - Lý do nghiệp vụ trong notebook: MISSING.
 - Kiểu literal của cột entity trong notebook gold: MISSING. Notebook cast về `des.dtypes` của cột destination.
 - `NB_CREATE_DDL` cell `srvpoipy` thêm `destination_id`, `country_code`, `postal_code`, `lat`, `lng` vào `slv_enr_poi_destination`. Gold lấy 1-1 các cột đó.
@@ -35,6 +36,7 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 | slv_poi_entity_non_enrich.business_category | string | transform 1-1 | business_category |
 | slv_poi_entity_non_enrich.types_json | string | transform 1-1 | subcategory_tags |
 | slv_enr_poi_destination.destination_id | string | partner chưa có dòng destination: null; còn lại transform 1-1 | destination_id |
+| slv_enr_poi_destination.destination_name | string | partner chưa có dòng destination: null; còn lại transform 1-1 (D-1: chưa có luồng ghi, hiện NULL) | destination_name |
 | slv_enr_poi_destination.full_address; partner chưa có dòng destination: slv_poi_entity_non_enrich.full_address | string | partner chưa có dòng destination: 1-1 từ entity, cast des.dtypes; còn lại transform 1-1. Không coalesce | full_address |
 | slv_enr_poi_destination.street; partner chưa có dòng destination: slv_poi_entity_non_enrich.street | string | partner chưa có dòng destination: 1-1 từ entity, cast des.dtypes; còn lại transform 1-1. Không coalesce | street |
 | slv_enr_poi_destination.ward; partner chưa có dòng destination: slv_poi_entity_non_enrich.ward | string | partner chưa có dòng destination: 1-1 từ entity, cast des.dtypes; còn lại transform 1-1. Không coalesce | ward |

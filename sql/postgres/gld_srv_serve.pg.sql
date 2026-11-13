@@ -15,6 +15,7 @@
 -- Schema apps phải có sẵn. File không tạo schema, index, view hay quyền.
 -- Chạy: psql -v ON_ERROR_STOP=1 -f <file>. Chạy lại sẽ lỗi "already exists" và rollback, không đổi gì.
 -- DB đã có apps.srv_poi_info trước 20261108-gld-srv-poi-info-cover: chạy tay ALTER TABLE apps.srv_poi_info ADD COLUMN cover_id text, ADD COLUMN cover_blob_url text;
+-- DB đã có bảng trước 20261112-poi-destination-name-api: chạy tay BEGIN; ALTER TABLE apps.srv_poi_info ADD COLUMN destination_name text; ALTER TABLE apps.srv_poi_review ADD COLUMN source_name text; COMMIT;
 
 BEGIN;
 
@@ -26,6 +27,7 @@ CREATE TABLE apps.srv_poi_info (
     business_category text,
     subcategory_tags text,
     destination_id text,
+    destination_name text,
     full_address text,
     street text,
     ward text,
@@ -118,6 +120,7 @@ CREATE TABLE apps.srv_poi_review (
     rating numeric(4, 2),
     review_date text,
     author_name text,
+    source_name text,
     row_hash text,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,

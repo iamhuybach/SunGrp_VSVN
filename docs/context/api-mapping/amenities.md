@@ -31,18 +31,16 @@
 | 5 | data[].amenity_group | string | có | apps.srv_poi_amenity.amenity_group | Khóa nhóm. Không fallback `GENERAL`. |
 | 6 | data[].items | array | có | không có cột | Các dòng trong nhóm, sắp theo `amenity_code` rồi `amenity_raw`. |
 | 7 | data[].items[].amenity_code | string | có | apps.srv_poi_amenity.amenity | Đúng cột `amenity`. Không fallback `amenity_raw`. |
-| 8 | data[].items[].amenity_label_en | string | có | apps.srv_poi_amenity.amenity_en | Nhãn tiếng Anh. Có thể null. |
-| 9 | data[].items[].amenity_label_vi | string | có | apps.srv_poi_amenity.amenity_vi | Nhãn tiếng Việt. Có thể null. |
-| 10 | data[].items[].service_flags | string | có | apps.srv_poi_amenity.service_flags | Đúng cột `service_flags`, không lấy `amenity_vi`. Có thể null. |
-| 11 | meta | object | có | envelope | |
-| 12 | meta.timestamp | string | có | envelope | ISO-8601 UTC. |
-| 13 | meta.trace_id | string | có | envelope | Từ `X-Request-Id` hoặc UUID server tạo. |
-| 14 | meta.error_code | string | không | envelope | Null khi thành công, key bị bỏ. Khi lỗi là chuỗi ở bảng Status code. |
-| 15 | meta.pagination | object | không | envelope | `success` không gắn pagination. Null nên key bị bỏ. |
-| 16 | errors | array | có | envelope | Null khi thành công. |
-| 17 | errors[].field | string | không | envelope | Có khi HTTP 422. |
-| 18 | errors[].code | string | không | envelope | Mã field error hoặc tên constraint, viết hoa. Không phải `meta.error_code`. |
-| 19 | errors[].message | string | không | envelope | Message validation. |
+| 8 | data[].items[].service_flags | string | có | apps.srv_poi_amenity.service_flags | Đúng cột `service_flags`, không lấy `amenity_vi`. Có thể null. |
+| 9 | meta | object | có | envelope | |
+| 10 | meta.timestamp | string | có | envelope | ISO-8601 UTC. |
+| 11 | meta.trace_id | string | có | envelope | Từ `X-Request-Id` hoặc UUID server tạo. |
+| 12 | meta.error_code | string | không | envelope | Null khi thành công, key bị bỏ. Khi lỗi là chuỗi ở bảng Status code. |
+| 13 | meta.pagination | object | không | envelope | `success` không gắn pagination. Null nên key bị bỏ. |
+| 14 | errors | array | có | envelope | Null khi thành công. |
+| 15 | errors[].field | string | không | envelope | Có khi HTTP 422. |
+| 16 | errors[].code | string | không | envelope | Mã field error hoặc tên constraint, viết hoa. Không phải `meta.error_code`. |
+| 17 | errors[].message | string | không | envelope | Message validation. |
 
 ## Status code
 
@@ -80,26 +78,18 @@ Lấy từ Dev ngày 2026-11-11.
       "items": [
         {
           "amenity_code": "accessible_parking",
-          "amenity_label_en": "Accessible Parking",
-          "amenity_label_vi": "Bãi đỗ xe cho người khuyết tật",
           "service_flags": "Accessibility"
         },
         {
           "amenity_code": "wheelchair_accessible_entrance",
-          "amenity_label_en": "Wheelchair Accessible Entrance",
-          "amenity_label_vi": "Lối đi xe lăn",
           "service_flags": "Accessibility"
         },
         {
           "amenity_code": "wheelchair_accessible_restroom",
-          "amenity_label_en": "Wheelchair Accessible Restroom",
-          "amenity_label_vi": "Nhà vệ sinh có tay vịn",
           "service_flags": "Accessibility"
         },
         {
           "amenity_code": "wheelchair_accessible_seating",
-          "amenity_label_en": "Wheelchair Accessible Seating",
-          "amenity_label_vi": "Chỗ ngồi cho người khuyết tật",
           "service_flags": "Accessibility"
         }
       ]
@@ -109,32 +99,22 @@ Lấy từ Dev ngày 2026-11-11.
       "items": [
         {
           "amenity_code": "free_street_parking",
-          "amenity_label_en": "Free Street Parking",
-          "amenity_label_vi": "Đỗ xe trên phố",
           "service_flags": "Parking"
         },
         {
           "amenity_code": "good_for_children",
-          "amenity_label_en": "Good for Children",
-          "amenity_label_vi": "Thân thiện trẻ em",
           "service_flags": "Suitability"
         },
         {
           "amenity_code": "outdoor_seating",
-          "amenity_label_en": "Outdoor Seating",
-          "amenity_label_vi": "Không gian ngoài trời",
           "service_flags": "Food/service"
         },
         {
           "amenity_code": "parking",
-          "amenity_label_en": "Parking",
-          "amenity_label_vi": "Bãi đậu xe",
           "service_flags": "Parking"
         },
         {
           "amenity_code": "restroom",
-          "amenity_label_en": "Restroom",
-          "amenity_label_vi": "Nhà vệ sinh",
           "service_flags": "Suitability"
         }
       ]

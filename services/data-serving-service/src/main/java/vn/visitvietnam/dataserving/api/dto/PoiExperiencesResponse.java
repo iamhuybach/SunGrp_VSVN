@@ -1,6 +1,7 @@
 package vn.visitvietnam.dataserving.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
@@ -9,5 +10,5 @@ import java.util.List;
 @Schema(description = "Tối đa 3 trải nghiệm của một POI")
 public record PoiExperiencesResponse(List<Item> items) {
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    public record Item(String title, String description, String source) {}
+    public record Item(String title, String description, String source, @JsonProperty("icon_key") String iconKey) {}
 }

@@ -35,21 +35,22 @@
 | 7 | data[].rating | number | có | apps.srv_poi_review.rating; apps.srv_poi_review.rating_overall | `rating` khi khác null, còn lại `rating_overall`. |
 | 8 | data[].review_text | string | có | apps.srv_poi_review.review_text | Có thể null. |
 | 9 | data[].review_date | string | có | apps.srv_poi_review.review_date | Có thể null. |
-| 10 | rating_summary | array | có | apps.srv_poi_review.rating_count; apps.srv_poi_review.rating_overall | Ngang hàng với `data`. Đúng một phần tử khi trang hiện tại có review, hoặc trang rỗng nhưng tổng lớn hơn 0. Cả hai rỗng thì mảng rỗng. |
-| 11 | rating_summary[].rating_count | integer | có | apps.srv_poi_review.rating_count | |
-| 12 | rating_summary[].rating_avg_score | number | có | apps.srv_poi_review.rating_overall | |
-| 13 | meta | object | có | envelope | |
-| 14 | meta.timestamp | string | có | envelope | ISO-8601 UTC. |
-| 15 | meta.trace_id | string | có | envelope | |
-| 16 | meta.pagination | object | có | envelope | |
-| 17 | meta.pagination.type | string | có | envelope | `offset`. |
-| 18 | meta.pagination.page | integer | có | envelope | |
-| 19 | meta.pagination.per_page | integer | có | envelope | |
-| 20 | meta.pagination.total_items | integer | có | envelope | |
-| 21 | meta.pagination.total_pages | integer | có | envelope | |
-| 22 | meta.pagination.has_next | boolean | có | envelope | |
-| 23 | meta.pagination.has_prev | boolean | có | envelope | |
-| 24 | errors | array | có | envelope | Null khi thành công. |
+| 10 | data[].source_name | string | có | apps.srv_poi_review.source_name | Gold literal google (D-3). |
+| 11 | rating_summary | array | có | apps.srv_poi_review.rating_count; apps.srv_poi_review.rating_overall | Ngang hàng với `data`. Đúng một phần tử khi trang hiện tại có review, hoặc trang rỗng nhưng tổng lớn hơn 0. Cả hai rỗng thì mảng rỗng. |
+| 12 | rating_summary[].rating_count | integer | có | apps.srv_poi_review.rating_count | |
+| 13 | rating_summary[].rating_avg_score | number | có | apps.srv_poi_review.rating_overall | |
+| 14 | meta | object | có | envelope | |
+| 15 | meta.timestamp | string | có | envelope | ISO-8601 UTC. |
+| 16 | meta.trace_id | string | có | envelope | |
+| 17 | meta.pagination | object | có | envelope | |
+| 18 | meta.pagination.type | string | có | envelope | `offset`. |
+| 19 | meta.pagination.page | integer | có | envelope | |
+| 20 | meta.pagination.per_page | integer | có | envelope | |
+| 21 | meta.pagination.total_items | integer | có | envelope | |
+| 22 | meta.pagination.total_pages | integer | có | envelope | |
+| 23 | meta.pagination.has_next | boolean | có | envelope | |
+| 24 | meta.pagination.has_prev | boolean | có | envelope | |
+| 25 | errors | array | có | envelope | Null khi thành công. |
 
 ## Status code
 
@@ -81,7 +82,8 @@ Lấy từ Dev ngày 2026-11-11.
       "author_name": "Quốc",
       "rating": 5.0,
       "review_text": "Rất tốt",
-      "review_date": "2026-10-05T11:31:49.575119426Z"
+      "review_date": "2026-10-05T11:31:49.575119426Z",
+      "source_name": "google"
     }
   ],
   "rating_summary": [

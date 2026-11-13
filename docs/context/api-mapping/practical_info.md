@@ -32,27 +32,26 @@
 | 4 | data | object | có | envelope | |
 | 5 | data.id | string | có | apps.srv_poi_info.poi_id | |
 | 6 | data.name | string | có | apps.srv_poi_info.poi_name | |
-| 7 | data.business_sector | string | có | apps.srv_poi_info.business_sector | |
-| 8 | data.description | string | có | apps.srv_poi_multi_lang.description | |
-| 9 | data.time_to_spend | object | có | apps.srv_poi_multi_lang.time_to_spend | Một key text thành `{label, value}`. Khác shape thì null. |
-| 10 | data.cost | object | có | apps.srv_poi_multi_lang.cost_vnd | Cùng quy tắc `time_to_spend`. |
-| 11 | data.best_time | object | có | apps.srv_poi_multi_lang.best_time | Cùng quy tắc `time_to_spend`. |
-| 12 | data.cover | object | có | apps.srv_poi_media_gallery.media_id; apps.srv_poi_media_gallery.blob_url | Ảnh `is_cover` true, `is_active` true, `deleted_at` null. Không có thì null. |
-| 13 | data.ratings | object | có | apps.srv_poi_info.source_name; apps.srv_poi_info.rating_overall; apps.srv_poi_info.rating_count | Luôn là object. |
-| 14 | data.business_tags | object | có | apps.srv_poi_info.business_sector; apps.srv_poi_info.business_category | |
-| 15 | data.status | object | có | apps.srv_poi_info.operating_status; apps.srv_poi_info.is_verified; apps.srv_poi_info.is_recommended; apps.srv_poi_info.is_bookable | |
-| 16 | data.operating_hours | object | có | apps.srv_poi_info.operating_hours | `{value: [...]}` hoặc null khi cột null. |
-| 17 | data.holiday_exceptions | json | có | apps.srv_poi_info.holiday_exceptions | Đúng một giá trị JSON thì ghi nguyên text cột. JSON hỏng hoặc có token thừa thì null. Không đổi khóa bên trong. |
-| 18 | data.address | object | có | apps.srv_poi_info.full_address; apps.srv_poi_info.city; apps.srv_poi_info.district | |
-| 19 | data.geo_location | object | có | apps.srv_poi_info.lat; apps.srv_poi_info.lng | |
-| 20 | data.destinations | object | có | apps.srv_poi_info.destination_id | Luôn `{id: destination_id}`. |
-| 21 | data.phone | string | có | apps.srv_poi_info.phone | Không ghi log. |
-| 22 | data.email | string | có | apps.srv_poi_info.email | Không ghi log. |
-| 23 | data.website_url | string | có | apps.srv_poi_info.website_url | Không ghi log. |
-| 24 | meta | object | có | envelope | Không có `meta.pagination`. |
-| 25 | meta.timestamp | string | có | envelope | |
-| 26 | meta.trace_id | string | có | envelope | |
-| 27 | errors | array | có | envelope | Null khi thành công. |
+| 7 | data.description | string | có | apps.srv_poi_multi_lang.description | |
+| 8 | data.time_to_spend | object | có | apps.srv_poi_multi_lang.time_to_spend | Một key text thành `{label, value}`. Khác shape thì null. |
+| 9 | data.cost | object | có | apps.srv_poi_multi_lang.cost_vnd | Cùng quy tắc `time_to_spend`. |
+| 10 | data.best_time | object | có | apps.srv_poi_multi_lang.best_time | Cùng quy tắc `time_to_spend`. |
+| 11 | data.cover | object | có | apps.srv_poi_media_gallery.media_id; apps.srv_poi_media_gallery.blob_url | Ảnh `is_cover` true, `is_active` true, `deleted_at` null. Không có thì null. |
+| 12 | data.ratings | object | có | apps.srv_poi_info.source_name; apps.srv_poi_info.rating_overall; apps.srv_poi_info.rating_count | Luôn là object. |
+| 13 | data.business_tags | object | có | apps.srv_poi_info.business_sector; apps.srv_poi_info.business_category | |
+| 14 | data.status | object | có | apps.srv_poi_info.operating_status; apps.srv_poi_info.is_verified; apps.srv_poi_info.is_recommended; apps.srv_poi_info.is_bookable | |
+| 15 | data.operating_hours | object | có | apps.srv_poi_info.operating_hours | `{value: [...]}` hoặc null khi cột null. |
+| 16 | data.holiday_exceptions | json | có | apps.srv_poi_info.holiday_exceptions | Đúng một giá trị JSON thì ghi nguyên text cột. JSON hỏng hoặc có token thừa thì null. Không đổi khóa bên trong. |
+| 17 | data.address | object | có | apps.srv_poi_info.full_address; apps.srv_poi_info.city; apps.srv_poi_info.district | |
+| 18 | data.geo_location | object | có | apps.srv_poi_info.lat; apps.srv_poi_info.lng | |
+| 19 | data.destinations | object | có | apps.srv_poi_info.destination_id; apps.srv_poi_info.destination_name | Luôn `{id, name}`. |
+| 20 | data.phone | string | có | apps.srv_poi_info.phone | Không ghi log. |
+| 21 | data.email | string | có | apps.srv_poi_info.email | Không ghi log. |
+| 22 | data.website_url | string | có | apps.srv_poi_info.website_url | Không ghi log. |
+| 23 | meta | object | có | envelope | Không có `meta.pagination`. |
+| 24 | meta.timestamp | string | có | envelope | |
+| 25 | meta.trace_id | string | có | envelope | |
+| 26 | errors | array | có | envelope | Null khi thành công. |
 
 ## Status code
 
@@ -82,7 +81,6 @@ Lấy từ Dev ngày 2026-11-11. `phone` và `email` có giá trị trên Dev v�
     "id": "14b2e2c4-95a8-d851-240f-c25e4e8cdb7a",
     "name": "French Village Ba Na Hills Viewpoint",
     "description": "French Village Ba Na Hills Viewpoint là điểm ngắm cảnh lý tưởng với kiến trúc châu Âu cổ kính mang đến trải nghiệm như lạc bước giữa lòng nước Pháp trên đỉnh núi Bà Nà",
-    "business_sector": "attraction",
     "time_to_spend": null,
     "cost": null,
     "best_time": null,
@@ -184,7 +182,8 @@ Lấy từ Dev ngày 2026-11-11. `phone` và `email` có giá trị trên Dev v�
     "email": null,
     "website_url": "https://partner-portal.visitvietnam.asia/",
     "destinations": {
-      "id": null
+      "id": null,
+      "name": null
     }
   },
   "meta": {

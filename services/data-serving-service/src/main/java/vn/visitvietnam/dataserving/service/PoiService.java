@@ -151,7 +151,7 @@ public class PoiService {
             if (!drafts.isEmpty()) {
                 String source = row.getSourceName();
                 return new PoiExperiencesResponse(drafts.stream()
-                        .map(item -> new PoiExperiencesResponse.Item(item.title(), item.description(), source))
+                        .map(item -> new PoiExperiencesResponse.Item(item.title(), item.description(), source, item.keyword()))
                         .toList());
             }
         }
@@ -175,7 +175,6 @@ public class PoiService {
                 poi.getPoiId(),
                 poi.getPoiName(),
                 firstNonBlank(text(target, SrvPoiMultiLang::getDescription), text(fallback, SrvPoiMultiLang::getDescription)),
-                poi.getBusinessSector(),
                 toLabel(StoredJsonParser.labelValue(poiId, "time_to_spend", text(target, SrvPoiMultiLang::getTimeToSpend)),
                         StoredJsonParser.labelValue(poiId, "time_to_spend", text(fallback, SrvPoiMultiLang::getTimeToSpend))),
                 toLabel(StoredJsonParser.labelValue(poiId, "cost_vnd", text(target, SrvPoiMultiLang::getCostVnd)),
@@ -196,7 +195,7 @@ public class PoiService {
                 poi.getPhone(),
                 poi.getEmail(),
                 poi.getWebsiteUrl(),
-                new PoiPracticalInfoResponse.Destinations(poi.getDestinationId())
+                new CompactPoiResponse.Destinations(poi.getDestinationId(), poi.getDestinationName())
         );
     }
 
@@ -222,7 +221,7 @@ public class PoiService {
                         entry.getKey(),
                         entry.getValue().stream()
                                 .map(a -> new PoiAmenityGroupResponse.Item(
-                                        a.getAmenity(), a.getAmenityEn(), a.getAmenityVi(), a.getServiceFlags()))
+                                        a.getAmenity(), a.getServiceFlags()))
                                 .toList()))
                 .toList();
     }
@@ -275,7 +274,8 @@ public class PoiService {
                 rating,
                 businessTags,
                 addressOf(poi),
-                geoOf(poi));
+                geoOf(poi),
+                new CompactPoiResponse.Destinations(poi.getDestinationId(), poi.getDestinationName()));
     }
 
     private PoiFeatureResponse mapFeature(SrvPoiInfo poi, String lang, Map<String, SrvPoiMultiLang> multiLangs) {
@@ -303,7 +303,7 @@ public class PoiService {
     private PoiReviewItemResponse mapReview(SrvPoiReview review) {
         Double rating = review.getRating() != null ? review.getRating().doubleValue()
                 : (review.getRatingOverall() != null ? review.getRatingOverall().doubleValue() : null);
-        return new PoiReviewItemResponse(review.getReviewId(), review.getAuthorName(), rating, review.getReviewText(), review.getReviewDate());
+        return new PoiReviewItemResponse(review.getReviewId(), review.getAuthorName(), rating, review.getReviewText(), review.getReviewDate(), review.getSourceName());
     }
 
     private Map<String, Map<String, SrvPoiMultiLang>> loadLangs(List<String> poiIds, String lang) {

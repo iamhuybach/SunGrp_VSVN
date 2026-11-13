@@ -168,10 +168,10 @@ def test_amenity_en_order_across_layers():
     assert amenity_at < amenity_en_at < amenity_vi_at
 
 
-def test_review_entity_has_no_source_or_lang():
+def test_review_entity_source_name_only():
     _require_service()
     text = (ENTITY_DIR / "SrvPoiReview.java").read_text(encoding="utf-8")
-    assert "source_name" not in text and '"lang"' not in text and '"source"' not in text
+    assert "source_name" in text and '"lang"' not in text and '"source"' not in text
 
 
 def test_no_flyway_in_service():
@@ -208,7 +208,7 @@ def _info_spec() -> dict:
 
 def test_info_cover_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-2:] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-4:-2] == ["srvcovermd", "srvcoverpy"]
     patch = _cell_source("NB_CREATE_DDL.ipynb", "srvcoverpy")
     base = _literal(_cell_source("NB_CREATE_DDL.ipynb", "srvratepy"), "INFO_COLS")
     at = [name for name, _dtype in base].index("review_count") + 1
@@ -262,8 +262,12 @@ def test_info_cover_seed_and_init_ddl():
     init: dict = {}
     exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
     spec = next(s for s in init["TABLE_SPECS"] if s["fq"] == "lh_vv_gold.dbo.gld_srv_poi_info")
-    patch = _cell_source("NB_CREATE_DDL.ipynb", "srvcoverpy")
-    assert [(c[0], c[1]) for c in spec["cols"]] == _literal(patch, "INFO_COLS")
+    patch = _cell_source("NB_CREATE_DDL.ipynb", "poidestpy")
+    info = _literal(patch, "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
+    assert [(c[0], c[1]) for c in spec["cols"]] == info
+    cover = _literal(_cell_source("NB_CREATE_DDL.ipynb", "srvcoverpy"), "INFO_COLS")
+    at = [name for name, _dtype in cover].index("destination_id") + 1
+    assert info == cover[:at] + [("destination_name", "STRING")] + cover[at:]
     out = _literal(_cell_source("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"), "OUT_COLS")
     assert list(out) + list(TECH) == [c[0] for c in spec["cols"]]
 
@@ -280,3 +284,50 @@ def test_info_cover_mapping_and_pg_ddl():
     body = re.search(r"CREATE TABLE apps\.srv_poi_info \((.*?)\n\);", pg, re.S).group(1)
     assert "    review_count integer,\n    cover_id text,\n    cover_blob_url text,\n" in body
     assert not re.search(r"(?m)^\s*ALTER\s", pg)
+
+
+def test_destination_name_patch_cell():
+    ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
+    assert ids[-2:] == ["poidestmd", "poidestpy"]
+    patch = _cell_source("NB_CREATE_DDL.ipynb", "poidestpy")
+    tables = _literal(patch, "TABLE_COLS")
+    new_cols = _literal(patch, "NEW_COLS")
+    assert new_cols["lh_vv_silver.dbo.slv_enr_poi_destination"] == ("destination_name", "STRING")
+    assert new_cols["lh_vv_gold.dbo.gld_srv_poi_info"] == ("destination_name", "STRING")
+    assert new_cols["lh_vv_gold.dbo.gld_srv_poi_review"] == ("source_name", "STRING")
+    info = tables["lh_vv_gold.dbo.gld_srv_poi_info"]
+    names = [name for name, _dtype in info]
+    assert names[names.index("destination_id") + 1] == "destination_name"
+    review = tables["lh_vv_gold.dbo.gld_srv_poi_review"]
+    review_names = [name for name, _dtype in review]
+    assert review_names[review_names.index("author_name") + 1] == "source_name"
+    dest = tables["lh_vv_silver.dbo.slv_enr_poi_destination"]
+    assert dest[-2:] == [("lng", "DOUBLE"), ("destination_name", "STRING")]
+    assert _literal(patch, "PL") == _literal(_cell_source("NB_CREATE_DDL.ipynb", "plcadpy"), "RENAMES")[1][1]
+    order = ["held = True", "Dừng trước khi ghi", "_refresh_lock()", "ADD COLUMNS", "Sau khi ghi", "finally:"]
+    assert [patch.index(token) for token in order] == sorted(patch.index(token) for token in order)
+    code = _code(patch)
+    for token in ("DROP", "DELETE", "TRUNCATE", "REPLACE", "RESTORE", "columnMapping", "INSERT", "UPDATE {CFG}"):
+        assert token not in code
+    assert code.count("ADD COLUMNS") == 1 and " AFTER " in code
+    assert "LEASE_MINUTES = 90" in patch and "lock_exec_id = '{LOCK}'" in patch
+    assert "raise failed from cleanup_exc" in patch
+
+
+def test_destination_name_and_review_source_across_layers():
+    _require_service()
+    tables = _literal(_cell_source("NB_CREATE_DDL.ipynb", "poidestpy"), "TABLE_COLS")
+    init: dict = {}
+    exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
+    for fq, cols in tables.items():
+        spec = next(item for item in init["TABLE_SPECS"] if item["fq"] == fq)
+        assert [(c[0], c[1]) for c in spec["cols"]] == cols
+    pg = PG_DDL.read_text(encoding="utf-8")
+    info = re.search(r"CREATE TABLE apps\.srv_poi_info \((.*?)\n\);", pg, re.S).group(1)
+    review = re.search(r"CREATE TABLE apps\.srv_poi_review \((.*?)\n\);", pg, re.S).group(1)
+    assert "    destination_id text,\n    destination_name text,\n" in info
+    assert "    author_name text,\n    source_name text,\n" in review
+    poi = (ENTITY_DIR / "SrvPoiInfo.java").read_text(encoding="utf-8")
+    rev = (ENTITY_DIR / "SrvPoiReview.java").read_text(encoding="utf-8")
+    assert poi.index('@Column(name = "destination_id")') < poi.index('@Column(name = "destination_name")')
+    assert rev.index('@Column(name = "author_name")') < rev.index('@Column(name = "source_name")')

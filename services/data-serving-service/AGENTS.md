@@ -6,7 +6,7 @@ Spring Boot read-only API over PostgreSQL schema `apps` (`srv_poi_info`, `srv_po
 
 - Columns and types come from gold `lh_vv_gold.dbo.gld_srv_poi_*` (`notebooks/NB_SETUP_INITIAL_DDL.ipynb` cell `init_tables`); primary keys come from NodeSpec `pk` in `notebooks/NB_GLD_SRV_POI_*.ipynb`. `sql/postgres/gld_srv_serve.pg.sql` is the PostgreSQL DDL derived from them. Entities and DTOs expose only columns that exist there. `tests/test_srv_poi_serving_contract.py` enforces this.
 - Keys: `srv_poi_info(poi_id)`, `srv_poi_multi_lang(poi_id, lang)`, `srv_poi_amenity(poi_id, business_sector, amenity_group, amenity_raw)`, `srv_poi_media_gallery(media_id, poi_id)`, `srv_poi_review(review_id)`. Composite keys use `@IdClass`.
-- `poi_id` never includes language. `srv_poi_review` has no `source_name`, `source`, or `lang` (D-10 of task `20261106-agent-system-unify-api`).
+- `poi_id` never includes language. `srv_poi_review` has no `source` or `lang` (D-10 of task `20261106-agent-system-unify-api`). `srv_poi_review.source_name` is the gold literal `google` (D-3 of task `20261112-poi-destination-name-api`, superseding D-10 for `source_name` only).
 - Read-only: no writes, `spring.jpa.hibernate.ddl-auto: none`, no Flyway, no DDL at runtime. The schema and tables are created by the data side with the repo DDL.
 - Query schema `apps` only. Never join to `public`, `poi_mgmt`, `destination_mgmt`, or `admin_ref`.
 - Every list endpoint is paginated (`size` ≤ 100). Filters go through `PoiSpecifications`; never concatenate request values into JPQL.

@@ -49,10 +49,11 @@
 | 14 | data[].business_tags | object | có | apps.srv_poi_info.business_sector; apps.srv_poi_info.business_category; apps.srv_poi_info.subcategory_tags | Không có `business_sector_label`. |
 | 15 | data[].address | object | có | apps.srv_poi_info.full_address; apps.srv_poi_info.city; apps.srv_poi_info.district | Null khi cả ba null hoặc rỗng. |
 | 16 | data[].geo_location | object | có | apps.srv_poi_info.lat; apps.srv_poi_info.lng | Null khi thiếu một trong hai. |
-| 17 | meta | object | có | envelope | Không có `meta.pagination`. |
-| 18 | meta.timestamp | string | có | envelope | ISO-8601 UTC. |
-| 19 | meta.trace_id | string | có | envelope | |
-| 20 | errors | array | có | envelope | Null khi thành công. |
+| 17 | data[].destinations | object | có | apps.srv_poi_info.destination_id; apps.srv_poi_info.destination_name | Luôn {id, name}; name null tới khi có luồng ghi (D-1). |
+| 18 | meta | object | có | envelope | Không có `meta.pagination`. |
+| 19 | meta.timestamp | string | có | envelope | ISO-8601 UTC. |
+| 20 | meta.trace_id | string | có | envelope | |
+| 21 | errors | array | có | envelope | Null khi thành công. |
 
 ## Status code
 
@@ -108,7 +109,11 @@ Lấy từ Dev ngày 2026-11-11.
         "city": "Thành phố Đà Nẵng",
         "country_code": null
       },
-      "geo_location": null
+      "geo_location": null,
+      "destinations": {
+        "id": null,
+        "name": null
+      }
     }
   ],
   "meta": {

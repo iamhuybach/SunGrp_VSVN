@@ -53,6 +53,9 @@ public class SrvPoiReview {
     @Column(name = "author_name")
     private String authorName;
 
+    @Column(name = "source_name")
+    private String sourceName;
+
     @Column(name = "row_hash")
     private String rowHash;
 

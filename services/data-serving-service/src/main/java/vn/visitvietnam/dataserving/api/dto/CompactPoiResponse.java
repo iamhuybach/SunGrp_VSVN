@@ -37,7 +37,10 @@ public record CompactPoiResponse(
 
         @JsonProperty("geo_location")
         @Schema(description = "Tọa độ địa lý")
-        GeoLocation geoLocation
+        GeoLocation geoLocation,
+
+        @Schema(description = "Điểm đến")
+        Destinations destinations
 ) {
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
@@ -50,6 +53,13 @@ public record CompactPoiResponse(
             @JsonProperty("file_key")
             @Schema(description = "apps.srv_poi_info.cover_blob_url", example = "pois/mau/cover.jpg")
             String fileKey
+    ) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    @Schema(description = "Điểm đến")
+    public record Destinations(
+            @Schema(description = "apps.srv_poi_info.destination_id") String id,
+            @Schema(description = "apps.srv_poi_info.destination_name") String name
     ) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)

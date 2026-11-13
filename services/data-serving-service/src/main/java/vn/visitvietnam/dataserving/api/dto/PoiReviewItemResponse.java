@@ -29,7 +29,11 @@ public record PoiReviewItemResponse(
 
         @JsonProperty("review_date")
         @Schema(description = "Thời gian đánh giá", example = "2026-05-15")
-        String reviewDate
+        String reviewDate,
+
+        @JsonProperty("source_name")
+        @Schema(description = "Nguồn đánh giá", example = "google")
+        String sourceName
 ) {
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record RatingSummary(

@@ -23,7 +23,7 @@ public final class StoredJsonParser {
 
     public record LabelValue(String label, String value) {}
 
-    public record ExperienceDraft(String title, String description) {}
+    public record ExperienceDraft(String title, String description, String keyword) {}
 
     public static List<PoiFeatureResponse.OperatingHour> operatingHours(String poiId, String raw) {
         if (raw == null) {
@@ -101,7 +101,7 @@ public final class StoredJsonParser {
             if ((title == null || title.isBlank()) && (description == null || description.isBlank())) {
                 continue;
             }
-            items.add(new ExperienceDraft(title, description));
+            items.add(new ExperienceDraft(title, description, textOrNull(element.get("keyword"))));
         }
         return items;
     }

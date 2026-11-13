@@ -312,7 +312,6 @@ def test_columns_match_sources():
     ml_cols = {**_assign(_cell(ddl, "mlexppy"), "TABLE_COLS"), **_assign(_cell(ddl, "mlsrcpy"), "TABLE_COLS")}
     rev = _assign(_cell(ddl, "srvrevpy"), "TABLE_COLS")
     info_cols = _assign(_cell(ddl, "rvi18nenrpy"), "INFO_COLS")
-    review_cols = _assign(_cell(ddl, "rvi18ngldpy"), "REVIEW_COLS")
     assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["cols"] == [(col, dtype, None) for col, dtype in info_cols]
     assert by_fq["lh_vv_gold.enr.gld_enr_poi_review"]["cols"] == [
         (col, dtype, None) for col, dtype in _assign(flag, "REVIEW_COLS")
@@ -320,10 +319,11 @@ def test_columns_match_sources():
     assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["props"] == PROPS
     assert by_fq["lh_vv_gold.enr.gld_enr_poi_review"]["props"] == PROPS
     dest = "lh_vv_silver.dbo.slv_enr_poi_destination"
+    poidest = _assign(_cell(ddl, "poidestpy"), "TABLE_COLS")
     srv = _cell(ddl, "srvpoipy")
     for fq, cols in _assign(flag, "LANDING_COLS").items():
         if fq == dest:
-            cols = cols + _assign(srv, "DEST_NEW_COLS")
+            cols = poidest[fq]
         if fq in ml_cols:
             cols = ml_cols[fq]
         if fq in rev:
@@ -331,9 +331,9 @@ def test_columns_match_sources():
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
     gold = _assign(srv, "GOLD_COLS")
-    gold["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(_cell(ddl, "srvcoverpy"), "INFO_COLS")
+    gold["lh_vv_gold.dbo.gld_srv_poi_info"] = poidest["lh_vv_gold.dbo.gld_srv_poi_info"]
     gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = ml_cols["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
-    gold["lh_vv_gold.dbo.gld_srv_poi_review"] = review_cols
+    gold["lh_vv_gold.dbo.gld_srv_poi_review"] = poidest["lh_vv_gold.dbo.gld_srv_poi_review"]
     for fq, cols in gold.items():
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
@@ -685,14 +685,14 @@ def test_flag_patch_create_matches_init():
         **_assign(patch, "LANDING_COLS"),
     }
     dest = "lh_vv_silver.dbo.slv_enr_poi_destination"
-    extra = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "srvpoipy"), "DEST_NEW_COLS")
+    poidest = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "poidestpy"), "TABLE_COLS")
     ml = "lh_vv_silver.dbo.slv_enr_poi_info_multi_lang"
     ml_cols = {**_assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "mlexppy"), "TABLE_COLS"), **_assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "mlsrcpy"), "TABLE_COLS")}
     rev = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "srvrevpy"), "TABLE_COLS")
     create_sql = namespace["create_sql"]
     for fq, cols in contracts.items():
         if fq == dest:
-            cols = cols + extra
+            cols = poidest[fq]
         if fq == ml:
             cols = ml_cols[fq]
         if fq in rev:
@@ -718,10 +718,10 @@ def test_gld_srv_patch_create_matches_init():
     exec(ast.unparse(ast.Module(body=selected, type_ignores=[])), env)  # noqa: S102
     create_sql = namespace["create_sql"]
     dest = "lh_vv_silver.dbo.slv_enr_poi_destination"
+    poidest = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "poidestpy"), "TABLE_COLS")
     contracts = {fq: cols for fq, cols in env["GOLD_COLS"].items()}
-    contracts[dest] = env["DEST_BASE"] + env["DEST_NEW_COLS"]
-    contracts["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(
-        _cell(_notebook("NB_CREATE_DDL.ipynb"), "srvcoverpy"), "INFO_COLS")
+    contracts[dest] = poidest[dest]
+    contracts["lh_vv_gold.dbo.gld_srv_poi_info"] = poidest["lh_vv_gold.dbo.gld_srv_poi_info"]
     contracts["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = _assign(
         _cell(_notebook("NB_CREATE_DDL.ipynb"), "mlexppy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     for fq, cols in contracts.items():
@@ -749,7 +749,7 @@ def test_gld_srv_review_patch_create_matches_init():
     create_sql = namespace["create_sql"]
     cols_by_fq = dict(env["TABLE_COLS"])
     cols_by_fq["lh_vv_gold.dbo.gld_srv_poi_review"] = _assign(
-        _cell(_notebook("NB_CREATE_DDL.ipynb"), "rvi18ngldpy"), "REVIEW_COLS")
+        _cell(_notebook("NB_CREATE_DDL.ipynb"), "poidestpy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_review"]
     for fq, cols in cols_by_fq.items():
         spec = next(item for item in specs if item["fq"] == fq)
         assert env["_create_sql"](fq, cols) == create_sql(spec)
@@ -893,7 +893,7 @@ def test_pl_cadence_seed():
 
 def test_pl_cadence_patch_cell():
     ddl = _notebook("NB_CREATE_DDL.ipynb")
-    assert [c.get("id") for c in ddl["cells"]][-16:-14] == ["plcadmd", "plcadpy"]
+    assert [c.get("id") for c in ddl["cells"]][-18:-16] == ["plcadmd", "plcadpy"]
     assert _cell(ddl, "plcadmd").startswith("# [THÊM 26/10] 20261026-pl-name-cadence-suffix")
     patch, renames, minutes = _cell(ddl, "plcadpy"), _renames(), _cadence()
     seed: dict = {}

@@ -245,7 +245,7 @@ def test_node_specs():
 
 def test_build_columns_match_ddl():
     gold = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")
-    gold[INFO_FQ] = _assign(_cell("NB_CREATE_DDL.ipynb", "srvcoverpy"), "INFO_COLS")
+    gold[INFO_FQ] = _assign(_cell("NB_CREATE_DDL.ipynb", "poidestpy"), "TABLE_COLS")[INFO_FQ]
     gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = _assign(
         _cell("NB_CREATE_DDL.ipynb", "mlexppy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     pairs = {
@@ -282,7 +282,8 @@ def test_review_node_spec():
 
 
 def test_review_build_columns_match_ddl():
-    cols = _assign(_cell("NB_CREATE_DDL.ipynb", "rvi18ngldpy"), "REVIEW_COLS")
+    cols = _assign(_cell("NB_CREATE_DDL.ipynb", "poidestpy"), "TABLE_COLS")[
+        "lh_vv_gold.dbo.gld_srv_poi_review"]
     out = _assign(_cell("NB_GLD_SRV_POI_REVIEW.ipynb", "srvrvbuild"), "OUT_COLS")
     assert list(out) + list(TECH) == [name for name, _dtype in cols]
 
@@ -297,17 +298,18 @@ def test_review_mapping_targets():
 
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-24:-16] == [
+    assert ids[-26:-18] == [
         "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
         "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
     ]
-    assert ids[-16:-14] == ["plcadmd", "plcadpy"]
-    assert ids[-14:-12] == ["mlexpmd", "mlexppy"]
-    assert ids[-12:-10] == ["srvrevmd", "srvrevpy"]
-    assert ids[-10:-6] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
-    assert ids[-6:-4] == ["mlsrcmd", "mlsrcpy"]
-    assert ids[-4:-2] == ["cmscfgmd", "cmscfgpy"]
-    assert ids[-2:] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-18:-16] == ["plcadmd", "plcadpy"]
+    assert ids[-16:-14] == ["mlexpmd", "mlexppy"]
+    assert ids[-14:-12] == ["srvrevmd", "srvrevpy"]
+    assert ids[-12:-8] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-8:-6] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-6:-4] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-4:-2] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-2:] == ["poidestmd", "poidestpy"]
     patch = _cell("NB_CREATE_DDL.ipynb", "srvratepy")
     base = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")[INFO_FQ]
     assert _assign(patch, "INFO_NEW_COLS") == NEW_INFO
@@ -347,7 +349,7 @@ def test_partner_without_destination_branch():
     from_entity = tuple(name for name in dest_names if name in entity_out)
     absent = tuple(name for name in dest_names if name not in entity_out)
     assert from_entity == ("full_address", "street", "ward", "city", "lat", "lng")
-    assert absent == ("destination_id", "district", "country_code", "postal_code")
+    assert absent == ("destination_id", "destination_name", "district", "country_code", "postal_code")
     assert "FROM_ENTITY = tuple(name for name in DEST_COLS[2:] if name in ENTITY_OUT_COLS)" in gold
     assert 'des = des.withColumn("_has_dest", F.lit(True))' in gold
     assert 'is_partner = F.coalesce(SRC == "partner", F.lit(False))' in gold
@@ -529,8 +531,25 @@ def test_review_source_patch_cell():
     assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
     assert "raise failed from cleanup_exc" in patch
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-10:-6] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
-    assert ids[-6:-4] == ["mlsrcmd", "mlsrcpy"]
-    assert ids[-4:-2] == ["cmscfgmd", "cmscfgpy"]
-    assert ids[-2:] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-12:-8] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-8:-6] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-6:-4] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-4:-2] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-2:] == ["poidestmd", "poidestpy"]
+
+
+def test_review_source_name_literal():
+    source = _cell("NB_GLD_SRV_POI_REVIEW.ipynb", "srvrvbuild")
+    assert _assign(source, "SOURCE_NAME") == "google"
+    assert 'F.lit(SOURCE_NAME).alias("source_name")' in source
+    assert _assign(source, "OUT_COLS")[-2:] == ("author_name", "source_name")
+    assert 'slv_3p_poi"' not in source
+
+
+def test_info_destination_name_passthrough():
+    source = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    assert _assign(source, "DEST_COLS")[2:4] == ("destination_id", "destination_name")
+    out = _assign(source, "OUT_COLS")
+    assert out[out.index("destination_id") + 1] == "destination_name"
+    assert "destination_name_filled" in source
 

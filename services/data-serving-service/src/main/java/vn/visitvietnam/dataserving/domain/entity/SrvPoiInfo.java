@@ -47,6 +47,9 @@ public class SrvPoiInfo {
     @Column(name = "destination_id")
     private String destinationId;
 
+    @Column(name = "destination_name")
+    private String destinationName;
+
     @Column(name = "full_address")
     private String fullAddress;
 

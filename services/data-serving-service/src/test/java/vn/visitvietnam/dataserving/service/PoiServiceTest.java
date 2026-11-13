@@ -70,6 +70,8 @@ class PoiServiceTest {
     void shouldReturnCompactPoisSuccessfully() {
         SrvPoiInfo poi = SrvPoiInfo.builder()
                 .poiId("poi_01")
+                .destinationId("dest_01")
+                .destinationName("Ha Noi")
                 .poiName("Nhà hát Lớn")
                 .sourceName("google_places")
                 .businessSector("ATTRACTION")
@@ -113,6 +115,28 @@ class PoiServiceTest {
         assertThat(item.businessTags().businessSector()).isEqualTo("ATTRACTION");
         assertThat(item.businessTags().subcategories()).containsExactly("architecture", "culture");
         assertThat(item.rating().overall()).isEqualTo(4.80);
+        assertThat(item.destinations().id()).isEqualTo("dest_01");
+        assertThat(item.destinations().name()).isEqualTo("Ha Noi");
+    }
+
+    @Test
+    @DisplayName("API 1: destinations luôn là object khi destination_id và destination_name null")
+    void shouldReturnCompactDestinationsObjectWhenColumnsNull() throws Exception {
+        SrvPoiInfo poi = SrvPoiInfo.builder()
+                .poiId("poi_null")
+                .poiName("X")
+                .build();
+        when(poiInfoRepository.findAll(any(Specification.class), any(Sort.class)))
+                .thenReturn(List.of(poi));
+        when(multiLangRepository.findByPoiIdInAndLangIn(eq(List.of("poi_null")), eq(Set.of("vi"))))
+                .thenReturn(Collections.emptyList());
+
+        CompactPoiResponse item = poiService.getCompactPois(List.of("poi_null"), "vi").getFirst();
+        assertThat(item.destinations()).isNotNull();
+        assertThat(item.destinations().id()).isNull();
+        assertThat(item.destinations().name()).isNull();
+        assertThat(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(item))
+                .contains("\"destinations\":{\"id\":null,\"name\":null}");
     }
 
     @Test
@@ -212,6 +236,7 @@ class PoiServiceTest {
                 .ratingOverall(new BigDecimal("4.20"))
                 .reviewText("Địa điểm tuyệt vời")
                 .reviewDate("2026-04-15")
+                .sourceName("google")
                 .build();
 
         when(reviewRepository.findByPoiIdAndDeletedAtIsNull(eq("poi_01"), any(Pageable.class)))
@@ -223,6 +248,7 @@ class PoiServiceTest {
         assertThat(response.ratingSummary()).hasSize(1);
         assertThat(response.ratingSummary().getFirst().ratingCount()).isEqualTo(3L);
         assertThat(response.ratingSummary().getFirst().ratingAvgScore()).isEqualTo(4.2);
+        assertThat(response.page().content().getFirst().sourceName()).isEqualTo("google");
     }
 
     @Test
@@ -259,10 +285,7 @@ class PoiServiceTest {
         assertThat(amenities.getFirst().amenityGroup()).isEqualTo("facilities_and_services");
         PoiAmenityGroupResponse.Item item = amenities.getFirst().items().getFirst();
         assertThat(item.amenityCode()).isEqualTo("outdoor_seating");
-        assertThat(item.amenityLabelEn()).isEqualTo("Outdoor Seating");
-        assertThat(item.amenityLabelVi()).isEqualTo("Không gian ngoài trời");
         assertThat(item.serviceFlags()).isEqualTo("Food/service");
-        assertThat(item.serviceFlags()).isNotEqualTo(item.amenityLabelVi());
     }
 
     @Test
@@ -341,7 +364,7 @@ class PoiServiceTest {
     void shouldFallBackExperiencesToViWhenTargetEmpty() {
         SrvPoiMultiLang en = SrvPoiMultiLang.builder().poiId("poi_01").lang("en").sourceName("en-src").experience("[]").build();
         SrvPoiMultiLang vi = SrvPoiMultiLang.builder().poiId("poi_01").lang("vi").sourceName("partner")
-                .experience("[{\"title\":\"A\",\"description\":\"B\"},{\"title\":\" \",\"description\":\"\"},{\"title\":\"C\",\"description\":\"D\"},{\"title\":\"E\",\"description\":\"F\"}]")
+                .experience("[{\"title\":\"A\",\"description\":\"B\",\"keyword\":\"walk\"},{\"title\":\" \",\"description\":\"\"},{\"title\":\"C\",\"description\":\"D\"},{\"title\":\"E\",\"description\":\"F\",\"keyword\":1}]")
                 .build();
         when(multiLangRepository.findByPoiIdInAndLangIn(eq(List.of("poi_01")), eq(Set.of("en", "vi"))))
                 .thenReturn(List.of(en, vi));
@@ -350,6 +373,30 @@ class PoiServiceTest {
         assertThat(response.items()).hasSize(3);
         assertThat(response.items()).allMatch(item -> "partner".equals(item.source()));
         assertThat(response.items().getFirst().title()).isEqualTo("A");
+        assertThat(response.items()).extracting(PoiExperiencesResponse.Item::iconKey)
+                .containsExactly("walk", null, null);
+    }
+
+    @Test
+    @DisplayName("practical_info không có business_sector ngoài business_tags và có destinations.name")
+    void shouldReturnPracticalInfoDestinationsAndNoTopLevelBusinessSector() throws Exception {
+        SrvPoiInfo poi = SrvPoiInfo.builder()
+                .poiId("poi_01")
+                .poiName("A")
+                .businessSector("attraction")
+                .destinationId("dest_01")
+                .destinationName("Ha Noi")
+                .build();
+        when(poiInfoRepository.findByPoiIdAndDeletedAtIsNull("poi_01")).thenReturn(java.util.Optional.of(poi));
+        when(multiLangRepository.findByPoiIdInAndLangIn(any(), any())).thenReturn(List.of());
+        when(mediaGalleryRepository.findActiveCoverByPoiId(eq("poi_01"), any(Pageable.class))).thenReturn(List.of());
+
+        PoiPracticalInfoResponse info = poiService.getPracticalInfo("poi_01", "vi");
+        com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(info));
+        assertThat(node.has("business_sector")).isFalse();
+        assertThat(node.path("business_tags").path("business_sector").asText()).isEqualTo("attraction");
+        assertThat(node.path("destinations").path("name").asText()).isEqualTo("Ha Noi");
     }
 
     @Test

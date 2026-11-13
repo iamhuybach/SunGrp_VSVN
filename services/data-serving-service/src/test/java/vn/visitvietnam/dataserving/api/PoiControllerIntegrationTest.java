@@ -11,6 +11,7 @@ import vn.visitvietnam.dataserving.api.dto.CompactPoiResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiExperiencesResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiAmenityGroupResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiGalleryItemResponse;
+import vn.visitvietnam.dataserving.api.dto.PoiPracticalInfoResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiReviewItemResponse;
 import vn.visitvietnam.dataserving.common.dto.PageResponse;
 import vn.visitvietnam.dataserving.common.exception.ResourceNotFoundException;
@@ -57,7 +58,8 @@ class PoiControllerIntegrationTest {
                 new CompactPoiResponse.Rating(4.9, 5000),
                 new CompactPoiResponse.BusinessTags("ATTRACTION", "landmark", List.of("heritage")),
                 new CompactPoiResponse.Address("Hoàn Kiếm, Hà Nội", "Đinh Tiên Hoàng", null, "Hoàn Kiếm", "Hà Nội", "VN"),
-                new CompactPoiResponse.GeoLocation(21.0285, 105.8542)
+                new CompactPoiResponse.GeoLocation(21.0285, 105.8542),
+                new CompactPoiResponse.Destinations("dest_01", "Hoan Kiem")
         );
 
         when(poiService.getCompactPois(any(), any()))
@@ -77,6 +79,8 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.data[0].cover.file_key").value("https://cdn.example.com/cover.jpg"))
                 .andExpect(jsonPath("$.data[0].geo_location.latitude").value(21.0285))
                 .andExpect(jsonPath("$.data[0].geo_location.longitude").value(105.8542))
+                .andExpect(jsonPath("$.data[0].destinations.id").value("dest_01"))
+                .andExpect(jsonPath("$.data[0].destinations.name").value("Hoan Kiem"))
                 .andExpect(jsonPath("$.meta.pagination").doesNotExist())
                 .andExpect(jsonPath("$.meta.trace_id").isNotEmpty())
                 .andExpect(jsonPath("$.meta.timestamp").isNotEmpty())
@@ -125,7 +129,8 @@ class PoiControllerIntegrationTest {
                 new CompactPoiResponse.Rating(4.8, 1200),
                 new CompactPoiResponse.BusinessTags("ATTRACTION", "pagoda", List.of("pagoda")),
                 null,
-                null
+                null,
+                new CompactPoiResponse.Destinations(null, null)
         );
 
         when(poiService.getCompactPois(eq(List.of("poi_02")), eq("en")))
@@ -139,7 +144,9 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data[0].id").value("poi_02"))
-                .andExpect(jsonPath("$.data[0].name").value("Chùa Một Cột"));
+                .andExpect(jsonPath("$.data[0].name").value("Chùa Một Cột"))
+                .andExpect(jsonPath("$.data[0].destinations.id").value(nullValue()))
+                .andExpect(jsonPath("$.data[0].destinations.name").value(nullValue()));
     }
 
     // ── API 3: Gallery Endpoint Tests ────────────────────────────────────────
@@ -208,7 +215,8 @@ class PoiControllerIntegrationTest {
                 "Nguyễn Văn A",
                 4.5,
                 "Rất tuyệt vời",
-                "2026-04-10"
+                "2026-04-10",
+                "google"
         );
 
         when(poiService.getReviews(eq("poi_01"), anyInt(), anyInt()))
@@ -222,6 +230,7 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data[0].review_id").value("rev_01"))
+                .andExpect(jsonPath("$.data[0].source_name").value("google"))
                 .andExpect(jsonPath("$.rating_summary[0].rating_count").value(3))
                 .andExpect(jsonPath("$.rating_summary[0].rating_avg_score").value(4.2))
                 .andExpect(jsonPath("$.meta.pagination.total_items").value(1))
@@ -292,11 +301,12 @@ class PoiControllerIntegrationTest {
     void shouldReturnExperiences() throws Exception {
         when(poiService.getExperiences(eq("poi_01"), eq("vi")))
                 .thenReturn(new PoiExperiencesResponse(List.of(
-                        new PoiExperiencesResponse.Item("Dao pho", "Di bo", "partner"))));
+                        new PoiExperiencesResponse.Item("Dao pho", "Di bo", "partner", "walk"))));
 
         mockMvc.perform(get("/api/v1/pois/poi_01/experiences"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.items[0].source").value("partner"))
+                .andExpect(jsonPath("$.data.items[0].icon_key").value("walk"))
                 .andExpect(jsonPath("$.message").value("POI experiences retrieved successfully"));
     }
 
@@ -311,6 +321,37 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.meta.error_code").value("POI_NOT_FOUND"));
     }
 
+    @Test
+    @DisplayName("GET /practical_info không có business_sector cấp data")
+    void shouldReturnPracticalInfoWithoutTopLevelBusinessSector() throws Exception {
+        PoiPracticalInfoResponse info = new PoiPracticalInfoResponse(
+                "poi_01",
+                "A",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                new PoiPracticalInfoResponse.BusinessTags("attraction", "landmark"),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                new CompactPoiResponse.Destinations("dest_01", "Ha Noi"));
+        when(poiService.getPracticalInfo(eq("poi_01"), any())).thenReturn(info);
+
+        mockMvc.perform(get("/api/v1/pois/poi_01/practical_info"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.business_sector").doesNotExist())
+                .andExpect(jsonPath("$.data.business_tags.business_sector").value("attraction"))
+                .andExpect(jsonPath("$.data.destinations.name").value("Ha Noi"));
+    }
+
     // ── API 10: Amenities Endpoint Tests ─────────────────────────────────────
 
     @Test
@@ -319,7 +360,7 @@ class PoiControllerIntegrationTest {
         PoiAmenityGroupResponse group = new PoiAmenityGroupResponse(
                 "facilities_and_services",
                 List.of(new PoiAmenityGroupResponse.Item(
-                        "free_street_parking", "Free Street Parking", "Đỗ xe trên phố", "Parking"))
+                        "free_street_parking", "Parking"))
         );
 
         when(poiService.getAmenities("poi_01")).thenReturn(List.of(group));
@@ -333,8 +374,8 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.data[0].amenity_group").value("facilities_and_services"))
                 .andExpect(jsonPath("$.data[0].amenity_vi").doesNotExist())
                 .andExpect(jsonPath("$.data[0].items[0].amenity_code").value("free_street_parking"))
-                .andExpect(jsonPath("$.data[0].items[0].amenity_label_en").value("Free Street Parking"))
-                .andExpect(jsonPath("$.data[0].items[0].amenity_label_vi").value("Đỗ xe trên phố"))
+                .andExpect(jsonPath("$.data[0].items[0].amenity_label_en").doesNotExist())
+                .andExpect(jsonPath("$.data[0].items[0].amenity_label_vi").doesNotExist())
                 .andExpect(jsonPath("$.data[0].items[0].amenity_label").doesNotExist())
                 .andExpect(jsonPath("$.data[0].items[0].service_flags").value("Parking"))
                 .andExpect(jsonPath("$.meta.trace_id").isNotEmpty())

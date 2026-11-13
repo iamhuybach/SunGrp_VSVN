@@ -13,7 +13,6 @@ public record PoiPracticalInfoResponse(
         String id,
         String name,
         String description,
-        @JsonProperty("business_sector") String businessSector,
         @JsonProperty("time_to_spend") LabelValue timeToSpend,
         LabelValue cost,
         @JsonProperty("best_time") LabelValue bestTime,
@@ -34,7 +33,7 @@ public record PoiPracticalInfoResponse(
         String phone,
         String email,
         @JsonProperty("website_url") String websiteUrl,
-        Destinations destinations
+        CompactPoiResponse.Destinations destinations
 ) {
     public record LabelValue(String label, String value) {}
 
@@ -62,6 +61,4 @@ public record PoiPracticalInfoResponse(
     ) {}
 
     public record OperatingHours(List<PoiFeatureResponse.OperatingHour> value) {}
-
-    public record Destinations(String id) {}
 }

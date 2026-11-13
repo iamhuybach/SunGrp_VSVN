@@ -4,7 +4,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Description | Tối đa 3 trải nghiệm. Không kiểm tra POI tồn tại. Đọc `apps.srv_poi_multi_lang` theo ngôn ngữ đã resolve rồi `vi`. Dùng hàng đầu tiên có mảng experience không rỗng. `source` của mọi phần tử là `apps.srv_poi_multi_lang.source_name` của hàng đó. |
+| Description | Tối đa 3 trải nghiệm. Không kiểm tra POI tồn tại. Đọc `apps.srv_poi_multi_lang` theo ngôn ngữ đã resolve rồi `vi`. Dùng hàng đầu tiên có mảng experience không rỗng. `source` của mọi phần tử là `apps.srv_poi_multi_lang.source_name` của hàng đó. `icon_key` là khóa `keyword` của cùng phần tử trong `experience`; thiếu hoặc không phải text thì null. |
 | Method | GET |
 | Endpoint | /api/v1/pois/{poi_id}/experiences |
 
@@ -34,10 +34,11 @@
 | 6 | data.items[].title | string | có | apps.srv_poi_multi_lang.experience | Text trong object. Không phải text thì null. |
 | 7 | data.items[].description | string | có | apps.srv_poi_multi_lang.experience | Text trong object. |
 | 8 | data.items[].source | string | có | apps.srv_poi_multi_lang.source_name | Cùng một giá trị cho mọi phần tử của hàng được chọn. |
-| 9 | meta | object | có | envelope | Không có `meta.pagination`. |
-| 10 | meta.timestamp | string | có | envelope | |
-| 11 | meta.trace_id | string | có | envelope | |
-| 12 | errors | array | có | envelope | Null khi thành công. |
+| 9 | data.items[].icon_key | string | có | apps.srv_poi_multi_lang.experience | Khóa keyword của cùng phần tử; thiếu hoặc không phải text thì null (D-2). |
+| 10 | meta | object | có | envelope | Không có `meta.pagination`. |
+| 11 | meta.timestamp | string | có | envelope | |
+| 12 | meta.trace_id | string | có | envelope | |
+| 13 | errors | array | có | envelope | Null khi thành công. |
 
 ## Status code
 
@@ -67,17 +68,20 @@ Lấy từ Dev ngày 2026-11-11.
       {
         "title": "Di chuyển thuận tiện giữa các tỉnh",
         "description": "Xe khách phục vụ tuyến cố định giúp hành khách dễ dàng đi lại giữa Thanh Hóa và các khu vực khác.",
-        "source": "google"
+        "source": "google",
+        "icon_key": null
       },
       {
         "title": "Đặt vé nhanh chóng tại văn phòng",
         "description": "Khách có thể mua vé trực tiếp tại văn phòng, thuận tiện cho việc lên kế hoạch di chuyển.",
-        "source": "google"
+        "source": "google",
+        "icon_key": null
       },
       {
         "title": "Chuyến xe đúng giờ",
         "description": "Dịch vụ đảm bảo thời gian xuất phát đúng giờ, phù hợp với lịch trình của hành khách.",
-        "source": "google"
+        "source": "google",
+        "icon_key": null
       }
     ]
   },

@@ -25,14 +25,6 @@ public record PoiAmenityGroupResponse(
             @Schema(description = "Mã tiện ích snake_case", example = "free_street_parking")
             String amenityCode,
 
-            @JsonProperty("amenity_label_en")
-            @Schema(description = "Nhãn tiếng Anh", example = "Free Street Parking")
-            String amenityLabelEn,
-
-            @JsonProperty("amenity_label_vi")
-            @Schema(description = "Nhãn tiếng Việt", example = "Đỗ xe trên phố")
-            String amenityLabelVi,
-
             @JsonProperty("service_flags")
             @Schema(description = "Nhóm cờ dịch vụ", example = "Parking")
             String serviceFlags

@@ -6,6 +6,7 @@
 - [SỬA 04/11] Bảng gốc là `slv_3p_poi_review`, một dòng một `review_id`. Không đọc `slv_enr_poi_review_multi_lang`.
 - `slv_3p_poi_review` LEFT JOIN `slv_3p_poi_rating` on `poi_id`. `poi_id` trùng trên `slv_3p_poi_rating` thì dừng, không chọn dòng.
 - Không có cột `lang` (D-SRV-LANG). `title` luôn NULL: `slv_3p_poi_review` không có cột `title` và không thêm (D-SRV-TEXT). `review_text` lấy từ `slv_3p_poi_review.text`.
+- `source_name` (D-3): literal `google` trong `NB_GLD_SRV_POI_REVIEW`. Không join thêm bảng. Bảng nguồn thuộc luồng Google.
 
 ## 2. Field Mapping
 
@@ -20,5 +21,6 @@
 | slv_3p_poi_review.rating | decimal(4,2) | transform 1-1 | rating |
 | slv_3p_poi_review.time | string | transform 1-1 | review_date |
 | slv_3p_poi_review.author_name | string | transform 1-1 | author_name |
+| | string | literal 'google' (D-3) | source_name |
 | | timestamp | field hệ thống | created_at |
 | | timestamp | field hệ thống | updated_at |
