@@ -9,6 +9,7 @@
 | D-COL-1 | Hai cột kỹ thuật MERGE | Đồng ý, chấp nhận hai cột kỹ thuật. Thêm `row_hash` STRING và `deleted_at` TIMESTAMP vào `gld_enr_poi_info` và `gld_enr_poi_review`, đúng `TECH_COLUMNS` của MERGE hiện có. Không thêm cột nghiệp vụ. Không đổi grain. | Quyết định của người dùng, D-COL-1 | 2026-11-12 |
 | D-SCOPE-1 | Ba test đuôi cell | Thêm `tests/test_gld_srv_poi_contract.py`, `tests/test_poi_entity_contract.py`, và `tests/test_srv_poi_serving_contract.py` vào scope. Chỉ dịch chỉ số cell đuôi của `NB_CREATE_DDL` để nhận cell `enrmerge`. | Architecture §0.1, người dùng nói tiếp tục xử lý | 2026-11-13 |
 | D-SPARK-2 | Bỏ phần metrics còn thiếu | Người dùng cho qua spill và Capacity Metrics. Giữ bằng chứng đã có: DRY_RUN 53s, 8/72 core, job 270 shuffle 2,1 MiB. Không suy ra spill bằng 0. Tiếp tục bước `RUN`. | Quyết định của người dùng, D-SPARK-2 | 2026-11-14 |
+| D-READY-1 | Sẵn sàng merge | Người dùng yêu cầu `ready_to_merge`. Không còn finding P0/P1 mở. Runtime đã pass. Hai gate review đóng theo quyết định này, không phải một verdict PASS mới của reviewer. | Quyết định của người dùng, D-READY-1 | 2026-11-14 |
 
 Sửa dòng tại chỗ khi quyết định đổi. Chi tiết ghi thêm ở `## Lịch sử quyết định`.
 
@@ -39,6 +40,12 @@ Giá trị quyết định hợp lệ: `fixed`, `accepted-risk`, `rejected-false
 Người dùng: "Có thể pass qua. Tiếp tục các step để chạy mode RUN."
 
 Chấp nhận thiếu Spill (Memory), Spill (Disk) và Fabric Capacity Metrics. Không coi các số đó là 0. Bước runtime tiếp theo là `NB_ENR_POI_INFO` với `p_mode = RUN`.
+
+### D-READY-1 — 2026-11-14
+
+Người dùng: "Chuyển trạng thái ready_to_merge và commit."
+
+`specialist_review` và `risk_gate` chuyển `pass` để máy nhận `ready_to_merge`. Review vòng 2 vẫn là `EVIDENCE_REQUIRED`; SPARK-002 vẫn `accepted-risk`. Không chạy thêm vòng review.
 
 ## Quyết định của người dùng
 
