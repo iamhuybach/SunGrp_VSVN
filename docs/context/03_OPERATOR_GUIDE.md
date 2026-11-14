@@ -37,7 +37,7 @@ Notebook extract đọc dòng `is_active = 1` khớp `pl_name`, `src_schema`, `s
 | `DOC` | Một khối trong payload snapshot | `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV` |
 | `DOC_ARRAY` | Mảng phần tử trong payload. `align_path` chỉ hợp lệ với mode này | Notebook 3rd-party |
 | `RECOMPUTE` | Cạnh luồng tính lại. Node ghi bằng `MERGE` | `build_dag` |
-| `APPEND` | Cạnh luồng tính lại không `MERGE`. Node ghi bằng `APPEND` | `build_dag` |
+| `APPEND` | Cạnh luồng tính lại không `MERGE`. Node ghi bằng `APPEND`. Hợp lệ; hiện không cạnh nào dùng | `build_dag` |
 
 `is_active`: `1` đưa dòng vào lần nạp, `0` bỏ dòng. Không có giá trị khác.
 
@@ -236,20 +236,22 @@ Mỗi bảng gold một hình. Hộp trái là bảng nguồn, hộp phải là 
 
 ### 2.1 `gld_enr_poi_info`
 
-Ghi bằng `APPEND`.
+MERGE theo `poi_id`.
 
 [SỬA 04/11] Không còn `time_to_spend`, `best_time`, `cost_vnd`; `cost` giữ nguyên. Nguồn không đổi.
 
+[SỬA 12/11] Node tính lại toàn bộ spine. `ctrl_log_table_run` ghi `inserted_rows`, `updated_rows`, `deactivated_rows`. Lần chạy lại khi nguồn không đổi là 0/0/0 và `trg_version` không đổi. Người đọc lọc `deleted_at IS NULL`. `review_poi_not_in_entity` đếm mọi `poi_id` của review không có trên spine.
+
 | Nguồn | Kiểu join |
 |---|---|
-| `slv_poi_entity_non_enrich` | Bảng gốc, sau `left_semi` với tập `poi_id` đổi |
+| `slv_poi_entity_non_enrich` | Bảng gốc, toàn bộ `poi_id` |
 | `slv_poi_amenity` | `left` join sau khi gộp theo `poi_id` |
 | `slv_3p_poi_rating` | `left` join theo `poi_id` |
 | `slv_3p_poi_price` | `left` join theo `poi_id` |
-| `slv_3p_poi_review` | `left_semi` với tập đổi, rồi `left` join |
+| `slv_3p_poi_review` | `left_semi` với toàn bộ spine, rồi `left` join |
 | `slv_enr_poi_info_multi_lang` | `left` join cờ có mặt theo `poi_id` |
 | `slv_enr_poi_destination` | `left` join cờ có mặt theo `poi_id` |
-| `slv_pn_business_service_i18ns` | `union` vào tập khoá đổi, rồi `left_semi` với entity. Không join cột |
+| `slv_pn_business_service_i18ns` | `left_semi` với entity. Không join cột |
 
 <table>
 <tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_entity_non_enrich</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_enr_poi_info</code></td></tr>
@@ -264,13 +266,15 @@ Ghi bằng `APPEND`.
 
 ### 2.2 `gld_enr_poi_review`
 
-Ghi bằng `APPEND`.
+MERGE theo `review_id`.
 
-[SỬA 04/11] Luồng đang tắt: mọi cạnh tới `gld_enr_poi_review` có `is_active = 0`, `NB_ENR_POI_REVIEW` không chạy. Bảng và dữ liệu giữ nguyên. Hình dưới là lineage khi cạnh bật.
+[SỬA 04/11] Luồng đang tắt: mọi cạnh tới `gld_enr_poi_review` có `is_active = 0`, `NB_ENR_POI_REVIEW` không chạy. Hình dưới là lineage khi cạnh bật.
+
+[SỬA 12/11] Cùng nghĩa log `inserted_rows` / `updated_rows` / `deactivated_rows` và bằng chứng chạy lại 0/0/0. Người đọc lọc `deleted_at IS NULL`. D-RISK-1: trước khi test MERGE, runbook xoá dữ liệu APPEND cũ của bảng này rồi chạy init lại. Không bật cạnh. Chưa có bằng chứng runtime khi cạnh tắt.
 
 | Nguồn | Kiểu join |
 |---|---|
-| `slv_3p_poi_review` | Bảng gốc, sau `left_semi` với tập `review_id` đổi |
+| `slv_3p_poi_review` | Bảng gốc, mọi `review_id` khác NULL |
 | `slv_enr_poi_review_multi_lang` | `left` join cờ theo `review_id`. Khoá thêm hoặc mất còn đi qua `union` |
 
 <table>

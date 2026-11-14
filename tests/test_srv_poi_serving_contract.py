@@ -208,7 +208,9 @@ def _info_spec() -> dict:
 
 def test_info_cover_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-4:-2] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-6:-4] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-4:-2] == ["poidestmd", "poidestpy"]
+    assert ids[-2:] == ["enrmergemd", "enrmergepy"]
     patch = _cell_source("NB_CREATE_DDL.ipynb", "srvcoverpy")
     base = _literal(_cell_source("NB_CREATE_DDL.ipynb", "srvratepy"), "INFO_COLS")
     at = [name for name, _dtype in base].index("review_count") + 1
@@ -288,7 +290,8 @@ def test_info_cover_mapping_and_pg_ddl():
 
 def test_destination_name_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-2:] == ["poidestmd", "poidestpy"]
+    assert ids[-4:-2] == ["poidestmd", "poidestpy"]
+    assert ids[-2:] == ["enrmergemd", "enrmergepy"]
     patch = _cell_source("NB_CREATE_DDL.ipynb", "poidestpy")
     tables = _literal(patch, "TABLE_COLS")
     new_cols = _literal(patch, "NEW_COLS")

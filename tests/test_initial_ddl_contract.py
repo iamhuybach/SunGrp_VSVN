@@ -312,10 +312,11 @@ def test_columns_match_sources():
     ml_cols = {**_assign(_cell(ddl, "mlexppy"), "TABLE_COLS"), **_assign(_cell(ddl, "mlsrcpy"), "TABLE_COLS")}
     rev = _assign(_cell(ddl, "srvrevpy"), "TABLE_COLS")
     info_cols = _assign(_cell(ddl, "rvi18nenrpy"), "INFO_COLS")
-    assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["cols"] == [(col, dtype, None) for col, dtype in info_cols]
+    tech = [(name, dtype, None) for name, dtype in _assign(_cell(ddl, "enrmergepy"), "TECH_ADD")]
+    assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["cols"] == [(col, dtype, None) for col, dtype in info_cols] + tech
     assert by_fq["lh_vv_gold.enr.gld_enr_poi_review"]["cols"] == [
         (col, dtype, None) for col, dtype in _assign(flag, "REVIEW_COLS")
-    ]
+    ] + tech
     assert by_fq["lh_vv_gold.enr.gld_enr_poi_info"]["props"] == PROPS
     assert by_fq["lh_vv_gold.enr.gld_enr_poi_review"]["props"] == PROPS
     dest = "lh_vv_silver.dbo.slv_enr_poi_destination"
@@ -489,6 +490,7 @@ def test_pipeline_config_rows_match_sources():
         third_sql,
     )
     edges = _assign(_cell(ddl, "enrddlpy"), "EDGES")
+    merge = set(_assign(_cell(ddl, "enrmergepy"), "MERGE_TARGETS"))
     off = set(map(tuple, _assign(_cell(ddl, "enrinfopy"), "EDGES_OFF")))
     added = _assign(_cell(ddl, "enrinfopy"), "EDGES_ON")
     flagged = _assign(_cell(ddl, "enrflagpy"), "EDGES_ON")
@@ -517,16 +519,16 @@ def test_pipeline_config_rows_match_sources():
         if (src, target) in deleted:
             continue
         active = 0 if (src, target) in off or (src, target) in hours_off or (src, target) in review_off else 1
-        expected.append((enr, silver, src, schema, target, active, priority, mode, None, None, notebook))
+        expected.append((enr, silver, src, schema, target, active, priority, "RECOMPUTE" if target in merge else mode, None, None, notebook))
     for seq, src, schema, target, mode, notebook, priority in added:
         if (src, target) in deleted:
             continue
-        expected.append((enr, silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        expected.append((enr, silver, src, schema, target, 1, priority, "RECOMPUTE" if target in merge else mode, None, None, notebook))
         assert seq > 0
     for seq, src, schema, target, mode, notebook, priority in flagged:
         if (src, target) in deleted:
             continue
-        expected.append((enr, silver, src, schema, target, 0 if (src, target) in review_off else 1, priority, mode, None, None, notebook))
+        expected.append((enr, silver, src, schema, target, 0 if (src, target) in review_off else 1, priority, "RECOMPUTE" if target in merge else mode, None, None, notebook))
         assert seq > 0
     for src in (
         "slv_3p_poi", "slv_3p_poi_address", "ref_dictionary_place_type",
@@ -690,6 +692,11 @@ def test_flag_patch_create_matches_init():
     ml_cols = {**_assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "mlexppy"), "TABLE_COLS"), **_assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "mlsrcpy"), "TABLE_COLS")}
     rev = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "srvrevpy"), "TABLE_COLS")
     create_sql = namespace["create_sql"]
+    tech = _assign(_cell(_notebook("NB_CREATE_DDL.ipynb"), "enrmergepy"), "TECH_ADD")
+    enr_targets = {
+        "lh_vv_gold.enr.gld_enr_poi_info",
+        "lh_vv_gold.enr.gld_enr_poi_review",
+    }
     for fq, cols in contracts.items():
         if fq == dest:
             cols = poidest[fq]
@@ -697,6 +704,8 @@ def test_flag_patch_create_matches_init():
             cols = ml_cols[fq]
         if fq in rev:
             cols = rev[fq]
+        if fq in enr_targets:
+            cols = cols + tech
         spec = next(item for item in specs if item["fq"] == fq)
         assert env["_create_sql"](fq, cols) == create_sql(spec)
 
@@ -893,7 +902,7 @@ def test_pl_cadence_seed():
 
 def test_pl_cadence_patch_cell():
     ddl = _notebook("NB_CREATE_DDL.ipynb")
-    assert [c.get("id") for c in ddl["cells"]][-18:-16] == ["plcadmd", "plcadpy"]
+    assert [c.get("id") for c in ddl["cells"]][-20:-18] == ["plcadmd", "plcadpy"]
     assert _cell(ddl, "plcadmd").startswith("# [THÊM 26/10] 20261026-pl-name-cadence-suffix")
     patch, renames, minutes = _cell(ddl, "plcadpy"), _renames(), _cadence()
     seed: dict = {}

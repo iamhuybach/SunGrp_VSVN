@@ -1,0 +1,28 @@
+{
+  "round": 2,
+  "verdict": "EVIDENCE_REQUIRED",
+  "findings": [
+    {
+      "id": "SPARK-002",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/00_README.md": "5a70dfd91f61cae1531613446c778fe2fe27c40dbfb83a1efef1a8f0f39ea63c",
+    "docs/context/01_DATA_MODEL.md": "a1109d768f187f615c46dc91c3de2ecce89b5a001edd5130e4bb440181664463",
+    "docs/context/03_OPERATOR_GUIDE.md": "5d40e3dbaed85d1b323586fd7c80c15bc2b9dbe4c0aaea24f467faebd85a79a7",
+    "docs/context/CTRL_TABLES_CONTEXT.md": "a9719fd46168f54543603c3e7d96f3e7243c4df7f51ce530ca1d980fb03a3122",
+    "docs/context/gld_enr_poi_info_review.md": "ed0e6bf52cf0870a66de42b4b1dd4eca8339332316d4e3c8fe6f70c67585dde0",
+    "notebooks/NB_CREATE_DDL.ipynb": "27afc47d2c9f83ff6707a1eb24b080e9e1280c893194a2c4711035815acf7842",
+    "notebooks/NB_ENR_POI_INFO.ipynb": "2ac336b74427e5ccabab34af203128f3a36ba6bdb5b5259fa579e27f636739cc",
+    "notebooks/NB_ENR_POI_REVIEW.ipynb": "f24501194cdbd7a9b5a370455bb08c089d3c4b4df394732804a1048803589228",
+    "notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb": "f35d15107adc0709ee46443a033682a670161c3d38b38b7366df4ecb5f81b9cc",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "17132d6caa26e4bc734f536df423a8fef109b0dfe044f6fff27d09e4cd1132e2",
+    "tests/test_enr_poi_contract.py": "d3f6ce27cae5efae392436fabca80b5e053ec8856eaa79116fdc5a449a25ad49",
+    "tests/test_gld_srv_poi_contract.py": "2374cd6ebb03a72a06d0f49e8095bd70ec6f9c8fd2691f9c7de008ee656d8646",
+    "tests/test_initial_ddl_contract.py": "e5bc1a195884ba82dd42fdd283e023e490ef2865784c8475cf6d3fc352cd77f2",
+    "tests/test_poi_entity_contract.py": "2726545ae449bcc121da5dc3cf2bcd6eea8fd03fed13c14d7ee03027cfcda5a5",
+    "tests/test_srv_poi_serving_contract.py": "5c049fd06ae46ccc91f4c49ff8382bf51e129fd686cb88bfd3cb9680706536ba"
+  },
+  "elapsed_seconds": 204
+}

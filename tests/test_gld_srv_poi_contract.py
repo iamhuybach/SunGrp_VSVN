@@ -298,18 +298,19 @@ def test_review_mapping_targets():
 
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-26:-18] == [
+    assert ids[-28:-20] == [
         "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
         "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
     ]
-    assert ids[-18:-16] == ["plcadmd", "plcadpy"]
-    assert ids[-16:-14] == ["mlexpmd", "mlexppy"]
-    assert ids[-14:-12] == ["srvrevmd", "srvrevpy"]
-    assert ids[-12:-8] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
-    assert ids[-8:-6] == ["mlsrcmd", "mlsrcpy"]
-    assert ids[-6:-4] == ["cmscfgmd", "cmscfgpy"]
-    assert ids[-4:-2] == ["srvcovermd", "srvcoverpy"]
-    assert ids[-2:] == ["poidestmd", "poidestpy"]
+    assert ids[-20:-18] == ["plcadmd", "plcadpy"]
+    assert ids[-18:-16] == ["mlexpmd", "mlexppy"]
+    assert ids[-16:-14] == ["srvrevmd", "srvrevpy"]
+    assert ids[-14:-10] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-10:-8] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-8:-6] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-6:-4] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-4:-2] == ["poidestmd", "poidestpy"]
+    assert ids[-2:] == ["enrmergemd", "enrmergepy"]
     patch = _cell("NB_CREATE_DDL.ipynb", "srvratepy")
     base = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")[INFO_FQ]
     assert _assign(patch, "INFO_NEW_COLS") == NEW_INFO
@@ -531,11 +532,12 @@ def test_review_source_patch_cell():
     assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
     assert "raise failed from cleanup_exc" in patch
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-12:-8] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
-    assert ids[-8:-6] == ["mlsrcmd", "mlsrcpy"]
-    assert ids[-6:-4] == ["cmscfgmd", "cmscfgpy"]
-    assert ids[-4:-2] == ["srvcovermd", "srvcoverpy"]
-    assert ids[-2:] == ["poidestmd", "poidestpy"]
+    assert ids[-14:-10] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-10:-8] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-8:-6] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-6:-4] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-4:-2] == ["poidestmd", "poidestpy"]
+    assert ids[-2:] == ["enrmergemd", "enrmergepy"]
 
 
 def test_review_source_name_literal():

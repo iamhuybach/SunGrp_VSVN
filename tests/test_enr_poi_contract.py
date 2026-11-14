@@ -220,20 +220,21 @@ def test_info_patch_cell_guards():
     assert "lock_exec_id = '{LOCK}'" in patch
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-36:-30] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
-    assert ids[-30:-28] == ["ohpassmd", "ohpasspy"]
-    assert ids[-28:-26] == ["peholmd", "peholpy"]
-    assert ids[-26:-24] == ["srvpoimd", "srvpoipy"]
-    assert ids[-24:-22] == ["srvratemd", "srvratepy"]
-    assert ids[-22:-18] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
-    assert ids[-18:-16] == ["plcadmd", "plcadpy"]
-    assert ids[-16:-14] == ["mlexpmd", "mlexppy"]
-    assert ids[-14:-12] == ["srvrevmd", "srvrevpy"]
-    assert ids[-12:-8] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
-    assert ids[-8:-6] == ["mlsrcmd", "mlsrcpy"]
-    assert ids[-6:-4] == ["cmscfgmd", "cmscfgpy"]
-    assert ids[-4:-2] == ["srvcovermd", "srvcoverpy"]
-    assert ids[-2:] == ["poidestmd", "poidestpy"]
+    assert ids[-38:-32] == ["enrinfomd", "enrinfopy", "mvpoimd", "mvpoipy", "enrflagmd", "enrflagpy"]
+    assert ids[-32:-30] == ["ohpassmd", "ohpasspy"]
+    assert ids[-30:-28] == ["peholmd", "peholpy"]
+    assert ids[-28:-26] == ["srvpoimd", "srvpoipy"]
+    assert ids[-26:-24] == ["srvratemd", "srvratepy"]
+    assert ids[-24:-20] == ["mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy"]
+    assert ids[-20:-18] == ["plcadmd", "plcadpy"]
+    assert ids[-18:-16] == ["mlexpmd", "mlexppy"]
+    assert ids[-16:-14] == ["srvrevmd", "srvrevpy"]
+    assert ids[-14:-10] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-10:-8] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-8:-6] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-6:-4] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-4:-2] == ["poidestmd", "poidestpy"]
+    assert ids[-2:] == ["enrmergemd", "enrmergepy"]
 
 
 def test_info_select_matches_ddl():
@@ -321,13 +322,13 @@ def test_flag_node_contract():
     assert {elt.value for elt in inputs.values} == set(REVIEW_INPUTS)
     assert 'required_inputs=("review",)' in review
     assert "enrich_flag_null" in review
-    assert _func_text(info, "_flag_keys") == _func_text(review, "_flag_keys")
+    assert "def _flag_keys" not in info and "def _flag_keys" not in review
 
 
 def test_info_source_name_stays_entity():
     info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
     assert '"multi_lang": ("poi_id",),' in info
-    assert 'ml = _present(ctx, "multi_lang", "poi_id", changed).alias("ml")' in info
+    assert 'ml = _present(ctx, "multi_lang", "poi_id", keys).alias("ml")' in info
     assert 'source = F.lower(F.trim(F.col("e.source_name")))' in info
     assert 'F.col("e.source_name").alias("source_name")' in info
     assert "ml.source_name" not in info
@@ -335,8 +336,7 @@ def test_info_source_name_stays_entity():
 
 def test_info_partner_join_matches_entity():
     info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
-    assert 'uuid_md5(F.col("business_service_id"), F.lit(PARTNER))' in info
-    assert 'F.col("locale") == F.lit("vi")' in info
+    assert "_vi_i18n" not in info and "_i18n_keys" not in info
     assert _info_pure()["PARTNER"] == "partner"
     entity = _cell("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb", "b1entitybuild")
     assert 'uuid_md5(F.col("id"), F.lit(PARTNER))' in entity
@@ -344,15 +344,15 @@ def test_info_partner_join_matches_entity():
     assert '["source_id", "language_code"]' not in info
 
 
-def test_info_removal_keys():
+def test_enr_builds_full_snapshot():
     info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
-    assert "def _role_keys(ctx, role, spine_keys):" in info
-    assert 'for role in ("rating", "price", "review", "amenity"):' in info
-    assert "old.subtract(current)" in info
-    assert 'if info["basis"] not in ("EDGE", "MARKER") or info["from"] is None:' in info
-    assert "return spine_keys" in info
-    assert "_amenity_keys" not in info
-    assert '_keys(ctx.changed("entity"), "poi_id")' in info
+    review = _cell("NB_ENR_POI_REVIEW.ipynb", "04339a06")
+    for cell in (info, review):
+        for token in ("ctx.changed(", "ctx.basis", "_input_at(", "_role_keys", "_flag_keys"):
+            assert token not in cell
+    assert 'keys = _keys(spine, "poi_id")' in info
+    assert 'e = spine.alias("e")' in info
+    assert "rv = rv_all.join(" in review
 
 
 def test_pipeline_timeouts():
@@ -590,4 +590,129 @@ def test_review_flow_inactive_cell():
     assert acquire.index("owns_lock = True") < acquire.index("SELECT lock_exec_id")
     assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
     assert "raise failed from cleanup_exc" in patch
+
+
+def _spec_call(source: str):
+    return next(
+        node.value for node in ast.parse(source).body
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "SPEC" for t in node.targets)
+    )
+
+
+def test_enr_specs_merge_and_pk():
+    info = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    review = _cell("NB_ENR_POI_REVIEW.ipynb", "04339a06")
+    expected = {"NB_ENR_POI_INFO": ("poi_id",), "NB_ENR_POI_REVIEW": ("review_id",)}
+    for label, source, pk in (
+        ("NB_ENR_POI_INFO", info, expected["NB_ENR_POI_INFO"]),
+        ("NB_ENR_POI_REVIEW", review, expected["NB_ENR_POI_REVIEW"]),
+    ):
+        keywords = {kw.arg for kw in _spec_call(source).keywords}
+        values = {kw.arg: ast.literal_eval(kw.value) for kw in _spec_call(source).keywords if kw.arg in {"write_mode", "pk"}}
+        assert values["write_mode"] == "MERGE", label
+        assert values["pk"] == pk, label
+        assert "soft_delete_set" not in keywords and "hash_exclude" not in keywords
+        assert "APPEND" not in source
+
+
+def test_enr_sql_merge_target_keys():
+    lib = _cell("NB_LIB_TRANSFORM_SLV_GLD.ipynb", "926a3f9c")
+    ns = {"quote_name": lambda fq: fq}
+    exec(_func_text(lib, "sql_merge_target"), ns)  # noqa: S102
+    cases = (
+        ([name for name, _dtype in INFO if name not in {"created_at", "updated_at"}], "poi_id"),
+        ([name for name, _dtype in REVIEW if name not in {"created_at", "updated_at"}], "review_id"),
+    )
+    for cols, key in cases:
+        sql = ns["sql_merge_target"](f"lh_vv_gold.enr.gld_enr_poi_{key.split('_')[0]}", "v", cols, (key,), {})
+        on = next(line.strip() for line in sql.splitlines() if line.strip().startswith("ON "))
+        assert on == f"ON t.`{key}` = s.`{key}`"
+        source = sql.split("WHEN NOT MATCHED BY SOURCE", 1)[1]
+        assert "t.`deleted_at` = current_timestamp()" in source
+        assert "t.`updated_at` = current_timestamp()" in source
+        assert "t.`row_hash`" not in source
+        insert = next(line for line in sql.splitlines() if line.strip().startswith("WHEN NOT MATCHED THEN INSERT"))
+        assert insert.endswith("`row_hash`, `created_at`, `updated_at`, `deleted_at`)")
+
+
+def test_enr_merge_patch_cell_constants():
+    patch = _cell("NB_CREATE_DDL.ipynb", "enrmergepy")
+    lib = _cell("NB_LIB_TRANSFORM_SLV_GLD.ipynb", "9ff87eee")
+    assert _assign(patch, "PL") == "PL_VV_TRANS_SLV_TO_ENR_15M"
+    assert _assign(patch, "TARGETS") == {"gld_enr_poi_info": "poi_id", "gld_enr_poi_review": "review_id"}
+    assert _assign(patch, "MERGE_TARGETS") == tuple(_assign(patch, "TARGETS"))
+    tech = _assign(patch, "TECH_ADD")
+    assert tech == [("row_hash", "STRING"), ("deleted_at", "TIMESTAMP")]
+    lib_tech = _assign(lib, "TECH_COLUMNS")
+    for name, dtype in tech:
+        assert (name, dtype.lower()) in lib_tech
+
+
+def test_enr_merge_patch_cell_guards():
+    raw = _cell("NB_CREATE_DDL.ipynb", "enrmergepy")
+    code = "\n".join(line for line in raw.splitlines() if not line.strip().startswith("#"))
+    order = [
+        "held = True", "Dừng trước khi ghi", "ALTER TABLE", "SET load_mode = 'RECOMPUTE'",
+        "Sau khi ghi", "finally:",
+    ]
+    start = 0
+    positions = []
+    for token in order:
+        positions.append(raw.index(token, start))
+        start = positions[-1] + len(token)
+    assert positions == sorted(positions)
+    lines = raw.splitlines()
+    calls = [i for i, line in enumerate(lines) if line.strip() == "_refresh_lock()"]
+    alter = next(i for i, line in enumerate(lines) if "ALTER TABLE" in line)
+    update = next(i for i, line in enumerate(lines) if "SET load_mode = 'RECOMPUTE'" in line)
+    assert calls == sorted(calls) and len(calls) == 2
+    assert calls[0] < alter < calls[1] < update
+    assert lines[alter - 1].strip() == "_refresh_lock()"
+    assert lines[alter - 2].strip() == "if cols:"
+    for token in ("DROP", "DELETE", "TRUNCATE", "RESTORE", "REPLACE", "INSERT INTO {CFG}", "SET is_active", " AFTER "):
+        assert token not in code
+    for token in ("AND upper(trim(load_mode)) = 'APPEND'", "count(DISTINCT", "LEASE_MINUTES = 35", "lock_exec_id = '{LOCK}'"):
+        assert token in raw
+
+
+def test_enr_merge_release_keeps_body_error():
+    ns: dict = {}
+    exec(_func_text(_cell("NB_CREATE_DDL.ipynb", "enrmergepy"), "_release_lock"), ns)  # noqa: S102
+    release = ns["_release_lock"]
+    seen: list[str] = []
+    release(lambda: seen.append("ok"), True, None)
+    assert seen == ["ok"]
+    body = ValueError("body")
+
+    def boom():
+        raise RuntimeError("cleanup")
+
+    try:
+        release(boom, True, body)
+    except ValueError as exc:
+        assert exc is body and isinstance(exc.__cause__, RuntimeError)
+    else:
+        raise AssertionError("body error was hidden")
+    try:
+        release(boom, True, None)
+    except RuntimeError as exc:
+        assert str(exc) == "cleanup"
+    else:
+        raise AssertionError("cleanup error was hidden")
+    release(lambda: seen.append("skip"), False, body)
+    assert seen == ["ok"]
+
+
+def test_enr_seed_merge_load_mode():
+    from test_initial_ddl_contract import _by_id, _initial
+
+    namespace: dict = {}
+    exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
+    rows = namespace["PIPELINE_CONFIG_ROWS"]
+    targets = {"gld_enr_poi_info", "gld_enr_poi_review"}
+    chosen = [row for row in rows if row[4] in targets]
+    assert len(chosen) == 11
+    assert all(row[7] == "RECOMPUTE" for row in chosen)
+    assert all(row[5] == 0 for row in chosen if row[4] == "gld_enr_poi_review")
+    assert all(row[7] != "APPEND" for row in rows)
 

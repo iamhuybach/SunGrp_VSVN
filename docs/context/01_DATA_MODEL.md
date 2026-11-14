@@ -64,14 +64,14 @@ flowchart LR
   PN --> N
   P3 --> N
   RF --> N
-  N -->|NB_00_ORCHES_SLV_TO_ENR, APPEND| GI & GV
+  N -->|NB_00_ORCHES_SLV_TO_ENR, RECOMPUTE / MERGE| GI & GV
   GI & GV -->|sync theo updated_at| OUT[("PostgreSQL / KB")]
 ```
 
 | Pipeline | Nhịp | Notebook | Đọc → Ghi |
 |---|---|---|---|
 | `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00` | 10–15 phút | `Get_Config_4Run` lọc `src_tbl = 'partner_raw_data'` + `Lookup_WM` → `ForEach_Source` (tuần tự) → Get Metadata `_delta_log` → `If_HasWork` → activity `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`. Tham số gắn cứng `partner_raw_data`. Không có Switch và không gọi notebook 3rd-party | bronze `partner_raw_data` → `slv_pn_*` |
-| `PL_VV_TRANS_SLV_TO_ENR_15M` | 15 phút | `NB_00_ORCHES_SLV_TO_ENR`, mode `APPEND` | silver → `lh_vv_gold.enr.gld_enr_poi_info`, `gld_enr_poi_review` |
+| `PL_VV_TRANS_SLV_TO_ENR_15M` | 15 phút | `NB_00_ORCHES_SLV_TO_ENR`, mode `RECOMPUTE / MERGE` | silver → `lh_vv_gold.enr.gld_enr_poi_info`, `gld_enr_poi_review` |
 
 ## 4. Bronze — bảng raw
 
@@ -348,7 +348,7 @@ Sửa 1 dòng ref = 1 commit đổi dữ liệu → lần chạy sau của pipel
 
 ## 7. Gold hiện hành (`lh_vv_gold.enr`)
 
-Pipeline `PL_VV_TRANS_SLV_TO_ENR_15M` gọi `NB_00_ORCHES_SLV_TO_ENR`, mode `APPEND`.
+Pipeline `PL_VV_TRANS_SLV_TO_ENR_15M` gọi `NB_00_ORCHES_SLV_TO_ENR`, mode `RECOMPUTE / MERGE`.
 
 | Bảng | Schema |
 |---|---|

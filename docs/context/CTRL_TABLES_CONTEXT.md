@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS lh_vv_ctrl.dbo.ctrl_mng_pipeline_config (
 | `trg_schema`, `trg_tbl` | STRING | Bảng silver L1 | Node (silver L2 / gold) |
 | `is_active` | INT | 1 bật / 0 tắt **cả bảng** | 1 bật / 0 tắt cạnh |
 | `priority` | INT | Wave: cùng priority chạy song song (`max_parallel`) | = tầng của node trong DAG (chỉ để đọc; NB_00 tự tính thứ tự từ cạnh) |
-| `load_mode` | STRING | `CDC` (partner; NULL = CDC) · `DOC` · `DOC_ARRAY` (3P). Notebook kiểm tra: partner chỉ nhận `CDC`, 3P chỉ nhận `DOC` và `DOC_ARRAY` | `RECOMPUTE` · `APPEND` (luồng `PL_VV_TRANS_SLV_TO_ENR_15M`, không MERGE) |
+| `load_mode` | STRING | `CDC` (partner; NULL = CDC) · `DOC` · `DOC_ARRAY` (3P). Notebook kiểm tra: partner chỉ nhận `CDC`, 3P chỉ nhận `DOC` và `DOC_ARRAY` | `RECOMPUTE`. `APPEND` hợp lệ; hiện không cạnh nào dùng |
 | `align_path` | STRING | `*_ARRAY`: mảng ghép theo vị trí (đọc bằng `json_path` `_align.<trường>`) | NULL |
 | `dedup_order` | STRING | Snapshot: `"<cột> [ASC\|DESC], ..."` chọn 1 dòng khi 1 tài liệu có nhiều dòng cùng khoá (NULL xếp cuối, rồi `_pos`) | NULL |
 
@@ -142,7 +142,7 @@ Công thức: `CASE WHEN trg_tbl LIKE 'slv_pn_product%' THEN 2 ELSE 1 END` (ch�
 | `slv_poi_entity_non_enrich` | `lh_vv_silver.dbo` |
 | `ref_dictionary_amenities` | `lh_vv_silver.dbo` |
 
-Gold trong cùng pipeline (`APPEND`, `trg_schema = lh_vv_gold.enr`): `gld_enr_poi_review` ← `slv_3p_poi_review`; `gld_enr_poi_info` ← `slv_poi_entity_non_enrich`, `slv_poi_amenity`, `slv_3p_poi_rating`, `slv_3p_poi_price`, `slv_3p_poi_opening_hours`, `slv_3p_poi_review`, `slv_pn_business_service_i18ns`.
+Gold trong cùng pipeline (`RECOMPUTE / MERGE`, `trg_schema = lh_vv_gold.enr`): `gld_enr_poi_review` ← `slv_3p_poi_review`; `gld_enr_poi_info` ← `slv_poi_entity_non_enrich`, `slv_poi_amenity`, `slv_3p_poi_rating`, `slv_3p_poi_price`, `slv_3p_poi_opening_hours`, `slv_3p_poi_review`, `slv_pn_business_service_i18ns`.
 
 `NB_SETUP_POI_ENTITY` và `NB_SETUP_POI_AMENITY` ghi cạnh trên `PL_VV_TRANS_SLV_TO_ENR_15M` và giữ khoá `wm_flow__PL_VV_TRANS_SLV_TO_ENR_15M`.
 
@@ -582,6 +582,7 @@ FROM lh_vv_ctrl.dbo.ctrl_cdc_reject WHERE NOT is_resolved GROUP BY 1, 2, 3, 4 OR
 | 22/10 | Bảng 3P ở §3 còn 9 dòng `DOC` / `DOC_ARRAY` theo seed `NB_SETUP_INITIAL_DDL` cell 7. Hai mode ngôn ngữ cũ không còn trong seed |
 | 26/10 | Đổi hậu tố nhịp `pl_name` P → M cho luồng enrich 15 phút và gold 30 phút (`plcadpy`): đổi `pl_name` dòng cấu hình, id và `src_tbl` dòng `wm_flow__`. Không đổi `wm_e__`, log. Tên cũ ở các mục trên là lịch sử |
 | 08/11 | Thêm nguồn `cms_raw_data`: 4 dòng `DOC` tới `slv_cms_*`, watermark `wm_transform_cms_raw_data`, 59 cột registry. Không gắn activity FL_00 |
+| 12/11 | `gld_enr_poi_info` và `gld_enr_poi_review`: 11 cạnh `PL_VV_TRANS_SLV_TO_ENR_15M` từ `APPEND` sang `RECOMPUTE / MERGE`. Thêm `row_hash`, `deleted_at`. Cạnh review vẫn `is_active = 0` |
 
 ## 11. Việc còn lại liên quan ctrl
 
