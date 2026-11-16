@@ -1,0 +1,70 @@
+# Verification 2026-11-16 16:49:40 — PASS
+Files (15): docs/context/mapping_gld_srv_poi_info.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_GLD_SRV_POI_INFO.ipynb, notebooks/NB_SETUP_INITIAL_DDL.ipynb, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java, sql/postgres/gld_srv_serve.pg.sql, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: PASS
+All Finished!
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 22%]
+........................................................................ [ 45%]
+........................................................................ [ 67%]
+........................................................................ [ 90%]
+...............................                                          [100%]
+319 passed in 11.93s
+
+## maven: PASS
+2026-11-16T16:49:33.841+07:00  INFO 37480 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:51069/test?loggerLevel=OFF)
+2026-11-16T16:49:33.954+07:00  INFO 37480 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-16T16:49:34.004+07:00  INFO 37480 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-16T16:49:34.007+07:00  INFO 37480 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-16T16:49:34.045+07:00  INFO 37480 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@8d91042
+2026-11-16T16:49:34.045+07:00  INFO 37480 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-16T16:49:34.064+07:00  INFO 37480 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:51069/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-16T16:49:34.285+07:00  INFO 37480 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-16T16:49:34.288+07:00  INFO 37480 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-16T16:49:34.558+07:00  WARN 37480 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-16T16:49:34.944+07:00  INFO 37480 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-16T16:49:34.967+07:00  INFO 37480 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 6.551 seconds (process running for 44.466)
+2026-11-16T16:49:34.969+07:00  WARN 37480 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-16T16:49:34.969+07:00  WARN 37480 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-11-16T16:49:37.003+07:00  WARN 37480 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=cost_vnd reason=INVALID_JSON
+2026-11-16T16:49:37.004+07:00  WARN 37480 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=operating_hours reason=BAD_ELEMENT
+2026-11-16T16:49:37.119+07:00  WARN 37480 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=operating_hours reason=INVALID_JSON
+2026-11-16T16:49:37.131+07:00  WARN 37480 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=holiday_exceptions reason=INVALID_JSON
+2026-11-16T16:49:37.131+07:00  WARN 37480 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=holiday_exceptions reason=INVALID_JSON
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by lombok.permit.Permit
+WARNING: Please consider reporting this to the maintainers of class lombok.permit.Permit
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+

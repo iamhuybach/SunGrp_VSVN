@@ -98,6 +98,9 @@ public class SrvPoiInfo {
     @Column(name = "is_bookable")
     private Boolean isBookable;
 
+    @Column(name = "is_active")
+    private Boolean isActive;
+
     @Column(name = "operating_hours")
     private String operatingHours;
 
@@ -130,5 +133,8 @@ public class SrvPoiInfo {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name = "ingestion_ts")
+    private LocalDateTime ingestionTs;
 }
 

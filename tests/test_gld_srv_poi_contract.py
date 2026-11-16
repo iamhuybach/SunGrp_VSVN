@@ -245,7 +245,7 @@ def test_node_specs():
 
 def test_build_columns_match_ddl():
     gold = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")
-    gold[INFO_FQ] = _assign(_cell("NB_CREATE_DDL.ipynb", "poidestpy"), "TABLE_COLS")[INFO_FQ]
+    gold[INFO_FQ] = _assign(_cell("NB_CREATE_DDL.ipynb", "srvactivepy"), "TABLE_COLS")[INFO_FQ]
     gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = _assign(
         _cell("NB_CREATE_DDL.ipynb", "mlexppy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     pairs = {
@@ -298,19 +298,20 @@ def test_review_mapping_targets():
 
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-28:-20] == [
+    assert ids[-30:-22] == [
         "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
         "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
     ]
-    assert ids[-20:-18] == ["plcadmd", "plcadpy"]
-    assert ids[-18:-16] == ["mlexpmd", "mlexppy"]
-    assert ids[-16:-14] == ["srvrevmd", "srvrevpy"]
-    assert ids[-14:-10] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
-    assert ids[-10:-8] == ["mlsrcmd", "mlsrcpy"]
-    assert ids[-8:-6] == ["cmscfgmd", "cmscfgpy"]
-    assert ids[-6:-4] == ["srvcovermd", "srvcoverpy"]
-    assert ids[-4:-2] == ["poidestmd", "poidestpy"]
-    assert ids[-2:] == ["enrmergemd", "enrmergepy"]
+    assert ids[-22:-20] == ["plcadmd", "plcadpy"]
+    assert ids[-20:-18] == ["mlexpmd", "mlexppy"]
+    assert ids[-18:-16] == ["srvrevmd", "srvrevpy"]
+    assert ids[-16:-12] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-12:-10] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-10:-8] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-8:-6] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-6:-4] == ["poidestmd", "poidestpy"]
+    assert ids[-4:-2] == ["enrmergemd", "enrmergepy"]
+    assert ids[-2:] == ["srvactivemd", "srvactivepy"]
     patch = _cell("NB_CREATE_DDL.ipynb", "srvratepy")
     base = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")[INFO_FQ]
     assert _assign(patch, "INFO_NEW_COLS") == NEW_INFO
@@ -532,12 +533,13 @@ def test_review_source_patch_cell():
     assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
     assert "raise failed from cleanup_exc" in patch
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-14:-10] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
-    assert ids[-10:-8] == ["mlsrcmd", "mlsrcpy"]
-    assert ids[-8:-6] == ["cmscfgmd", "cmscfgpy"]
-    assert ids[-6:-4] == ["srvcovermd", "srvcoverpy"]
-    assert ids[-4:-2] == ["poidestmd", "poidestpy"]
-    assert ids[-2:] == ["enrmergemd", "enrmergepy"]
+    assert ids[-16:-12] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
+    assert ids[-12:-10] == ["mlsrcmd", "mlsrcpy"]
+    assert ids[-10:-8] == ["cmscfgmd", "cmscfgpy"]
+    assert ids[-8:-6] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-6:-4] == ["poidestmd", "poidestpy"]
+    assert ids[-4:-2] == ["enrmergemd", "enrmergepy"]
+    assert ids[-2:] == ["srvactivemd", "srvactivepy"]
 
 
 def test_review_source_name_literal():
@@ -554,4 +556,46 @@ def test_info_destination_name_passthrough():
     out = _assign(source, "OUT_COLS")
     assert out[out.index("destination_id") + 1] == "destination_name"
     assert "destination_name_filled" in source
+
+
+def test_info_is_active_patch_cell():
+    patch = _cell("NB_CREATE_DDL.ipynb", "srvactivepy")
+    assert _assign(patch, "NEW_COL") == ("is_active", "BOOLEAN")
+    assert _assign(patch, "ANCHOR") == "is_bookable"
+    poidest = _assign(_cell("NB_CREATE_DDL.ipynb", "poidestpy"), "TABLE_COLS")[INFO_FQ]
+    at = [name for name, _dtype in poidest].index("is_bookable") + 1
+    assert _assign(patch, "TABLE_COLS")[INFO_FQ] == poidest[:at] + [("is_active", "BOOLEAN")] + poidest[at:]
+    assert _assign(patch, "PL") == _assign(_cell("NB_CREATE_DDL.ipynb", "plcadpy"), "RENAMES")[1][1]
+    order = ["held = True", "Dừng trước khi ghi", "_refresh_lock()", "ADD COLUMNS", "Sau khi ghi", "finally:"]
+    assert [patch.index(token) for token in order] == sorted(patch.index(token) for token in order)
+    code = "\n".join(line for line in patch.splitlines() if not line.strip().startswith("#"))
+    for token in ("DROP", "DELETE", "TRUNCATE", "REPLACE", "RESTORE", "columnMapping", "INSERT", "UPDATE {CFG}", "MERGE INTO"):
+        assert token not in code
+    assert code.count("ALTER TABLE") == 1 and code.count("ADD COLUMNS") == 1 and " AFTER " in code
+    assert "LEASE_MINUTES = 90" in patch and "lock_exec_id = '{LOCK}'" in patch
+    assert "raise failed from cleanup_exc" in patch
+
+
+def test_info_is_active_literal_true():
+    source = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    out = _assign(source, "OUT_COLS")
+    assert out[out.index("is_bookable") + 1] == "is_active"
+    assert source.count('F.lit(True).alias("is_active")') == 1
+    assert "hash_exclude" not in source
+    for call in re.findall(r"ctx\.input\((.*?)\)", source):
+        assert "is_active" not in call
+    text = (ROOT / "docs" / "context" / "mapping_gld_srv_poi_info.md").read_text(encoding="utf-8")
+    table = text.split("### 1.2. Field Mapping", 1)[1].split("### 1.3", 1)[0]
+    matched = False
+    for line in table.splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [item.strip() for item in line.strip("|").split("|")]
+        if cells[-1] != "is_active":
+            continue
+        matched = True
+        assert cells[0] == ""
+        assert cells[1] == "boolean"
+        assert cells[2].startswith("true")
+    assert matched
 

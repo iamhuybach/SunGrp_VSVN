@@ -1,5 +1,6 @@
 -- PostgreSQL DDL cho 5 bảng gold serving, schema apps. Task 20261029-pg-ddl-gld-srv-serve.
 -- Nguồn cột: lh_vv_gold.dbo.gld_srv_poi_* (NB_SETUP_INITIAL_DDL cell init_tables, NB_CREATE_DDL).
+-- Ngoại lệ (20261116-srv-poi-info-is-active D-3): ingestion_ts chỉ có ở PostgreSQL, trên mọi bảng apps, ngay sau deleted_at. Gold không có cột này; repo không có job ghi.
 -- Khóa chính theo NodeSpec.pk của notebook NB_GLD_SRV_POI_* tương ứng.
 -- Ánh xạ kiểu Fabric -> PostgreSQL (decision.md D-TYPE, D-BIGINT):
 --   STRING       -> text
@@ -16,6 +17,10 @@
 -- Chạy: psql -v ON_ERROR_STOP=1 -f <file>. Chạy lại sẽ lỗi "already exists" và rollback, không đổi gì.
 -- DB đã có apps.srv_poi_info trước 20261108-gld-srv-poi-info-cover: chạy tay ALTER TABLE apps.srv_poi_info ADD COLUMN cover_id text, ADD COLUMN cover_blob_url text;
 -- DB đã có bảng trước 20261112-poi-destination-name-api: chạy tay BEGIN; ALTER TABLE apps.srv_poi_info ADD COLUMN destination_name text; ALTER TABLE apps.srv_poi_review ADD COLUMN source_name text; COMMIT;
+-- DB đã có bảng trước 20261116-srv-poi-info-is-active (người dùng đã chạy tay; ghi nhận, không phải lệnh cho agent):
+--   ALTER TABLE apps.srv_poi_info ADD COLUMN is_active boolean;
+--   ALTER TABLE apps.<srv_poi_info | srv_poi_multi_lang | srv_poi_amenity | srv_poi_media_gallery | srv_poi_review> ADD COLUMN ingestion_ts timestamp without time zone;
+--   ADD COLUMN đặt cột ở cuối bảng: thứ tự vật lý khác CREATE TABLE dưới đây. Nạp dữ liệu phải theo tên cột.
 
 BEGIN;
 
@@ -44,6 +49,7 @@ CREATE TABLE apps.srv_poi_info (
     is_verified boolean,
     is_recommended boolean,
     is_bookable boolean,
+    is_active boolean,
     operating_hours text,
     holiday_exceptions text,
     rating_overall numeric(4, 2),
@@ -55,6 +61,7 @@ CREATE TABLE apps.srv_poi_info (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     deleted_at timestamp without time zone,
+    ingestion_ts timestamp without time zone,
     PRIMARY KEY (poi_id)
 );
 
@@ -71,6 +78,7 @@ CREATE TABLE apps.srv_poi_multi_lang (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     deleted_at timestamp without time zone,
+    ingestion_ts timestamp without time zone,
     PRIMARY KEY (poi_id, lang)
 );
 
@@ -87,6 +95,7 @@ CREATE TABLE apps.srv_poi_amenity (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     deleted_at timestamp without time zone,
+    ingestion_ts timestamp without time zone,
     PRIMARY KEY (poi_id, business_sector, amenity_group, amenity_raw)
 );
 
@@ -107,6 +116,7 @@ CREATE TABLE apps.srv_poi_media_gallery (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     deleted_at timestamp without time zone,
+    ingestion_ts timestamp without time zone,
     PRIMARY KEY (media_id, poi_id)
 );
 
@@ -125,6 +135,7 @@ CREATE TABLE apps.srv_poi_review (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     deleted_at timestamp without time zone,
+    ingestion_ts timestamp without time zone,
     PRIMARY KEY (review_id)
 );
 

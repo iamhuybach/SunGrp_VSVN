@@ -1,0 +1,23 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "docs/context/mapping_gld_srv_poi_info.md": "7eba18c4a5ab527baea9f084cd023bbe6325ceb8969d15d84b169bd2689d3f42",
+    "notebooks/NB_CREATE_DDL.ipynb": "d1d899c383a7eb963aa22013bc32c773b401ce3eb0b9075cead0b65f85ef5505",
+    "notebooks/NB_GLD_SRV_POI_INFO.ipynb": "21616418a224fe8f4dc2698e94fa5c7f521faa4dee326ca677ca9a3fb987d6e2",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "de435aef221559ddf72732aafb0103a3ec6466891ade5e5d4b150d27bf82e308",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiAmenity.java": "0196af9d808086509066c4d7ff87099d66374427467564287c0bef28a6073498",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiInfo.java": "14b5cbd837a04f3a484b38655a7462d6dc7e23f7913250a4485dd4bc29b012af",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMediaGallery.java": "9b51571e353076c506d89b3c55aa7902df853c22a2cd66709bf8463ff83f7a26",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java": "3b9e15f660742e6723bd01f1bd2af9d9f5eb5c3c49d8b31adc09525216089643",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiReview.java": "be79c23e763c8fe5f371361210d48eeecbb71a552249f262ed9760d89c2ef1f4",
+    "sql/postgres/gld_srv_serve.pg.sql": "9ac89f07e39cea36ee70dcb4b0ae5f543c1afad23dce8a8e8bff1272ebb8beb8",
+    "tests/test_enr_poi_contract.py": "42cc3118a5be03c8886dba2da8e9a5cebf36bbf6b35bcf7cc3519a9823e0a5cc",
+    "tests/test_gld_srv_poi_contract.py": "c8fc239c6bb6595099cb22db547d959a95cfb769d2820a502a2992ce91150cd3",
+    "tests/test_initial_ddl_contract.py": "3b7b67e1a1e776c0c6d7e378dd5e3eed00b1ea810ecf706396c30bcec6d5d656",
+    "tests/test_poi_entity_contract.py": "2e8ac5605114aa6ced0893c927e1fab85b07053de30a29508d4233efb803ef1c",
+    "tests/test_srv_poi_serving_contract.py": "ec8d2bb3c1ffd4d12d429e9323e2fb1a098949b17fad62af7902c4547f9a5d0b"
+  },
+  "elapsed_seconds": 155
+}

@@ -24,6 +24,7 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 - `des` nhiều dòng cùng `poi_id`: giữ dòng `updated_at` lớn nhất khi max duy nhất và không có `updated_at` null. Có `updated_at` null hoặc nhiều dòng cùng max thì dừng, không chọn dòng.
 - `pl_name` hiện hành: `PL_VV_TRANS_SLV_TO_GLD_30M` (`plcadpy` đổi từ `PL_VV_TRANS_SLV_TO_GLD_30P`). `load_mode = RECOMPUTE`, `priority = 1`. Cạnh: `slv_poi_entity_non_enrich`, `slv_enr_poi_destination`, `slv_enr_poi_info_multi_lang`, `slv_3p_poi_rating`, `slv_3p_poi_review`, `slv_poi_media_info` → `gld_srv_poi_info`, `nb_name = NB_GLD_SRV_POI_INFO`. Không gắn `PL_VV_TRANS_SLV_TO_ENR_15M`.
 - `cover_id`, `cover_blob_url` (D-01): LEFT JOIN dòng `slv_poi_media_info` có `is_cover = true` cùng `poi_id`, cùng dòng `gld_srv_poi_media_gallery` chiếu. `is_cover` do `with_cover` của `NB_SLV_POI_MEDIA_INFO` tính; notebook gold không tính lại. Mọi nguồn. Không có dòng cover thì cả hai null, vẫn giữ một dòng `poi_id`. Hơn một dòng cover cho một `poi_id` thì dừng, không chọn dòng. Metric `cover_matched`. Không thuộc `required_inputs`.
+- `is_active` (D-1): `true` mọi dòng build trả. Dòng đã xoá mềm trước khi có cột (không còn trong build) giữ NULL. Lần chạy đầu sau khi thêm cột đổi `row_hash` mọi dòng sống (cập nhật toàn bộ một lần).
 
 ### 1.2. Field Mapping
 
@@ -53,6 +54,7 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 | is_verified | boolean | null | is_verified |
 | is_recommended | boolean | true khi lower(trim(source_name)) = 'partner'; null hoặc nguồn khác thì false | is_recommended |
 | is_bookable | boolean | null | is_bookable |
+| | boolean | true: hằng cho mọi dòng NB_GLD_SRV_POI_INFO ghi; không đọc nguồn, không theo deleted_at (D-1) | is_active |
 | slv_poi_entity_non_enrich.opening_hours_text | string | Google theo mục 1.3; partner theo mục 1.5 | operating_hours |
 | slv_poi_entity_non_enrich.holiday_exceptions | string | transform 1-1 | holiday_exceptions |
 | slv_3p_poi_rating.rating_overall | decimal(4,2) | transform 1-1 | rating_overall |

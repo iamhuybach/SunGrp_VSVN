@@ -65,5 +65,8 @@ public class SrvPoiAmenity {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name = "ingestion_ts")
+    private LocalDateTime ingestionTs;
 }
 

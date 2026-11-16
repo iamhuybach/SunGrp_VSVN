@@ -27,6 +27,7 @@ GOLD_TO_JAVA = {
     "STRING": "String", "BOOLEAN": "Boolean", "INT": "Integer", "BIGINT": "Long",
     "DOUBLE": "Double", "TIMESTAMP": "LocalDateTime",
 }
+PG_ONLY = {"ingestion_ts": ("timestamp without time zone", "LocalDateTime")}  # D-3: chỉ PostgreSQL, mọi bảng apps
 
 
 def _notebook(name: str) -> dict:
@@ -124,7 +125,10 @@ def test_gold_and_pg_columns_and_types_match():
     gold, pg = gold_tables(), pg_tables()
     assert set(gold) == set(pg)
     for name, spec in gold.items():
-        assert set(spec["cols"]) == set(pg[name]["cols"]), name
+        assert set(PG_ONLY).isdisjoint(spec["cols"]), name
+        for col, (pg_type, _java) in PG_ONLY.items():
+            assert pg[name]["cols"][col] == pg_type, f"{name}.{col}"
+        assert set(spec["cols"]) == set(pg[name]["cols"]) - set(PG_ONLY), name
         for col, gold_type in spec["cols"].items():
             expected = GOLD_TO_PG.get(gold_type)
             if expected is None:
@@ -141,7 +145,10 @@ def test_entities_match_gold_columns_types_and_keys():
     assert set(gold) == set(entities)
     for name, spec in gold.items():
         entity = entities[name]
-        assert set(entity["cols"]) == set(spec["cols"]), f"{name}: entity columns differ from gold"
+        assert set(PG_ONLY).isdisjoint(spec["cols"]), name
+        for col, (_pg_type, java_type) in PG_ONLY.items():
+            assert entity["cols"][col] == java_type, f"{name}.{col}"
+        assert set(entity["cols"]) - set(PG_ONLY) == set(spec["cols"]), f"{name}: entity columns differ from gold"
         for col, gold_type in spec["cols"].items():
             expected = GOLD_TO_JAVA.get(gold_type, "BigDecimal" if gold_type.startswith("DECIMAL(") else None)
             assert entity["cols"][col] == expected, f"{name}.{col}: {entity['cols'][col]} != {expected}"
@@ -208,9 +215,10 @@ def _info_spec() -> dict:
 
 def test_info_cover_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-6:-4] == ["srvcovermd", "srvcoverpy"]
-    assert ids[-4:-2] == ["poidestmd", "poidestpy"]
-    assert ids[-2:] == ["enrmergemd", "enrmergepy"]
+    assert ids[-8:-6] == ["srvcovermd", "srvcoverpy"]
+    assert ids[-6:-4] == ["poidestmd", "poidestpy"]
+    assert ids[-4:-2] == ["enrmergemd", "enrmergepy"]
+    assert ids[-2:] == ["srvactivemd", "srvactivepy"]
     patch = _cell_source("NB_CREATE_DDL.ipynb", "srvcoverpy")
     base = _literal(_cell_source("NB_CREATE_DDL.ipynb", "srvratepy"), "INFO_COLS")
     at = [name for name, _dtype in base].index("review_count") + 1
@@ -243,7 +251,7 @@ def test_info_cover_build_rule():
     assert 'F.col("blob_url").alias("cover_blob_url")' in code
     assert 'join(cover, "poi_id", "left")' in code
     assert "có hơn một cover" in code
-    for token in ("with_cover", "row_number", "is_active", "lh_vv_gold", "deleted"):
+    for token in ("with_cover", "row_number", "lh_vv_gold", "deleted"):
         assert token not in code
     spec = _info_spec()
     assert spec["pk"] == ("poi_id",) and spec["write_mode"] == "MERGE"
@@ -264,12 +272,14 @@ def test_info_cover_seed_and_init_ddl():
     init: dict = {}
     exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
     spec = next(s for s in init["TABLE_SPECS"] if s["fq"] == "lh_vv_gold.dbo.gld_srv_poi_info")
-    patch = _cell_source("NB_CREATE_DDL.ipynb", "poidestpy")
-    info = _literal(patch, "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
+    info = _literal(_cell_source("NB_CREATE_DDL.ipynb", "srvactivepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
     assert [(c[0], c[1]) for c in spec["cols"]] == info
     cover = _literal(_cell_source("NB_CREATE_DDL.ipynb", "srvcoverpy"), "INFO_COLS")
+    poidest_info = _literal(_cell_source("NB_CREATE_DDL.ipynb", "poidestpy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
     at = [name for name, _dtype in cover].index("destination_id") + 1
-    assert info == cover[:at] + [("destination_name", "STRING")] + cover[at:]
+    assert poidest_info == cover[:at] + [("destination_name", "STRING")] + cover[at:]
+    book = [name for name, _dtype in poidest_info].index("is_bookable") + 1
+    assert info == poidest_info[:book] + [("is_active", "BOOLEAN")] + poidest_info[book:]
     out = _literal(_cell_source("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"), "OUT_COLS")
     assert list(out) + list(TECH) == [c[0] for c in spec["cols"]]
 
@@ -290,8 +300,9 @@ def test_info_cover_mapping_and_pg_ddl():
 
 def test_destination_name_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-4:-2] == ["poidestmd", "poidestpy"]
-    assert ids[-2:] == ["enrmergemd", "enrmergepy"]
+    assert ids[-6:-4] == ["poidestmd", "poidestpy"]
+    assert ids[-4:-2] == ["enrmergemd", "enrmergepy"]
+    assert ids[-2:] == ["srvactivemd", "srvactivepy"]
     patch = _cell_source("NB_CREATE_DDL.ipynb", "poidestpy")
     tables = _literal(patch, "TABLE_COLS")
     new_cols = _literal(patch, "NEW_COLS")
@@ -320,6 +331,8 @@ def test_destination_name_patch_cell():
 def test_destination_name_and_review_source_across_layers():
     _require_service()
     tables = _literal(_cell_source("NB_CREATE_DDL.ipynb", "poidestpy"), "TABLE_COLS")
+    tables["lh_vv_gold.dbo.gld_srv_poi_info"] = _literal(
+        _cell_source("NB_CREATE_DDL.ipynb", "srvactivepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
     init: dict = {}
     exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
     for fq, cols in tables.items():
@@ -334,3 +347,48 @@ def test_destination_name_and_review_source_across_layers():
     rev = (ENTITY_DIR / "SrvPoiReview.java").read_text(encoding="utf-8")
     assert poi.index('@Column(name = "destination_id")') < poi.index('@Column(name = "destination_name")')
     assert rev.index('@Column(name = "author_name")') < rev.index('@Column(name = "source_name")')
+
+
+def test_pg_only_ingestion_ts_and_is_active_positions():
+    _require_service()
+    pg, entities = pg_tables(), entity_tables()
+    assert set(pg) == set(entities)
+    for name in pg:
+        pg_names = list(pg[name]["cols"])
+        entity_names = list(entities[name]["cols"])
+        assert pg_names[pg_names.index("deleted_at") + 1] == "ingestion_ts", name
+        assert entity_names[entity_names.index("deleted_at") + 1] == "ingestion_ts", name
+    info_pg = list(pg["srv_poi_info"]["cols"])
+    info_entity = list(entities["srv_poi_info"]["cols"])
+    assert info_pg[info_pg.index("is_bookable") + 1] == "is_active"
+    assert pg["srv_poi_info"]["cols"]["is_active"] == "boolean"
+    assert info_entity[info_entity.index("is_bookable") + 1] == "is_active"
+    assert entities["srv_poi_info"]["cols"]["is_active"] == "Boolean"
+    init: dict = {}
+    exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
+    spec = next(item for item in init["TABLE_SPECS"] if item["fq"] == "lh_vv_gold.dbo.gld_srv_poi_info")
+    gold_names = [col[0] for col in spec["cols"]]
+    assert gold_names[gold_names.index("is_bookable") + 1] == "is_active"
+    out = _literal(_cell_source("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"), "OUT_COLS")
+    assert out[out.index("is_bookable") + 1] == "is_active"
+
+
+def test_new_columns_stay_out_of_api():
+    _require_service()
+    banned = ("is_active", "isActive", "ingestion_ts", "ingestionTs")
+    java = SERVICE / "src" / "main" / "java" / "vn" / "visitvietnam" / "dataserving"
+    for folder in ("api", "service"):
+        for path in (java / folder).rglob("*"):
+            if path.is_file():
+                text = path.read_text(encoding="utf-8")
+                for token in banned:
+                    assert token not in text, f"{path}: {token}"
+    for path in (ROOT / "notebooks").glob("*.ipynb"):
+        assert "ingestion_ts" not in path.read_text(encoding="utf-8"), path
+    for path in (ROOT / "docs" / "context" / "api-mapping").glob("*.md"):
+        assert "ingestion_ts" not in path.read_text(encoding="utf-8"), path
+    poi_docs = ROOT / "docs" / "poi-serving-api"
+    if poi_docs.is_dir():
+        for path in poi_docs.rglob("*"):
+            if path.is_file():
+                assert "ingestion_ts" not in path.read_text(encoding="utf-8"), path
