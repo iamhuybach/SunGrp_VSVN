@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MAPPING_DIR = ROOT / "docs" / "context" / "api-mapping"
 DDL = ROOT / "sql" / "postgres" / "gld_srv_serve.pg.sql"
 FILES = ("compact", "gallery", "reviews", "features", "experiences", "practical_info")
+AUTH_HEADER_FILES = (*FILES, "amenities")
 PATH_POI_ID_FILES = ("gallery", "reviews", "experiences", "practical_info")
 REQUEST_SECTIONS = ("Request header", "Request param", "Request body")
 ENVELOPE_KEYS = {"success", "code", "message", "data", "meta", "errors"}
@@ -69,11 +70,17 @@ def test_only_path_poi_id_or_compact_body_ids_is_required(name):
     for heading, row in rows:
         field, required = row.get("Field", ""), row.get("Required", "")
         assert required in {"có", "không"}, f"{name}.md {heading} {field}: Required={required!r}"
-        if required == "có":
+        if required == "có" and (heading, field) != ("Request header", "Authorization"):
             assert name != "compact", f"{name}.md {heading} {field} must be Required = không"
             assert (heading, field) == ("Request param", "poi_id"), (
                 f"{name}.md {heading} {field} must be Required = không"
             )
+
+
+@pytest.mark.parametrize("name", AUTH_HEADER_FILES)
+def test_authorization_header_is_required(name):
+    headers = {row["Field"]: row for heading, row in _request_rows(name) if heading == "Request header"}
+    assert headers["Authorization"]["Required"] == "có"
 
 
 @pytest.mark.parametrize("name", PATH_POI_ID_FILES)

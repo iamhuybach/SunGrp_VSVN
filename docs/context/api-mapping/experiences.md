@@ -14,6 +14,7 @@
 |---|---|---|---|---|
 | 1 | Accept-Language | string | không | Dùng khi không có query `lang`. Thiếu cả hai thì `vi`. |
 | 2 | X-Request-Id | string | không | Ghi vào `meta.trace_id`. |
+| 3 | Authorization | string | có | `Bearer <token>`. Token khớp biến môi trường `POI_API_BEARER_TOKEN` của server. Thiếu header, scheme khác `Bearer`, hoặc token sai trả HTTP 401. |
 
 ## Request param
 
@@ -45,12 +46,14 @@
 | HTTP | Code | Description |
 |---|---|---|
 | 200 | null | Thành công, kể cả `items` rỗng. HTTP 404 không xảy ra. JSON hỏng không trả HTTP 500. |
+| 401 | ERR_UNAUTHORIZED | Thiếu `Authorization`, scheme khác `Bearer`, token sai, hoặc server chưa cấu hình token. Kiểm tra trước mọi mã khác. Message `Missing or invalid bearer token.` Header `WWW-Authenticate: Bearer`. |
 | 500 | INTERNAL_SERVER_ERROR | Lỗi không phân loại. |
 
 ## Sample request
 
 ```http
 GET /api/v1/pois/00000000-0000-0000-0000-000000000001/experiences?lang=vi HTTP/1.1
+Authorization: Bearer <token>
 X-Request-Id: 22222222-2222-2222-2222-222222222222
 ```
 

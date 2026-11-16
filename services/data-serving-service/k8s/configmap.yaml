@@ -1,0 +1,13 @@
+# Placeholder only. The deploy pipeline must supply the real POI_API_BEARER_TOKEN, preferably from a Kubernetes Secret
+# or secret manager under the same variable name. Never commit a real value here.
+# Keep the value empty: an empty token makes every /api/v1/pois call return HTTP 401 (fail closed).
+# A non-empty placeholder would become a working credential if nobody replaced it.
+# Consume with: envFrom: [{ configMapRef: { name: data-serving-service-config } }]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-serving-service-config
+  labels:
+    app.kubernetes.io/name: data-serving-service
+data:
+  POI_API_BEARER_TOKEN: ""

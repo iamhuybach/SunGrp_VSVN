@@ -15,6 +15,7 @@
 | 1 | Content-Type | string | không | Phải là `application/json`. Sai kiểu trả HTTP 415. |
 | 2 | Accept-Language | string | không | Dùng khi body không có `lang`. Thiếu cả hai thì `vi`. |
 | 3 | X-Request-Id | string | không | Ghi vào `meta.trace_id`. Thiếu thì server tạo UUID. |
+| 4 | Authorization | string | có | `Bearer <token>`. Token khớp biến môi trường `POI_API_BEARER_TOKEN` của server. Thiếu header, scheme khác `Bearer`, hoặc token sai trả HTTP 401. |
 
 ## Request param
 
@@ -61,6 +62,7 @@
 |---|---|---|
 | 200 | null | Truy vấn thành công. |
 | 400 | ERR_BAD_REQUEST | Body JSON hỏng hoặc thiếu. Message cố định `Malformed or missing request body.` Không echo nội dung body. |
+| 401 | ERR_UNAUTHORIZED | Thiếu `Authorization`, scheme khác `Bearer`, token sai, hoặc server chưa cấu hình token. Kiểm tra trước mọi mã khác. Message `Missing or invalid bearer token.` Header `WWW-Authenticate: Bearer`. |
 | 405 | không có | `GET /api/v1/pois/compact` không có mapping. |
 | 415 | không có | Content-Type không phải JSON. |
 | 422 | ERR_VALIDATION_FAILED | `ids` thiếu, rỗng, quá 20, hoặc phần tử blank. |
@@ -70,6 +72,7 @@
 
 ```http
 POST /api/v1/pois/compact HTTP/1.1
+Authorization: Bearer <token>
 Content-Type: application/json
 Accept-Language: vi
 X-Request-Id: 22222222-2222-2222-2222-222222222222

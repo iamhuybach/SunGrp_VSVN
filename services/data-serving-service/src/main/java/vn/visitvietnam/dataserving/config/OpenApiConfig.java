@@ -1,8 +1,12 @@
 package vn.visitvietnam.dataserving.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
@@ -22,6 +26,8 @@ import java.util.List;
 
 @Configuration(proxyBeanMethods = false)
 public class OpenApiConfig {
+
+    public static final String BEARER_AUTH = "bearerAuth";
 
     @Bean
     public GroupedOpenApi apiGroupedOpenApi() {
@@ -49,7 +55,12 @@ public class OpenApiConfig {
                         .license(new License()
                                 .name("Proprietary — Sun Group / Visit Vietnam")
                                 .identifier("LicenseRef-SunGroup-Proprietary")))
-                .servers(servers);
+                .servers(servers)
+                .components(new Components().addSecuritySchemes(BEARER_AUTH, new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .description("Send Authorization: Bearer <token>. Required for /api/v1/pois.")))
+                .addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH));
     }
 
     @Bean
@@ -80,8 +91,11 @@ public class OpenApiConfig {
 
         return openApi -> {
             if (openApi.getPaths() != null) {
-                openApi.getPaths().values().forEach(pathItem ->
+                openApi.getPaths().forEach((path, pathItem) ->
                         pathItem.readOperations().forEach(op -> {
+                            if (path.startsWith("/api/v1/pois")) {
+                                op.getResponses().put("401", unauthorizedResponse());
+                            }
                             op.getResponses().putIfAbsent("400", new ApiResponse()
                                     .description("Bad Request: Malformed input or parameter")
                                     .content(problemJson));
@@ -97,6 +111,26 @@ public class OpenApiConfig {
                         }));
             }
         };
+    }
+
+    private static ApiResponse unauthorizedResponse() {
+        Schema<?> meta = new ObjectSchema()
+                .addProperty("timestamp", new StringSchema())
+                .addProperty("trace_id", new StringSchema())
+                .addProperty("error_code", new StringSchema().example("ERR_UNAUTHORIZED"));
+        Schema<?> envelope = new ObjectSchema()
+                .addProperty("success", new Schema<Boolean>().type("boolean").example(false))
+                .addProperty("code", new Schema<Integer>().type("integer").example(401))
+                .addProperty("message", new StringSchema().example("Missing or invalid bearer token."))
+                .addProperty("data", new Schema<>().types(new LinkedHashSet<>(List.of("null"))))
+                .addProperty("meta", meta)
+                .addProperty("errors", new Schema<>().types(new LinkedHashSet<>(List.of("null"))));
+        return new ApiResponse()
+                .description("Unauthorized: missing or invalid bearer token")
+                .addHeaderObject("WWW-Authenticate", new Header()
+                        .description("Bearer challenge. The body never contains the token.")
+                        .schema(new StringSchema().example("Bearer")))
+                .content(new Content().addMediaType("application/json", new MediaType().schema(envelope)));
     }
 
     private static Schema<?> problemDetailSchema() {

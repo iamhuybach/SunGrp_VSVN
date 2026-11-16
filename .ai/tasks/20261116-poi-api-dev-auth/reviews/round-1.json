@@ -1,0 +1,32 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "API-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/api-mapping/compact.md": "689a2c9f735b857a9b096f1dd0c09fe6bc55e699d37fc98dde83f29e9e1cc19b",
+    "docs/context/api-mapping/experiences.md": "4637ce26444ae18ddbbe95ffe51dc47a2a344204ba519bdf5791696852ee070a",
+    "docs/context/api-mapping/features.md": "196c37a3014ab55aa7c941464770734e248e7e5364e1ba8b65fcaa354e2d5ead",
+    "docs/context/api-mapping/gallery.md": "d566a2431bb6e4f6ed3adc35e2096d11bb5a81da2a26317daec6b173c5470492",
+    "docs/context/api-mapping/reviews.md": "038d87af7ed2dae3dd2136ae76a006ff26808d0fc69f04edd4d033108d094ba6",
+    "services/data-serving-service/.env.example": "9285a2d26d53b5405bf527b6f1b661dcbfa7b7e239dda7cd7f37633c2785fb14",
+    "services/data-serving-service/AGENTS.md": "9771f884e81006ace89c83eca3f493612de75d377e88fe20af901457196f215e",
+    "services/data-serving-service/docker-compose.yml": "8e5ad3e75e655763fbd961646525439924881ac64579d874be9a56ccde08072e",
+    "services/data-serving-service/k8s/configmap.yaml": "3547aa7f302018699d4d05efe774131da134d2b6091bc0bf0a5d0d68add2c709",
+    "services/data-serving-service/pom.xml": "620a02a1df4387842eaf004a35ee7a70532b52db549956b98926126694031543",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/BearerTokenAuthenticationEntryPoint.java": "8d1e2183b65840a95eaf5567e1f4822568d07ac113bd3c44b0a688af15c7a98c",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/ApiBearerTokenProperties.java": "907cac2adc39d951aba5381e9f714a2db252b1511d229b285894ab0152290e90",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java": "10174c11ce5649a1a15642b1ce680ed2e0b19ff5f57e0dba0324a314b724c316",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/SecurityConfig.java": "74276303d117d930a332f0d0ccde21328df6d67b23cfc42dd0f6be15e629dd4e",
+    "services/data-serving-service/src/main/resources/application.yml": "e0b881969197ae6eb1292c67dadb5d108eda89b998bd3db8f304c36a93c8b9f3",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java": "aefe067ea44d4a54dc24f03caf264e840092135f84f81ad3b0a406f74068bdc0",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java": "b2aa1e8ac5274c9c877adaab19459dfd63cac45980e3b615dd805f9336049324",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/ApiBearerAuthTest.java": "f5fc143f7250a2cf56e41c167a17b5dc400ecde25e5d059e3a52e344771be931",
+    "services/data-serving-service/src/test/resources/application.yml": "45a9e0e6bfbd30e445d3bdd26035c4fe30ff896830f7112e4919037f87fe5501"
+  },
+  "elapsed_seconds": 246
+}

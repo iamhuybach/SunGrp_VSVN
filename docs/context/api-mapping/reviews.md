@@ -13,6 +13,7 @@
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
 | 1 | X-Request-Id | string | không | Ghi vào `meta.trace_id`. Thiếu thì server tạo UUID. |
+| 2 | Authorization | string | có | `Bearer <token>`. Token khớp biến môi trường `POI_API_BEARER_TOKEN` của server. Thiếu header, scheme khác `Bearer`, hoặc token sai trả HTTP 401. |
 
 ## Request param
 
@@ -57,6 +58,7 @@
 | HTTP | Code | Description |
 |---|---|---|
 | 200 | null | Thành công, kể cả POI không tồn tại. HTTP 404 không xảy ra. |
+| 401 | ERR_UNAUTHORIZED | Thiếu `Authorization`, scheme khác `Bearer`, token sai, hoặc server chưa cấu hình token. Kiểm tra trước mọi mã khác. Message `Missing or invalid bearer token.` Header `WWW-Authenticate: Bearer`. |
 | 422 | ERR_VALIDATION_FAILED | `page` hoặc `size` ngoài khoảng. |
 | 500 | INTERNAL_SERVER_ERROR | Lỗi không phân loại. |
 
@@ -64,6 +66,7 @@
 
 ```http
 GET /api/v1/pois/85c1a13a-9c11-a579-0a07-dfd8337596dd/reviews?page=0&size=1 HTTP/1.1
+Authorization: Bearer <token>
 X-Request-Id: 22222222-2222-2222-2222-222222222222
 ```
 

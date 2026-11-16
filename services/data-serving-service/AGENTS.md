@@ -12,21 +12,22 @@ Spring Boot read-only API over PostgreSQL schema `apps` (`srv_poi_info`, `srv_po
 - Every list endpoint is paginated (`size` ≤ 100). Filters go through `PoiSpecifications`; never concatenate request values into JPQL.
 - Responses use `ApiResponse` / `PageResponse`; errors go through `GlobalExceptionHandler`; `lang` resolves through `LanguageResolver`.
 - Do not log or return `email`, `phone`, or `author_name` beyond the fields a DTO already exposes. Test fixtures are synthetic.
+- `/api/v1/pois/**` requires `Authorization: Bearer <token>` equal to `POI_API_BEARER_TOKEN` (SHA-256 + constant-time compare, `config/SecurityConfig`). Missing or blank config returns 401 on every POI call; the app still starts. Other paths, including `/actuator/health`, `/v3/api-docs`, and `/swagger-ui.html`, stay anonymous. The 401 body is the `ApiResponse` envelope with `meta.error_code=ERR_UNAUTHORIZED`, written by `common/web/BearerTokenAuthenticationEntryPoint`. Never log or echo the token.
 
 ## Layout
 
-`src/main/java/vn/visitvietnam/dataserving/`: `api/` + `api/dto/`; `service/` + `service/util/`; `domain/entity/` + `domain/repository/`; `common/` envelope, exceptions, filters; `config/`. Tests mirror the tree. `@WebMvcTest` needs no Docker; `@SpringBootTest` uses `TestcontainersConfiguration` (`postgres:18-alpine`, init scripts `db/00_create_schema_apps.sql` then `gld_srv_serve.pg.sql` from `../../sql/postgres` via Maven test resources).
+`src/main/java/vn/visitvietnam/dataserving/`: `api/` + `api/dto/`; `service/` + `service/util/`; `domain/entity/` + `domain/repository/`; `common/` envelope, exceptions, filters; `config/`. Tests mirror the tree. `@WebMvcTest` needs no Docker; `@SpringBootTest` uses `TestcontainersConfiguration` (`postgres:18-alpine`, init scripts `db/00_create_schema_apps.sql` then `gld_srv_serve.pg.sql` from `../../sql/postgres` via Maven test resources). Tests use the fixed token in `src/test/resources/application.yml`; tests import `SecurityConfig` in `@WebMvcTest`.
 
 ## Commands
 
 - Tests: `mvnw.cmd -q -B test` (POSIX `./mvnw -q -B test`). Needs JDK 26 and a running Docker daemon.
 - Package: `mvnw.cmd -q -B package`. Image: `docker build -t data-serving-service .`
-- Local run: create `.env` next to `docker-compose.yml` with `POSTGRES_USER` and `POSTGRES_PASSWORD` (never commit it), then `docker compose up -d`. Service on `8080`, PostgreSQL on `${POSTGRES_PORT:-55432}`. Apply the DDL once: `psql -c "CREATE SCHEMA IF NOT EXISTS apps"` then `psql -v ON_ERROR_STOP=1 -f ../../sql/postgres/gld_srv_serve.pg.sql`.
+- Local run: copy `.env.example` to `.env` and fill `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POI_API_BEARER_TOKEN` (e.g. `python -c "import secrets; print(secrets.token_urlsafe(32))"`), then `docker compose up -d`. Service on `8080`, PostgreSQL on `${POSTGRES_PORT:-55432}`. Apply the DDL once: `psql -c "CREATE SCHEMA IF NOT EXISTS apps"` then `psql -v ON_ERROR_STOP=1 -f ../../sql/postgres/gld_srv_serve.pg.sql`.
 - Health: `GET /actuator/health`. OpenAPI: `/v3/api-docs`, `/swagger-ui.html`.
 
 ## Environment variables
 
-`POSTGRES__DP_POI__URL`, `POSTGRES__DP_POI__HOST`, `POSTGRES__DP_POI__PORT`, `POSTGRES__DP_POI__DBNAME`, `POSTGRES__DP_POI__SSLMODE`, `POSTGRES__DP_POI__USERNAME`, `POSTGRES__DP_POI__PASSWORD`, `HIKARI_MAX_POOL_SIZE`, `HIKARI_MIN_IDLE`, `SERVER_PORT`, `LOG_LEVEL`, `OPENAPI_GATEWAY_URL`. Compose: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`. Values live only in the environment or an ignored `.env`; never in the repository, never in a prompt or task artifact.
+`POSTGRES__DP_POI__URL`, `POSTGRES__DP_POI__HOST`, `POSTGRES__DP_POI__PORT`, `POSTGRES__DP_POI__DBNAME`, `POSTGRES__DP_POI__SSLMODE`, `POSTGRES__DP_POI__USERNAME`, `POSTGRES__DP_POI__PASSWORD`, `HIKARI_MAX_POOL_SIZE`, `HIKARI_MIN_IDLE`, `SERVER_PORT`, `LOG_LEVEL`, `OPENAPI_GATEWAY_URL`, `POI_API_BEARER_TOKEN`. Compose: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, `POI_API_BEARER_TOKEN`. Kubernetes: `k8s/configmap.yaml` carries an empty placeholder; the deploy pipeline injects the real value, preferably from a Secret. Provision the token to callers before deploying a build that enforces it. Values live only in the environment or an ignored `.env`; never in the repository, never in a prompt or task artifact.
 
 ## Local database for agents
 

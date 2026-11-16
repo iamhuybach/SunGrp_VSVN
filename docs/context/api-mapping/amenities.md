@@ -13,6 +13,7 @@
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
 | 1 | X-Request-Id | string | không | `RequestIdFilter` đọc header này, hoặc `X-Request-ID`, ghi vào `meta.trace_id`. Thiếu thì server tạo UUID. Endpoint này không đọc `Accept-Language`. |
+| 2 | Authorization | string | có | `Bearer <token>`. Token khớp biến môi trường `POI_API_BEARER_TOKEN` của server. Thiếu header, scheme khác `Bearer`, hoặc token sai trả HTTP 401. |
 
 ## Request param
 
@@ -48,11 +49,11 @@
 |---|---|---|
 | 200 | null | Truy vấn thành công. `meta.error_code` null. |
 | 400 | ERR_BAD_REQUEST | Handler map `MethodArgumentTypeMismatchException` và `IllegalArgumentException`. `errors` null. |
+| 401 | ERR_UNAUTHORIZED | Thiếu `Authorization`, scheme khác `Bearer`, token sai, hoặc server chưa cấu hình token. Kiểm tra trước mọi mã khác. Message `Missing or invalid bearer token.` Header `WWW-Authenticate: Bearer`. |
 | 404 | không có | Amenities không trả 404 khi thiếu `srv_poi_info`. |
 | 409 | STATE_CONFLICT | Handler map `IllegalStateException`. Message là message của exception. |
 | 422 | ERR_VALIDATION_FAILED | Handler map các exception validation. Message `Validation failed`. Method này không gắn `@Min` `@Max`. |
 | 500 | INTERNAL_SERVER_ERROR | Handler map `Exception` còn lại. Message `An unexpected error occurred. Please contact support with the trace ID.` |
-| 401 | không có | không có trong code |
 | 403 | không có | không có trong code |
 | 429 | không có | không có trong code |
 
@@ -60,6 +61,7 @@
 
 ```http
 GET /api/v1/pois/10b414f0-1089-8014-a0a1-612cda96cdc5/amenities HTTP/1.1
+Authorization: Bearer <token>
 X-Request-Id: 22222222-2222-2222-2222-222222222222
 ```
 

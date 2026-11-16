@@ -6,3 +6,9 @@ spring:
       hibernate:
         default_schema: apps
 
+app:
+  security:
+    poi-api:
+      # Fixed test-only token, not a secret. Tests never read .env.
+      bearer-token: test-only-poi-api-token-not-a-secret
+

@@ -1,0 +1,350 @@
+# Verification 2026-11-16 12:03:42 — FAIL
+Files (21): docs/context/api-mapping/amenities.md, docs/context/api-mapping/compact.md, docs/context/api-mapping/experiences.md, docs/context/api-mapping/features.md, docs/context/api-mapping/gallery.md, docs/context/api-mapping/practical_info.md, docs/context/api-mapping/reviews.md, services/data-serving-service/.env.example, services/data-serving-service/AGENTS.md, services/data-serving-service/docker-compose.yml, services/data-serving-service/k8s/configmap.yaml, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/BearerTokenAuthenticationEntryPoint.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/ApiBearerTokenProperties.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/SecurityConfig.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/ApiBearerAuthTest.java, services/data-serving-service/src/test/resources/application.yml
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: FAIL
+........................................................................ [ 23%]
+........................................................................ [ 46%]
+...........................................FFFFFF....................... [ 70%]
+........................................................................ [ 93%]
+....................                                                     [100%]
+================================== FAILURES ===================================
+_______ test_only_path_poi_id_or_compact_body_ids_is_required[compact] ________
+
+name = 'compact'
+
+    @pytest.mark.parametrize("name", FILES)
+    def test_only_path_poi_id_or_compact_body_ids_is_required(name):
+        rows = _request_rows(name)
+        assert rows, f"{name}.md has no request table"
+        for heading, row in rows:
+            field, required = row.get("Field", ""), row.get("Required", "")
+            assert required in {"có", "không"}, f"{name}.md {heading} {field}: Required={required!r}"
+            if required == "có":
+>               assert name != "compact", f"{name}.md {heading} {field} must be Required = không"
+E               AssertionError: compact.md Request header Authorization must be Required = không
+E               assert 'compact' != 'compact'
+
+tests\test_srv_poi_api_mapping_required.py:73: AssertionError
+_______ test_only_path_poi_id_or_compact_body_ids_is_required[gallery] ________
+
+name = 'gallery'
+
+    @pytest.mark.parametrize("name", FILES)
+    def test_only_path_poi_id_or_compact_body_ids_is_required(name):
+        rows = _request_rows(name)
+        assert rows, f"{name}.md has no request table"
+        for heading, row in rows:
+            field, required = row.get("Field", ""), row.get("Required", "")
+            assert required in {"có", "không"}, f"{name}.md {heading} {field}: Required={required!r}"
+            if required == "có":
+                assert name != "compact", f"{name}.md {heading} {field} must be Required = không"
+>               assert (heading, field) == ("Request param", "poi_id"), (
+                    f"{name}.md {heading} {field} must be Required = không"
+                )
+E               AssertionError: gallery.md Request header Authorization must be Required = không
+E               assert ('Request hea...uthorization') == ('Request param', 'poi_id')
+E                 
+E                 At index 0 diff: 'Request header' != 'Request param'
+E                 Use -v to get more diff
+
+tests\test_srv_poi_api_mapping_required.py:74: AssertionError
+_______ test_only_path_poi_id_or_compact_body_ids_is_required[reviews] ________
+
+name = 'reviews'
+
+    @pytest.mark.parametrize("name", FILES)
+    def test_only_path_poi_id_or_compact_body_ids_is_required(name):
+        rows = _request_rows(name)
+        assert rows, f"{name}.md has no request table"
+        for heading, row in rows:
+            field, required = row.get("Field", ""), row.get("Required", "")
+            assert required in {"có", "không"}, f"{name}.md {heading} {field}: Required={required!r}"
+            if required == "có":
+                assert name != "compact", f"{name}.md {heading} {field} must be Required = không"
+>               assert (heading, field) == ("Request param", "poi_id"), (
+                    f"{name}.md {heading} {field} must be Required = không"
+                )
+E               AssertionError: reviews.md Request header Authorization must be Required = không
+E               assert ('Request hea...uthorization') == ('Request param', 'poi_id')
+E                 
+E                 At index 0 diff: 'Request header' != 'Request param'
+E                 Use -v to get more diff
+
+tests\test_srv_poi_api_mapping_required.py:74: AssertionError
+_______ test_only_path_poi_id_or_compact_body_ids_is_required[features] _______
+
+name = 'features'
+
+    @pytest.mark.parametrize("name", FILES)
+    def test_only_path_poi_id_or_compact_body_ids_is_required(name):
+        rows = _request_rows(name)
+        assert rows, f"{name}.md has no request table"
+        for heading, row in rows:
+            field, required = row.get("Field", ""), row.get("Required", "")
+            assert required in {"có", "không"}, f"{name}.md {heading} {field}: Required={required!r}"
+            if required == "có":
+                assert name != "compact", f"{name}.md {heading} {field} must be Required = không"
+>               assert (heading, field) == ("Request param", "poi_id"), (
+                    f"{name}.md {heading} {field} must be Required = không"
+                )
+E               AssertionError: features.md Request header Authorization must be Required = không
+E               assert ('Request hea...uthorization') == ('Request param', 'poi_id')
+E                 
+E                 At index 0 diff: 'Request header' != 'Request param'
+E                 Use -v to get more diff
+
+tests\test_srv_poi_api_mapping_required.py:74: AssertionError
+_____ test_only_path_poi_id_or_compact_body_ids_is_required[experiences] ______
+
+name = 'experiences'
+
+    @pytest.mark.parametrize("name", FILES)
+    def test_only_path_poi_id_or_compact_body_ids_is_required(name):
+        rows = _request_rows(name)
+        assert rows, f"{name}.md has no request table"
+        for heading, row in rows:
+            field, required = row.get("Field", ""), row.get("Required", "")
+            assert required in {"có", "không"}, f"{name}.md {heading} {field}: Required={required!r}"
+            if required == "có":
+                assert name != "compact", f"{name}.md {heading} {field} must be Required = không"
+>               assert (heading, field) == ("Request param", "poi_id"), (
+                    f"{name}.md {heading} {field} must be Required = không"
+                )
+E               AssertionError: experiences.md Request header Authorization must be Required = không
+E               assert ('Request hea...uthorization') == ('Request param', 'poi_id')
+E                 
+E                 At index 0 diff: 'Request header' != 'Request param'
+E                 Use -v to get more diff
+
+tests\test_srv_poi_api_mapping_required.py:74: AssertionError
+____ test_only_path_poi_id_or_compact_body_ids_is_required[practical_info] ____
+
+name = 'practical_info'
+
+    @pytest.mark.parametrize("name", FILES)
+    def test_only_path_poi_id_or_compact_body_ids_is_required(name):
+        rows = _request_rows(name)
+        assert rows, f"{name}.md has no request table"
+        for heading, row in rows:
+            field, required = row.get("Field", ""), row.get("Required", "")
+            assert required in {"có", "không"}, f"{name}.md {heading} {field}: Required={required!r}"
+            if required == "có":
+                assert name != "compact", f"{name}.md {heading} {field} must be Required = không"
+>               assert (heading, field) == ("Request param", "poi_id"), (
+                    f"{name}.md {heading} {field} must be Required = không"
+                )
+E               AssertionError: practical_info.md Request header Authorization must be Required = không
+E               assert ('Request hea...uthorization') == ('Request param', 'poi_id')
+E                 
+E                 At index 0 diff: 'Request header' != 'Request param'
+E                 Use -v to get more diff
+
+tests\test_srv_poi_api_mapping_required.py:74: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_srv_poi_api_mapping_required.py::test_only_path_poi_id_or_compact_body_ids_is_required[compact]
+FAILED tests/test_srv_poi_api_mapping_required.py::test_only_path_poi_id_or_compact_body_ids_is_required[gallery]
+FAILED tests/test_srv_poi_api_mapping_required.py::test_only_path_poi_id_or_compact_body_ids_is_required[reviews]
+FAILED tests/test_srv_poi_api_mapping_required.py::test_only_path_poi_id_or_compact_body_ids_is_required[features]
+FAILED tests/test_srv_poi_api_mapping_required.py::test_only_path_poi_id_or_compact_body_ids_is_required[experiences]
+FAILED tests/test_srv_poi_api_mapping_required.py::test_only_path_poi_id_or_compact_body_ids_is_required[practical_info]
+6 failed, 302 passed in 15.75s
+
+## maven: PASS
+2026-11-16T12:03:32.052+07:00  INFO 25052 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 79 ms. Found 5 JPA repository interfaces.
+2026-11-16T12:03:32.374+07:00  INFO 25052 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-16T12:03:32.749+07:00  INFO 25052 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: 0bdd1853113a211e101d4b53ad2907b4aa48bad927034582f9346b0f2f35fba6
+2026-11-16T12:03:35.413+07:00  INFO 25052 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT3.0390394S
+2026-11-16T12:03:35.413+07:00  INFO 25052 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:50468/test?loggerLevel=OFF)
+2026-11-16T12:03:35.552+07:00  INFO 25052 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-16T12:03:35.603+07:00  INFO 25052 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-16T12:03:35.605+07:00  INFO 25052 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-16T12:03:35.649+07:00  INFO 25052 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@6985633a
+2026-11-16T12:03:35.649+07:00  INFO 25052 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-16T12:03:35.672+07:00  INFO 25052 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:50468/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-16T12:03:35.930+07:00  INFO 25052 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-16T12:03:35.934+07:00  INFO 25052 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-16T12:03:36.433+07:00  WARN 25052 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-16T12:03:36.878+07:00  INFO 25052 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-16T12:03:36.911+07:00  INFO 25052 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 6.759 seconds (process running for 63.707)
+2026-11-16T12:03:36.912+07:00  WARN 25052 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-16T12:03:36.912+07:00  WARN 25052 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-11-16T12:03:39.046+07:00  WARN 25052 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=cost_vnd reason=INVALID_JSON
+2026-11-16T12:03:39.046+07:00  WARN 25052 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=operating_hours reason=BAD_ELEMENT
+2026-11-16T12:03:39.201+07:00  WARN 25052 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=operating_hours reason=INVALID_JSON
+2026-11-16T12:03:39.211+07:00  WARN 25052 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=holiday_exceptions reason=INVALID_JSON
+2026-11-16T12:03:39.212+07:00  WARN 25052 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=holiday_exceptions reason=INVALID_JSON
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-16 12:06:18 — PASS
+Files (22): docs/context/api-mapping/amenities.md, docs/context/api-mapping/compact.md, docs/context/api-mapping/experiences.md, docs/context/api-mapping/features.md, docs/context/api-mapping/gallery.md, docs/context/api-mapping/practical_info.md, docs/context/api-mapping/reviews.md, services/data-serving-service/.env.example, services/data-serving-service/AGENTS.md, services/data-serving-service/docker-compose.yml, services/data-serving-service/k8s/configmap.yaml, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/BearerTokenAuthenticationEntryPoint.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/ApiBearerTokenProperties.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/SecurityConfig.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/ApiBearerAuthTest.java, services/data-serving-service/src/test/resources/application.yml, tests/test_srv_poi_api_mapping_required.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 22%]
+........................................................................ [ 45%]
+........................................................................ [ 68%]
+........................................................................ [ 91%]
+...........................                                              [100%]
+315 passed in 17.81s
+
+## maven: PASS
+2026-11-16T12:06:08.348+07:00  INFO 14744 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 92 ms. Found 5 JPA repository interfaces.
+2026-11-16T12:06:08.646+07:00  INFO 14744 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-16T12:06:09.151+07:00  INFO 14744 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: 769c829c0c5e4f001676b24285f52456418b6d34636b96397b4c10693a44f91e
+2026-11-16T12:06:11.690+07:00  INFO 14744 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT3.0442104S
+2026-11-16T12:06:11.691+07:00  INFO 14744 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:54880/test?loggerLevel=OFF)
+2026-11-16T12:06:11.802+07:00  INFO 14744 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-16T12:06:11.842+07:00  INFO 14744 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-16T12:06:11.845+07:00  INFO 14744 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-16T12:06:11.888+07:00  INFO 14744 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@38692fbe
+2026-11-16T12:06:11.889+07:00  INFO 14744 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-16T12:06:11.905+07:00  INFO 14744 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:54880/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-16T12:06:12.139+07:00  INFO 14744 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-16T12:06:12.141+07:00  INFO 14744 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-16T12:06:12.364+07:00  WARN 14744 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-16T12:06:12.750+07:00  INFO 14744 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-16T12:06:12.772+07:00  INFO 14744 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 5.714 seconds (process running for 49.646)
+2026-11-16T12:06:12.775+07:00  WARN 14744 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-16T12:06:12.775+07:00  WARN 14744 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-11-16T12:06:15.204+07:00  WARN 14744 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=cost_vnd reason=INVALID_JSON
+2026-11-16T12:06:15.204+07:00  WARN 14744 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=operating_hours reason=BAD_ELEMENT
+2026-11-16T12:06:15.330+07:00  WARN 14744 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=operating_hours reason=INVALID_JSON
+2026-11-16T12:06:15.330+07:00  WARN 14744 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=holiday_exceptions reason=INVALID_JSON
+2026-11-16T12:06:15.330+07:00  WARN 14744 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=holiday_exceptions reason=INVALID_JSON
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+
+# Verification 2026-11-16 12:15:37 — PASS
+Files (23): docs/context/api-mapping/amenities.md, docs/context/api-mapping/compact.md, docs/context/api-mapping/experiences.md, docs/context/api-mapping/features.md, docs/context/api-mapping/gallery.md, docs/context/api-mapping/practical_info.md, docs/context/api-mapping/reviews.md, services/data-serving-service/.env.example, services/data-serving-service/AGENTS.md, services/data-serving-service/docker-compose.yml, services/data-serving-service/k8s/configmap.yaml, services/data-serving-service/pom.xml, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/BearerTokenAuthenticationEntryPoint.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/ApiBearerTokenProperties.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/OpenApiConfig.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/config/SecurityConfig.java, services/data-serving-service/src/main/resources/application.yml, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/DataServingApplicationTests.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/ApiBearerAuthTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/OpenApiConfigTest.java, services/data-serving-service/src/test/resources/application.yml, tests/test_srv_poi_api_mapping_required.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 22%]
+........................................................................ [ 45%]
+........................................................................ [ 68%]
+........................................................................ [ 91%]
+...........................                                              [100%]
+315 passed in 12.91s
+
+## maven: PASS
+2026-11-16T12:15:27.508+07:00  INFO 19816 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 73 ms. Found 5 JPA repository interfaces.
+2026-11-16T12:15:27.879+07:00  INFO 19816 --- [           main] tc.postgres:18-alpine                    : Creating container for image: postgres:18-alpine
+2026-11-16T12:15:28.532+07:00  INFO 19816 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine is starting: d28f816792b41f2e69bf5a17b71c32bff3095475bd42c0df52d51ba692d18caa
+2026-11-16T12:15:31.265+07:00  INFO 19816 --- [           main] tc.postgres:18-alpine                    : Container postgres:18-alpine started in PT3.3859303S
+2026-11-16T12:15:31.266+07:00  INFO 19816 --- [           main] tc.postgres:18-alpine                    : Container is started (JDBC URL: jdbc:postgresql://localhost:53016/test?loggerLevel=OFF)
+2026-11-16T12:15:31.376+07:00  INFO 19816 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-16T12:15:31.432+07:00  INFO 19816 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-16T12:15:31.432+07:00  INFO 19816 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-16T12:15:31.466+07:00  INFO 19816 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@a3d1237
+2026-11-16T12:15:31.466+07:00  INFO 19816 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-16T12:15:31.486+07:00  INFO 19816 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:53016/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-16T12:15:31.697+07:00  INFO 19816 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-16T12:15:31.701+07:00  INFO 19816 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-16T12:15:31.961+07:00  WARN 19816 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-16T12:15:32.368+07:00  INFO 19816 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-16T12:15:32.383+07:00  INFO 19816 --- [           main] v.v.d.d.r.PoiRepositoryIntegrationTest   : Started PoiRepositoryIntegrationTest in 6.173 seconds (process running for 42.907)
+2026-11-16T12:15:32.391+07:00  WARN 19816 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-16T12:15:32.391+07:00  WARN 19816 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-11-16T12:15:34.403+07:00  WARN 19816 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=cost_vnd reason=INVALID_JSON
+2026-11-16T12:15:34.405+07:00  WARN 19816 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=operating_hours reason=BAD_ELEMENT
+2026-11-16T12:15:34.522+07:00  WARN 19816 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=operating_hours reason=INVALID_JSON
+2026-11-16T12:15:34.525+07:00  WARN 19816 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=holiday_exceptions reason=INVALID_JSON
+2026-11-16T12:15:34.525+07:00  WARN 19816 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=holiday_exceptions reason=INVALID_JSON
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+

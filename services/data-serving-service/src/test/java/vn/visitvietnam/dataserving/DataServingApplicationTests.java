@@ -4,10 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -27,6 +31,12 @@ class DataServingApplicationTests {
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
+
+	@Autowired
+	private ApplicationContext context;
+
+	@Value("${app.security.poi-api.bearer-token}")
+	private String bearerToken;
 
 	@Test
 	void contextLoads() {
@@ -84,5 +94,35 @@ class DataServingApplicationTests {
 			);
 			assertThat(count).as("Table apps." + table + " should exist").isEqualTo(1);
 		}
+	}
+
+	@Test
+	void poiEndpointWithoutTokenReturns401Envelope() throws Exception {
+		mvc.perform(get("/api/v1/pois/no-such-poi/amenities"))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.meta.error_code").value("ERR_UNAUTHORIZED"));
+	}
+
+	@Test
+	void poiEndpointWithTokenReturns200() throws Exception {
+		mvc.perform(get("/api/v1/pois/no-such-poi/amenities")
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data").isEmpty());
+	}
+
+	@Test
+	void openApiDocsDeclareBearerAuthAndStayOpen() throws Exception {
+		mvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.components.securitySchemes.bearerAuth.scheme").value("bearer"))
+				.andExpect(jsonPath("$.paths['/api/v1/pois/{poi_id}/amenities'].get.responses['401'].content['application/json']").exists())
+				.andExpect(jsonPath("$.paths['/api/v1/pois/{poi_id}/amenities'].get.responses['401'].content['application/problem+json']").doesNotExist())
+				.andExpect(jsonPath("$.paths['/api/v1/pois/{poi_id}/amenities'].get.responses['401'].headers['WWW-Authenticate']").exists());
+	}
+
+	@Test
+	void noDefaultUserDetailsServiceIsCreated() {
+		assertThat(context.getBeanNamesForType(UserDetailsService.class)).isEmpty();
 	}
 }

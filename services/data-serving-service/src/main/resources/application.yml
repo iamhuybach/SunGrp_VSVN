@@ -59,6 +59,12 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
+app:
+  security:
+    poi-api:
+      # Shared secret for /api/v1/pois. Empty means every POI call returns 401. Never commit a value.
+      bearer-token: ${POI_API_BEARER_TOKEN:}
+
 logging:
   level:
     vn.visitvietnam.dataserving: ${LOG_LEVEL:INFO}
