@@ -1,0 +1,56 @@
+schema_version: 1
+task:
+  id: 20261117-operator-guide-silver-lineage
+  title: Refresh the operator guide to the current model and add silver lineage
+  status: user_decision
+  owner: user
+  created_at: '2026-11-17'
+  updated_at: '2026-11-17'
+classification:
+  complexity: low
+  risk_level: low
+  architecture_required: false
+  evidence_required: false
+  runtime_required: false
+  signals: []
+scope:
+  systems: []
+  files:
+  - docs/context/03_OPERATOR_GUIDE.md
+review_plan:
+  required_reviewers: []
+  round: 0
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: ''
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: ''
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: not_required
+  local_verification: pass
+  specialist_review: not_required
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 0
+  review: 0
+  architecture: 0
+  runtime_failure: 0
+open_findings: []

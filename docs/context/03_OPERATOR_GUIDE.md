@@ -232,13 +232,15 @@ Event bị bỏ qua không ghi vào bảng này. Context §9 nói chúng chỉ �
 
 ## 2. Data lineage
 
-Mỗi bảng gold một hình. Hộp trái là bảng nguồn, hộp phải là bảng đích. Mũi tên đi ngang, không ghi kiểu join trên hình. Bảng `enr` đứng trước bảng `dbo`.
+Mỗi bảng gold và mỗi bảng silver tính lại có một hình. Bảng L1 dùng một hình cho mỗi bảng bronze. Hộp trái là bảng nguồn, hộp phải là bảng đích. Mũi tên đi ngang, không ghi kiểu join trên hình. Trong gold, bảng `enr` đứng trước bảng `dbo`. Silver tính lại đứng sau gold. Silver L1 đứng cuối mục này.
 
 ### 2.1 `gld_enr_poi_info`
 
-MERGE theo `poi_id`.
+MERGE theo `poi_id`. Kiểu join ở cell `36415d3b`, hàm `build`, notebook `NB_ENR_POI_INFO`.
 
 [SỬA 04/11] Không còn `time_to_spend`, `best_time`, `cost_vnd`; `cost` giữ nguyên. Nguồn không đổi.
+
+Cạnh `slv_3p_poi_opening_hours` → `gld_enr_poi_info` trong cell `init_seed_ctrl` có `is_active = 0`. `NodeSpec` không có input này, nên hình không có cạnh đó.
 
 [SỬA 12/11] Node tính lại toàn bộ spine. `ctrl_log_table_run` ghi `inserted_rows`, `updated_rows`, `deactivated_rows`. Lần chạy lại khi nguồn không đổi là 0/0/0 và `trg_version` không đổi. Người đọc lọc `deleted_at IS NULL`. `review_poi_not_in_entity` đếm mọi `poi_id` của review không có trên spine.
 
@@ -266,7 +268,7 @@ MERGE theo `poi_id`.
 
 ### 2.2 `gld_enr_poi_review`
 
-MERGE theo `review_id`.
+MERGE theo `review_id`. Kiểu join ở cell `04339a06`, hàm `build`, notebook `NB_ENR_POI_REVIEW`.
 
 [SỬA 04/11] Luồng đang tắt: mọi cạnh tới `gld_enr_poi_review` có `is_active = 0`, `NB_ENR_POI_REVIEW` không chạy. Hình dưới là lineage khi cạnh bật.
 
@@ -284,7 +286,7 @@ MERGE theo `review_id`.
 
 ### 2.3 `gld_srv_poi_multi_lang`
 
-Ghi bằng `MERGE`.
+Ghi bằng `MERGE`. Kiểu join ở cell `srvmlbuild`, hàm `build`, notebook `NB_GLD_SRV_POI_MULTI_LANG`.
 
 | Nguồn | Kiểu join |
 |---|---|
@@ -309,6 +311,9 @@ Ghi bằng `MERGE`.
 | `slv_enr_poi_info_multi_lang` | `left_semi` theo `poi_id` để lọc dòng google. Không lấy cột văn bản |
 | `slv_3p_poi_rating` | `left_semi` với `poi_id` google, rồi `left` join |
 | `slv_3p_poi_review` | `left_semi` với `poi_id` google, `groupBy` đếm, rồi `left` join |
+| `slv_poi_media_info` | `left_semi` với spine theo `poi_id`, lọc `is_cover`, rồi `left` join |
+
+Kiểu join ở cell `srvinfobuild`, hàm `build` và `_cover`, notebook `NB_GLD_SRV_POI_INFO`.
 
 <table>
 <tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_entity_non_enrich</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_info</code></td></tr>
@@ -316,11 +321,16 @@ Ghi bằng `MERGE`.
 <tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_enr_poi_info_multi_lang</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_info</code></td></tr>
 <tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_rating</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_info</code></td></tr>
 <tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_review</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_info</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_media_info</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_info</code></td></tr>
 </table>
 
 ### 2.5 `gld_srv_poi_media_gallery`
 
-Ghi bằng `MERGE`. Không join. Đọc một bảng rồi `select`.
+Ghi bằng `MERGE`. Không join. Đọc một bảng rồi `select`. Cell `srvgallerybuild`, hàm `build`, notebook `NB_GLD_SRV_POI_MEDIA_GALLERY`.
+
+| Nguồn | Kiểu join |
+|---|---|
+| `slv_poi_media_info` | không join |
 
 <table>
 <tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_media_info</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_media_gallery</code></td></tr>
@@ -328,7 +338,11 @@ Ghi bằng `MERGE`. Không join. Đọc một bảng rồi `select`.
 
 ### 2.6 `gld_srv_poi_amenity`
 
-Ghi bằng `MERGE`. Không join. Đọc một bảng rồi `select`.
+Ghi bằng `MERGE`. Không join. Đọc một bảng rồi `select`. Cell `srvamenitybuild`, hàm `build`, notebook `NB_GLD_SRV_POI_AMENITY`.
+
+| Nguồn | Kiểu join |
+|---|---|
+| `slv_poi_amenity` | không join |
 
 <table>
 <tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_amenity</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_amenity</code></td></tr>
@@ -336,7 +350,7 @@ Ghi bằng `MERGE`. Không join. Đọc một bảng rồi `select`.
 
 ### 2.7 `gld_srv_poi_review`
 
-Ghi bằng `MERGE`.
+Ghi bằng `MERGE`. Kiểu join ở cell `srvrvbuild`, hàm `build`, notebook `NB_GLD_SRV_POI_REVIEW`.
 
 [SỬA 04/11] Không đọc `slv_enr_poi_review_multi_lang`. Không có `lang`; `title` NULL; `review_text` = `text`.
 
@@ -350,7 +364,212 @@ Ghi bằng `MERGE`.
 <tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_rating</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>gld_srv_poi_review</code></td></tr>
 </table>
 
+### 2.8 Bảng gold và silver đang ghi
+
+Grain của bảng node là `pk` trong `NodeSpec`. Grain của bảng L1 là `key` trong seed registry. `write_mode` của node là `MERGE`. Bảng L1 ghi bằng `MERGE` qua `build_merge_sql`, với `load_mode` ở cell `init_seed_ctrl`.
+
+| Bảng | Tầng | Grain | Ghi | Notebook |
+|---|---|---|---|---|
+| `gld_enr_poi_info` | gold `enr` | `poi_id` | `MERGE` | `NB_ENR_POI_INFO` |
+| `gld_enr_poi_review` | gold `enr` | `review_id` | `MERGE`; cạnh `is_active = 0` | `NB_ENR_POI_REVIEW` |
+| `gld_srv_poi_multi_lang` | gold `dbo` | (`poi_id`, `lang`) | `MERGE` | `NB_GLD_SRV_POI_MULTI_LANG` |
+| `gld_srv_poi_info` | gold `dbo` | `poi_id` | `MERGE` | `NB_GLD_SRV_POI_INFO` |
+| `gld_srv_poi_media_gallery` | gold `dbo` | (`media_id`, `poi_id`) | `MERGE` | `NB_GLD_SRV_POI_MEDIA_GALLERY` |
+| `gld_srv_poi_amenity` | gold `dbo` | (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`) | `MERGE` | `NB_GLD_SRV_POI_AMENITY` |
+| `gld_srv_poi_review` | gold `dbo` | `review_id` | `MERGE` | `NB_GLD_SRV_POI_REVIEW` |
+| `slv_poi_entity_non_enrich` | silver | `poi_id` | `MERGE` | `NB_SLV_POI_ENTITY_NON_ENRICH` |
+| `slv_poi_amenity` | silver | (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`) | `MERGE` | `NB_SLV_POI_AMENITY` |
+| `slv_poi_media_info` | silver | (`media_id`, `poi_id`) | `MERGE` | `NB_SLV_POI_MEDIA_INFO` |
+| `ref_dictionary_place_type` | silver ref | (`source_name`, `place_type`) | `MERGE` seed | `NB_SETUP_INITIAL_DDL` |
+| `ref_dictionary_amenities` | silver ref | (`source_name`, `business_sector`, `amenity_group`, `amenity_raw`, `amenity`) | `MERGE` seed | `NB_SETUP_INITIAL_DDL` |
+| `slv_enr_poi_review_multi_lang` | silver | MISSING | không có cạnh ghi | MISSING |
+
+`ref_dictionary_place_type` và `ref_dictionary_amenities` nằm trong `TABLE_SPECS`, cell `init_tables`. Khoá seed ở cell `init_plan`. Ghi ở cell `init_seed_write`. Không có cạnh đọc bronze, nên không có hình riêng; hai bảng là nguồn của mục 2.9 và 2.10.
+
+`slv_enr_poi_review_multi_lang` có DDL ở cell `init_tables`. `PIPELINE_CONFIG_ROWS` trong cell `init_seed_ctrl` không có dòng nào ghi bảng này. Grain không có `NodeSpec.pk` và không có `key` trong `init_cfg_enr`.
+
+Năm tên trong `docs/context/01_DATA_MODEL.md` §6 không có trong `TABLE_SPECS` và không có notebook node: `slv_poi_source_map`, `slv_poi`, `slv_poi_address`, `slv_poi_localization`, `slv_poi_destination`. Không có hình.
+
 `lh_vv_gold.enr.gld_enr_poi_coordinate` không có trong `TABLE_SPECS` hiện hành và không có notebook node, nên không có hình.
+
+### 2.9 `slv_poi_entity_non_enrich`
+
+`write_mode` `MERGE`, grain `poi_id`. Pipeline `PL_VV_TRANS_SLV_TO_ENR_15M`. Cạnh trong cell `init_seed_ctrl` để `nb_name` trống; notebook là `NB_SLV_POI_ENTITY_NON_ENRICH` theo cell `b3673b19`. Kiểu join ở cell `b1entitybuild`, hàm `build`, `_google`, `_partner`.
+
+Nhánh google lấy `slv_3p_poi` làm dòng gốc, rồi `unionByName` với nhánh partner. Nhánh partner lấy `slv_pn_business_service_i18ns` còn sống, `locale` = `vi`, làm dòng gốc.
+
+| Nguồn | Kiểu join |
+|---|---|
+| `slv_3p_poi` | Dòng gốc nhánh google, rồi `unionByName` với nhánh partner |
+| `slv_3p_poi_address` | `left` join theo `poi_id`, chỉ nhánh google |
+| `slv_3p_poi_contact` | `left` join theo `poi_id`, chỉ nhánh google |
+| `slv_3p_poi_opening_hours` | `left` join theo `poi_id`, chỉ nhánh google |
+| `ref_dictionary_place_type` | `inner` join để tra cứu, rồi `left` join; nhánh partner `left` join sau `groupBy` |
+| `slv_pn_business_service_i18ns` | Dòng gốc nhánh partner, rồi `unionByName` |
+| `slv_pn_business_services` | `left` join theo `id` = `business_service_id`, chỉ nhánh partner |
+
+<table>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_entity_non_enrich</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_address</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_entity_non_enrich</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_contact</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_entity_non_enrich</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_opening_hours</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_entity_non_enrich</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>ref_dictionary_place_type</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_entity_non_enrich</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_business_service_i18ns</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_entity_non_enrich</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_business_services</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_entity_non_enrich</code></td></tr>
+</table>
+
+### 2.10 `slv_poi_amenity`
+
+`write_mode` `MERGE`, grain (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`). Pipeline `PL_VV_TRANS_SLV_TO_ENR_15M`. `nb_name` trống; notebook là `NB_SLV_POI_AMENITY` theo cell `b3673b19`. Kiểu join ở cell `d1amenbuild`, hàm `build`.
+
+| Nguồn | Kiểu join |
+|---|---|
+| `slv_3p_poi_amenity` | Dòng gốc nhánh cờ, rồi `unionByName` với nhánh types |
+| `slv_poi_entity_non_enrich` | `inner` join theo `poi_id` cho nhánh cờ; nhánh types lấy từ entity rồi `unionByName` |
+| `ref_dictionary_amenities` | `inner` join điều kiện đã khớp |
+
+<table>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_amenity</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_amenity</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_entity_non_enrich</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_amenity</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>ref_dictionary_amenities</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_amenity</code></td></tr>
+</table>
+
+### 2.11 `slv_poi_media_info`
+
+`write_mode` `MERGE`, grain (`media_id`, `poi_id`). Pipeline `PL_VV_TRANS_SLV_TO_GLD_30M`, `nb_name` = `NB_SLV_POI_MEDIA_INFO`, cell `init_seed_ctrl`. Kiểu join ở cell `slvmediabuild`, hàm `build`, `google_media`, `partner_media`.
+
+| Nguồn | Kiểu join |
+|---|---|
+| `slv_3p_poi_media` | Dòng gốc nhánh google, rồi `unionByName` |
+| `slv_pn_business_service_i18ns` | Dòng gốc nhánh partner (`locale` = `vi`), rồi `unionByName` |
+| `slv_pn_business_services` | `left` join theo `id` = `business_service_id`, chỉ nhánh partner |
+
+<table>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_media</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_media_info</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_business_service_i18ns</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_media_info</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_business_services</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_poi_media_info</code></td></tr>
+</table>
+
+### 2.12 Silver L1
+
+Mỗi đích một cạnh từ đúng một bảng bronze. Không join. Cạnh và `load_mode` ở cell `init_seed_ctrl`, pipeline `PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00`. Khoá ở cell registry của nguồn. Ghi `MERGE` qua `build_merge_sql`.
+
+#### 2.12.1 Partner
+
+Nguồn `lh_vv_bronze.dbo.partner_raw_data`. `load_mode` `CDC`. `source_table` là bảng Postgres. Notebook `NB_EXTRACT_PARTNER_CDC_BRZ_TO_SLV`, cell `c237e0de` hàm `build_merge_sql`, cell `2a32b2a0` hàm `run_extract`. Khoá ở cell `init_cfg_partner`.
+
+| Đích | source_table | Khoá | Kiểu join |
+|---|---|---|---|
+| `slv_pn_products` | `products` | `id` | không join |
+| `slv_pn_product_translations` | `product_translations` | `id` | không join |
+| `slv_pn_product_attributes` | `product_attributes` | `id` | không join |
+| `slv_pn_product_attribute_translations` | `product_attribute_translations` | `id` | không join |
+| `slv_pn_product_attribute_values` | `product_attribute_values` | `id` | không join |
+| `slv_pn_product_attribute_value_translations` | `product_attribute_value_translations` | `id` | không join |
+| `slv_pn_product_variants` | `product_variants` | `id` | không join |
+| `slv_pn_product_variant_translations` | `product_variant_translations` | `id` | không join |
+| `slv_pn_product_business_service_relation` | `product_business_service_relation` | `id` | không join |
+| `slv_pn_product_posts` | `product_posts` | `id` | không join |
+| `slv_pn_product_post_translations` | `product_post_translations` | `id` | không join |
+| `slv_pn_partners` | `partners` | `id` | không join |
+| `slv_pn_business_services` | `business_services` | `id` | không join |
+| `slv_pn_business_locations` | `business_locations` | `id` | không join |
+| `slv_pn_hotel_room_types` | `hotel_room_types` | `id` | không join |
+| `slv_pn_hotel_rate_plans` | `hotel_rate_plans` | `id` | không join |
+| `slv_pn_business_service_i18ns` | `business_service_i18ns` | (`business_service_id`, `locale`) | không join |
+| `slv_pn_business_service_poi_link` | `business_service_poi_link` | `id` | không join |
+| `slv_pn_orders` | `orders` | `id` | không join |
+| `slv_pn_order_refs` | `order_refs` | `id` | không join |
+| `slv_pn_order_item_tickets` | `order_item_tickets` | `order_ref_id` | không join |
+| `slv_pn_order_item_hotels` | `order_item_hotels` | `order_id` | không join |
+| `slv_pn_order_item_flights` | `order_item_flights` | `order_id` | không join |
+
+<table>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_products</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_product_translations</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_product_attributes</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_product_attribute_translations</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_product_attribute_values</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_product_attribute_value_translations</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_product_variants</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_product_variant_translations</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_product_business_service_relation</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_product_posts</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_product_post_translations</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_partners</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_business_services</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_business_locations</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_hotel_room_types</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_hotel_rate_plans</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_business_service_i18ns</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_business_service_poi_link</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_orders</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_order_refs</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_order_item_tickets</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_order_item_hotels</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>partner_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_pn_order_item_flights</code></td></tr>
+</table>
+
+#### 2.12.2 3rd-party
+
+Nguồn `lh_vv_bronze.dbo.brz_3rd_crawler_poi_stream`. Notebook `NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV`, cell `65ab1f40` hàm `build_merge_sql`, cell `84cc99f5` hàm `run_extract`. `source_table` và khoá ở cell `init_cfg_3p`.
+
+| Đích | source_table | Khoá | load_mode | Kiểu join |
+|---|---|---|---|---|
+| `slv_3p_poi` | `$` | `poi_id` | `DOC` | không join |
+| `slv_3p_poi_address` | `$` | `poi_id` | `DOC` | không join |
+| `slv_3p_poi_contact` | `$` | `poi_id` | `DOC` | không join |
+| `slv_3p_poi_opening_hours` | `$` | `poi_id` | `DOC` | không join |
+| `slv_3p_poi_rating` | `$` | `poi_id` | `DOC` | không join |
+| `slv_3p_poi_amenity` | `$` | `poi_id` | `DOC` | không join |
+| `slv_3p_poi_review` | `reviews` | `review_id` | `DOC_ARRAY` | không join |
+| `slv_3p_poi_media` | `photos` | `media_dedup_key` | `DOC_ARRAY` | không join |
+| `slv_3p_poi_price` | `$` | `poi_id` | `DOC` | không join |
+
+<table>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_3rd_crawler_poi_stream</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_3rd_crawler_poi_stream</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_address</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_3rd_crawler_poi_stream</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_contact</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_3rd_crawler_poi_stream</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_opening_hours</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_3rd_crawler_poi_stream</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_rating</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_3rd_crawler_poi_stream</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_amenity</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_3rd_crawler_poi_stream</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_review</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_3rd_crawler_poi_stream</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_media</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_3rd_crawler_poi_stream</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_3p_poi_price</code></td></tr>
+</table>
+
+#### 2.12.3 CMS
+
+Nguồn `lh_vv_bronze.dbo.cms_raw_data`. `load_mode` `DOC`. `source_table` `$`. Khoá (`document_id`, `locale`) ở cell `init_cfg_cms`. Notebook `NB_EXTRACT_CMS_CDC_BRZ_TO_SLV`, cell `cms08` hàm `build_merge_sql`, cell `cms12` hàm `run_extract`.
+
+| Đích | Kiểu join |
+|---|---|
+| `slv_cms_blog` | không join |
+| `slv_cms_destination` | không join |
+| `slv_cms_news` | không join |
+| `slv_cms_promotion_article` | không join |
+
+<table>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>cms_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_cms_blog</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>cms_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_cms_destination</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>cms_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_cms_news</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>cms_raw_data</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_cms_promotion_article</code></td></tr>
+</table>
+
+#### 2.12.4 Enrichment
+
+Nguồn `lh_vv_bronze.dbo.brz_enrichment_result`. `load_mode` `DOC`. `source_table` `$`. Notebook `NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV`, cell `enr08` hàm `build_merge_sql`, cell `enr12` hàm `run_extract`. Khoá ở cell `init_cfg_enr`.
+
+| Đích | Khoá | Kiểu join |
+|---|---|---|
+| `slv_enr_poi_info_multi_lang` | (`poi_id`, `lang`) | không join |
+| `slv_enr_poi_destination` | `poi_id` | không join |
+
+<table>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_enrichment_result</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_enr_poi_info_multi_lang</code></td></tr>
+<tr><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>brz_enrichment_result</code></td><td style="width:48px;border:none;text-align:center;vertical-align:middle">→</td><td style="width:340px;height:40px;border:1px solid #222;text-align:center;vertical-align:middle"><code>slv_enr_poi_destination</code></td></tr>
+</table>
+
 
 ## 3. Thêm một field bronze sang silver
 

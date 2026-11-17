@@ -1,0 +1,31 @@
+# Verification 2026-11-17 14:04:20 — PASS
+Files (1): docs/context/03_OPERATOR_GUIDE.md
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 20%]
+........................................................................ [ 40%]
+........................................................................ [ 60%]
+........................................................................ [ 80%]
+.......................................................................  [100%]
+359 passed in 14.67s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
