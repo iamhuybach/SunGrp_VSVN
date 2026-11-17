@@ -15,7 +15,7 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 - P1: dòng không phải partner lấy `description` và `experience` của `slv_enr_poi_info_multi_lang`.
 - P2: mỗi dòng `slv_pn_business_service_i18ns` tạo một dòng gold khi `slv_enr_poi_info_multi_lang` không có dòng cùng `(poi_id, lang)`, với `poi_id` = `uuid_md5(business_service_id, 'partner')` và `lang` = `locale`. So khớp bằng `left_anti` theo `(poi_id, lang)`. Không xét `source_name` của entity, nên P1 và P2 không trùng khoá.
 - P2 lấy mọi `locale`. Không lọc dòng partner đã xoá, giữ như hiện tại (`live_only=False`). Dòng P2 vẫn tạo khi `bio` và `usps` cùng null.
-- P2: `source_name` = `'partner'`. `description` = `bio`, `experience` = `usps`, không fallback. `time_to_spend`, `best_time`, `cost_vnd` = null. P2 không đọc `slv_poi_entity_non_enrich`. Mỗi cột P2 ép về kiểu của cột P1 cùng tên.
+- P2: `source_name` = `'partner'`. `description` = `bio`, `experience` = `usps`, không fallback. `time_to_spend`, `best_time`, `cost` = null. P2 không đọc `slv_poi_entity_non_enrich`. Mỗi cột P2 ép về kiểu của cột P1 cùng tên.
 - P2: `business_service_id` hoặc `locale` null hoặc rỗng sau `trim` thì bỏ dòng và đếm vào cảnh báo `multi_lang_i18n_key_blank`. Số dòng P2 ghi vào cảnh báo `multi_lang_i18n_only_rows`.
 - Khoá P2 có thêm dòng `slv_enr_poi_info_multi_lang` thì chuyển sang P1 (UPDATE cùng khoá). Dòng multi_lang mất mà dòng i18n còn thì chuyển sang P2. Cả hai trường hợp đều không xoá mềm.
 - Bảng `slv_enr_poi_info_multi_lang` rỗng thì node vẫn FAILED vì `required_inputs`. P2 chỉ áp cho khoá không khớp, không áp cho bảng rỗng.
@@ -31,8 +31,16 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 | P1: slv_poi_entity_non_enrich.source_name | string | P1: transform 1-1 theo poi_id<br>P2: hằng 'partner', không đọc entity | source_name |
 | P1: slv_enr_poi_info_multi_lang.time_to_spend | string | P1: transform 1-1<br>P2: null | time_to_spend |
 | P1: slv_enr_poi_info_multi_lang.best_time | string | P1: transform 1-1<br>P2: null | best_time |
-| P1: slv_enr_poi_info_multi_lang.cost_vnd | string | P1: transform 1-1<br>P2: null | cost_vnd |
+| P1: slv_enr_poi_info_multi_lang.cost | string | P1: transform 1-1<br>P2: null | cost |
 | P1: slv_pn_business_service_i18ns.bio, fallback slv_enr_poi_info_multi_lang.description<br>P2: slv_pn_business_service_i18ns.bio | string | P1: partner: bio, bio null thì description enr; nguồn khác: description enr<br>P2: bio, không fallback | description |
 | P1: slv_pn_business_service_i18ns.usps, fallback slv_enr_poi_info_multi_lang.experience<br>P2: slv_pn_business_service_i18ns.usps | string | P1: partner: usps, usps null thì experience enr; nguồn khác: experience enr<br>P2: usps, không fallback | experience |
 | | timestamp | field hệ thống | created_at |
 | | timestamp | field hệ thống | updated_at |
+
+## 2. Grain silver đã chốt — 20261116-enr-lang-destination-from-bronze
+
+Người dùng chốt ngày 2026-11-16. §1.1 và §1.2 dùng `cost`. Extract ghi `experience` từ `data.experiences`.
+
+- `slv_enr_poi_info_multi_lang`: một dòng cho `(poi_id, lang)`. MERGE đúng cặp đó. `version` không nằm trong khoá. Cùng khoá thì giữ `version` lớn hơn; bằng `version` thì giữ `EventProcessedUtcTime` lớn hơn.
+- Mảng `data.experiences` ghi vào cột đang có `experience` (STRING). Không thêm cột `experiences`.
+- `cost_vnd` trên silver, gold và `apps.srv_poi_multi_lang` đổi thành `cost`. PostgreSQL giữ `text`. API đọc `cost`. `docs/context/api-mapping/practical_info.md` nằm trong phạm vi đổi này. `(ood).general-information.md` nằm ngoài phạm vi.

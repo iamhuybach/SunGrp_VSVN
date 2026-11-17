@@ -17,7 +17,7 @@
 -- Chạy: psql -v ON_ERROR_STOP=1 -f <file>. Chạy lại sẽ lỗi "already exists" và rollback, không đổi gì.
 -- DB đã có apps.srv_poi_info trước 20261108-gld-srv-poi-info-cover: chạy tay ALTER TABLE apps.srv_poi_info ADD COLUMN cover_id text, ADD COLUMN cover_blob_url text;
 -- DB đã có bảng trước 20261112-poi-destination-name-api: chạy tay BEGIN; ALTER TABLE apps.srv_poi_info ADD COLUMN destination_name text; ALTER TABLE apps.srv_poi_review ADD COLUMN source_name text; COMMIT;
--- DB đã có bảng trước 20261116-srv-poi-info-is-active (người dùng đã chạy tay; ghi nhận, không phải lệnh cho agent):
+-- DB đã có bảng trước 20261116-enr-lang-destination-from-bronze: chạy tay ALTER TABLE apps.srv_poi_multi_lang RENAME COLUMN cost_vnd TO cost; (runbook B5.2).
 --   ALTER TABLE apps.srv_poi_info ADD COLUMN is_active boolean;
 --   ALTER TABLE apps.<srv_poi_info | srv_poi_multi_lang | srv_poi_amenity | srv_poi_media_gallery | srv_poi_review> ADD COLUMN ingestion_ts timestamp without time zone;
 --   ADD COLUMN đặt cột ở cuối bảng: thứ tự vật lý khác CREATE TABLE dưới đây. Nạp dữ liệu phải theo tên cột.
@@ -71,7 +71,7 @@ CREATE TABLE apps.srv_poi_multi_lang (
     source_name text,
     time_to_spend text,
     best_time text,
-    cost_vnd text,
+    cost text,
     description text,
     experience text,
     row_hash text,

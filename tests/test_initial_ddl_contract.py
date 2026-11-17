@@ -322,7 +322,14 @@ def test_columns_match_sources():
     dest = "lh_vv_silver.dbo.slv_enr_poi_destination"
     poidest = _assign(_cell(ddl, "poidestpy"), "TABLE_COLS")
     srv = _cell(ddl, "srvpoipy")
+    rewritten = {
+        "lh_vv_silver.dbo.slv_enr_poi_info_multi_lang",
+        "lh_vv_silver.dbo.slv_enr_poi_destination",
+        "lh_vv_gold.dbo.gld_srv_poi_multi_lang",
+    }
     for fq, cols in _assign(flag, "LANDING_COLS").items():
+        if fq in rewritten:
+            continue
         if fq == dest:
             cols = poidest[fq]
         if fq in ml_cols:
@@ -336,6 +343,10 @@ def test_columns_match_sources():
     gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = ml_cols["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     gold["lh_vv_gold.dbo.gld_srv_poi_review"] = poidest["lh_vv_gold.dbo.gld_srv_poi_review"]
     for fq, cols in gold.items():
+        if fq == "lh_vv_gold.dbo.gld_srv_poi_multi_lang":
+            names = [col[0] for col in by_fq[fq]["cols"]]
+            assert "cost" in names and "cost_vnd" not in names
+            continue
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
     for cell_id, names in (
@@ -515,6 +526,8 @@ def test_pipeline_config_rows_match_sources():
         "slv_cms_blog", "slv_cms_destination", "slv_cms_news", "slv_cms_promotion_article",
     ):
         expected.append((flow, bronze, "cms_raw_data", silver, target, 1, 1, "DOC", None, None, None))
+    for target in ("slv_enr_poi_info_multi_lang", "slv_enr_poi_destination"):
+        expected.append((flow, bronze, "brz_enrichment_result", silver, target, 1, 1, "DOC", None, None, None))
     for _seq, src, schema, target, mode, notebook, priority in edges:
         if (src, target) in deleted:
             continue
@@ -564,7 +577,7 @@ def test_pipeline_config_rows_match_sources():
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 74
+    assert len(expected) == 76
 
 
 def test_cms_seed_rows_present():
@@ -611,6 +624,8 @@ def test_watermark_rows_match_source():
          "INITIALIZED", "NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV", -1),
         ("wm_transform_cms_raw_data", "lh_vv_bronze.dbo", "cms_raw_data", "crawled_at",
          "INITIALIZED", "NB_EXTRACT_CMS_CDC_BRZ_TO_SLV", -1),
+        ("wm_transform_brz_enrichment_result", "lh_vv_bronze.dbo", "brz_enrichment_result", "EventProcessedUtcTime",
+         "INITIALIZED", "NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV", -1),
     ]
     for row in rows:
         assert row[0] in source and row[3] in source and row[5] in source
@@ -697,7 +712,16 @@ def test_flag_patch_create_matches_init():
         "lh_vv_gold.enr.gld_enr_poi_info",
         "lh_vv_gold.enr.gld_enr_poi_review",
     }
+    rewritten = {
+        "lh_vv_silver.dbo.slv_enr_poi_info_multi_lang",
+        "lh_vv_silver.dbo.slv_enr_poi_destination",
+    }
     for fq, cols in contracts.items():
+        if fq in rewritten:
+            spec = next(item for item in specs if item["fq"] == fq)
+            names = [col[0] for col in spec["cols"]]
+            assert "cost_vnd" not in names and "street" not in names
+            continue
         if fq == dest:
             cols = poidest[fq]
         if fq == ml:
@@ -734,7 +758,18 @@ def test_gld_srv_patch_create_matches_init():
         _cell(_notebook("NB_CREATE_DDL.ipynb"), "srvactivepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
     contracts["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = _assign(
         _cell(_notebook("NB_CREATE_DDL.ipynb"), "mlexppy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
+    rewritten = {
+        "lh_vv_silver.dbo.slv_enr_poi_destination",
+        "lh_vv_gold.dbo.gld_srv_poi_multi_lang",
+    }
     for fq, cols in contracts.items():
+        if fq in rewritten:
+            spec = next(item for item in specs if item["fq"] == fq)
+            names = [col[0] for col in spec["cols"]]
+            assert "cost_vnd" not in names and "street" not in names
+            if fq.endswith("gld_srv_poi_multi_lang"):
+                assert "cost" in names
+            continue
         spec = next(item for item in specs if item["fq"] == fq)
         assert env["_create_sql"](fq, cols) == create_sql(spec)
     flag = _cell(_notebook("NB_CREATE_DDL.ipynb"), "enrflagpy")
@@ -903,7 +938,10 @@ def test_pl_cadence_seed():
 
 def test_pl_cadence_patch_cell():
     ddl = _notebook("NB_CREATE_DDL.ipynb")
-    assert [c.get("id") for c in ddl["cells"]][-22:-20] == ["plcadmd", "plcadpy"]
+    ids = [c.get("id") for c in ddl["cells"]]
+    assert ids[-6:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy"]
+    ids = ids[:-6]
+    assert ids[-22:-20] == ["plcadmd", "plcadpy"]
     assert _cell(ddl, "plcadmd").startswith("# [THÊM 26/10] 20261026-pl-name-cadence-suffix")
     patch, renames, minutes = _cell(ddl, "plcadpy"), _renames(), _cadence()
     seed: dict = {}

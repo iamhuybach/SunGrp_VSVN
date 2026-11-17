@@ -215,6 +215,8 @@ def _info_spec() -> dict:
 
 def test_info_cover_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
+    assert ids[-6:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy"]
+    ids = ids[:-6]
     assert ids[-8:-6] == ["srvcovermd", "srvcoverpy"]
     assert ids[-6:-4] == ["poidestmd", "poidestpy"]
     assert ids[-4:-2] == ["enrmergemd", "enrmergepy"]
@@ -300,6 +302,8 @@ def test_info_cover_mapping_and_pg_ddl():
 
 def test_destination_name_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
+    assert ids[-6:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy"]
+    ids = ids[:-6]
     assert ids[-6:-4] == ["poidestmd", "poidestpy"]
     assert ids[-4:-2] == ["enrmergemd", "enrmergepy"]
     assert ids[-2:] == ["srvactivemd", "srvactivepy"]
@@ -335,9 +339,16 @@ def test_destination_name_and_review_source_across_layers():
         _cell_source("NB_CREATE_DDL.ipynb", "srvactivepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
     init: dict = {}
     exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
+    moved = {"lh_vv_silver.dbo.slv_enr_poi_destination"}
     for fq, cols in tables.items():
+        if fq in moved:
+            continue
         spec = next(item for item in init["TABLE_SPECS"] if item["fq"] == fq)
         assert [(c[0], c[1]) for c in spec["cols"]] == cols
+    dest_names = [c[0] for c in next(item["cols"] for item in init["TABLE_SPECS"]
+                                     if item["fq"] == "lh_vv_silver.dbo.slv_enr_poi_destination")]
+    assert "street" not in dest_names
+    assert "source_name" in dest_names and "formatted_address" in dest_names
     pg = PG_DDL.read_text(encoding="utf-8")
     info = re.search(r"CREATE TABLE apps\.srv_poi_info \((.*?)\n\);", pg, re.S).group(1)
     review = re.search(r"CREATE TABLE apps\.srv_poi_review \((.*?)\n\);", pg, re.S).group(1)

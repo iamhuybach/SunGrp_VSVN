@@ -428,12 +428,25 @@ class PoiServiceTest {
     @Test
     @DisplayName("StoredJsonParser suy biến JSON hỏng và đọc giờ mở cửa")
     void shouldDegradeMalformedStoredJsonToNull() {
-        assertThat(vn.visitvietnam.dataserving.service.util.StoredJsonParser.labelValue("p", "cost_vnd", "{")).isNull();
+        assertThat(vn.visitvietnam.dataserving.service.util.StoredJsonParser.labelValue("p", "cost", "{")).isNull();
         assertThat(vn.visitvietnam.dataserving.service.util.StoredJsonParser.operatingHours("p", "[{}]")).isEmpty();
         var hours = vn.visitvietnam.dataserving.service.util.StoredJsonParser.operatingHours("p",
                 "[{\"day_of_week\":1,\"open_time\":\"09:00\",\"close_time\":\"18:00\",\"is_open_all_day\":false,\"is_closed\":false}]");
         assertThat(hours).hasSize(1);
         assertThat(hours.getFirst().dayOfWeek()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("labelValue đọc {text,label} thành {label,value} và bỏ shape khác")
+    void labelValueReadsTextAndLabel() {
+        var parsed = vn.visitvietnam.dataserving.service.util.StoredJsonParser.labelValue(
+                "p", "cost", "{\"text\":\"Miễn phí\",\"label\":\"Chi phí\"}");
+        assertThat(parsed.label()).isEqualTo("Chi phí");
+        assertThat(parsed.value()).isEqualTo("Miễn phí");
+        assertThat(vn.visitvietnam.dataserving.service.util.StoredJsonParser.labelValue(
+                "p", "cost", "{\"text\":1,\"label\":\"Chi phí\"}")).isNull();
+        assertThat(vn.visitvietnam.dataserving.service.util.StoredJsonParser.labelValue(
+                "p", "cost", "{\"text\":\"a\",\"label\":\"b\",\"extra\":\"c\"}")).isNull();
     }
 
     private static SrvPoiAmenity amenity(String group, String raw, String code) {

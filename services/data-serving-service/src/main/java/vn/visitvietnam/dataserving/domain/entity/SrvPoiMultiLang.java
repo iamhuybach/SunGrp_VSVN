@@ -43,8 +43,8 @@ public class SrvPoiMultiLang {
     @Column(name = "best_time")
     private String bestTime;
 
-    @Column(name = "cost_vnd")
-    private String costVnd;
+    @Column(name = "cost")
+    private String cost;
 
     @Column(name = "description")
     private String description;

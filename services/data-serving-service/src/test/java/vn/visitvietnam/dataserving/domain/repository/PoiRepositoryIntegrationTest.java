@@ -109,7 +109,7 @@ class PoiRepositoryIntegrationTest {
                 .description("Trái tim của thủ đô Hà Nội")
                 .experience("Đi dạo quanh hồ vào sáng sớm")
                 .timeToSpend("1-2 hours")
-                .costVnd("Miễn phí")
+                .cost("Miễn phí")
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -119,7 +119,7 @@ class PoiRepositoryIntegrationTest {
                 .description("The heart of Hanoi capital")
                 .experience("Morning walk around the lake")
                 .timeToSpend("1-2 hours")
-                .costVnd("Free")
+                .cost("Free")
                 .createdAt(LocalDateTime.now())
                 .build();
 

@@ -228,7 +228,10 @@ def test_node_specs():
     }
     for name, cid in builds.items():
         source = _cell(name, cid)
-        code = "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
+        code = "\n".join(
+            line for line in source.splitlines()
+            if not line.strip().startswith("#") and "GOLD_FQ" not in line and "cost_vnd" not in line
+        )
         assert "lh_vv_gold" not in code
         assert "deleted" not in code
         assert source.count("live_only=False") == 3
@@ -246,8 +249,12 @@ def test_node_specs():
 def test_build_columns_match_ddl():
     gold = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")
     gold[INFO_FQ] = _assign(_cell("NB_CREATE_DDL.ipynb", "srvactivepy"), "TABLE_COLS")[INFO_FQ]
-    gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = _assign(
-        _cell("NB_CREATE_DDL.ipynb", "mlexppy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
+    init: dict = {}
+    exec(_cell("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
+    gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = [
+        (col[0], col[1]) for col in next(
+            item["cols"] for item in init["TABLE_SPECS"] if item["fq"] == "lh_vv_gold.dbo.gld_srv_poi_multi_lang")
+    ]
     pairs = {
         "gld_srv_poi_multi_lang": _assign(_cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild"), "OUT_COLS"),
         "gld_srv_poi_info": _assign(_cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"), "OUT_COLS"),
@@ -298,6 +305,8 @@ def test_review_mapping_targets():
 
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
+    assert ids[-6:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy"]
+    ids = ids[:-6]
     assert ids[-30:-22] == [
         "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
         "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
@@ -350,13 +359,16 @@ def test_partner_without_destination_branch():
     dest_names = _assign(gold, "DEST_COLS")[2:]
     from_entity = tuple(name for name in dest_names if name in entity_out)
     absent = tuple(name for name in dest_names if name not in entity_out)
-    assert from_entity == ("full_address", "street", "ward", "city", "lat", "lng")
-    assert absent == ("destination_id", "destination_name", "district", "country_code", "postal_code")
+    assert from_entity == ("full_address", "ward", "city", "lat", "lng")
+    assert "street" not in dest_names
+    assert "formatted_address" in absent and "ward_with_type" in absent and "city_with_type" in absent
     assert "FROM_ENTITY = tuple(name for name in DEST_COLS[2:] if name in ENTITY_OUT_COLS)" in gold
     assert 'des = des.withColumn("_has_dest", F.lit(True))' in gold
     assert 'is_partner = F.coalesce(SRC == "partner", F.lit(False))' in gold
     assert 'partner_without_dest = is_partner & F.col("_has_dest").isNull()' in gold
     assert "*from_dest" in gold
+    assert 'if name in ("ward", "district", "city")' in gold
+    assert 'F.coalesce(_text_or_null(name), _text_or_null(f"old_{name}"))' in gold
     assert 'F.coalesce(F.col(f"_e_' not in gold
     assert 'inputs={"entity": "slv_poi_entity_non_enrich"' in gold
     text = MAPPING.read_text(encoding="utf-8")
@@ -367,11 +379,17 @@ def test_partner_without_destination_branch():
     for name in from_entity:
         row = next(line for line in rows if line.rstrip().endswith(f"| {name} |"))
         assert f"slv_poi_entity_non_enrich.{name}" in row
-        assert "Không coalesce" in row
-    for name in absent:
+        if name in ("ward", "city"):
+            assert f"old_{name}" in row
+        else:
+            assert "Không coalesce" in row
+    gold_absent = tuple(name for name in absent if name not in ("formatted_address", "ward_with_type", "city_with_type"))
+    for name in gold_absent:
         row = next(line for line in rows if line.rstrip().endswith(f"| {name} |"))
         assert "null" in row
         assert "slv_poi_entity_non_enrich" not in row
+        if name == "district":
+            assert "old_district" in row
 
 
 def test_info_rating_build_rules():
@@ -431,7 +449,7 @@ def test_multi_lang_experience_rule():
 def test_multi_lang_i18n_only_branch():
     source = _cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild")
     code = "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
-    assert _assign(source, "MEASURE_COLS") == ("time_to_spend", "best_time", "cost_vnd")
+    assert _assign(source, "MEASURE_COLS") == ("time_to_spend", "best_time", "cost")
     assert _assign(source, "I18N_ONLY_WARN") == "multi_lang_i18n_only_rows"
     assert _assign(source, "I18N_KEY_BLANK_WARN") == "multi_lang_i18n_key_blank"
     assert "source_name" not in _assign(source, "ML_COLS")
@@ -533,6 +551,8 @@ def test_review_source_patch_cell():
     assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
     assert "raise failed from cleanup_exc" in patch
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
+    assert ids[-6:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy"]
+    ids = ids[:-6]
     assert ids[-16:-12] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
     assert ids[-12:-10] == ["mlsrcmd", "mlsrcpy"]
     assert ids[-10:-8] == ["cmscfgmd", "cmscfgpy"]
@@ -598,4 +618,47 @@ def test_info_is_active_literal_true():
         assert cells[1] == "boolean"
         assert cells[2].startswith("true")
     assert matched
+
+
+def test_info_full_address_groups_no_concat_ws():
+    source = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    assert "concat_ws" not in source
+    assert 'F.concat(hn, sep, st, sep, F.col("formatted_address"))' in source
+    assert "F.coalesce(g1, g2, g3)" in source
+    assert 'sep = F.lit(", ")' in source
+
+
+def test_info_full_address_blank_skips_group():
+    source = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    assert 'F.when(F.trim(F.col(name)) != "", F.col(name))' in source
+    assert "F.when(has_dest, F.coalesce(g1, g2, g3))" in source
+
+
+def test_info_street_from_entity():
+    source = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    assert "street" in _assign(source, "ENT_COLS")
+    assert "street" not in _assign(source, "DEST_COLS")
+    assert 'F.col("street").alias("street")' in source
+
+
+def test_multi_lang_cost_guard():
+    source = _cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild")
+    assert source.index("GOLD_FQ") < source.index("def build") or "cost_vnd" in source.split("def build", 1)[1][:500]
+    assert 'raise ConfigError("gld_srv_poi_multi_lang còn cost_vnd: chạy enrgldpy của NB_CREATE_DDL (runbook B5.1)")' in source
+
+
+def test_no_cost_vnd_in_active_surface():
+    for path in (ROOT / "notebooks").glob("NB_*.ipynb"):
+        if path.name in {"NB_CREATE_DDL.ipynb", "NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV.ipynb"}:
+            continue
+        text = path.read_text(encoding="utf-8")
+        if path.name == "NB_GLD_SRV_POI_MULTI_LANG.ipynb":
+            text = text.replace("cost_vnd", "")
+        assert "cost_vnd" not in text, path.name
+    pg = (ROOT / "sql" / "postgres" / "gld_srv_serve.pg.sql").read_text(encoding="utf-8")
+    assert "RENAME COLUMN cost_vnd TO cost" in pg
+    assert pg.count("cost_vnd") == 1
+    java = ROOT / "services" / "data-serving-service" / "src" / "main"
+    for path in java.rglob("*.java"):
+        assert "cost_vnd" not in path.read_text(encoding="utf-8"), path.name
 

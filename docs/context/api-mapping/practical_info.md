@@ -34,8 +34,8 @@
 | 5 | data.id | string | có | apps.srv_poi_info.poi_id | |
 | 6 | data.name | string | có | apps.srv_poi_info.poi_name | |
 | 7 | data.description | string | có | apps.srv_poi_multi_lang.description | |
-| 8 | data.time_to_spend | object | có | apps.srv_poi_multi_lang.time_to_spend | Một key text thành `{label, value}`. Khác shape thì null. |
-| 9 | data.cost | object | có | apps.srv_poi_multi_lang.cost_vnd | Cùng quy tắc `time_to_spend`. |
+| 8 | data.time_to_spend | object | có | apps.srv_poi_multi_lang.time_to_spend | Một key text thành `{label, value}`. Đúng hai key `text` và `label`, cả hai là text, thành `{label, value=text}`. Shape khác thì null. |
+| 9 | data.cost | object | có | apps.srv_poi_multi_lang.cost | Cùng quy tắc `time_to_spend`. |
 | 10 | data.best_time | object | có | apps.srv_poi_multi_lang.best_time | Cùng quy tắc `time_to_spend`. |
 | 11 | data.cover | object | có | apps.srv_poi_media_gallery.media_id; apps.srv_poi_media_gallery.blob_url | Ảnh `is_cover` true, `is_active` true, `deleted_at` null. Không có thì null. |
 | 12 | data.ratings | object | có | apps.srv_poi_info.source_name; apps.srv_poi_info.rating_overall; apps.srv_poi_info.rating_count | Luôn là object. |

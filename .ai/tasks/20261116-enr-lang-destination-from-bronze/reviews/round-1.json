@@ -1,0 +1,66 @@
+{
+  "round": 1,
+  "verdict": "USER_DECISION",
+  "findings": [
+    {
+      "id": "GATE-001",
+      "severity": "P0"
+    },
+    {
+      "id": "GATE-002",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-003",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-004",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-005",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-006",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-007",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-008",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-009",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/CTRL_TABLES_CONTEXT.md": "83b7e1018709bf3f2440de72d66e0e52c4aab6c9cfc9565a98ef306dc4505f3f",
+    "docs/context/NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV.md": "06b95c08eff58946ae81f3002f657327f8999f4afb135b085613a6cd0ef6ea7c",
+    "docs/context/api-mapping/practical_info.md": "a311becbe0755e1d230135fdcc8e0ddf7c738bf5a391e4e3bd5584a17e191570",
+    "docs/context/mapping_gld_srv_poi_info.md": "60f96d1676389b6ba4085b493984bcaa67934a31b06f57d52d615ef2da19cd88",
+    "docs/context/mapping_gld_srv_poi_multi_lang.md": "7386dde1c8ee811c741a0f887a916061269957b9a059dc0c30f924653df426ca",
+    "notebooks/NB_CREATE_DDL.ipynb": "3d8bdcef69d3f5a273c408d65f2b5079f5852dd52a596255f5d901014ead3f9f",
+    "notebooks/NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV.ipynb": "560960f56886eef91878b8cc1225972cba0be37d9209a4dc6b1c574f63875fea",
+    "notebooks/NB_GLD_SRV_POI_INFO.ipynb": "3ba7272c29ec27862523af619e477ca21991ef2842f7a73e8a5deb6461a9d0e0",
+    "notebooks/NB_GLD_SRV_POI_MULTI_LANG.ipynb": "c6118015662a4722b447d989c8a0bc71ec35ffe9696cc39cd74a830cf53d191b",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "4d1425670569552dacd36dd26c0787e907d6ec183e27181352be133f2336a3e4",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiMultiLang.java": "00f1a7a29ec60fd598963aee695b1c1a29c20057e6a333586efa0e71ebab5211",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java": "c1e136ca89e9eba5e90a7d8a4528e48ca27e90c0c722e5fe69dadfc11c265ab1",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/util/StoredJsonParser.java": "b631ef8b6f49f9bd2776bb9c6819c5bc281666c7eeb9aba1720a5f7217d70a15",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java": "582ba29dec0c99ed7f29c8d620c3402b26671eeb4542fa8f8386fa774bce7fd8",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java": "ab08b88f76108f7f0ec2020561c1dad92acb93d87ab4f976f70d77aaf919a5b9",
+    "sql/postgres/gld_srv_serve.pg.sql": "4a7748df2e99cde899a243f554d3fd40c3126850cfb26bf564a849e08ada40e8",
+    "tests/test_enr_extract_contract.py": "56fd5ce9e13159ab8f41375b891d37540392e1fd2bfdbadc197a226bf76c1bc5",
+    "tests/test_enr_poi_contract.py": "f231b8a7f34510af31481d7d186fdd708bf1274fa9543a0242ab60c4802490ae",
+    "tests/test_gld_srv_poi_contract.py": "08513084e13ed055a5f18762e14b03200b938679e60d350577466b96cc752783",
+    "tests/test_initial_ddl_contract.py": "50a109e853412308626acc5454d3e4400deaaeb6b48d41673d321887cac57936",
+    "tests/test_srv_poi_serving_contract.py": "5ad6eba5a506343f0be38dc7e902f5cf566b96550a91abc7bba8bc5449e4f6c3"
+  },
+  "elapsed_seconds": 551
+}

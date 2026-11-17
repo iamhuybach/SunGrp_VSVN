@@ -64,7 +64,15 @@ public final class StoredJsonParser {
         if (node == null || node.isNull()) {
             return null;
         }
-        if (!node.isObject() || node.size() != 1) {
+        if (!node.isObject()) {
+            warn(poiId, field, "NOT_OBJECT");
+            return null;
+        }
+        if (node.size() == 2 && node.has("text") && node.has("label")
+                && node.get("text").isTextual() && node.get("label").isTextual()) {
+            return new LabelValue(node.get("label").asText(), node.get("text").asText());
+        }
+        if (node.size() != 1) {
             warn(poiId, field, "NOT_OBJECT");
             return null;
         }
