@@ -365,12 +365,18 @@ def test_pipeline_timeouts():
     assert "68c81db2-fa14-4fee-91f3-a9f31b1ca2c8" not in raw
     assert doc["resources"][0]["name"] == "PL_VV_TRANS_SLV_TO_ENR_15M"
     props = doc["resources"][0]["properties"]
-    activity = next(item for item in props["activities"] if item["name"] == "NB_00_ORCHES_SLV_TO_ENR_15P")
     guard = next(item for item in props["activities"] if item["name"] == "Validate_Notebook_Binding")
+    gate = next(item for item in props["activities"] if item["name"] == "Get_Flow_Gate_ENR")
+    branch = next(item for item in props["activities"] if item["name"] == "If_HasWork_ENR")
+    activity = next(
+        item for item in branch["typeProperties"]["ifTrueActivities"]
+        if item["name"] == "NB_00_ORCHES_SLV_TO_ENR_15P"
+    )
     assert activity["policy"]["timeout"] == "0.00:32:00"
     assert activity["policy"]["retry"] == 0
     assert props["concurrency"] == 1
-    assert activity["dependsOn"][0]["activity"] == "Validate_Notebook_Binding"
+    assert activity["dependsOn"][0]["activity"] == "Set_Msg_Run_ENR"
+    assert gate["dependsOn"][0]["activity"] == "Validate_Notebook_Binding"
     assert "PENDING" in guard["typeProperties"]["expression"]["value"]
     assert activity["typeProperties"]["notebookId"]["value"] == "@pipeline().parameters.nb_orches_id"
     assert activity["typeProperties"]["workspaceId"]["value"] == "@pipeline().parameters.workspace_id"

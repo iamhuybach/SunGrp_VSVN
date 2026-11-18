@@ -1,0 +1,18 @@
+{
+  "round": 2,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "PIPE-002",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json": "0fd28fc4815431748920056020cff430427a07bd616847db8655477378b299bc",
+    "pipelines/PL_VV_TRANS_SLV_TO_ENR_15M/PL_VV_TRANS_SLV_TO_ENR_15M.json": "269a35da2e1f4564968bb3cb019a9b26a95482834ef33ecd3a25841389053ea5",
+    "pipelines/PL_VV_TRANS_SLV_TO_GLD_30M/PL_VV_TRANS_SLV_TO_GLD_30M.json": "0b2e6601a5e2fba5293b2c3e6ddadb98f69c783c6327fff9ce4f189e96fe12bc",
+    "tests/test_enr_poi_contract.py": "c5c606bdba368df0fb553fccffa9d5f78099c0b57d71c0d0a0dc04916aae1a95",
+    "tests/test_pipeline_precheck_contract.py": "ab22fc0fac804eee9a602914a0ee1601350ec1de1d41e225329018aad41a5fc0"
+  },
+  "elapsed_seconds": 251
+}

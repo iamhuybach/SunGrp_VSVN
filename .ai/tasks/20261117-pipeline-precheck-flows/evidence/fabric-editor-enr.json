@@ -1,0 +1,217 @@
+{
+    "name": "PL_VV_TRANS_SLV_TO_ENR_15M",
+    "properties": {
+        "activities": [
+            {
+                "name": "Validate_Notebook_Binding",
+                "type": "IfCondition",
+                "dependsOn": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@or(or(empty(pipeline().parameters.nb_orches_id), contains(pipeline().parameters.nb_orches_id, 'PENDING')), or(empty(pipeline().parameters.workspace_id), contains(pipeline().parameters.workspace_id, 'PENDING')))",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "Fail_Bad_Binding",
+                            "type": "Fail",
+                            "dependsOn": [],
+                            "typeProperties": {
+                                "message": "nb_orches_id or workspace_id is empty or a placeholder",
+                                "errorCode": "BAD_NOTEBOOK_BINDING"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Get_Flow_Gate_ENR",
+                "type": "Script",
+                "dependsOn": [
+                    {
+                        "activity": "Validate_Notebook_Binding",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.00:05:00",
+                    "retry": 1,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "typeProperties": {
+                    "scripts": [
+                        {
+                            "type": "Query",
+                            "text": {
+                                "value": "WITH up_pl AS (\n    SELECT DISTINCT p.pl_name\n    FROM dbo.ctrl_mng_pipeline_config AS m\n    INNER JOIN dbo.ctrl_mng_pipeline_config AS p\n        ON p.trg_schema = m.src_schema AND p.trg_tbl = m.src_tbl\n    WHERE m.pl_name = 'PL_VV_TRANS_SLV_TO_ENR_15M'\n      AND m.is_active = 1\n      AND p.is_active = 1\n      AND p.pl_name <> m.pl_name\n),\nme AS (\n    SELECT\n        MAX(CASE WHEN status IN ('SUCCESS', 'NO_DATA') THEN started_at END) AS ok_started_at,\n        MAX(started_at) AS last_started_at\n    FROM dbo.ctrl_log_run\n    WHERE pl_name = 'PL_VV_TRANS_SLV_TO_ENR_15M'\n      AND run_mode = 'RUN'\n      AND COALESCE(status, '') <> 'SKIPPED_CONCURRENT'\n),\nup AS (\n    SELECT MAX(r.ended_at) AS up_at\n    FROM dbo.ctrl_log_run AS r\n    INNER JOIN up_pl AS u ON u.pl_name = r.pl_name\n    WHERE COALESCE(r.status, '') NOT IN ('NO_DATA', 'SKIPPED_CONCURRENT', 'RUNNING')\n      AND COALESCE(r.run_mode, '') <> 'DRY_RUN'\n      AND r.ended_at IS NOT NULL\n)\nSELECT\n    CASE\n        WHEN me.ok_started_at IS NULL THEN 'FIRST_RUN'\n        WHEN me.last_started_at > me.ok_started_at THEN 'LAST_RUN_NOT_OK'\n        WHEN up.up_at >= DATEADD(MINUTE, -2, me.ok_started_at) THEN 'UPSTREAM_CHANGED'\n        WHEN @{pipeline().parameters.p_max_idle_min} > 0\n             AND DATEDIFF(MINUTE, me.ok_started_at, SYSUTCDATETIME()) >= @{pipeline().parameters.p_max_idle_min} THEN 'IDLE_BACKSTOP'\n        ELSE 'NO_DATA'\n    END AS gate_reason,\n    me.ok_started_at,\n    me.last_started_at,\n    up.up_at\nFROM me CROSS JOIN up;",
+                                "type": "Expression"
+                            }
+                        }
+                    ],
+                    "scriptBlockExecutionTimeout": "00:04:00",
+                    "database": "lh_vv_ctrl"
+                },
+                "externalReferences": {
+                    "connection": "ab0e5ac6-2a04-4705-94b6-80af208479dc"
+                }
+            },
+            {
+                "name": "If_HasWork_ENR",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "Get_Flow_Gate_ENR",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@or(pipeline().parameters.p_force_run, not(equals(string(activity('Get_Flow_Gate_ENR').output.resultSets[0].rows[0].gate_reason), 'NO_DATA')))",
+                        "type": "Expression"
+                    },
+                    "ifFalseActivities": [
+                        {
+                            "name": "Set_Msg_Skip_ENR",
+                            "type": "SetVariable",
+                            "dependsOn": [],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "typeProperties": {
+                                "variableName": "v_msg_skip",
+                                "value": {
+                                    "value": "@concat('SKIP | ', 'PL_VV_TRANS_SLV_TO_ENR_15M', ' | reason=NO_DATA', ' | last_ok_started_at=', string(coalesce(activity('Get_Flow_Gate_ENR').output.resultSets[0].rows[0].ok_started_at, '')), ' | upstream_at=', string(coalesce(activity('Get_Flow_Gate_ENR').output.resultSets[0].rows[0].up_at, '')))",
+                                    "type": "Expression"
+                                }
+                            }
+                        }
+                    ],
+                    "ifTrueActivities": [
+                        {
+                            "name": "Set_Msg_Run_ENR",
+                            "type": "SetVariable",
+                            "dependsOn": [],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "typeProperties": {
+                                "variableName": "v_msg",
+                                "value": {
+                                    "value": "@concat('RUN | ', 'PL_VV_TRANS_SLV_TO_ENR_15M', ' | reason=', if(pipeline().parameters.p_force_run, 'FORCE', string(activity('Get_Flow_Gate_ENR').output.resultSets[0].rows[0].gate_reason)), ' | last_ok_started_at=', string(coalesce(activity('Get_Flow_Gate_ENR').output.resultSets[0].rows[0].ok_started_at, '')), ' | upstream_at=', string(coalesce(activity('Get_Flow_Gate_ENR').output.resultSets[0].rows[0].up_at, '')))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "NB_00_ORCHES_SLV_TO_ENR_15P",
+                            "type": "TridentNotebook",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set_Msg_Run_ENR",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.00:32:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "typeProperties": {
+                                "notebookId": {
+                                    "value": "@pipeline().parameters.nb_orches_id",
+                                    "type": "Expression"
+                                },
+                                "workspaceId": {
+                                    "value": "@pipeline().parameters.workspace_id",
+                                    "type": "Expression"
+                                },
+                                "parameters": {
+                                    "p_pl_name": {
+                                        "value": "PL_VV_TRANS_SLV_TO_ENR_15M",
+                                        "type": "string"
+                                    },
+                                    "p_run_id": {
+                                        "value": {
+                                            "value": "@pipeline().RunId",
+                                            "type": "Expression"
+                                        },
+                                        "type": "string"
+                                    },
+                                    "p_mode": {
+                                        "value": "RUN",
+                                        "type": "string"
+                                    },
+                                    "p_max_parallel": {
+                                        "value": "2",
+                                        "type": "string"
+                                    },
+                                    "p_node_timeout_min": {
+                                        "value": "15",
+                                        "type": "string"
+                                    },
+                                    "p_dag_timeout_min": {
+                                        "value": "25",
+                                        "type": "string"
+                                    },
+                                    "p_lock_timeout_min": {
+                                        "value": "35",
+                                        "type": "string"
+                                    },
+                                    "p_force_nodes": {
+                                        "value": "",
+                                        "type": "string"
+                                    },
+                                    "p_history_limit": {
+                                        "value": "1000",
+                                        "type": "string"
+                                    },
+                                    "p_non_data_ops": {
+                                        "value": "",
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "concurrency": 1,
+        "parameters": {
+            "nb_orches_id": {
+                "type": "string"
+            },
+            "workspace_id": {
+                "type": "string"
+            },
+            "p_force_run": {
+                "type": "bool",
+                "defaultValue": false
+            },
+            "p_max_idle_min": {
+                "type": "int",
+                "defaultValue": 0
+            }
+        },
+        "variables": {
+            "v_msg": {
+                "type": "String"
+            },
+            "v_msg_skip": {
+                "type": "String"
+            }
+        }
+    }
+}

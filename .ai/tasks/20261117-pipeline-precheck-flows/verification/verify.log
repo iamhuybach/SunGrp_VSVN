@@ -1,0 +1,137 @@
+# Verification 2026-11-17 15:10:05 — PASS
+Files (5): pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json, pipelines/PL_VV_TRANS_SLV_TO_ENR_15M/PL_VV_TRANS_SLV_TO_ENR_15M.json, pipelines/PL_VV_TRANS_SLV_TO_GLD_30M/PL_VV_TRANS_SLV_TO_GLD_30M.json, tests/test_enr_poi_contract.py, tests/test_pipeline_precheck_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 19%]
+........................................................................ [ 39%]
+........................................................................ [ 58%]
+........................................................................ [ 78%]
+........................................................................ [ 97%]
+.........                                                                [100%]
+369 passed in 18.37s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-17 15:26:18 — FAIL
+Files (5): pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json, pipelines/PL_VV_TRANS_SLV_TO_ENR_15M/PL_VV_TRANS_SLV_TO_ENR_15M.json, pipelines/PL_VV_TRANS_SLV_TO_GLD_30M/PL_VV_TRANS_SLV_TO_GLD_30M.json, tests/test_enr_poi_contract.py, tests/test_pipeline_precheck_contract.py
+
+## ruff: FAIL
+[1m[91mB905[0m[1m `zip()` without an explicit `strict=` parameter[0m
+   [1m[94m--> [0mtests\test_pipeline_precheck_contract.py:128:46
+    [1m[94m|[0m
+[1m[94m126[0m [1m[94m|[0m     assert props["concurrency"] == 1
+[1m[94m127[0m [1m[94m|[0m     chain = ["PARTNER", "3P", "CMS", "ENRICH"]
+[1m[94m128[0m [1m[94m|[0m     for index, (suffix, source) in enumerate(zip(chain, SOURCES.values())):
+    [1m[94m|[0m                                              [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m129[0m [1m[94m|[0m         query = _by_name(doc, f"Get_Config_{suffix}")["typeProperties"]["scripts"][0]["text"]["value"]
+[1m[94m130[0m [1m[94m|[0m         assert "src_schema = 'lh_vv_bronze.dbo'" in query
+    [1m[94m|[0m
+[1m[96mhelp[0m[1m: Add explicit value for parameter `strict=`[0m
+
+Found 1 error.
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 19%]
+........................................................................ [ 38%]
+........................................................................ [ 58%]
+........................................................................ [ 77%]
+........................................................................ [ 97%]
+..........                                                               [100%]
+370 passed in 9.92s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-17 15:26:48 — PASS
+Files (5): pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json, pipelines/PL_VV_TRANS_SLV_TO_ENR_15M/PL_VV_TRANS_SLV_TO_ENR_15M.json, pipelines/PL_VV_TRANS_SLV_TO_GLD_30M/PL_VV_TRANS_SLV_TO_GLD_30M.json, tests/test_enr_poi_contract.py, tests/test_pipeline_precheck_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 19%]
+........................................................................ [ 38%]
+........................................................................ [ 58%]
+........................................................................ [ 77%]
+........................................................................ [ 97%]
+..........                                                               [100%]
+370 passed in 10.93s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-17 16:53:09 — PASS
+Files (5): pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json, pipelines/PL_VV_TRANS_SLV_TO_ENR_15M/PL_VV_TRANS_SLV_TO_ENR_15M.json, pipelines/PL_VV_TRANS_SLV_TO_GLD_30M/PL_VV_TRANS_SLV_TO_GLD_30M.json, tests/test_enr_poi_contract.py, tests/test_pipeline_precheck_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 19%]
+........................................................................ [ 38%]
+........................................................................ [ 58%]
+........................................................................ [ 77%]
+........................................................................ [ 97%]
+...........                                                              [100%]
+371 passed in 12.95s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+

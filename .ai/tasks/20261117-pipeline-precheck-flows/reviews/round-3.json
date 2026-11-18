@@ -1,0 +1,13 @@
+{
+  "round": 3,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json": "34f2692525923430caebbd5c3adb773c413e792dff6c01cd0b707e5339ecbe8c",
+    "pipelines/PL_VV_TRANS_SLV_TO_ENR_15M/PL_VV_TRANS_SLV_TO_ENR_15M.json": "269a35da2e1f4564968bb3cb019a9b26a95482834ef33ecd3a25841389053ea5",
+    "pipelines/PL_VV_TRANS_SLV_TO_GLD_30M/PL_VV_TRANS_SLV_TO_GLD_30M.json": "0b2e6601a5e2fba5293b2c3e6ddadb98f69c783c6327fff9ce4f189e96fe12bc",
+    "tests/test_enr_poi_contract.py": "c5c606bdba368df0fb553fccffa9d5f78099c0b57d71c0d0a0dc04916aae1a95",
+    "tests/test_pipeline_precheck_contract.py": "b64676c42bd4a6d09ffaf3e0833ae3211a38b10a268f6777238975eda5847ccc"
+  },
+  "elapsed_seconds": 220
+}

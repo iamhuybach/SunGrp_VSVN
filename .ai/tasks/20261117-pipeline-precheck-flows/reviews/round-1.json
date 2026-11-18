@@ -1,0 +1,30 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "PIPE-001",
+      "severity": "P1"
+    },
+    {
+      "id": "SQL-001",
+      "severity": "P1"
+    },
+    {
+      "id": "SQL-002",
+      "severity": "P1"
+    },
+    {
+      "id": "PIPE-002",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json": "5f3da3f650abb6263c695fa744b1e14ef36c9f511e67afabe0825812cc9fd91b",
+    "pipelines/PL_VV_TRANS_SLV_TO_ENR_15M/PL_VV_TRANS_SLV_TO_ENR_15M.json": "457af11f864f988e299c3faadf00f93b336b7c4f69761c31c4c5c6c402495475",
+    "pipelines/PL_VV_TRANS_SLV_TO_GLD_30M/PL_VV_TRANS_SLV_TO_GLD_30M.json": "7e9b953c95bc2544c3f520b37e58b6a697b0352f02682bcf239840d3b9406cfa",
+    "tests/test_enr_poi_contract.py": "c5c606bdba368df0fb553fccffa9d5f78099c0b57d71c0d0a0dc04916aae1a95",
+    "tests/test_pipeline_precheck_contract.py": "46e5f699b5872a361b9b79d91dac5ce3d6031d627460ccaf71da16bf333e7275"
+  },
+  "elapsed_seconds": 321
+}
