@@ -1,0 +1,20 @@
+{
+  "round": 3,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "SQL-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/mapping_gld_srv_poi_amenity.md": "52cdce074fbafe9ced76f0eb618678529af1e1194f1393752da8b8b6b4924cb6",
+    "notebooks/NB_CREATE_DDL.ipynb": "b3be1d78dab8555323a7b7ea4fefba2fcd5b277d4a25940ec72c890a58be68b4",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "a6067fe17f9eec9703dd2fa007f296d1dd20705190f4211d7c6deeba9faee785",
+    "notebooks/NB_SLV_POI_AMENITY.ipynb": "e1abb726009450e760d43835d5f91583c1183123b2c2a5dd5cd7222098a29a8a",
+    "tests/test_initial_ddl_contract.py": "f04da17b22b199c24fb887956d5a7f660607ce27179aec9a6609177e5f6df91b",
+    "tests/test_poi_amenity_contract.py": "cf50c8778fa3587a94a12508cc2d81017c583eda8a979f209189174964651e32",
+    "tests/test_poi_media_amenity_contract.py": "0679f9d6bbac9f752aa7cb45fd64abc56d17b6dcb466c023a1d5b528e99f7560"
+  },
+  "elapsed_seconds": 140
+}

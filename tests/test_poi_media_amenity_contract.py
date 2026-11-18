@@ -186,6 +186,10 @@ def test_amenity_untouched():
          1, 1, "RECOMPUTE", None, None, None),
         ("PL_VV_TRANS_SLV_TO_ENR_15M", "lh_vv_silver.dbo", "ref_dictionary_amenities", "lh_vv_silver.dbo", "slv_poi_amenity",
          1, 1, "RECOMPUTE", None, None, None),
+        ("PL_VV_TRANS_SLV_TO_ENR_15M", "lh_vv_silver.dbo", "slv_pn_business_services", "lh_vv_silver.dbo", "slv_poi_amenity",
+         1, 1, "RECOMPUTE", None, None, None),
+        ("PL_VV_TRANS_SLV_TO_ENR_15M", "lh_vv_silver.dbo", "slv_pn_business_service_i18ns", "lh_vv_silver.dbo", "slv_poi_amenity",
+         1, 1, "RECOMPUTE", None, None, None),
     ]
     for cid in ("mediaddlpy", "amenddlpy"):
         edges = _assign(_cell("NB_CREATE_DDL.ipynb", cid), "EDGES_ON")

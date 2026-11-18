@@ -8,15 +8,20 @@ Nguồn: `notebooks/NB_SLV_POI_AMENITY.ipynb` (markdown đầu, `OUT_COLS`, `bui
 
 - Bảng vật lý: `lh_vv_silver.dbo.slv_poi_amenity`. Notebook: `NB_SLV_POI_AMENITY`. `SPEC.trg_tbl = slv_poi_amenity`. `write_mode = MERGE`.
 - Grain / khóa MERGE: (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`).
-- `poi_id` trong `build` lấy từ bảng nguồn. Công thức hash của `poi_id` trong notebook này: `MISSING`.
+- `poi_id` google lấy từ `slv_3p_poi_amenity.poi_id` (`HASH_MD5_UUID(source_name, source_id)`). `poi_id` partner là `uuid_md5(business_service_id, 'partner')` (D-2).
+- `business_sector` google lấy từ `slv_poi_entity_non_enrich`. `business_sector` partner lấy từ `slv_pn_business_services` (D-12). NULL thì dừng, không ghi. Chuỗi rỗng được giữ và cảnh báo.
+- Partner chỉ đọc `amentities.facilities.specialty_tags` của i18n `locale = 'vi'`. Giá trị đó NULL thì lấy cùng path trên `slv_pn_business_services` (D-11). Left join từ điển `source_name = partner`, `is_active = true`, theo `amenity_raw` đã trim. Khớp thì `amenity_group`, `amenity`, `amenity_en`, `amenity_vi`, `service_flags` lấy từ dòng từ điển. Không khớp vẫn ghi, `amenity_group = specialty_tags`, bốn cột đó NULL. Một nhãn khớp nhiều dòng từ điển thì dừng, không ghi.
 - Pipeline của bảng này: `PL_VV_TRANS_SLV_TO_ENR_15M`. `load_mode = RECOMPUTE`, `priority = 1`, `is_active = 1`. Đây là pipeline hiện hữu của `slv_poi_amenity`, không gán cho bảng mới. `NB_SETUP_POI_AMENITY` ghi tên này. Cell `NODE_EDGES` của `NB_CREATE_DDL` còn literal `PL_VV_TRANS_SLV_TO_ENR_15P`.
-- Ba cạnh active, `src_schema` và `trg_schema` đều `lh_vv_silver.dbo`:
+- Năm cạnh active sau `amenpnpy` (`MODE = ON`), `src_schema` và `trg_schema` đều `lh_vv_silver.dbo`, `PL_VV_TRANS_SLV_TO_ENR_15M`, `load_mode = RECOMPUTE`:
   1. `slv_3p_poi_amenity`
   2. `slv_poi_entity_non_enrich`
   3. `ref_dictionary_amenities`
+  4. `slv_pn_business_services`
+  5. `slv_pn_business_service_i18ns`
+- Seed `NB_SETUP_INITIAL_DDL` ghi đủ năm cạnh trên, `is_active = 1`, `load_mode = RECOMPUTE`. Cell `amenpnpy` thêm hai cạnh partner trên môi trường đã có ba cạnh đầu.
 - Cạnh `slv_poi_entity` → `slv_poi_amenity`: `RETIRE`, `is_active = 0`.
 - `nb_name` trên cạnh: `NB_SETUP_POI_AMENITY` ghi `NULL` khi cột tồn tại.
-- `SPEC.inputs`: `amenity` = `slv_3p_poi_amenity`, `entity` = `slv_poi_entity_non_enrich`, `dict` = `ref_dictionary_amenities`. `required_inputs` là cả ba.
+- `SPEC.inputs`: `amenity` = `slv_3p_poi_amenity`, `entity` = `slv_poi_entity_non_enrich`, `dict` = `ref_dictionary_amenities`, `svc` = `slv_pn_business_services`, `i18n` = `slv_pn_business_service_i18ns`. `required_inputs` là cả năm.
 - Cột nghiệp vụ `OUT_COLS`: `poi_id`, `business_sector`, `amenity_group`, `amenity_raw`, `amenity`, `amenity_en`, `amenity_vi`, `service_flags`.
 - DDL: bốn cột khóa `STRING NOT NULL`. `amenity`, `amenity_en`, `amenity_vi`, `service_flags` là `STRING` nullable. Cột kỹ thuật nullable: `row_hash STRING`, `created_at TIMESTAMP`, `updated_at TIMESTAMP`, `deleted_at TIMESTAMP`.
 - `amenity_en` lấy từ `ref_dictionary_amenities.amenity_en` của dòng điều kiện đã khớp. `amenity` lấy từ `ref_dictionary_amenities.amenity`. Quy tắc U-1: `amenity = amenity_code(amenity_en)` (NFKD, bỏ dấu kết hợp, tách camelCase, viết thường, cụm ký tự không phải chữ/số thành `_`).
@@ -25,7 +30,7 @@ Nguồn: `notebooks/NB_SLV_POI_AMENITY.ipynb` (markdown đầu, `OUT_COLS`, `bui
 
 # 1. Table: `gld_srv_poi_amenity`
 
-`NB_GLD_SRV_POI_AMENITY` RECOMPUTE `lh_vv_gold.dbo.gld_srv_poi_amenity`. Bản 1-1 của `slv_poi_amenity`: `build` trả `select(*OUT_COLS)`. Grain và khóa MERGE: (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`). `write_mode = MERGE`. `SPEC.inputs`: `amenity` = `slv_poi_amenity`. `required_inputs` = (`amenity`,). `amenity_en` đi cùng `OUT_COLS`, ngay sau `amenity`.
+`NB_GLD_SRV_POI_AMENITY` RECOMPUTE `lh_vv_gold.dbo.gld_srv_poi_amenity`. Bản 1-1 của `slv_poi_amenity`: `build` trả `select(*OUT_COLS)`. Dòng partner đi cùng bản copy này tới API. `poi_id` google của amenity vẫn không nằm trên `gld_srv_poi_info` (D-2). Grain và khóa MERGE: (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`). `write_mode = MERGE`. `SPEC.inputs`: `amenity` = `slv_poi_amenity`. `required_inputs` = (`amenity`,). `amenity_en` đi cùng `OUT_COLS`, ngay sau `amenity`.
 
 JSON `GET /api/v1/pois/{poi_id}/amenities`, không query `lang`:
 

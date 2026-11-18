@@ -521,7 +521,9 @@ def test_amenity_node_contract():
     assert '"dict": "ref_dictionary_amenities"' in src
     assert 'pk=("poi_id", "business_sector", "amenity_group", "amenity_raw")' in src
     assert 'write_mode="MERGE"' in src
-    assert 'required_inputs=("amenity", "entity", "dict")' in src
+    assert 'required_inputs=("amenity", "entity", "dict", "svc", "i18n")' in src
+    assert '"svc": "slv_pn_business_services"' in src
+    assert '"i18n": "slv_pn_business_service_i18ns"' in src
     assert '"map<string,string>"' in src
     assert "F.broadcast(" in src
     assert "business_category" not in src
@@ -676,4 +678,103 @@ def test_match_conditions_carries_amenity_en():
         row = src[cond[:3]]
         assert cond[4] == row[4]
         assert cond[-4] == row[6]
+
+
+def test_partner_helpers():
+    match = _match_ns()
+    assert match["PARTNER"] == "partner"
+    assert match["PARTNER_GROUP"] == "specialty_tags"
+    assert match["PARTNER_TAGS"] == "struct<facilities:struct<specialty_tags:array<string>>>"
+    assert match["partner_multi_match"](["a", "a", "b"], ["a", "b", "c"]) == ["a"]
+    assert match["partner_multi_match"](["a", "a"], ["b"]) == []
+
+
+def test_partner_poi_id_matches_entity():
+    amenity = _nb("NB_SLV_POI_AMENITY.ipynb")
+    entity = _nb("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb")
+    expr = 'uuid_md5(F.col("id"), F.lit(PARTNER))'
+    assert expr in amenity
+    assert expr in entity
+
+
+def test_partner_live_filter_matches_entity():
+    amenity = _nb("NB_SLV_POI_AMENITY.ipynb")
+    entity = _nb("NB_SLV_POI_ENTITY_NON_ENRICH.ipynb")
+    expr = '~F.coalesce(F.col("deleted"), F.lit(False))'
+    assert expr in amenity
+    assert expr in entity
+
+
+def test_partner_branch_contract():
+    src = _nb("NB_SLV_POI_AMENITY.ipynb")
+    assert 'F.coalesce("_vi_tags", "_svc_tags")' in src
+    assert 'locale") == "vi"' in src
+    assert 'vi.join(svc, "id", "left")' in src
+    assert 'labels.join(ent, "poi_id")' in src
+    assert '"amenity_raw", "left"' in src
+    assert "PARTNER_GROUP" in src
+    assert "partner_multi_match(" in src
+    assert 'business_sector").isNull()' in src
+    pd = src[src.index("pd = "):src.index("dup_labels = ")]
+    assert "business_sector" not in pd
+    assert "get_json_object" not in src
+    assert "explode_outer" not in src
+
+
+def test_partner_seed_service_flags_null():
+    rows = _seed_ns()["SEED_ROWS"]
+    assert [row for row in rows if row[0] == "partner"]
+    assert all(row[6] is None for row in rows if row[0] == "partner")
+
+
+def test_google_branch_unchanged():
+    src = _nb("NB_SLV_POI_AMENITY.ipynb")
+    assert 'F.lower(F.trim("source_name")) == GOOGLE' in src
+    assert "match_coverage" in src
+    assert "legacy_blocks_write" in src
+    assert 'dropDuplicates(list(OUT_COLS) + ["_kind"])' in src
+
+
+def test_srv_info_and_entity_untouched():
+    info = _nb("NB_GLD_SRV_POI_INFO.ipynb")
+    assert "slv_enr_poi_destination" in info
+    assert "slv_enr_poi_info_multi_lang" in info
+    gold = _nb("NB_GLD_SRV_POI_AMENITY.ipynb")
+    assert "select(*OUT_COLS)" in gold
+
+
+def test_amenity_partner_edges_patch():
+    nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
+    cell = next(item for item in nb["cells"] if item.get("id") == "amenpnpy")
+    src = "".join(cell["source"])
+    start = src.index("EDGES_ON = [")
+    end = src.index("]", start)
+    ns: dict = {}
+    exec(src[start:end + 1], ns)  # noqa: S102
+    assert ns["EDGES_ON"] == [
+        (1, "slv_pn_business_services", "lh_vv_silver.dbo", "slv_poi_amenity", "RECOMPUTE", None, 1),
+        (2, "slv_pn_business_service_i18ns", "lh_vv_silver.dbo", "slv_poi_amenity", "RECOMPUTE", None, 1),
+    ]
+    assert "WHEN NOT MATCHED THEN INSERT" in src
+    assert "_refresh_lock()" in src
+    assert "MODE" in src
+    assert "PL_VV_TRANS_SLV_TO_ENR_15M" in src
+    assert "DELETE FROM" not in src
+    assert "DROP" not in src
+
+
+def test_initial_seed_has_partner_amenity_edges():
+    nb = json.loads((ROOT / "notebooks" / "NB_SETUP_INITIAL_DDL.ipynb").read_text(encoding="utf-8"))
+    cell = next(item for item in nb["cells"] if item.get("id") == "init_seed_ctrl")
+    ns: dict = {}
+    exec("".join(cell["source"]), ns)  # noqa: S102
+    enr = [row for row in ns["PIPELINE_CONFIG_ROWS"] if row[4] == "slv_poi_amenity" and row[0] == ns["_ENR"]]
+    assert [row[2] for row in enr] == [
+        "slv_3p_poi_amenity",
+        "slv_poi_entity_non_enrich",
+        "ref_dictionary_amenities",
+        "slv_pn_business_services",
+        "slv_pn_business_service_i18ns",
+    ]
+    assert all(row[5] == 1 and row[7] == "RECOMPUTE" for row in enr)
 

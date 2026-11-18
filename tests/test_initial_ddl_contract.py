@@ -552,6 +552,8 @@ def test_pipeline_config_rows_match_sources():
         expected.append((enr, silver, src, schema, trg, 1, 1, mode, None, None, None))
     for src in ("slv_3p_poi_amenity", "slv_poi_entity_non_enrich", "ref_dictionary_amenities"):
         expected.append((enr, silver, src, silver, "slv_poi_amenity", 1, 1, "RECOMPUTE", None, None, None))
+    for _seq, src, schema, target, mode, _nb_name, priority in _assign(_cell(ddl, "amenpnpy"), "EDGES_ON"):
+        expected.append((enr, silver, src, schema, target, 1, priority, mode, None, None, None))
     gld = "PL_VV_TRANS_SLV_TO_GLD_30M"
     renames = {old: new for old, new, _lease in _assign(_cell(ddl, "plcadpy"), "RENAMES")}
     assert renames[_assign(_cell(ddl, "srvpoipy"), "PL")] == gld
@@ -577,7 +579,7 @@ def test_pipeline_config_rows_match_sources():
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 76
+    assert len(expected) == 78
 
 
 def test_cms_seed_rows_present():
