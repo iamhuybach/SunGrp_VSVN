@@ -9,7 +9,7 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 ### 1.1. Xử lý
 
 - `SPEC.inputs`: `entity` = `slv_poi_entity_non_enrich`, `destination` = `slv_enr_poi_destination`, `multi_lang` = `slv_enr_poi_info_multi_lang`, `rating` = `slv_3p_poi_rating`, `review` = `slv_3p_poi_review`, `media` = `slv_poi_media_info`. `required_inputs` = (`entity`,). `entity`, `destination`, `multi_lang` gọi `live_only=False`. `rating`, `review` và `media`: notebook không truyền `live_only` (chỉ dòng `deleted_at IS NULL`). `write_mode = MERGE`.
-- `source_name` lấy từ `ent.source_name`. `DEST_COLS` không có `source_name`.
+- `source_name` lấy từ `ent.source_name`. `DEST_COLS` không có `source_name`. Entity đã đổi bronze `sgm` thành `google` trước khi lọc, nên gold thấy các dòng đó là `google`.
 - So khớp nguồn bằng `lower(trim(source_name))`. Dòng không phải `google` được giữ. Dòng `google` chỉ khi `poi_id` có trong cả `slv_enr_poi_destination` và `slv_enr_poi_info_multi_lang`.
 - Sau lọc, LEFT JOIN `des` theo `poi_id`.
 - D-SRV-22. `is_partner` = `coalesce(lower(trim(source_name)) = 'partner', false)`. Sau `_destination`, dòng destination còn lại gắn `_has_dest = true`. Không có dòng cùng `poi_id` khi `_has_dest` null sau LEFT JOIN. Dòng destination còn nhưng cột null vẫn `_has_dest` true, không thuộc nhánh này.

@@ -1,0 +1,93 @@
+# Verification 2026-11-19 09:29:16 — PASS
+Files (10): docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md, docs/context/mapping_gld_srv_poi_amenity.md, docs/context/mapping_gld_srv_poi_info.md, docs/context/mapping_gld_srv_poi_multi_lang.md, docs/context/mapping_gld_srv_poi_review.md, docs/context/mapping_poi_media_info.md, notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb, notebooks/NB_SLV_POI_ENTITY_NON_ENRICH.ipynb, pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json, tests/test_3p_sgm_identity_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 18%]
+........................................................................ [ 36%]
+........................................................................ [ 54%]
+........................................................................ [ 73%]
+........................................................................ [ 91%]
+.................................                                        [100%]
+393 passed in 7.92s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-19 09:37:38 — PASS
+Files (10): docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md, docs/context/mapping_gld_srv_poi_amenity.md, docs/context/mapping_gld_srv_poi_info.md, docs/context/mapping_gld_srv_poi_multi_lang.md, docs/context/mapping_gld_srv_poi_review.md, docs/context/mapping_poi_media_info.md, notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb, notebooks/NB_SLV_POI_ENTITY_NON_ENRICH.ipynb, pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json, tests/test_3p_sgm_identity_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 18%]
+........................................................................ [ 36%]
+........................................................................ [ 54%]
+........................................................................ [ 73%]
+........................................................................ [ 91%]
+.................................                                        [100%]
+393 passed in 7.04s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-19 10:00:20 — PASS
+Files (10): docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md, docs/context/mapping_gld_srv_poi_amenity.md, docs/context/mapping_gld_srv_poi_info.md, docs/context/mapping_gld_srv_poi_multi_lang.md, docs/context/mapping_gld_srv_poi_review.md, docs/context/mapping_poi_media_info.md, notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb, notebooks/NB_SLV_POI_ENTITY_NON_ENRICH.ipynb, pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json, tests/test_3p_sgm_identity_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: PASS
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 18%]
+........................................................................ [ 36%]
+........................................................................ [ 54%]
+........................................................................ [ 73%]
+........................................................................ [ 91%]
+..................................                                       [100%]
+394 passed in 8.33s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+

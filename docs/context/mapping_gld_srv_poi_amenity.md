@@ -8,7 +8,7 @@ Nguồn: `notebooks/NB_SLV_POI_AMENITY.ipynb` (markdown đầu, `OUT_COLS`, `bui
 
 - Bảng vật lý: `lh_vv_silver.dbo.slv_poi_amenity`. Notebook: `NB_SLV_POI_AMENITY`. `SPEC.trg_tbl = slv_poi_amenity`. `write_mode = MERGE`.
 - Grain / khóa MERGE: (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`).
-- `poi_id` google lấy từ `slv_3p_poi_amenity.poi_id` (`HASH_MD5_UUID(source_name, source_id)`). `poi_id` partner là `uuid_md5(business_service_id, 'partner')` (D-2).
+- `poi_id` google lấy từ `slv_3p_poi_amenity.poi_id` (`HASH_MD5_UUID(source_name, source_id)`). POI bắt nguồn từ bronze `sgm` dùng cùng `poi_id` và từ điển `source_name = google`. `poi_id` partner là `uuid_md5(business_service_id, 'partner')` (D-2).
 - `business_sector` google lấy từ `slv_poi_entity_non_enrich`. `business_sector` partner lấy từ `slv_pn_business_services` (D-12). NULL thì dừng, không ghi. Chuỗi rỗng được giữ và cảnh báo.
 - Partner chỉ đọc `amentities.facilities.specialty_tags` của i18n `locale = 'vi'`. Giá trị đó NULL thì lấy cùng path trên `slv_pn_business_services` (D-11). Left join từ điển `source_name = partner`, `is_active = true`, theo `amenity_raw` đã trim. Khớp thì `amenity_group`, `amenity`, `amenity_en`, `amenity_vi`, `service_flags` lấy từ dòng từ điển. Không khớp vẫn ghi, `amenity_group = specialty_tags`, bốn cột đó NULL. Một nhãn khớp nhiều dòng từ điển thì dừng, không ghi.
 - Pipeline của bảng này: `PL_VV_TRANS_SLV_TO_ENR_15M`. `load_mode = RECOMPUTE`, `priority = 1`, `is_active = 1`. Đây là pipeline hiện hữu của `slv_poi_amenity`, không gán cho bảng mới. `NB_SETUP_POI_AMENITY` ghi tên này. Cell `NODE_EDGES` của `NB_CREATE_DDL` còn literal `PL_VV_TRANS_SLV_TO_ENR_15P`.

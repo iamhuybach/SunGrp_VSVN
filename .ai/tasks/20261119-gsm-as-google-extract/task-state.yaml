@@ -1,0 +1,87 @@
+schema_version: 1
+task:
+  id: 20261119-gsm-as-google-extract
+  title: Extract sgm through the current Google 3P path
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-11-19'
+  updated_at: '2026-11-19'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: true
+  runtime_required: true
+  signals:
+  - stateful_logic
+  - event_ordering
+  - idempotency
+  - design_tradeoffs
+  - cross_state_impact
+  - runtime_proof_required
+  - data_evidence_required
+  - data_model_change
+scope:
+  systems:
+  - fabric-bronze
+  - fabric-silver
+  - fabric-gold
+  - fabric-pipeline
+  files:
+  - notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb
+  - notebooks/NB_CREATE_DDL.ipynb
+  - pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json
+  - notebooks/NB_SLV_POI_ENTITY_NON_ENRICH.ipynb
+  - notebooks/NB_SLV_POI_AMENITY.ipynb
+  - notebooks/NB_SLV_POI_MEDIA_INFO.ipynb
+  - notebooks/NB_ENR_POI_INFO.ipynb
+  - notebooks/NB_GLD_SRV_POI_INFO.ipynb
+  - docs/context/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.md
+  - tests/test_3p_sgm_identity_contract.py
+  - docs/context/mapping_gld_srv_poi_amenity.md
+  - docs/context/mapping_gld_srv_poi_info.md
+  - docs/context/mapping_gld_srv_poi_multi_lang.md
+  - docs/context/mapping_poi_media_info.md
+  - docs/context/mapping_gld_srv_poi_review.md
+review_plan:
+  required_reviewers:
+  - state-correctness-reviewer
+  - spark-runtime-reviewer
+  - sql-data-reviewer
+  - fabric-pipeline-reviewer
+  round: 3
+  extra_round_approved_on: '2026-11-19'
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: pass
+  runtime: pass
+rounds:
+  verification: 0
+  review: 3
+  architecture: 2
+  runtime_failure: 0
+open_findings: []

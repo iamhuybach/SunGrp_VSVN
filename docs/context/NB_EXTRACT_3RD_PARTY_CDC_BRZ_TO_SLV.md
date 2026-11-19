@@ -50,7 +50,7 @@ Thay phần extract của chuỗi cũ NB_00 → NB_30 (3P):
 | `pl_name`, `run_id`, `src_schema`, `src_tbl` | FL_00, "", `lh_vv_bronze.dbo`, `brz_3rd_crawler_poi_stream` | |
 | `allow_full_scan`, `max_retries`, `table_filter`, `full_reload`, `dry_run`, `stop_on_failure`, `cast_null_policy`, `running_timeout_minutes` | như partner | `dry_run` không raise `CastNullError` (để xem đủ mọi bảng) |
 | `max_parallel` | 12 | [SỬA 10/10] 9 bảng active cùng một wave |
-| `sources` | `google` | `source_name` được xử lý (CSV, không phân biệt hoa thường); ngoài danh sách → IGNORED `OUT_OF_SCOPE`; rỗng = mọi nguồn |
+| `sources` | `google,sgm` | `source_name` được xử lý (CSV, không phân biệt hoa thường); ngoài danh sách → IGNORED `OUT_OF_SCOPE`; rỗng = mọi nguồn. `sgm` đi cùng luồng google |
 | `doc_key_column` | `poi_id` | Cột định danh tài liệu, phải có trong registry của **mọi** bảng |
 | `state_key` | `doc` | `doc`: `entity_key` = `poi_id` (mọi bảng; tài liệu cũ đến trễ bị bỏ qua ở mọi bảng). `row`: khoá bảng (bảng con nhận phần tử chỉ có ở tài liệu cũ đến trễ; state ~3 lần nhiều dòng hơn). Đổi không cần reset state |
 
@@ -62,7 +62,7 @@ Thay phần extract của chuỗi cũ NB_00 → NB_30 (3P):
 | `RAW_EVENT_ID` | `event_id` |
 | `RAW_DOC_ID` | (`source_name`, `source_id`) — bắt buộc; cột đầu lọc theo `sources` |
 | `RAW_LANG` | `language_code` (ngôn ngữ gốc của tài liệu) |
-| `IGNORE_REASONS` | `OUT_OF_SCOPE` |
+| `IGNORE_REASONS` | `OUT_OF_SCOPE`, `GOOGLE_PRIORITY` |
 | `ARRAY_MODES` | `DOC_ARRAY` |
 
 Cột thứ tự = `watermark_column` của dòng watermark (`crawled_at`), không viết cứng. Cột raw khác khai báo trong registry dạng `_doc.<cột>`.
@@ -118,6 +118,7 @@ Luật phân loại tài liệu (luật đầu tiên khớp quyết định):
 |---|---|---|---|
 | 1 | `source_name` / `source_id` NULL hoặc rỗng | REJECTED | `MISSING_ENTITY_KEY` |
 | 2 | `source_name` ngoài `sources` | IGNORED | `OUT_OF_SCOPE` |
+| 2b | `sgm` trên `poi_id` đang thuộc `google` | IGNORED | `GOOGLE_PRIORITY` |
 | 3 | Payload NULL / rỗng / không phải JSON object | REJECTED | `INVALID_PAYLOAD` |
 | 4 | `crawled_at` NULL | REJECTED | `MISSING_EVENT_ORDER` |
 

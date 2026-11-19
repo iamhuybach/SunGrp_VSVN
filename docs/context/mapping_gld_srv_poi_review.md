@@ -6,7 +6,7 @@
 - [SỬA 04/11] Bảng gốc là `slv_3p_poi_review`, một dòng một `review_id`. Không đọc `slv_enr_poi_review_multi_lang`.
 - `slv_3p_poi_review` LEFT JOIN `slv_3p_poi_rating` on `poi_id`. `poi_id` trùng trên `slv_3p_poi_rating` thì dừng, không chọn dòng.
 - Không có cột `lang` (D-SRV-LANG). `title` luôn NULL: `slv_3p_poi_review` không có cột `title` và không thêm (D-SRV-TEXT). `review_text` lấy từ `slv_3p_poi_review.text`.
-- `source_name` (D-3): literal `google` trong `NB_GLD_SRV_POI_REVIEW`. Không join thêm bảng. Bảng nguồn thuộc luồng Google.
+- `source_name` (D-3): literal `google` trong `NB_GLD_SRV_POI_REVIEW`. Không join thêm bảng. Bảng nguồn thuộc luồng Google. Review của event `sgm` có `review_id` hash `google`; review khớp đúng `source_id`, tên tác giả và `publishTime` với `google` thành cùng một `review_id` (D-4 B).
 
 ## 2. Field Mapping
 

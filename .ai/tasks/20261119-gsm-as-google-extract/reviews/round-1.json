@@ -1,0 +1,29 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "STATE-001",
+      "severity": "P1"
+    },
+    {
+      "id": "SPARK-001",
+      "severity": "P1"
+    },
+    {
+      "id": "SQL-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/mapping_gld_srv_poi_amenity.md": "cd47dd0e3353503fa9026c427d394707409f64e351f959382fefe84beb2ac47b",
+    "docs/context/mapping_gld_srv_poi_info.md": "88e767f975e0ddde02a764a4fd733dbd684353097713fb2d4e8c50869d6827da",
+    "docs/context/mapping_gld_srv_poi_multi_lang.md": "f6033e2520688cc81c1e09e0d5a2c02ea71a622ef68d85abec1865143eadecee",
+    "docs/context/mapping_gld_srv_poi_review.md": "fe3d9670bec3453693677fa4f16809609bad4123c461257e21dc75a7fed54b3d",
+    "docs/context/mapping_poi_media_info.md": "f8f19177f9b267ec59be02703c7311dea5fc0a3dbf78d84fcfe13f3691cb6c9f",
+    "notebooks/NB_EXTRACT_3RD_PARTY_CDC_BRZ_TO_SLV.ipynb": "d5b8d3d1b485ad97fa0317928b8d5e2a50eb8c49f16a4ce62623e5eed4eb9716",
+    "notebooks/NB_SLV_POI_ENTITY_NON_ENRICH.ipynb": "762189a51eee20ac0117729bbef995efa1fc8733f119269e36a788fc65150499",
+    "pipelines/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00/PL_VV_TRANSFORM_BRONZE_TO_SILVER_FL_00.json": "a1eb687d47c022423fdc4caaa4b4aa6ee13da211c81cf2911c6f1a96c7179a91"
+  },
+  "elapsed_seconds": 360
+}
