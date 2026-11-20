@@ -1,0 +1,39 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "GATE-001",
+      "severity": "P0"
+    },
+    {
+      "id": "GATE-002",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-003",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-004",
+      "severity": "P1"
+    },
+    {
+      "id": "GATE-005",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "notebooks/NB_CREATE_DDL.ipynb": "23fed99ca0a84738b5c6f228d8fdb2da25b106527bd338c0ede3f47b67682222",
+    "notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb": "f788768258c7cee1cc8b75dbac91b8f7783d579cb2d2de5d87b6317dafae3b44",
+    "notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb": "2975b3bf3db263cb66ca90813dff691bb9b4011df117833e6c5a423a88a9e7e6",
+    "tests/test_enr_extract_contract.py": "4ddeb91db673f1942fc293ec3d80b0f63a2b4c715b9419bcb2a38406ab185f08",
+    "tests/test_enr_poi_contract.py": "657cb7ab8fca4b57ef96fe1a576dbf18d4eb6a034777e9c1728273d9da76487a",
+    "tests/test_gld_srv_poi_contract.py": "e041fa6aee52122636b047376a8daa336b717ece34cac7059a4651de275f914e",
+    "tests/test_initial_ddl_contract.py": "aae0c5d58ec31017959e238c49e0b58b6fd0ec81dd87ace1e4b35e66ed1cb574",
+    "tests/test_legacy_gold_poi_init_contract.py": "4d027231b58a15c3d505f547751162f4a291dd0628874c50df05b0c186dc8ad1",
+    "tests/test_poi_entity_contract.py": "c593cbced7dccbec52686572b0c2e1131125a7b2520b1a8dc9df9534f61ebe75",
+    "tests/test_srv_poi_serving_contract.py": "f5271787acc2b667f610f4b5c55a1019640f03d3752f943dd4053b3202ce52d9"
+  },
+  "elapsed_seconds": 343
+}

@@ -1,0 +1,288 @@
+# Verification 2026-11-19 23:24:03 — PASS
+Files (10): notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb, tests/test_enr_extract_contract.py, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_legacy_gold_poi_init_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........................................................................ [ 53%]
+........................................................................ [ 71%]
+........................................................................ [ 89%]
+...........................................                              [100%]
+403 passed in 7.91s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-19 23:33:29 — PASS
+Files (10): notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb, tests/test_enr_extract_contract.py, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_legacy_gold_poi_init_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........................................................................ [ 53%]
+........................................................................ [ 71%]
+........................................................................ [ 89%]
+...........................................                              [100%]
+403 passed in 12.44s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-19 23:51:32 — PASS
+Files (10): notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb, tests/test_enr_extract_contract.py, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_legacy_gold_poi_init_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........................................................................ [ 53%]
+........................................................................ [ 71%]
+........................................................................ [ 89%]
+...........................................                              [100%]
+403 passed in 7.92s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-20 01:18:41 — PASS
+Files (10): notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb, tests/test_enr_extract_contract.py, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_legacy_gold_poi_init_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........................................................................ [ 53%]
+........................................................................ [ 71%]
+........................................................................ [ 89%]
+...........................................                              [100%]
+403 passed in 9.57s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-20 02:14:18 — PASS
+Files (11): docs/context/mapping_legacy_gold_to_gld_srv.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb, tests/test_enr_extract_contract.py, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_legacy_gold_poi_init_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........................................................................ [ 53%]
+........................................................................ [ 71%]
+........................................................................ [ 89%]
+............................................                             [100%]
+404 passed in 8.26s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-20 09:38:49 — PASS
+Files (11): docs/context/mapping_legacy_gold_to_gld_srv.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb, tests/test_enr_extract_contract.py, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_legacy_gold_poi_init_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........................................................................ [ 53%]
+........................................................................ [ 71%]
+........................................................................ [ 88%]
+.............................................                            [100%]
+405 passed in 9.46s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-20 10:01:24 — PASS
+Files (11): docs/context/mapping_legacy_gold_to_gld_srv.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb, tests/test_enr_extract_contract.py, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_legacy_gold_poi_init_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........................................................................ [ 53%]
+........................................................................ [ 71%]
+........................................................................ [ 88%]
+.............................................                            [100%]
+405 passed in 7.59s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-20 10:15:27 — PASS
+Files (11): docs/context/mapping_legacy_gold_to_gld_srv.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb, tests/test_enr_extract_contract.py, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_legacy_gold_poi_init_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........................................................................ [ 53%]
+........................................................................ [ 71%]
+........................................................................ [ 88%]
+.............................................                            [100%]
+405 passed in 7.72s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+
+# Verification 2026-11-20 10:30:16 — PASS
+Files (11): docs/context/mapping_legacy_gold_to_gld_srv.md, notebooks/NB_CREATE_DDL.ipynb, notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb, notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb, tests/test_enr_extract_contract.py, tests/test_enr_poi_contract.py, tests/test_gld_srv_poi_contract.py, tests/test_initial_ddl_contract.py, tests/test_legacy_gold_poi_init_contract.py, tests/test_poi_entity_contract.py, tests/test_srv_poi_serving_contract.py
+
+## ruff: PASS
+[1;32mAll checks passed![0m
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........................................................................ [ 53%]
+........................................................................ [ 71%]
+........................................................................ [ 88%]
+.............................................                            [100%]
+405 passed in 9.85s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+

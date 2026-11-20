@@ -215,8 +215,8 @@ def _info_spec() -> dict:
 
 def test_info_cover_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-6:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy"]
-    ids = ids[:-6]
+    assert ids[-8:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy"]
+    ids = ids[:-8]
     assert ids[-8:-6] == ["srvcovermd", "srvcoverpy"]
     assert ids[-6:-4] == ["poidestmd", "poidestpy"]
     assert ids[-4:-2] == ["enrmergemd", "enrmergepy"]
@@ -302,8 +302,8 @@ def test_info_cover_mapping_and_pg_ddl():
 
 def test_destination_name_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-6:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy"]
-    ids = ids[:-6]
+    assert ids[-8:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy"]
+    ids = ids[:-8]
     assert ids[-6:-4] == ["poidestmd", "poidestpy"]
     assert ids[-4:-2] == ["enrmergemd", "enrmergepy"]
     assert ids[-2:] == ["srvactivemd", "srvactivepy"]
