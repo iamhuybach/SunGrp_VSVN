@@ -1,6 +1,6 @@
 # Mapping gold cũ sang năm bảng gold mới
 
-Nguồn cũ: `sgr_visitvn_prd_batch.lh_vv_gold.dbo`. Đích: `sgr_visitvn_dev.lh_vv_gold.dbo`. Đây là mapping của lần init `NB_SETUP_LEGACY_GOLD_POI`. Pipeline định kỳ vẫn đọc silver, không đọc bảng này.
+Nguồn cũ: `sgr_visitvn_prd_batch.lh_vv_gold.dbo`. Đích: `<p_target_ws>.lh_vv_gold.dbo`. Đây là mapping của lần init `NB_SETUP_LEGACY_GOLD_POI`. Pipeline định kỳ vẫn đọc silver, không đọc bảng này.
 
 Mỗi cột của năm bảng gold mới có một dòng. Cột ghi `Không nạp` là cột gold cũ không có giá trị tương ứng, nên dòng init để NULL. Lần chạy sau cập nhật dòng `load_origin = LEGACY_INIT` và không sửa dòng do pipeline ghi.
 
@@ -25,7 +25,7 @@ Thứ tự cột info, multi-lang và review theo `DESCRIBE` trên DEV ngày 202
 | 4 | `business_sector` | `poi_master` | `business_sector` | Cùng tên. Phải giống nhau giữa các lang |
 | 5 | `business_category` | `poi_master` | `business_category` | Cùng tên. Phải giống nhau giữa các lang |
 | 6 | `subcategory_tags` | `poi_master` | `subcategory_tags` | Giữ chuỗi. Phải giống nhau giữa các lang |
-| 7 | `destination_id` | `poi_master` | `destination_ids` | Phần tử đầu của JSON array, lấy từ dòng `lang = vi` |
+| 7 | `destination_id` | `poi_master` | `destination_ids` | Cả JSON array, `to_json(from_json(.., array<string>))`, mọi lang của `poi_id` mới phải giống nhau; shape khác hoặc lệch thì dừng USER_DECISION |
 | 8 | `destination_name` | `poi_master` | `destination_names` | Nguyên chuỗi JSON, dòng `lang = vi` |
 | 9 | `full_address` | `poi_detail` | `poi_address_json` | `$.full_address` |
 | 10 | `street` | `poi_detail` | `poi_address_json` | `$.address_line1` |
@@ -57,7 +57,7 @@ Thứ tự cột info, multi-lang và review theo `DESCRIBE` trên DEV ngày 202
 | 36 | `deleted_at` |  |  | NULL |
 | 37 | `load_origin` |  |  | Hằng `LEGACY_INIT` trên dòng init chèn |
 
-## 2. `gld_srv_poi_multi_lang` (13 cột)
+## 2. `gld_srv_poi_multi_lang` (14 cột)
 
 `lang` là `poi_master.lang` của đúng `poi_id` cũ. Nội dung lấy từ `poi_enrichment_display` cùng `poi_id` cũ.
 
@@ -65,17 +65,18 @@ Thứ tự cột info, multi-lang và review theo `DESCRIBE` trên DEV ngày 202
 |---|---|---|---|---|
 | 1 | `poi_id` | `poi_master` | `source_id`, `ingestion_source` | `poi_id` trên map |
 | 2 | `lang` | `poi_master` | `lang` | Qua map |
-| 3 | `source_name` | `poi_master` | `ingestion_source` | Qua map. Không lấy `poi_enrichment_display.ingestion_source` |
-| 4 | `time_to_spend` | `poi_enrichment_display` | `time_to_spend` | Cùng tên |
-| 5 | `best_time` | `poi_enrichment_display` | `best_time` | Cùng tên |
-| 6 | `cost` | `poi_enrichment_display` | `cost` | Cùng tên, kiểu string |
-| 7 | `description` | `poi_enrichment_display` | `description` | Cùng tên |
-| 8 | `experience` | `poi_enrichment_display` | `experiences` | Đổi tên cột |
-| 9 | `row_hash` |  |  | Hash lúc ghi |
-| 10 | `created_at` |  |  | Thời điểm init |
-| 11 | `updated_at` |  |  | Thời điểm init |
-| 12 | `deleted_at` |  |  | NULL |
-| 13 | `load_origin` |  |  | Hằng `LEGACY_INIT` trên dòng init chèn |
+| 3 | `poi_name` | `poi_master` | `poi_name` | Dòng legacy cùng lang. Nhiều tên thì NULL |
+| 4 | `source_name` | `poi_master` | `ingestion_source` | Qua map. Không lấy `poi_enrichment_display.ingestion_source` |
+| 5 | `time_to_spend` | `poi_enrichment_display` | `time_to_spend` | Cùng tên |
+| 6 | `best_time` | `poi_enrichment_display` | `best_time` | Cùng tên |
+| 7 | `cost` | `poi_enrichment_display` | `cost` | Cùng tên, kiểu string |
+| 8 | `description` | `poi_enrichment_display` | `description` | Cùng tên |
+| 9 | `experience` | `poi_enrichment_display` | `experiences` | Đổi tên cột |
+| 10 | `row_hash` |  |  | Hash lúc ghi |
+| 11 | `created_at` |  |  | Thời điểm init |
+| 12 | `updated_at` |  |  | Thời điểm init |
+| 13 | `deleted_at` |  |  | NULL |
+| 14 | `load_origin` |  |  | Hằng `LEGACY_INIT` trên dòng init chèn |
 
 ## 3. `gld_srv_poi_review` (15 cột)
 

@@ -305,8 +305,8 @@ def test_review_mapping_targets():
 
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-8:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy"]
-    ids = ids[:-8]
+    assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
+    ids = ids[:-10]
     assert ids[-30:-22] == [
         "srvpoimd", "srvpoipy", "srvratemd", "srvratepy",
         "mediaddlmd", "mediaddlpy", "amenddlmd", "amenddlpy",
@@ -551,8 +551,8 @@ def test_review_source_patch_cell():
     assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
     assert "raise failed from cleanup_exc" in patch
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-8:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy"]
-    ids = ids[:-8]
+    assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
+    ids = ids[:-10]
     assert ids[-16:-12] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
     assert ids[-12:-10] == ["mlsrcmd", "mlsrcpy"]
     assert ids[-10:-8] == ["cmscfgmd", "cmscfgpy"]

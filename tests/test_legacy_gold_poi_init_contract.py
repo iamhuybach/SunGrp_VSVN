@@ -105,7 +105,7 @@ def test_legacy_upsert_updates_only_legacy_rows():
     assert '"multi_lang", True)' in main
     assert 'display["experiences"].alias("experience")' in main
     assert '"media", "media", True, True)' in main
-    assert 'MEDIA_FQ = "sgr_visitvn_dev.lh_vv_gold.dbo.gld_srv_poi_media_gallery"' in _cell(
+    assert 'MEDIA_FQ = f"{TARGET_WS}.lh_vv_gold.dbo.gld_srv_poi_media_gallery"' in _cell(
         _notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpconst")
 
 
@@ -117,14 +117,18 @@ def test_new_poi_id_hash_order():
     assert "partner_portal" not in _func(source, "new_poi_id")
 
 
-def test_init_write_targets_dev_only():
+def test_init_target_workspace_param():
     notebook = _notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb")
     constants = _cell(notebook, "lgpconst")
-    for name in ("MAP_FQ", "INFO_FQ", "ML_FQ", "REV_FQ"):
-        assert f'{name} = "sgr_visitvn_dev.' in constants
+    assert 'p_target_ws = ""' in _cell(notebook, "lgpparams")
+    assert "sgr_visitvn_dev" not in constants
     assert 'OLD = "sgr_visitvn_prd_batch.lh_vv_gold.dbo"' in constants
-    assert 'fq.startswith("sgr_visitvn_dev.")' in _cell(notebook, "lgpmain")
+    for name in ("MAP_FQ", "INFO_FQ", "ML_FQ", "REV_FQ", "AMENITY_FQ", "MEDIA_FQ", "DICT_FQ"):
+        assert f'{name} = f"{{TARGET_WS}}.' in constants
     main = _cell(notebook, "lgpmain")
+    assert "sgr_visitvn_dev" not in main
+    assert "_workspace_name() != TARGET_WS" in main
+    assert 'fq.startswith(TARGET_WS + ".")' in main
     assert 'F.col("_s_legacy_poi_id").isNotNull()' in main
     assert "LEGACY_INIT:{EXEC}" in main
     assert "isinstance(raw, dict)" in main
@@ -140,7 +144,8 @@ def test_legacyid_ddl_cell_contract():
     assert 'OWNER = ("load_origin", "STRING")' in source
     for table in ("gld_srv_poi_info", "gld_srv_poi_multi_lang", "gld_srv_poi_review", "gld_srv_poi_amenity", "gld_srv_poi_media_gallery"):
         assert table in source
-    assert 'WS = "sgr_visitvn_dev"' in source
+    assert "currentWorkspaceName" in source
+    assert "sgr_visitvn_dev" not in source
 
 
 def test_amenity_enum_values_and_dictionary_join():
@@ -268,3 +273,52 @@ def test_init_is_24_7_path():
     assert '"hours_24_7_partner_n"' in info
     assert '.otherwise(F.coalesce(F.col("_hours_reason"), F.lit("NO_DETAIL")))' not in info
     assert 'total_reviews").cast("long")).cast("int").alias("review_count")' not in info
+
+
+def test_destination_ids_shape_classes():
+    source = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgppure")
+    assert 'DEST_ACCEPT = ("NULL", "EMPTY", "STRINGS")' in source
+    namespace = {}
+    exec(_func(source, "destination_ids_shape"), namespace)  # noqa: S102
+    shape = namespace["destination_ids_shape"]
+    assert shape(None) == "NULL"
+    assert shape("") == "NOT_JSON" and shape("abc") == "NOT_JSON"
+    assert shape('{"a":1}') == "NOT_ARRAY" and shape('"x"') == "NOT_ARRAY"
+    assert shape("[]") == "EMPTY"
+    assert shape('["a","b"]') == "STRINGS" and shape(' ["a"] ') == "STRINGS"
+    assert shape('["a",null]') == "NULL_ELEMENT"
+    assert shape("[1]") == "NON_STRING_ELEMENT" and shape('[["a"]]') == "NON_STRING_ELEMENT"
+
+
+def test_init_destination_full_array_before_writes():
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    assert "$[0]" not in main
+    assert 'F.to_json(F.from_json(F.col("_ids"), "array<string>"))' in main
+    assert "USER_DECISION destination_ids" in main
+    assert main.index("USER_DECISION destination_ids") < main.index("write_insert_only(MAP_FQ")
+    assert 'master_cols = ["is_recommended", "destination_name"]' in main
+    assert main.index('info_src.join(dest_one, "poi_id", "left")') < main.index("n_before = info_src.count()")
+
+
+def test_init_ml_poi_name_per_lang():
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    assert 'F.col("_pm_name").alias("poi_name")' in main
+    assert 'name_g = picked.groupBy("poi_id", "lang")' in main
+    assert "name_conflict_n" in main
+    assert "chạy lgpnamepy của NB_CREATE_DDL trước" in main
+    assert 'pay = ["source_name", *ML_PAY, "experience"]' in main
+
+
+def test_poi_name_ddl_cell_contract():
+    source = _cell(_notebook("NB_CREATE_DDL.ipynb"), "lgpnamepy")
+    assert 'NEW_COL = ("poi_name", "STRING")' in source
+    assert 'ANCHOR = "lang"' in source
+    order = ["held = True", "Dừng trước khi ghi", "_refresh_lock()", "ADD COLUMNS", "Sau khi ghi", "finally:"]
+    assert [source.index(token) for token in order] == sorted(source.index(token) for token in order)
+    code = "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
+    for token in ("DROP", "DELETE", "TRUNCATE", "INSERT", "UPDATE {CFG}", "sgr_visitvn_dev"):
+        assert token not in code
+    assert code.count("ADD COLUMNS") == 1 and " AFTER " in code
+    assert "LEASE_MINUTES = 90" in source and "lock_exec_id = '{LOCK}'" in source
+    assert "raise failed from cleanup_exc" in source
+

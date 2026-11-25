@@ -215,8 +215,8 @@ def _info_spec() -> dict:
 
 def test_info_cover_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-8:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy"]
-    ids = ids[:-8]
+    assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
+    ids = ids[:-10]
     assert ids[-8:-6] == ["srvcovermd", "srvcoverpy"]
     assert ids[-6:-4] == ["poidestmd", "poidestpy"]
     assert ids[-4:-2] == ["enrmergemd", "enrmergepy"]
@@ -302,8 +302,8 @@ def test_info_cover_mapping_and_pg_ddl():
 
 def test_destination_name_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
-    assert ids[-8:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy"]
-    ids = ids[:-8]
+    assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
+    ids = ids[:-10]
     assert ids[-6:-4] == ["poidestmd", "poidestpy"]
     assert ids[-4:-2] == ["enrmergemd", "enrmergepy"]
     assert ids[-2:] == ["srvactivemd", "srvactivepy"]
@@ -403,3 +403,28 @@ def test_new_columns_stay_out_of_api():
         for path in poi_docs.rglob("*"):
             if path.is_file():
                 assert "ingestion_ts" not in path.read_text(encoding="utf-8"), path
+
+
+def test_multi_lang_poi_name_across_layers():
+    namespace: dict = {}
+    exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), namespace)  # noqa: S102
+    spec = next(item for item in namespace["TABLE_SPECS"] if item["fq"] == "lh_vv_gold.dbo.gld_srv_poi_multi_lang")
+    names = [col[0] for col in spec["cols"]]
+    assert names[names.index("lang") + 1] == "poi_name"
+    assert spec["cols"][names.index("poi_name")][1] == "STRING"
+    source = _cell_source("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild")
+    assert _literal(source, "OUT_COLS")[2] == "poi_name"
+    assert "poi_name" not in _literal(source, "ML_COLS")
+    assert '.withColumn("poi_name", F.lit(None).cast("string"))' in source
+    assert 'F.lit(None).alias("poi_name")' in source
+    pg = PG_DDL.read_text(encoding="utf-8")
+    assert "    lang text NOT NULL,\n    poi_name text,\n" in pg
+    assert "ADD COLUMN poi_name text" in pg
+    if SERVICE.is_dir():
+        entity = (ENTITY_DIR / "SrvPoiMultiLang.java").read_text(encoding="utf-8")
+        assert entity.index('@Column(name = "lang", nullable = false)') < entity.index('@Column(name = "poi_name")')
+        java = SERVICE / "src" / "main" / "java" / "vn" / "visitvietnam" / "dataserving"
+        for folder in ("service", "api"):
+            for path in (java / folder).rglob("*.java"):
+                assert "SrvPoiMultiLang::getPoiName" not in path.read_text(encoding="utf-8")
+

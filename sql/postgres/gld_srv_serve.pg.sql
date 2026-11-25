@@ -20,6 +20,7 @@
 -- DB đã có bảng trước 20261116-enr-lang-destination-from-bronze: chạy tay ALTER TABLE apps.srv_poi_multi_lang RENAME COLUMN cost_vnd TO cost; (runbook B5.2).
 --   ALTER TABLE apps.srv_poi_info ADD COLUMN is_active boolean;
 --   ALTER TABLE apps.<srv_poi_info | srv_poi_multi_lang | srv_poi_amenity | srv_poi_media_gallery | srv_poi_review> ADD COLUMN ingestion_ts timestamp without time zone;
+-- DB đã có bảng trước 20261125-legacy-init-destination-and-poi-name: chạy tay ALTER TABLE apps.srv_poi_multi_lang ADD COLUMN poi_name text;
 --   ADD COLUMN đặt cột ở cuối bảng: thứ tự vật lý khác CREATE TABLE dưới đây. Nạp dữ liệu phải theo tên cột.
 
 BEGIN;
@@ -68,6 +69,7 @@ CREATE TABLE apps.srv_poi_info (
 CREATE TABLE apps.srv_poi_multi_lang (
     poi_id text NOT NULL,
     lang text NOT NULL,
+    poi_name text,
     source_name text,
     time_to_spend text,
     best_time text,

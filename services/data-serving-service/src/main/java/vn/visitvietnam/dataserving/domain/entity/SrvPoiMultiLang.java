@@ -34,6 +34,9 @@ public class SrvPoiMultiLang {
     @Column(name = "lang", nullable = false)
     private String lang;
 
+    @Column(name = "poi_name")
+    private String poiName;
+
     @Column(name = "source_name")
     private String sourceName;
 

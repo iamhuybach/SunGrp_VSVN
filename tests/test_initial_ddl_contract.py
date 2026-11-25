@@ -941,8 +941,8 @@ def test_pl_cadence_seed():
 def test_pl_cadence_patch_cell():
     ddl = _notebook("NB_CREATE_DDL.ipynb")
     ids = [c.get("id") for c in ddl["cells"]]
-    assert ids[-8:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy"]
-    ids = ids[:-8]
+    assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
+    ids = ids[:-10]
     assert ids[-22:-20] == ["plcadmd", "plcadpy"]
     assert _cell(ddl, "plcadmd").startswith("# [THÊM 26/10] 20261026-pl-name-cadence-suffix")
     patch, renames, minutes = _cell(ddl, "plcadpy"), _renames(), _cadence()

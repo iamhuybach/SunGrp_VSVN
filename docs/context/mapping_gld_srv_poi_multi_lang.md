@@ -20,6 +20,7 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 - Khoá P2 có thêm dòng `slv_enr_poi_info_multi_lang` thì chuyển sang P1 (UPDATE cùng khoá). Dòng multi_lang mất mà dòng i18n còn thì chuyển sang P2. Cả hai trường hợp đều không xoá mềm.
 - Bảng `slv_enr_poi_info_multi_lang` rỗng thì node vẫn FAILED vì `required_inputs`. P2 chỉ áp cho khoá không khớp, không áp cho bảng rỗng.
 - MERGE theo grain `(poi_id, lang)`. `lang` nguồn `slv_enr_poi_info_multi_lang` là `STRING`; DDL landing không ghi `NOT NULL`. Target `gld_srv_poi_multi_lang.lang` là `STRING NOT NULL`. `quality_gate` trong `NB_LIB_TRANSFORM_SLV_GLD` chặn dòng khóa NULL, nên `poi_id` hoặc `lang` null thì dừng.
+- `poi_name` = NULL trên P1 và P2 (nguồn chưa có cột). Dòng LEGACY_INIT nhận tên theo lang từ init. MERGE ghi đè `poi_name` bằng NULL khi nhận dòng (D-02).
 - `pl_name` hiện hành: `PL_VV_TRANS_SLV_TO_GLD_30M` (`plcadpy` đổi từ `PL_VV_TRANS_SLV_TO_GLD_30P`). `load_mode = RECOMPUTE`, `priority = 1`. Ba cạnh `slv_enr_poi_info_multi_lang`, `slv_poi_entity_non_enrich`, `slv_pn_business_service_i18ns` → `gld_srv_poi_multi_lang`, `nb_name = NB_GLD_SRV_POI_MULTI_LANG`. Không gắn `PL_VV_TRANS_SLV_TO_ENR_15M`.
 
 ### 1.2. Field Mapping
@@ -28,6 +29,7 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 |---|---|---|---|
 | P1: slv_enr_poi_info_multi_lang.poi_id<br>P2: slv_pn_business_service_i18ns.business_service_id | string NOT NULL | P1: transform 1-1<br>P2: uuid_md5(business_service_id, 'partner') | poi_id |
 | P1: slv_enr_poi_info_multi_lang.lang<br>P2: slv_pn_business_service_i18ns.locale | string | P1: transform 1-1<br>P2: transform 1-1, mọi locale | lang |
+| P1: không đọc<br>P2: không đọc | string | P1: null (slv_enr_poi_info_multi_lang chưa có poi_name)<br>P2: null | poi_name |
 | P1: slv_poi_entity_non_enrich.source_name | string | P1: transform 1-1 theo poi_id<br>P2: hằng 'partner', không đọc entity | source_name |
 | P1: slv_enr_poi_info_multi_lang.time_to_spend | string | P1: transform 1-1<br>P2: null | time_to_spend |
 | P1: slv_enr_poi_info_multi_lang.best_time | string | P1: transform 1-1<br>P2: null | best_time |
