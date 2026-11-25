@@ -374,18 +374,25 @@ def get_mapping(data: dict[str, Any], key: str, errors: list[str]) -> dict[str, 
     return value
 
 
-def review_round_cap(state: dict[str, Any]) -> int:
-    """Two review rounds, or three when the user approved one extra round for this task."""
-    review_plan = state.get("review_plan")
-    approved = review_plan.get("extra_round_approved_on") if isinstance(review_plan, dict) else None
-    if approved is None:
-        return 2
+def _iso_date(value: Any) -> bool:
     try:
-        if not isinstance(approved, str):
+        if not isinstance(value, str):
             raise ValueError
-        dt.date.fromisoformat(approved)
+        dt.date.fromisoformat(value)
     except ValueError:
+        return False
+    return True
+
+
+def review_round_cap(state: dict[str, Any]) -> int:
+    """Two review rounds, three after one user-approved extra round, four after a second."""
+    review_plan = state.get("review_plan")
+    if not isinstance(review_plan, dict):
         return 2
+    if not _iso_date(review_plan.get("extra_round_approved_on")):
+        return 2
+    if _iso_date(review_plan.get("second_extra_round_approved_on")):
+        return 4
     return 3
 
 
@@ -440,13 +447,11 @@ def validate_state_data(data: dict[str, Any], expected_id: str) -> list[str]:
     if len(required_reviewers) != len(set(required_reviewers)):
         errors.append("review_plan.required_reviewers contains duplicates")
     approved_extra_round = review_plan.get("extra_round_approved_on")
-    if approved_extra_round is not None:
-        try:
-            if not isinstance(approved_extra_round, str):
-                raise ValueError
-            dt.date.fromisoformat(approved_extra_round)
-        except ValueError:
-            errors.append("review_plan.extra_round_approved_on must be an ISO date")
+    if approved_extra_round is not None and not _iso_date(approved_extra_round):
+        errors.append("review_plan.extra_round_approved_on must be an ISO date")
+    second_extra_round = review_plan.get("second_extra_round_approved_on")
+    if second_extra_round is not None and not _iso_date(second_extra_round):
+        errors.append("review_plan.second_extra_round_approved_on must be an ISO date")
     review_cap = review_round_cap(data)
     if review_plan.get("round") not in set(range(review_cap + 1)):
         errors.append(f"review_plan.round must be 0 through {review_cap}")

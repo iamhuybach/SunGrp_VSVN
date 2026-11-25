@@ -1,0 +1,15 @@
+{
+  "round": 2,
+  "verdict": "EVIDENCE_REQUIRED",
+  "findings": [
+    {
+      "id": "SQL-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb": "4c56d73e860b4da2bbfe8f889fdc513a042f60f3258d063eaf6e2bbeeddca34a",
+    "tests/test_legacy_gold_poi_init_contract.py": "c9bd7a1b0bb2892853d2c85ec4e27b0b42aeaaf5fbc35b09a999188b63ae8396"
+  },
+  "elapsed_seconds": 178
+}

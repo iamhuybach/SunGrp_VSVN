@@ -162,3 +162,109 @@ def test_amenity_enum_values_and_dictionary_join():
     assert 'F.col("e._path") == F.col("d._raw")' in main
     assert 'F.lower(F.trim(F.col("e.business_sector"))) == F.col("d._sector")' in main
     assert '"amenity", "amenity", True)' in main
+
+
+def _hours_span(text: str) -> str:
+    start = text.index("# BEGIN_HOURS_PURE")
+    end = text.index("# END_HOURS_PURE") + len("# END_HOURS_PURE")
+    return text[start:end]
+
+
+def test_hours_block_is_verbatim_copy():
+    gold = _cell(_notebook("NB_GLD_SRV_POI_INFO.ipynb"), "srvinfohours")
+    init = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgphours")
+    assert _hours_span(gold) == _hours_span(init)
+
+
+def test_legacy_hours_rules():
+    nb = _notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb")
+    namespace: dict = {}
+    exec(_cell(nb, "lgphours"), namespace)  # noqa: S102
+    exec(_func(_cell(nb, "lgppure"), "legacy_hours"), namespace)  # noqa: S102
+    legacy_hours = namespace["legacy_hours"]
+    assert legacy_hours("google", None) == (None, "NO_PERIODS")
+    assert legacy_hours("partner", "[]") == (None, "NO_PERIODS")
+    sunday = json.dumps([{
+        "day_of_week": 0, "open_hour": 8, "open_minute": 0, "close_hour": 17, "close_minute": 0,
+    }])
+    value, err = legacy_hours("partner", sunday)
+    assert err is None
+    rows = json.loads(value)
+    assert len(rows) == 7
+    assert rows[6]["day_of_week"] == 7 and rows[6]["value"] == "08:00 - 17:00" and rows[6]["is_closed"] is False
+    assert all(row["is_closed"] and row["value"] == "Đóng cửa" for row in rows[:6])
+    extra = json.dumps([{
+        "day_of_week": 1, "open_hour": 8, "open_minute": 0, "close_hour": 17, "close_minute": 0, "close_day": 1,
+    }])
+    value, err = legacy_hours("google", extra)
+    assert err is None and value
+    missing_close = json.dumps([{
+        "day_of_week": 1, "open_hour": 8, "open_minute": 0, "close_hour": None, "close_minute": 0,
+    }])
+    assert legacy_hours("google", missing_close) == (None, "GOOGLE_BAD_TIME")
+    assert legacy_hours("google", "{")[1] == "GOOGLE_INVALID_JSON"
+    assert legacy_hours("google", "{}")[1] == "GOOGLE_NOT_ARRAY"
+    assert legacy_hours("other", "[]") == (None, "SOURCE_NOT_GOOGLE_PARTNER")
+
+
+def test_init_hours_and_holiday_paths():
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    assert '"$.periods_json"' in main
+    assert '"$.holiday_exceptions_json"' in main
+    assert "F.udf(legacy_hours" in main
+    assert "$.hours_weekday_text" not in main
+    assert '"$.holiday_exceptions")' not in main
+
+
+def test_init_rating_review_recommended():
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    info = main.split('stage = "multi_lang"', 1)[0]
+    assert 'old("poi_review")' in info
+    assert '.withColumn("is_recommended", is_p)' in info
+    assert 'F.when(is_g, F.col("_tr"))' in info
+    assert 'F.when(is_g, F.col("_rc"))' in info
+    assert '"review_count_dup_n"' in info
+    assert '"hours_reason"' in info
+    assert "info_src.count() != n_before" in info
+    assert 'F.col("created_at").desc_nulls_last()' in info
+    assert "F.row_number().over(vi_order)" in info
+    assert '"vi_key_collision_n"' in info
+    assert 'dropDuplicates(["_new"])' not in info
+
+
+def test_legacy_hours_is_24_7():
+    nb = _notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb")
+    namespace: dict = {}
+    exec(_cell(nb, "lgphours"), namespace)  # noqa: S102
+    exec(_func(_cell(nb, "lgppure"), "legacy_hours"), namespace)  # noqa: S102
+    legacy_hours = namespace["legacy_hours"]
+    case2 = namespace["google_hours"]('[{"open_hour":0,"open_minute":0,"day_of_week":0}]')[0]
+    missing_close = json.dumps([{
+        "day_of_week": 1, "open_hour": 8, "open_minute": 0, "close_hour": None, "close_minute": 0,
+    }])
+    sunday = json.dumps([{
+        "day_of_week": 0, "open_hour": 8, "open_minute": 0, "close_hour": 17, "close_minute": 0,
+    }])
+    assert legacy_hours("google", missing_close, True) == (case2, "IS_24_7")
+    assert legacy_hours("partner", None, True) == (case2, "IS_24_7")
+    assert legacy_hours("google", "{", True) == (case2, "IS_24_7")
+    assert legacy_hours("partner", sunday, True) == (case2, "IS_24_7")
+    assert legacy_hours("google", "[]", True) == (case2, "IS_24_7")
+    assert legacy_hours("other", "[]", True) == (None, "SOURCE_NOT_GOOGLE_PARTNER")
+    assert legacy_hours("google", missing_close, False) == (None, "GOOGLE_BAD_TIME")
+    rows = json.loads(case2)
+    assert [row["day_of_week"] for row in rows] == [1, 2, 3, 4, 5, 6, 7]
+    assert all(row["is_open_all_day"] is True and row["is_closed"] is False for row in rows)
+    assert all("open_time" not in row and "close_time" not in row and "value" not in row for row in rows)
+
+
+def test_init_is_24_7_path():
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    info = main.split('stage = "multi_lang"', 1)[0]
+    assert 'F.lower(F.trim(F.get_json_object(F.col("poi_opening_hours_json"), "$.is_24_7")))' in info
+    assert '== F.lit("true")' in info
+    assert '"$.periods_json"), is_247)' in info
+    assert 'F.coalesce(F.col("_hours_reason")' in info
+    assert '"hours_24_7_partner_n"' in info
+    assert '.otherwise(F.coalesce(F.col("_hours_reason"), F.lit("NO_DETAIL")))' not in info
+    assert 'total_reviews").cast("long")).cast("int").alias("review_count")' not in info
