@@ -2,7 +2,7 @@
 
 Nguồn cũ: `sgr_visitvn_prd_batch.lh_vv_gold.dbo`. Đích: `<p_target_ws>.lh_vv_gold.dbo`. Đây là mapping của lần init `NB_SETUP_LEGACY_GOLD_POI`. Pipeline định kỳ vẫn đọc silver, không đọc bảng này.
 
-Mỗi cột của năm bảng gold mới có một dòng. Cột ghi `Không nạp` là cột gold cũ không có giá trị tương ứng, nên dòng init để NULL. Lần chạy sau cập nhật dòng `load_origin = LEGACY_INIT` và không sửa dòng do pipeline ghi.
+Mỗi cột của năm bảng gold mới có một dòng. Cột ghi `Không nạp` là cột gold cũ không có giá trị tương ứng, nên dòng init để NULL. Lần chạy sau cập nhật dòng `load_origin = LEGACY_INIT` và không sửa dòng do pipeline ghi. Pipeline MERGE nhận dòng `LEGACY_INIT` của POI đã có silver, rồi giá trị của pipeline thay giá trị init.
 
 `poi_id` mới không copy từ `poi_master.poi_id`. Bảng `gld_poi_legacy_id_map` tính nó từ `poi_master.source_id` và `poi_master.ingestion_source`:
 
@@ -13,9 +13,9 @@ Mỗi cột của năm bảng gold mới có một dòng. Cột ghi `Không nạ
 
 Thứ tự cột info, multi-lang và review theo `DESCRIBE` trên DEV ngày 2026-11-20. Amenity và media theo `AMENITY_COLS` và `MEDIA_COLS` trong `NB_CREATE_DDL`. Hai bảng đó không có `DESCRIBE` trong task này và không có `load_origin`.
 
-## 1. `gld_srv_poi_info` (37 cột)
+## 1. `gld_srv_poi_info` (41 cột)
 
-`poi_name` và `district` lấy từ dòng `poi_master` có `lang = vi`. Các cột nghiệp vụ còn lại phải giống nhau giữa mọi lang của cùng `poi_id` mới. Lệch thì không ghi khóa đó.
+`poi_name` và `district` lấy từ dòng `poi_master` có `lang = vi`. `old_address`, `price_level`, `price_min`, `price_max` lấy dòng `ai_enriched_poi` của dòng legacy `lang = vi` mà `vi_key` chọn, không yêu cầu giống nhau giữa các lang. Các cột nghiệp vụ còn lại phải giống nhau giữa mọi lang của cùng `poi_id` mới. Lệch thì không ghi khóa đó.
 
 | # | Cột mới | Bảng cũ | Trường cũ | Cách lấy |
 |---|---|---|---|---|
@@ -25,39 +25,43 @@ Thứ tự cột info, multi-lang và review theo `DESCRIBE` trên DEV ngày 202
 | 4 | `business_sector` | `poi_master` | `business_sector` | Cùng tên. Phải giống nhau giữa các lang |
 | 5 | `business_category` | `poi_master` | `business_category` | Cùng tên. Phải giống nhau giữa các lang |
 | 6 | `subcategory_tags` | `poi_master` | `subcategory_tags` | Giữ chuỗi. Phải giống nhau giữa các lang |
-| 7 | `destination_id` | `poi_master` | `destination_ids` | Cả JSON array, `to_json(from_json(.., array<string>))`, mọi lang của `poi_id` mới phải giống nhau; shape khác hoặc lệch thì dừng USER_DECISION |
+| 7 | `destination_id` | `poi_master` | `destination_ids` | Cả JSON array, `to_json(from_json(.., array<string>))`, mọi lang của `poi_id` mới phải giống nhau; shape khác hoặc lệch thì dừng USER_DECISION. Giá trị LEGACY_INIT nằm ngoài id portal; 1/24 giá trị trùng strapi_document_id (P-LEGDEST-1, 26/11). Không đổi mapping, không chạy lại riêng. |
 | 8 | `destination_name` | `poi_master` | `destination_names` | Nguyên chuỗi JSON, dòng `lang = vi` |
 | 9 | `full_address` | `poi_detail` | `poi_address_json` | `$.full_address` |
-| 10 | `street` | `poi_detail` | `poi_address_json` | `$.address_line1` |
-| 11 | `ward` | `poi_detail` | `poi_address_json` | `$.ward` |
-| 12 | `district` | `poi_master` | `district` | Dòng `lang = vi`. Không có `vi` thì NULL |
-| 13 | `city` | `poi_detail` | `poi_address_json` | `$.city` |
-| 14 | `country_code` | `poi_detail` | `poi_address_json` | `$.country_code` |
-| 15 | `postal_code` | `poi_detail` | `poi_address_json` | `$.postal_code` |
-| 16 | `lat` | `poi_detail` | `poi_address_json` | `$.lat` |
-| 17 | `lng` | `poi_detail` | `poi_address_json` | `$.lng` |
-| 18 | `phone` | `poi_detail` | `poi_contact_json` | `$.phone` |
-| 19 | `email` | `poi_detail` | `poi_contact_json` | `$.email` |
-| 20 | `website_url` | `poi_detail` | `poi_contact_json` | `$.website_url` |
-| 21 | `operating_status` | `poi_master` | `operating_status` | Cùng tên. Phải giống nhau giữa các lang |
-| 22 | `is_verified` | `poi_master` | `is_verified` | Cùng tên. Phải giống nhau giữa các lang |
-| 23 | `is_recommended` | `poi_master` | `is_recommended` | Dòng `lang = vi` |
-| 24 | `is_bookable` | `poi_master` | `is_bookable` | Cùng tên. Phải giống nhau giữa các lang |
-| 25 | `is_active` |  |  | Hằng `true`. Không lấy `poi_master.is_active` |
-| 26 | `operating_hours` | `poi_detail` | `poi_content_json` | `$.hours_weekday_text` |
-| 27 | `holiday_exceptions` | `poi_detail` | `poi_opening_hours_json` | `$.holiday_exceptions` |
-| 28 | `rating_overall` | `poi_master` | `rating_overall` | Chỉ `google`. Cast `decimal(3,1)` sang `decimal(4,2)`. Partner để NULL |
-| 29 | `rating_count` | `poi_master` | `rating_count` | Chỉ `google`. Cast `bigint` sang `int`. Partner để NULL |
-| 30 | `review_count` | `poi_rating` | `total_reviews` | Cùng `poi_id` cũ của dòng `lang = vi` |
-| 31 | `cover_id` | `poi_detail` | `poi_media_json` | `$.cover.media_id` |
-| 32 | `cover_blob_url` | `poi_detail` | `poi_media_json` | `$.cover.blob_url` |
-| 33 | `row_hash` |  |  | Hash các cột nghiệp vụ lúc ghi. Không copy hash cũ |
-| 34 | `created_at` |  |  | Thời điểm init. Không copy `poi_master.created_at` |
-| 35 | `updated_at` |  |  | Thời điểm init. Không copy `poi_master.updated_at` |
-| 36 | `deleted_at` |  |  | NULL |
-| 37 | `load_origin` |  |  | Hằng `LEGACY_INIT` trên dòng init chèn |
+| 10 | `old_address` | `ai_enriched_poi` | `address_line_2` | Dòng `ai_enriched_poi` của dòng legacy `lang = vi` mà `vi_key` chọn; không có thì NULL |
+| 11 | `street` | `poi_detail` | `poi_address_json` | `$.address_line1` |
+| 12 | `ward` | `poi_detail` | `poi_address_json` | `$.ward` |
+| 13 | `district` | `poi_master` | `district` | Dòng `lang = vi`. Không có `vi` thì NULL |
+| 14 | `city` | `poi_detail` | `poi_address_json` | `$.city` |
+| 15 | `country_code` | `poi_detail` | `poi_address_json` | `$.country_code` |
+| 16 | `postal_code` | `poi_detail` | `poi_address_json` | `$.postal_code` |
+| 17 | `lat` | `poi_detail` | `poi_address_json` | `$.lat` |
+| 18 | `lng` | `poi_detail` | `poi_address_json` | `$.lng` |
+| 19 | `phone` | `poi_detail` | `poi_contact_json` | `$.phone` |
+| 20 | `email` | `poi_detail` | `poi_contact_json` | `$.email` |
+| 21 | `website_url` | `poi_detail` | `poi_contact_json` | `$.website_url` |
+| 22 | `operating_status` | `poi_master` | `operating_status` | Cùng tên. Phải giống nhau giữa các lang |
+| 23 | `is_verified` | `poi_master` | `is_verified` | Cùng tên. Phải giống nhau giữa các lang |
+| 24 | `is_recommended` | `poi_master` | `is_recommended` | Dòng `lang = vi` |
+| 25 | `is_bookable` | `poi_master` | `is_bookable` | Cùng tên. Phải giống nhau giữa các lang |
+| 26 | `is_active` |  |  | Hằng `true`. Không lấy `poi_master.is_active` |
+| 27 | `operating_hours` | `poi_detail` | `poi_content_json` | `$.hours_weekday_text` |
+| 28 | `holiday_exceptions` | `poi_detail` | `poi_opening_hours_json` | `$.holiday_exceptions` |
+| 29 | `rating_overall` | `poi_master` | `rating_overall` | Chỉ `google`. Cast `decimal(3,1)` sang `decimal(4,2)`. Partner để NULL |
+| 30 | `rating_count` | `poi_master` | `rating_count` | Chỉ `google`. Cast `bigint` sang `int`. Partner để NULL |
+| 31 | `review_count` | `poi_rating` | `total_reviews` | Cùng `poi_id` cũ của dòng `lang = vi` |
+| 32 | `price_level` | `ai_enriched_poi` | `price_level` | Dòng `lang = vi` mà `vi_key` chọn; không có thì NULL; int giữ INT |
+| 33 | `price_min` | `ai_enriched_poi` | `price_min` | Dòng `lang = vi` mà `vi_key` chọn; không có thì NULL; int sang DECIMAL(18,2) |
+| 34 | `price_max` | `ai_enriched_poi` | `price_max` | Dòng `lang = vi` mà `vi_key` chọn; không có thì NULL; int sang DECIMAL(18,2) |
+| 35 | `cover_id` | `poi_detail` | `poi_media_json` | `$.cover.media_id` |
+| 36 | `cover_blob_url` | `poi_detail` | `poi_media_json` | `$.cover.blob_url` |
+| 37 | `row_hash` |  |  | Hash các cột nghiệp vụ lúc ghi. Không copy hash cũ |
+| 38 | `created_at` |  |  | Thời điểm init. Không copy `poi_master.created_at` |
+| 39 | `updated_at` |  |  | Thời điểm init. Không copy `poi_master.updated_at` |
+| 40 | `deleted_at` |  |  | NULL |
+| 41 | `load_origin` |  |  | Hằng `LEGACY_INIT` trên dòng init chèn |
 
-## 2. `gld_srv_poi_multi_lang` (14 cột)
+## 2. `gld_srv_poi_multi_lang` (16 cột)
 
 `lang` là `poi_master.lang` của đúng `poi_id` cũ. Nội dung lấy từ `poi_enrichment_display` cùng `poi_id` cũ.
 
@@ -72,11 +76,13 @@ Thứ tự cột info, multi-lang và review theo `DESCRIBE` trên DEV ngày 202
 | 7 | `cost` | `poi_enrichment_display` | `cost` | Cùng tên, kiểu string |
 | 8 | `description` | `poi_enrichment_display` | `description` | Cùng tên |
 | 9 | `experience` | `poi_enrichment_display` | `experiences` | Đổi tên cột |
-| 10 | `row_hash` |  |  | Hash lúc ghi |
-| 11 | `created_at` |  |  | Thời điểm init |
-| 12 | `updated_at` |  |  | Thời điểm init |
-| 13 | `deleted_at` |  |  | NULL |
-| 14 | `load_origin` |  |  | Hằng `LEGACY_INIT` trên dòng init chèn |
+| 10 | `story` | `ai_enriched_poi` | `story` | Khớp `poi_id` cũ và `lang`; nhiều giá trị thì NULL; không tạo dòng mới |
+| 11 | `local_tips` | `ai_enriched_poi` | `local_tips_or_neighborhood` | Khớp `poi_id` cũ và `lang`; nhiều giá trị thì NULL; không tạo dòng mới |
+| 12 | `row_hash` |  |  | Hash lúc ghi |
+| 13 | `created_at` |  |  | Thời điểm init |
+| 14 | `updated_at` |  |  | Thời điểm init |
+| 15 | `deleted_at` |  |  | NULL |
+| 16 | `load_origin` |  |  | Hằng `LEGACY_INIT` trên dòng init chèn |
 
 ## 3. `gld_srv_poi_review` (15 cột)
 
@@ -154,4 +160,6 @@ Nguồn là `poi_detail.poi_media_json` của dòng `lang = vi`: `cover` và t�
 
 `poi_enrichment_display`: `display_id`, `enrichment_id`, `poi_id`, `poi_name`, `display_category`, `experiences`, `enrichment_job_id`, `validation_status`, `display_generated_at`, `is_current`, `created_at`, `updated_at`, `ingestion_source`. `poi_id` và `lang` của bảng này chỉ dùng để khớp dòng, không ghi sang cột đích riêng.
 
-Không đọc để nạp: `poi_detail`, `poi_review`, `poi_rating`, `ai_poi`, `ai_poi_rating`, `ai_poi_review`, `ai_enriched_poi`, `poi_address_enrichment_staging`.
+Không đọc để nạp: `poi_detail`, `poi_review`, `poi_rating`, `ai_poi`, `ai_poi_rating`, `ai_poi_review`, `poi_address_enrichment_staging`.
+
+`ai_enriched_poi`: chỉ đọc `poi_id`, `lang`, `address_line_2`, `price_level`, `price_min`, `price_max`, `story`, `local_tips_or_neighborhood` tại version pin. Cột khác không nạp.

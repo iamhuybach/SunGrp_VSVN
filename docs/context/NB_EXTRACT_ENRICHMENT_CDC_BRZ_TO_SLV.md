@@ -35,12 +35,12 @@ Thứ tự: `poi_id` rỗng → `MISSING_ENTITY_KEY`; `event_type` khác hai gi�
 
 ## 4. Cột đặc biệt
 
-`destinations.id` và `destinations.name` chiếu bằng `from_json`, `transform`, `to_json`. Phần tử null giữ nguyên vị trí. `country_code` và `postal_code` không có trong registry; extract ghi NULL.
+`strapi_document_id` chiếu vào `destination_id`, `id` chiếu vào `destination_portal_id`, `name` chiếu vào `destination_name`, bằng `from_json`, `transform`, `to_json`. Phần tử null giữ nguyên vị trí. Ba cột cùng độ dài và cùng thứ tự. `country_code` và `postal_code` không có trong registry; extract ghi NULL.
 
 Ba dòng đã có trên `slv_enr_poi_info_multi_lang` tại probe P-1 được giữ. Cell `enrbrzpy` đổi schema tại chỗ, không tạo lại bảng.
 
 ## 5. Cổng trước ghi
 
-Bảng đích phải đã có. Còn `cost_vnd` hoặc `street`, hoặc thiếu `country_code` / `postal_code`, thì `ConfigError` và yêu cầu chạy `enrbrzpy`. Dry run cũng đi qua cổng này và không ghi.
+Bảng đích phải đã có. Còn `cost_vnd` hoặc `street`, hoặc thiếu `country_code` / `postal_code`, thì `ConfigError` và yêu cầu chạy `enrbrzpy`. Registry đã có `destination_portal_id` mà bảng chưa có cột thì `ConfigError` và yêu cầu chạy `destportalpy`. Dry run cũng đi qua cổng này và không ghi.
 
 `cast_null > 0` hoặc `other > 0` thì dừng, không MERGE bảng đó.

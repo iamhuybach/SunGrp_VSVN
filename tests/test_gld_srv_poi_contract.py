@@ -682,6 +682,7 @@ def test_no_cost_vnd_in_active_surface():
 
 def test_old_price_story_patch_cell():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
+    ids = ids[: ids.index("oldpricepy") + 1]
     assert ids[-4:] == ["lgpnamemd", "lgpnamepy", "oldpricemd", "oldpricepy"]
     patch = _cell("NB_CREATE_DDL.ipynb", "oldpricepy")
     assert _assign(patch, "NEW_COLS") == {INFO_FQ: OLDPRICE_INFO, ML_FQ: OLDPRICE_ML}
@@ -777,4 +778,9 @@ def test_old_price_story_mapping_rows():
     assert "slv_pn_business_service_i18ns.story" in ml_table
     assert "slv_pn_business_service_i18ns.local_tips" in ml_table
     assert "không fallback" in ml_table
+
+
+def test_info_dest_cols_exclude_portal_id():
+    source = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    assert "destination_portal_id" not in _assign(source, "DEST_COLS")
 

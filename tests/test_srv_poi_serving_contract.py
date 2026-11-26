@@ -487,3 +487,24 @@ def test_gold_only_columns_stay_out_of_serving():
         for name, cols in GOLD_ONLY.items():
             assert cols.isdisjoint(entities[name]["cols"])
 
+
+def test_destination_portal_id_silver_only():
+    text = (ROOT / "docs" / "context" / "mapping_gld_srv_poi_info.md").read_text(encoding="utf-8")
+    assert "destination_portal_id" not in text
+    for spec in gold_tables().values():
+        assert "destination_portal_id" not in spec["cols"]
+    for spec in pg_tables().values():
+        assert "destination_portal_id" not in spec["cols"]
+    if SERVICE.is_dir():
+        for spec in entity_tables().values():
+            assert "destination_portal_id" not in spec["cols"]
+    setup = json.loads((ROOT / "notebooks" / "NB_SETUP_INITIAL_DDL.ipynb").read_text(encoding="utf-8"))
+    env: dict = {}
+    exec("".join(next(cell["source"] for cell in setup["cells"] if cell.get("id") == "init_tables")), env)  # noqa: S102
+    silver = next(spec["cols"] for spec in env["TABLE_SPECS"] if spec["fq"].endswith("slv_enr_poi_destination"))
+    assert "destination_portal_id" in [col[0] for col in silver]
+    assert GOLD_ONLY == {
+        "srv_poi_info": {"old_address", "price_level", "price_min", "price_max"},
+        "srv_poi_multi_lang": {"story", "local_tips"},
+    }
+

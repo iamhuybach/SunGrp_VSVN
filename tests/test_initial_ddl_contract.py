@@ -1034,3 +1034,36 @@ def test_pl_cadence_rerun_checks_lock():
     lock_update = patch.index("SET lock_exec_id = '{LOCK}'")
     assert patch.rindex("held = True", 0, lock_update) < lock_update
     assert "if failed is None:" in patch[patch.index("finally:"):]
+
+
+def test_enr_registry_configs_equal_create_ddl():
+    initial = _by_id(_initial())
+    env_a, env_b = {}, {}
+    exec(initial["init_cfg_enr"], env_a)  # noqa: S102
+    source = _cell(_notebook("NB_CREATE_DDL.ipynb"), "enrbrzcfgpy")
+    exec(source[:source.index("ENR_PIPELINE")], env_b)  # noqa: S102
+    assert env_a["TABLE_CONFIGS_ENR"] == env_b["TABLE_CONFIGS_ENR"]
+
+
+def test_enr_destination_registry_paths():
+    initial = _by_id(_initial())
+    env: dict = {}
+    exec(_marker(initial["init_registry_pure"], "# BEGIN_REGISTRY_PURE", "# END_REGISTRY_PURE"), env)  # noqa: S102
+    exec(initial["init_cfg_enr"], env)  # noqa: S102
+    rows = env["flatten_table_configs"](env["TABLE_CONFIGS_ENR"], None, "$")
+    dest = [row for row in rows if row["trg_tbl"] == "slv_enr_poi_destination"]
+    paths = {row["trg_column"]: row["json_path"] for row in dest}
+    assert paths["destination_id"] == "destinations.strapi_document_id"
+    assert paths["destination_portal_id"] == "destinations.id"
+    assert paths["destination_name"] == "destinations.name"
+    order = {row["trg_column"]: row["column_order"] for row in dest}
+    assert order["destination_portal_id"] == order["destination_id"] + 1
+
+
+def test_slv_enr_poi_destination_portal_after_id():
+    env: dict = {}
+    exec(_by_id(_initial())["init_tables"], env)  # noqa: S102
+    cols = next(spec["cols"] for spec in env["TABLE_SPECS"] if spec["fq"].endswith("slv_enr_poi_destination"))
+    names = [col[0] for col in cols]
+    index = names.index("destination_id")
+    assert names[index + 1:index + 3] == ["destination_portal_id", "destination_name"]

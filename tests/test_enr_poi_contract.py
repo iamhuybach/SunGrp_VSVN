@@ -726,3 +726,53 @@ def test_enr_seed_merge_load_mode():
     assert all(row[5] == 0 for row in chosen if row[4] == "gld_enr_poi_review")
     assert all(row[7] != "APPEND" for row in rows)
 
+
+def test_dest_portal_patch_cell():
+    import ast
+
+    nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
+    ids = [cell.get("id") for cell in nb["cells"]]
+    assert ids[-4:] == ["oldpricemd", "oldpricepy", "destportalmd", "destportalpy"]
+    source = _cell("NB_CREATE_DDL.ipynb", "destportalpy")
+    env: dict = {}
+    exec(_cell("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), env)  # noqa: S102
+    spec = next(item["cols"] for item in env["TABLE_SPECS"] if item["fq"].endswith("slv_enr_poi_destination"))
+    expected = []
+    for name, typ, _comment in spec:
+        base = typ.upper().replace(" NOT NULL", "").strip().lower()
+        expected.append((name, base, "NOT NULL" not in typ.upper()))
+    assert _assign(source, "TABLE_COLS") == expected
+    assert "def _shape" in source
+    assert "seen == _shape(without)" in source
+    assert "current == without" not in source
+    assert _assign(source, "DEST_ELEM_SCHEMA") == "array<struct<id:string,name:string,strapi_document_id:string>>"
+    assert "array<struct<id:string,name:string,strapi_document_id:string>>" in _cell(
+        "NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV.ipynb", "enr04")
+    reg: dict = {}
+    exec(_cell("NB_SETUP_INITIAL_DDL.ipynb", "init_cfg_enr"), reg)  # noqa: S102
+    columns = next(item["columns"] for item in reg["TABLE_CONFIGS_ENR"] if item["target_table"] == "slv_enr_poi_destination")
+    assert _assign(source, "REG_WANT") == {name: columns[name]["path"] for name in (
+        "destination_id", "destination_portal_id", "destination_name")}
+    assert 'WID = "wm_transform_brz_enrichment_result"' in source
+    assert "LEASE_MINUTES = 90" in source
+    assert source.index("finally:") < source.index("if meta_on:")
+    assert "spark.conf.unset" in source[source.index("finally:"):]
+    order = ["held = True", "Dừng trước khi ghi", "ALTER TABLE", "MERGE INTO", "Sau khi ghi", "finally:"]
+    assert [source.index(token) for token in order] == sorted(source.index(token) for token in order)
+    assert sum(1 for line in source.splitlines() if line.strip() == "_touch_lock()") == 2
+    assert source.index("_touch_lock()") < source.index("ALTER TABLE") < source.rindex("_touch_lock()") < source.index("MERGE INTO")
+    assert "t._src_version <=> s._src_version" in source
+    assert "t._event_processed_at <=> s._event_processed_at" in source
+    assert "t._event_id <=> s._event_id" in source
+    assert "t.destination_portal_id IS NULL" in source
+    code = "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
+    for token in ("DROP", "DELETE", "TRUNCATE", "RESTORE", "columnMapping", "CREATE TABLE", "RENAME", "overwriteSchema"):
+        assert token not in code
+    ast.parse(source)
+
+
+def test_enr_poi_info_ignores_destination_ids():
+    source = _cell("NB_ENR_POI_INFO.ipynb", "36415d3b")
+    assert _assign(source, "REQUIRED_COLS")["destination"] == ("poi_id",)
+    assert "destination_id" not in source
+

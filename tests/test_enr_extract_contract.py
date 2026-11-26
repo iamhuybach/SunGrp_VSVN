@@ -94,6 +94,10 @@ def test_registry_columns_match_model_design():
     source = _cell("NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV.ipynb", "enr04")
     assert '"destinations.id": "id"' in source
     assert '"destinations.name": "name"' in source
+    assert '"destinations.strapi_document_id": "strapi_document_id"' in source
+    assert 'array<struct<id:string,name:string,strapi_document_id:string>>' in source
+    gate = _cell("NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV.ipynb", "enr12")
+    assert '{"id", "name", "strapi_document_id"}' in gate
 
 
 def test_const_null_cols_not_in_registry():
@@ -227,6 +231,14 @@ def test_silver_rewrite_targets_match_initial_ddl():
             not_null = "NOT NULL" in typ.upper()
             base = typ.upper().replace(" NOT NULL", "").strip().lower()
             expected.append((name, base, not not_null))
+        if spec["fq"].endswith("slv_enr_poi_destination"):
+            portal = [item for item in expected if item[0] == "destination_portal_id"]
+            expected = [item for item in expected if item[0] != "destination_portal_id"]
+            new_col = ast.literal_eval(next(
+                node.value for node in ast.parse(_cell("NB_CREATE_DDL.ipynb", "destportalpy")).body
+                if isinstance(node, ast.Assign) and any(getattr(t, "id", None) == "NEW_COL" for t in node.targets)
+            ))
+            assert portal and portal[0][0] == new_col[0]
         assert targets[spec["fq"]] == expected
 
 
@@ -308,3 +320,9 @@ def test_restore_stops_when_later_commit_exists():
 def test_watermark_seed_tuples_are_separated():
     source = _cell("NB_CREATE_DDL.ipynb", "3ea73e14-6a1f-42a5-b960-34123b0a3fc4")
     assert "current_timestamp()),\n    ('wm_transform_brz_enrichment_result'" in source
+
+
+def test_extract_preflight_patch_cols():
+    source = _cell("NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV.ipynb", "enr08")
+    assert "PATCH_COLS" in _cell("NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV.ipynb", "enr04")
+    assert source.index("missing_null") < source.index("chạy destportalpy") < source.index("ensure_target(")

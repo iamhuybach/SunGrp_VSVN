@@ -101,7 +101,7 @@ def test_legacy_upsert_updates_only_legacy_rows():
     assert "t.`load_origin` IS NULL AND t.`row_hash` = s.`row_hash`" in claimed
     assert "t.`load_origin` = 'LEGACY_INIT'" in claimed
     main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
-    assert '"info", "info", True)' in main
+    assert '"info", "info", True, keep_cols=("destination_id",))' in main
     assert '"multi_lang", True)' in main
     assert 'display["experiences"].alias("experience")' in main
     assert '"media", "media", True, True)' in main
@@ -321,4 +321,67 @@ def test_poi_name_ddl_cell_contract():
     assert code.count("ADD COLUMNS") == 1 and " AFTER " in code
     assert "LEASE_MINUTES = 90" in source and "lock_exec_id = '{LOCK}'" in source
     assert "raise failed from cleanup_exc" in source
+
+
+def test_init_enriched_pins_and_types():
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    assert '"ai_enriched_poi"' in main
+    assert "AI_TYPES" in main and "local_tips_or_neighborhood" in main
+    assert main.index("AI_TYPES") < main.index('EXEC = "lgp-"')
+    assert "chạy oldpricepy của NB_CREATE_DDL trước" in main
+
+
+def test_init_enriched_gate_before_writes():
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    assert 'stage = "enriched"' in main
+    assert main.index('stage = "enriched"') < main.index("write_insert_only(MAP_FQ")
+    assert "USER_DECISION ai_enriched_poi" in main
+
+
+def test_init_info_enriched_vi_row():
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    assert main.index("n_before = info_src.count()") < main.index('F.col("_ai_lang") == "vi"')
+    assert 'F.col("price_min").cast("decimal(18,2)")' in main
+    assert 'F.col("price_max").cast("decimal(18,2)")' in main
+    assert 'vi_key["_new"]' in main
+
+
+def test_init_ml_story_tips_per_lang():
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    assert 'ai["_ai_id"] == mp["legacy_poi_id"]' in main
+    assert 'ai["_ai_lang"] == mp["lang"]' in main
+    assert 'pay = ["source_name", *ML_PAY, "experience"]' in main
+    assert "multi_lang guard: enriched join changed rows" in main
+
+
+def test_init_old_tables_allowlist():
+    import re
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    assert set(re.findall(r'old\("(\w+)"\)', main)) == {
+        "poi_master", "poi_enrichment_display", "poi_detail", "poi_review", "poi_rating", "ai_enriched_poi",
+    }
+
+
+def test_init_destination_unchanged_guard():
+    main = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgpmain")
+    assert "destination_changed_n" in main
+    assert main.index("destination_changed_n") < main.index("write_insert_only(INFO_FQ")
+    assert 'load_origin = \'LEGACY_INIT\'' in main
+    assert 'if p_mode == "RUN" and summary["info"]["destination_changed_n"] > 0:' not in main
+    assert 'keep_cols=("destination_id",)' in main
+    assert "pin không khớp map đã ghi" not in main
+    assert 'write_insert_only(MAP_FQ, map_src, ("legacy_poi_id",), "map", "map")' in main
+    assert "map_rows = stored.unionByName(fresh_only" in main
+    source = _cell(_notebook("NB_SETUP_LEGACY_GOLD_POI.ipynb"), "lgppure")
+    namespace = {"quote_name": lambda fq: fq}
+    exec(_func(source, "legacy_upsert_sql"), namespace)  # noqa: S102
+    sql = namespace["legacy_upsert_sql"](
+        "ws.lh_vv_gold.dbo.t", "v",
+        ["poi_id", "destination_id", "old_address", "created_at", "load_origin"],
+        ("poi_id",), False, ("destination_id",),
+    )
+    update = sql.split("UPDATE SET", 1)[1].split("WHEN NOT MATCHED", 1)[0]
+    assert "t.`old_address` = s.`old_address`" in update
+    assert "t.`destination_id`" not in update
+    assert "`destination_id`" in sql.split("WHEN NOT MATCHED THEN INSERT", 1)[1]
 

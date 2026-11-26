@@ -1,0 +1,21 @@
+{
+  "round": 2,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "docs/context/NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV.md": "9e2cd2ae607d76f0f372638af74cbbdbc148f50429ef26091adc90044e8ce40e",
+    "docs/context/mapping_gld_srv_poi_info.md": "9023c6e41f5f94e4717abec88ed5b33c7412774e235202a36d784e8913d5fb40",
+    "docs/context/mapping_legacy_gold_to_gld_srv.md": "5a8960828600fe364d32b813a0d20a401faf6e4d9f4717d44bcaad5fa811a9e4",
+    "notebooks/NB_CREATE_DDL.ipynb": "07a050b530cf8dbf8957345f1231236cdf8064b52c776705696a11b034809e75",
+    "notebooks/NB_EXTRACT_ENRICHMENT_CDC_BRZ_TO_SLV.ipynb": "22333d4c7ec2785330d51584f9c03701cbb3ec72228ca90c78a908a9e9f9668b",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "d32293e75b67c3220ec61df6354c3d1c7a191030997fa2bc179ac068532076b9",
+    "notebooks/NB_SETUP_LEGACY_GOLD_POI.ipynb": "f90eeeb48173436710a3d870415b52fdcdb9517bbd12cc736e3fb0faf380876e",
+    "tests/test_enr_extract_contract.py": "7421cad09b3d2335d0ebaa80b456b98673c2aec40e3df19335b985e671217fae",
+    "tests/test_enr_poi_contract.py": "4fd44a67b559f50ed696354fffe7ddc97dc2d524c18464a4ed0592b2f0a1cb99",
+    "tests/test_gld_srv_poi_contract.py": "26e564cd4729f4a5f004f99e5288f3915b1c52eae5bc27045d25623393752cc0",
+    "tests/test_initial_ddl_contract.py": "6a2d56bddf84b86266ab81f3e2c4f5a45ee64b995ac636d6e82de078d5dcd279",
+    "tests/test_legacy_gold_poi_init_contract.py": "07b0c5eff72f258258d80dbb76233d9bd3b6235e64a16a286f8d11908d02d8bf",
+    "tests/test_srv_poi_serving_contract.py": "bbeaced3b09e79dc171c158015844cff45ab6cf9347bcdc408f972bef1369278"
+  },
+  "elapsed_seconds": 120
+}
