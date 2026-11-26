@@ -2,6 +2,7 @@ package vn.visitvietnam.dataserving.api;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -15,6 +16,7 @@ import vn.visitvietnam.dataserving.api.dto.CompactPoiResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiExperiencesResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiAmenityGroupResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiGalleryItemResponse;
+import vn.visitvietnam.dataserving.api.dto.PracticalInfoProjection;
 import vn.visitvietnam.dataserving.api.dto.PoiPracticalInfoResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiReviewItemResponse;
 import vn.visitvietnam.dataserving.common.dto.PageResponse;
@@ -23,16 +25,23 @@ import vn.visitvietnam.dataserving.common.web.GlobalExceptionHandler;
 import vn.visitvietnam.dataserving.common.web.PracticalInfoBodyLimitFilter;
 import vn.visitvietnam.dataserving.common.web.RequestIdFilter;
 import vn.visitvietnam.dataserving.service.PoiService;
+import vn.visitvietnam.dataserving.service.PracticalInfoQuery;
 import vn.visitvietnam.dataserving.service.util.LanguageResolver;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -73,7 +82,7 @@ class PoiControllerIntegrationTest {
                 new CompactPoiResponse.BusinessTags("ATTRACTION", "landmark", List.of("heritage")),
                 new CompactPoiResponse.Address("Hoàn Kiếm, Hà Nội", "Đinh Tiên Hoàng", null, "Hoàn Kiếm", "Hà Nội", "VN"),
                 new CompactPoiResponse.GeoLocation(21.0285, 105.8542),
-                new CompactPoiResponse.Destinations("dest_01", "Hoan Kiem")
+                new CompactPoiResponse.Destinations(List.of("dest_01"), List.of("Hoan Kiem"))
         );
 
         when(poiService.getCompactPois(any(), any()))
@@ -93,8 +102,9 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.data[0].cover.file_key").value("https://cdn.example.com/cover.jpg"))
                 .andExpect(jsonPath("$.data[0].geo_location.latitude").value(21.0285))
                 .andExpect(jsonPath("$.data[0].geo_location.longitude").value(105.8542))
-                .andExpect(jsonPath("$.data[0].destinations.id").value("dest_01"))
-                .andExpect(jsonPath("$.data[0].destinations.name").value("Hoan Kiem"))
+                .andExpect(jsonPath("$.data[0].destinations.id").isArray())
+                .andExpect(jsonPath("$.data[0].destinations.id[0]").value("dest_01"))
+                .andExpect(jsonPath("$.data[0].destinations.name[0]").value("Hoan Kiem"))
                 .andExpect(jsonPath("$.meta.pagination").doesNotExist())
                 .andExpect(jsonPath("$.meta.trace_id").isNotEmpty())
                 .andExpect(jsonPath("$.meta.timestamp").isNotEmpty())
@@ -356,14 +366,33 @@ class PoiControllerIntegrationTest {
                 null,
                 null,
                 null,
-                new CompactPoiResponse.Destinations("dest_01", "Ha Noi"));
+                new CompactPoiResponse.Destinations(List.of("dest_01"), List.of("Ha Noi")));
         when(poiService.getPracticalInfo(eq("poi_01"), any())).thenReturn(info);
 
         mockMvc.perform(authorized(get("/api/v1/pois/poi_01/practical_info")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.business_sector").doesNotExist())
                 .andExpect(jsonPath("$.data.business_tags.business_sector").value("attraction"))
-                .andExpect(jsonPath("$.data.destinations.name").value("Ha Noi"));
+                .andExpect(jsonPath("$.data.destinations.id").isArray())
+                .andExpect(jsonPath("$.data.destinations.name[0]").value("Ha Noi"));
+    }
+
+    @Test
+    @DisplayName("POST practical_info trả destinations là mảng")
+    void postPracticalInfoReturnsDestinationsAsArrays() throws Exception {
+        PoiPracticalInfoResponse info = new PoiPracticalInfoResponse(
+                "poi_01", "A", null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null,
+                new CompactPoiResponse.Destinations(List.of("dest_01"), List.of("Ha Noi")));
+        when(poiService.searchPracticalInfo(any())).thenReturn(new PoiService.PracticalInfoPage(
+                List.of(PracticalInfoProjection.select(info, EnumSet.of(PracticalInfoQuery.Field.DESTINATIONS))), 1));
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content("{\"ids\":[\"poi_01\"]}")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].destinations.id").isArray())
+                .andExpect(jsonPath("$.data[0].destinations.id[0]").value("dest_01"))
+                .andExpect(jsonPath("$.data[0].destinations.name[0]").value("Ha Noi"));
     }
 
     // ── API 10: Amenities Endpoint Tests ─────────────────────────────────────
@@ -530,6 +559,184 @@ class PoiControllerIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.meta.error_code").value("ERR_BODY_TOO_LARGE"));
         org.mockito.Mockito.verifyNoInteractions(poiService);
+    }
+
+    @Test
+    @DisplayName("POST practical_info lấy poi_name từ body")
+    void postPracticalInfoPassesBodyPoiNameToQuery() throws Exception {
+        when(poiService.searchPracticalInfo(any())).thenReturn(new PoiService.PracticalInfoPage(List.of(), 0));
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .queryParam("poi_name", "ignored")
+                        .content("{\"ids\":[\"poi_01\"],\"poi_name\":\"Ba Na\"}")))
+                .andExpect(status().isOk());
+        ArgumentCaptor<PracticalInfoQuery> captor = ArgumentCaptor.forClass(PracticalInfoQuery.class);
+        verify(poiService).searchPracticalInfo(captor.capture());
+        assertThat(captor.getValue().poiName()).isEqualTo("Ba Na");
+        assertThat(captor.getValue().ids()).containsExactly("poi_01");
+    }
+
+    @Test
+    @DisplayName("POST practical_info bỏ qua query poi_name")
+    void postPracticalInfoIgnoresQueryPoiName() throws Exception {
+        when(poiService.searchPracticalInfo(any())).thenReturn(new PoiService.PracticalInfoPage(List.of(), 0));
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .queryParam("poi_name", "Ba Na")
+                        .content("{\"ids\":[\"poi_01\"]}")))
+                .andExpect(status().isOk());
+        ArgumentCaptor<PracticalInfoQuery> captor = ArgumentCaptor.forClass(PracticalInfoQuery.class);
+        verify(poiService).searchPracticalInfo(captor.capture());
+        assertThat(captor.getValue().poiName()).isNull();
+    }
+
+    @Test
+    @DisplayName("POST practical_info poi_name trắng hoặc null thì không lọc")
+    void postPracticalInfoBlankBodyPoiNameMeansNoFilter() throws Exception {
+        when(poiService.searchPracticalInfo(any())).thenReturn(new PoiService.PracticalInfoPage(List.of(), 0));
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content("{\"ids\":[\"poi_01\"],\"poi_name\":\"   \"}")))
+                .andExpect(status().isOk());
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content("{\"ids\":[\"poi_01\"],\"poi_name\":null}")))
+                .andExpect(status().isOk());
+        ArgumentCaptor<PracticalInfoQuery> captor = ArgumentCaptor.forClass(PracticalInfoQuery.class);
+        verify(poiService, times(2)).searchPracticalInfo(captor.capture());
+        assertThat(captor.getAllValues()).allSatisfy(query -> assertThat(query.poiName()).isNull());
+    }
+
+    @Test
+    @DisplayName("POST practical_info từ chối poi_name dài hơn 128 và nhận đúng 128")
+    void postPracticalInfoRejectsPoiNameOver128() throws Exception {
+        String tooLong = "x".repeat(129);
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content("{\"ids\":[\"poi_01\"],\"poi_name\":\"" + tooLong + "\"}")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content("{\"poi_name\":\"" + tooLong + "\"}")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+        verifyNoInteractions(poiService);
+
+        when(poiService.searchPracticalInfo(any())).thenReturn(new PoiService.PracticalInfoPage(List.of(), 0));
+        String max = "x".repeat(128);
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content("{\"ids\":[\"poi_01\"],\"poi_name\":\"" + max + "\"}")))
+                .andExpect(status().isOk());
+        ArgumentCaptor<PracticalInfoQuery> captor = ArgumentCaptor.forClass(PracticalInfoQuery.class);
+        verify(poiService).searchPracticalInfo(captor.capture());
+        assertThat(captor.getValue().poiName()).hasSize(128);
+    }
+
+    @Test
+    @DisplayName("POST practical_info từ chối poi_name không phải chuỗi")
+    void postPracticalInfoRejectsNonStringPoiName() throws Exception {
+        for (String poiNameJson : List.of("[\"a\"]", "123", "true", "{\"a\":1}")) {
+            mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                            .contentType("application/json")
+                            .content("{\"ids\":[\"poi_01\"],\"poi_name\":" + poiNameJson + "}")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.meta.error_code").value("ERR_BAD_REQUEST"));
+        }
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content("{\"poi_name\":123}")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_BAD_REQUEST"));
+        verifyNoInteractions(poiService);
+    }
+
+    @Test
+    @DisplayName("POST practical_info nhận poi_name khi không có ids")
+    void postPracticalInfoAcceptsPoiNameWithoutIds() throws Exception {
+        when(poiService.searchPracticalInfo(any())).thenReturn(new PoiService.PracticalInfoPage(List.of(), 0));
+        for (String body : List.of(
+                "{\"poi_name\":\"Ba Na\"}",
+                "{\"ids\":[],\"poi_name\":\"Ba Na\"}",
+                "{\"ids\":null,\"poi_name\":\"Ba Na\"}")) {
+            mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                            .contentType("application/json")
+                            .content(body)))
+                    .andExpect(status().isOk());
+        }
+        ArgumentCaptor<PracticalInfoQuery> captor = ArgumentCaptor.forClass(PracticalInfoQuery.class);
+        verify(poiService, times(3)).searchPracticalInfo(captor.capture());
+        assertThat(captor.getAllValues()).allSatisfy(query -> {
+            assertThat(query.ids()).isEmpty();
+            assertThat(query.poiName()).isEqualTo("Ba Na");
+        });
+    }
+
+    @Test
+    @DisplayName("POST practical_info từ chối khi thiếu cả ids và poi_name")
+    void postPracticalInfoRejectsMissingSelectors() throws Exception {
+        for (String body : List.of(
+                "{}",
+                "{\"ids\":null}",
+                "{\"poi_name\":null}",
+                "{\"poi_name\":\"   \"}",
+                "{\"ids\":[],\"poi_name\":\"\"}")) {
+            mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                            .contentType("application/json")
+                            .content(body)))
+                    .andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+        }
+        verifyNoInteractions(poiService);
+    }
+
+    @Test
+    @DisplayName("POST practical_info vẫn chặn ids sai khi đã có poi_name")
+    void postPracticalInfoKeepsIdRulesWhenPoiNamePresent() throws Exception {
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content("{\"ids\":[\"\"],\"poi_name\":\"x\"}")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content(idsJson(501).replace("]}", "],\"poi_name\":\"x\"}"))))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+        verifyNoInteractions(poiService);
+    }
+
+    @Test
+    @DisplayName("POST practical_info nhận 500 id và poi_name tối đa trong trần body")
+    void postPracticalInfoAcceptsMaxIdsAndMaxPoiNameWithinBodyLimit() throws Exception {
+        String body = maxBody();
+        assertThat(body.getBytes(StandardCharsets.UTF_8).length).isLessThanOrEqualTo(PracticalInfoBodyLimitFilter.MAX_BYTES);
+        when(poiService.searchPracticalInfo(any())).thenReturn(new PoiService.PracticalInfoPage(List.of(), 0));
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content(body)))
+                .andExpect(status().isOk());
+        ArgumentCaptor<PracticalInfoQuery> captor = ArgumentCaptor.forClass(PracticalInfoQuery.class);
+        verify(poiService).searchPracticalInfo(captor.capture());
+        assertThat(captor.getValue().ids()).hasSize(500);
+        assertThat(captor.getValue().poiName()).hasSize(128);
+    }
+
+    private static String maxBody() {
+        StringBuilder body = new StringBuilder("{\"ids\":[");
+        String pad = "x".repeat(124);
+        for (int i = 0; i < 500; i++) {
+            if (i > 0) {
+                body.append(',');
+            }
+            body.append('"').append(String.format("%04d", i)).append(pad).append('"');
+        }
+        body.append("],\"poi_name\":\"");
+        for (int i = 0; i < 128; i++) {
+            body.append("\\u00e9");
+        }
+        return body.append("\"}").toString();
     }
 
     private static String idsJson(int count) {

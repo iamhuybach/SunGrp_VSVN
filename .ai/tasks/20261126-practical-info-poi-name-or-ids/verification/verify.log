@@ -1,0 +1,71 @@
+# Verification 2026-11-26 13:08:36 — PASS
+Files (10): docs/context/api-mapping/practical_info_list.md, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PracticalInfoSearchRequest.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/PracticalInfoBodyLimitFilter.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiLegacyIdMapRepositoryCustom.java, services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiLegacyIdMapRepositoryImpl.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/PracticalInfoBodyLimitFilterTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java, services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/LegacyAndPracticalInfoIntegrationTest.java
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 17%]
+........................................................................ [ 34%]
+........................................................................ [ 51%]
+........................................................................ [ 68%]
+........................................................................ [ 85%]
+...............................................................          [100%]
+423 passed in 7.54s
+
+## maven: PASS
+2026-11-26T13:08:31.214+07:00  INFO 4028 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-26T13:08:31.228+07:00  INFO 4028 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-26T13:08:31.229+07:00  INFO 4028 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-11-26T13:08:31.254+07:00  INFO 4028 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@a7b1800
+2026-11-26T13:08:31.254+07:00  INFO 4028 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-11-26T13:08:31.267+07:00  INFO 4028 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:50733/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 18.6
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-26T13:08:31.359+07:00  INFO 4028 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-26T13:08:31.361+07:00  INFO 4028 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-26T13:08:31.479+07:00  WARN 4028 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-26T13:08:31.613+07:00  INFO 4028 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-26T13:08:31.614+07:00  INFO 4028 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-26T13:08:31.616+07:00  INFO 4028 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-26T13:08:31.619+07:00  INFO 4028 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 5 ms
+2026-11-26T13:08:31.638+07:00  INFO 4028 --- [           main] .s.LegacyAndPracticalInfoIntegrationTest : Started LegacyAndPracticalInfoIntegrationTest in 3.044 seconds (process running for 30.815)
+2026-11-26T13:08:31.640+07:00  WARN 4028 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-26T13:08:31.640+07:00  WARN 4028 --- [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-11-26T13:08:33.681+07:00  WARN 4028 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=cost reason=INVALID_JSON
+2026-11-26T13:08:33.681+07:00  WARN 4028 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=operating_hours reason=BAD_ELEMENT
+2026-11-26T13:08:33.752+07:00  WARN 4028 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=operating_hours reason=INVALID_JSON
+2026-11-26T13:08:33.757+07:00  WARN 4028 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=holiday_exceptions reason=INVALID_JSON
+2026-11-26T13:08:33.758+07:00  WARN 4028 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=poi_01 field=holiday_exceptions reason=INVALID_JSON
+2026-11-26T13:08:33.773+07:00  WARN 4028 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=cost reason=NOT_OBJECT
+2026-11-26T13:08:33.773+07:00  WARN 4028 --- [           main] v.v.d.service.util.StoredJsonParser      : stored_json_parse_failed poi_id=p field=cost reason=NOT_OBJECT
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\bachnh\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+## task-state: PASS
+

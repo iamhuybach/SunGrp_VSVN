@@ -4,7 +4,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Description | Danh sách thông tin thực tế. `ids` nhận `apps.srv_poi_info.poi_id` hoặc `apps.srv_poi_legacy_id_map.legacy_poi_id` khi `apps.srv_poi_legacy_id_map.poi_id_status` là `OK` và `apps.srv_poi_legacy_id_map.poi_id` khác null, trừ khi giá trị đó đã là `apps.srv_poi_info.poi_id`. `data.id` là `poi_id` mới. Một phần tử cho mỗi `poi_id` đã resolve, `deleted_at` null, sau lọc `source` và `poi_name`. |
+| Description | Danh sách thông tin thực tế. `ids` nhận `apps.srv_poi_info.poi_id` hoặc `apps.srv_poi_legacy_id_map.legacy_poi_id` khi `apps.srv_poi_legacy_id_map.poi_id_status` là `OK` và `apps.srv_poi_legacy_id_map.poi_id` khác null, trừ khi giá trị đó đã là `apps.srv_poi_info.poi_id`. `data.id` là `poi_id` mới. Body chọn POI theo `ids`, theo `poi_name`, hoặc cả hai. Có cả hai thì lấy hợp, không lấy giao. Một phần tử cho mỗi `poi_id` đã chọn, `deleted_at` null, sau lọc `source` (query). |
 | Method | POST |
 | Endpoint | /api/v1/pois/practical_info |
 
@@ -24,11 +24,10 @@
 | 1 | required_fields | string | không | id, name, description, time_to_spend, cost, best_time, cover, ratings, business_tags, status, operating_hours, holiday_exceptions, address, geo_location, destinations, phone, email, website_url |
 | 2 | source | string | không | `partner`, `google`. Rỗng thì không lọc. So `lower(trim(apps.srv_poi_info.source_name))`. |
 | 3 | lang | string | không | `vi`, `en`, `ko`. Query ưu tiên hơn `Accept-Language`. Thiếu cả hai thì `vi`. `en-US` lấy `en`. |
-| 4 | poi_name | string | không | query. Tối đa 128. Rỗng thì không lọc. Khớp không phân biệt hoa thường trên `apps.srv_poi_info.poi_name`. `%`, `_` và `\` được escape. |
-| 5 | page | integer | không | query. Mặc định `0`. `@Min(0)`. |
-| 6 | size | integer | không | query. Mặc định `10`. `@Min(1)` `@Max(100)`. |
-| 7 | sort_field | string | không | `id`, `name`, `ratings_avg_score`, `ratings_count`. Đúng một giá trị. Vắng thì `poi_id` tăng dần. |
-| 8 | sort_order | string | không | `asc`, `desc`. Mặc định `asc`. Null đứng cuối, rồi `poi_id` tăng dần. |
+| 4 | page | integer | không | query. Mặc định `0`. `@Min(0)`. |
+| 5 | size | integer | không | query. Mặc định `10`. `@Min(1)` `@Max(100)`. |
+| 6 | sort_field | string | không | `id`, `name`, `ratings_avg_score`, `ratings_count`. Đúng một giá trị. Vắng thì `poi_id` tăng dần. |
+| 7 | sort_order | string | không | `asc`, `desc`. Mặc định `asc`. Null đứng cuối, rồi `poi_id` tăng dần. |
 
 ## Giá trị param
 
@@ -50,7 +49,7 @@
 | `holiday_exceptions` | Ngoại lệ ngày lễ, giữ nguyên JSON |
 | `address` | Địa chỉ |
 | `geo_location` | Tọa độ |
-| `destinations` | Điểm đến |
+| `destinations` | Điểm đến. `id` và `name` là mảng chuỗi hoặc `null`. Null/rỗng/không phải mảng JSON/phần tử không phải chuỗi → `null`. Không bịa phần tử, không bỏ `\`. |
 | `phone` | Số điện thoại. Không ghi log |
 | `email` | Email. Không ghi log |
 | `website_url` | Website |
@@ -83,7 +82,10 @@
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | ids | array | có | Từ 1 đến 500 chuỗi. Mỗi phần tử không rỗng, dài tối đa 128. Đếm cả phần tử trùng. `apps.srv_poi_info.poi_id` hoặc `apps.srv_poi_legacy_id_map.legacy_poi_id`. `data.id` là `poi_id` mới. |
+| 1 | ids | array | không | Selector theo id. Có phần tử thì từ 1 đến 500 chuỗi, mỗi phần tử không rỗng, dài tối đa 128, đếm cả phần tử trùng. Vắng, `null` hoặc `[]` là không chọn theo id. `apps.srv_poi_info.poi_id` hoặc `apps.srv_poi_legacy_id_map.legacy_poi_id`. `data.id` là `poi_id` mới. |
+| 2 | poi_name | string | không | Selector theo tên, ngang hàng với `ids`, không lọc tập `ids`. Tối đa 128. Vắng, `null`, rỗng hoặc chỉ khoảng trắng là không chọn theo tên. Khớp chứa, không phân biệt hoa thường trên `apps.srv_poi_info.poi_name`. `%`, `_` và `\` khớp đúng ký tự. Có cả `ids` thì kết quả là hợp hai tập, mỗi `poi_id` một lần. Số, boolean, mảng hoặc object trả HTTP 400. Query `poi_name` không được đọc. |
+
+Phải có ít nhất một selector: `ids` không rỗng hoặc `poi_name` có chữ. Thiếu cả hai trả HTTP 422. `source`, `sort_field`, `sort_order`, `page`, `size` áp lên tập đã chọn.
 
 ## Response
 
@@ -112,10 +114,10 @@
 | HTTP | Code | Description |
 |---|---|---|
 | 200 | null | Thành công, kể cả `data` rỗng. |
-| 400 | null | Body không đọc được hoặc `page`/`size` không phải số. |
+| 400 | null | Body không đọc được (kể cả `poi_name` không phải chuỗi JSON), body quá lớn (`ERR_BODY_TOO_LARGE`), hoặc `page`/`size` không phải số. |
 | 401 | ERR_UNAUTHORIZED | Thiếu `Authorization`, scheme khác `Bearer`, token sai, hoặc server chưa cấu hình token. Kiểm tra trước mọi mã khác. Message `Missing or invalid bearer token.` Header `WWW-Authenticate: Bearer`. |
 | 415 | null | `Content-Type` khác `application/json`. |
-| 422 | ERR_VALIDATION_FAILED | `ids`, `required_fields`, `source`, `poi_name`, `page`, `size`, `sort_field` hoặc `sort_order` ngoài hợp đồng. |
+| 422 | ERR_VALIDATION_FAILED | `ids`, `required_fields`, `source`, `poi_name`, `page`, `size`, `sort_field` hoặc `sort_order` ngoài hợp đồng, hoặc thiếu cả `ids` và `poi_name`. |
 | 500 | INTERNAL_SERVER_ERROR | Lỗi không phân loại. |
 
 ## Sample request
@@ -217,6 +219,8 @@ X-Request-Id: 22222222-2222-2222-2222-222222222222
 }
 ```
 
+Ví dụ minh hoạ (không phải bản chụp Dev): `"destinations": {"id": ["dest_01"], "name": ["Hà Nội"]}`.
+
 ## Sample required_fields
 
 Chọn `id` và `name` từ cùng bản ghi Dev.
@@ -310,6 +314,26 @@ Authorization: Bearer <token>
 Content-Type: application/json
 
 {"ids":["85c1a13a-9c11-a579-0a07-dfd8337596dd"]}
+```
+
+## Sample poi_name
+
+File này không có kết quả Dev cho selector tên, nên không ghi body response.
+
+```http
+POST /api/v1/pois/practical_info HTTP/1.1
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{"poi_name":"French Village"}
+```
+
+```http
+POST /api/v1/pois/practical_info HTTP/1.1
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{"ids":["14b2e2c4-95a8-d851-240f-c25e4e8cdb7a"],"poi_name":"French Village"}
 ```
 
 ## Sample lang

@@ -107,4 +107,30 @@ class PracticalInfoBodyLimitFilterTest {
             throw new java.io.IOException("reached");
         })).hasMessage("reached");
     }
+
+    @Test
+    @DisplayName("Body tối đa 500 id và poi_name vẫn trong trần và được chuyển tiếp")
+    void maxValidBodyWithPoiNameReachesChain() {
+        StringBuilder body = new StringBuilder("{\"ids\":[");
+        String pad = "x".repeat(124);
+        for (int i = 0; i < 500; i++) {
+            if (i > 0) {
+                body.append(',');
+            }
+            body.append('"').append(String.format("%04d", i)).append(pad).append('"');
+        }
+        body.append("],\"poi_name\":\"");
+        for (int i = 0; i < 128; i++) {
+            body.append("\\u00e9");
+        }
+        body.append("\"}");
+        byte[] bytes = body.toString().getBytes(StandardCharsets.UTF_8);
+        assertThat(bytes.length).isLessThanOrEqualTo(PracticalInfoBodyLimitFilter.MAX_BYTES);
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/pois/practical_info");
+        request.setContent(bytes);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        assertThatThrownBy(() -> filter.doFilter(request, response, (req, res) -> {
+            throw new java.io.IOException("reached");
+        })).hasMessage("reached");
+    }
 }

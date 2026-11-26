@@ -23,7 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Chặn body POST practical_info trước khi Jackson đọc. Trần đủ cho 500 id dài 128 ký tự.
+ * Chặn body POST practical_info trước khi Jackson đọc. Trần đủ cho 500 id ASCII dài 128 ký tự cộng poi_name 128 ký tự viết dạng escape unicode JSON.
  */
 @Component
 @Order(Ordered.LOWEST_PRECEDENCE)

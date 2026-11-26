@@ -388,12 +388,14 @@ class PoiRepositoryIntegrationTest {
     void practicalInfoPageSqlOrderByComesOnlyFromConstants() {
         java.util.regex.Pattern clause = java.util.regex.Pattern.compile(
                 "ORDER BY (i\\.[a-z_]+ (ASC|DESC) NULLS LAST, i\\.poi_id ASC|i\\.poi_id ASC) LIMIT :limit OFFSET :offset$");
-        assertThat(clause.matcher(SrvPoiLegacyIdMapRepositoryImpl.DEFAULT_PAGE_SQL).find()).isTrue();
-        for (String sql : SrvPoiLegacyIdMapRepositoryImpl.ASC_PAGE_SQL.values()) {
-            assertThat(clause.matcher(sql).find()).isTrue();
-        }
-        for (String sql : SrvPoiLegacyIdMapRepositoryImpl.DESC_PAGE_SQL.values()) {
-            assertThat(clause.matcher(sql).find()).isTrue();
+        for (SrvPoiLegacyIdMapRepositoryImpl.Selection selection : SrvPoiLegacyIdMapRepositoryImpl.Selection.values()) {
+            assertThat(clause.matcher(SrvPoiLegacyIdMapRepositoryImpl.DEFAULT_PAGE_SQL.get(selection)).find()).isTrue();
+            for (String sql : SrvPoiLegacyIdMapRepositoryImpl.ASC_PAGE_SQL.get(selection).values()) {
+                assertThat(clause.matcher(sql).find()).isTrue();
+            }
+            for (String sql : SrvPoiLegacyIdMapRepositoryImpl.DESC_PAGE_SQL.get(selection).values()) {
+                assertThat(clause.matcher(sql).find()).isTrue();
+            }
         }
     }
 
@@ -402,12 +404,68 @@ class PoiRepositoryIntegrationTest {
     void idPredicatesUsePrimaryKeyIndexesWhenSeqScanDisabled() {
         jdbcTemplate.execute("SET LOCAL enable_seqscan = off");
         String resolvePlan = explain(SrvPoiLegacyIdMapRepositoryImpl.RESOLVE_SQL, false);
-        String countPlan = explain(SrvPoiLegacyIdMapRepositoryImpl.PRACTICAL_INFO_COUNT_SQL, true);
+        String countPlan = explain(SrvPoiLegacyIdMapRepositoryImpl.COUNT_SQL.get(
+                SrvPoiLegacyIdMapRepositoryImpl.Selection.IDS), true);
         for (String plan : List.of(resolvePlan, countPlan)) {
             assertThat(plan).contains("srv_poi_legacy_id_map_pkey");
             assertThat(plan).contains("srv_poi_info_pkey");
             assertThat(plan).doesNotContainPattern("Seq Scan on srv_poi_(info|legacy_id_map)");
         }
+    }
+
+    @Test
+    @DisplayName("trang practical info chọn theo tên, bỏ dòng đã xóa")
+    void practicalInfoPageSelectsByNameOnly() {
+        insertPlain("A", "Cafe One", null);
+        jdbcTemplate.update("INSERT INTO apps.srv_poi_info (poi_id, poi_name, deleted_at) VALUES (?,?,now())", "B", "cafe two");
+        insertPlain("C", "Tea", null);
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice slice = legacyIdMapRepository.findPracticalInfoPage(
+                List.of(), null, "CAFE", null, false, 10, 0);
+        assertThat(slice.rows()).extracting(SrvPoiInfo::getPoiId).containsExactly("A");
+        assertThat(slice.total()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("trang practical info hợp ids và tên, gộp trùng")
+    void practicalInfoPageUnionsIdsAndName() {
+        insertPlain("A", "Cafe One", null);
+        insertPlain("C", "Tea", null);
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice both = legacyIdMapRepository.findPracticalInfoPage(
+                List.of("C"), null, "cafe", null, false, 10, 0);
+        assertThat(both.rows()).extracting(SrvPoiInfo::getPoiId).containsExactly("A", "C");
+        assertThat(both.total()).isEqualTo(2);
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice overlap = legacyIdMapRepository.findPracticalInfoPage(
+                List.of("A"), null, "cafe", null, false, 10, 0);
+        assertThat(overlap.rows()).extracting(SrvPoiInfo::getPoiId).containsExactly("A");
+        assertThat(overlap.total()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("count khi offset quá cuối bind đúng từng selection")
+    void practicalInfoPageFallbackCountBindsEverySelection() {
+        insertPlain("A", "Cafe One", null);
+        insertPlain("C", "Tea", null);
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice byId = legacyIdMapRepository.findPracticalInfoPage(
+                List.of("A", "C"), null, null, null, false, 1, 5);
+        assertThat(byId.rows()).isEmpty();
+        assertThat(byId.total()).isEqualTo(2);
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice byName = legacyIdMapRepository.findPracticalInfoPage(
+                List.of(), null, "cafe", null, false, 1, 5);
+        assertThat(byName.rows()).isEmpty();
+        assertThat(byName.total()).isEqualTo(1);
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice union = legacyIdMapRepository.findPracticalInfoPage(
+                List.of("C"), null, "cafe", null, false, 1, 5);
+        assertThat(union.rows()).isEmpty();
+        assertThat(union.total()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("không có selector thì trang rỗng")
+    void practicalInfoPageWithoutSelectorIsEmpty() {
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice slice = legacyIdMapRepository.findPracticalInfoPage(
+                List.of(), null, "  ", null, false, 10, 0);
+        assertThat(slice.rows()).isEmpty();
+        assertThat(slice.total()).isZero();
     }
 
     private void insertPlain(String id, String name, String deleted) {
@@ -425,7 +483,6 @@ class PoiRepositoryIntegrationTest {
         query.setParameter("ids", new String[] {"a", "b", "c"}, String[].class);
         if (withFilters) {
             query.setParameter("source", "");
-            query.setParameter("namePattern", "");
         }
         return String.join("\n", query.getResultList().stream().map(String::valueOf).toList());
     }

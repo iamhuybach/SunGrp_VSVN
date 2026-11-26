@@ -45,7 +45,9 @@
 | 16 | data.holiday_exceptions | json | có | apps.srv_poi_info.holiday_exceptions | Đúng một giá trị JSON thì ghi nguyên text cột. JSON hỏng hoặc có token thừa thì null. Không đổi khóa bên trong. |
 | 17 | data.address | object | có | apps.srv_poi_info.full_address; apps.srv_poi_info.city; apps.srv_poi_info.district | |
 | 18 | data.geo_location | object | có | apps.srv_poi_info.lat; apps.srv_poi_info.lng | |
-| 19 | data.destinations | object | có | apps.srv_poi_info.destination_id; apps.srv_poi_info.destination_name | Luôn `{id, name}`. |
+| 19 | data.destinations | object | có | apps.srv_poi_info.destination_id; apps.srv_poi_info.destination_name | Luôn `{id, name}`. id, name là mảng chuỗi JSON hoặc null (D-1 task 20261126-destinations-json-array). |
+| 19a | data.destinations.id | array<string> | có | apps.srv_poi_info.destination_id | Parse mảng JSON trong text. Null/rỗng/không phải mảng/phần tử không phải chuỗi → null. Không bịa phần tử, không bỏ `\`. |
+| 19b | data.destinations.name | array<string> | có | apps.srv_poi_info.destination_name | Parse mảng JSON trong text. Null/rỗng/không phải mảng/phần tử không phải chuỗi → null. Không bịa phần tử, không bỏ `\`. |
 | 20 | data.phone | string | có | apps.srv_poi_info.phone | Không ghi log. |
 | 21 | data.email | string | có | apps.srv_poi_info.email | Không ghi log. |
 | 22 | data.website_url | string | có | apps.srv_poi_info.website_url | Không ghi log. |
@@ -196,3 +198,5 @@ Lấy từ Dev ngày 2026-11-11. `phone` và `email` có giá trị trên Dev v�
   "errors": null
 }
 ```
+
+Ví dụ minh hoạ (không phải bản chụp Dev): `"destinations": {"id": ["dest_01"], "name": ["Hà Nội"]}`.

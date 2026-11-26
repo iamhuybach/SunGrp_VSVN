@@ -33,6 +33,7 @@ public interface SrvPoiLegacyIdMapRepositoryCustom {
 
     List<Resolution> findResolvable(Collection<String> ids);
 
+    /** ids rỗng và poiName trắng thì trả trang rỗng; có cả hai thì hợp hai tập. */
     PracticalInfoSlice findPracticalInfoPage(Collection<String> ids, String source, String poiName,
             SortColumn sort, boolean descending, int limit, long offset);
 }

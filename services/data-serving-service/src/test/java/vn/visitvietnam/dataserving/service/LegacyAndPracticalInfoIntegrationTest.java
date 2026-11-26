@@ -141,17 +141,76 @@ class LegacyAndPracticalInfoIntegrationTest {
     @DisplayName("source và poi_name lọc không phân biệt hoa thường và escape LIKE")
     void postFiltersBySourceAndPoiNameCaseInsensitiveEscaped() throws Exception {
         insertInfo("pct", "100%_Cafe", "Partner", null);
-        insertInfo("wide", "100X Cafe", "google", null);
+        insertInfo("wide", "100X Cafe", "partner", null);
+        insertInfo("pctg", "100%_cafe g", "google", null);
         MvcResult result = mockMvc.perform(auth(post("/api/v1/pois/practical_info")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("source", "partner")
-                        .param("poi_name", "100%_")
-                        .content("{\"ids\":[\"" + NEW_ID + "\",\"pct\",\"wide\"]}")))
+                        .content("{\"poi_name\":\"100%_CAFE\"}")))
                 .andExpect(status().isOk())
                 .andReturn();
         JsonNode data = objectMapper.readTree(result.getResponse().getContentAsString()).get("data");
         assertThat(data).hasSize(1);
         assertThat(data.get(0).get("id").asText()).isEqualTo("pct");
+    }
+
+    @Test
+    @DisplayName("POST hợp ids và poi_name, không lấy giao")
+    void postReturnsUnionOfIdsAndBodyPoiName() throws Exception {
+        insertInfo("pct", "100%_Cafe", "partner", null);
+        insertInfo("wide", "100X Cafe", "partner", null);
+        insertInfo("outside", "100%_Outside", "partner", null);
+        JsonNode body = okBody("POST", "/api/v1/pois/practical_info",
+                "{\"ids\":[\"wide\"],\"poi_name\":\"100%_cAFE\"}");
+        assertThat(body.get("data")).extracting(node -> node.get("id").asText()).containsExactlyInAnyOrder("pct", "wide");
+        assertThat(body.get("meta").get("pagination").get("total_items").asInt()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("hợp gộp trùng và phân trang trên tập đã hợp")
+    void postUnionDedupesOverlapAndPagesOverUnion() throws Exception {
+        insertInfo("pct", "100%_Cafe", "partner", null);
+        insertInfo("wide", "100X Cafe", "partner", null);
+        JsonNode body = okBody("POST", "/api/v1/pois/practical_info?sort_field=name&sort_order=asc&size=1&page=1",
+                "{\"ids\":[\"pct\",\"" + OLD_ID + "\"],\"poi_name\":\"cafe\"}");
+        assertThat(body.get("meta").get("pagination").get("total_items").asInt()).isEqualTo(3);
+        assertThat(body.get("data")).hasSize(1);
+        assertThat(body.get("data").get(0).get("id").asText()).isEqualTo("wide");
+    }
+
+    @Test
+    @DisplayName("poi_name khớp dấu gạch chéo ngược và dấu than đúng ký tự")
+    void postBodyPoiNameMatchesBackslashAndBangLiterally() throws Exception {
+        insertInfo("bs", "A\\B", "partner", null);
+        insertInfo("plain", "AB", "partner", null);
+        insertInfo("bang", "A!B", "partner", null);
+        JsonNode slash = okData("POST", "/api/v1/pois/practical_info", "{\"poi_name\":\"\\\\\"}");
+        assertThat(slash).extracting(node -> node.get("id").asText()).containsExactly("bs");
+        JsonNode mark = okData("POST", "/api/v1/pois/practical_info", "{\"poi_name\":\"!\"}");
+        assertThat(mark).extracting(node -> node.get("id").asText()).containsExactly("bang");
+    }
+
+    @Test
+    @DisplayName("query poi_name không còn lọc")
+    void postQueryPoiNameNoLongerFilters() throws Exception {
+        insertInfo("pct", "100%_Cafe", "partner", null);
+        insertInfo("wide", "100X Cafe", "partner", null);
+        String ids = "{\"ids\":[\"pct\",\"wide\"]}";
+        MvcResult withQuery = mockMvc.perform(auth(post("/api/v1/pois/practical_info")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("poi_name", "100%_")
+                        .content(ids)))
+                .andExpect(status().isOk())
+                .andReturn();
+        MvcResult without = mockMvc.perform(auth(post("/api/v1/pois/practical_info")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids)))
+                .andExpect(status().isOk())
+                .andReturn();
+        JsonNode queried = objectMapper.readTree(withQuery.getResponse().getContentAsString()).get("data");
+        JsonNode plain = objectMapper.readTree(without.getResponse().getContentAsString()).get("data");
+        assertThat(queried).isEqualTo(plain);
+        assertThat(queried).hasSize(2);
     }
 
     @Test

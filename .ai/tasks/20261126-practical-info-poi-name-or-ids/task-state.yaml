@@ -1,0 +1,70 @@
+schema_version: 1
+task:
+  id: 20261126-practical-info-poi-name-or-ids
+  title: Query practical_info by poi_name or ids
+  status: waiting_runtime
+  owner: user
+  created_at: '2026-11-26'
+  updated_at: '2026-11-26'
+classification:
+  complexity: medium
+  risk_level: medium
+  architecture_required: true
+  evidence_required: false
+  runtime_required: true
+  signals:
+  - runtime_proof_required
+scope:
+  systems:
+  - poi-serving-api
+  files:
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PracticalInfoSearchRequest.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PracticalInfoQuery.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiLegacyIdMapRepositoryImpl.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiLegacyIdMapRepositoryCustom.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/LegacyAndPracticalInfoIntegrationTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java
+  - docs/context/api-mapping/practical_info_list.md
+review_plan:
+  required_reviewers:
+  - api-contract-reviewer
+  - jpa-performance-reviewer
+  round: 1
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: pass
+rounds:
+  verification: 1
+  review: 1
+  architecture: 1
+  runtime_failure: 0
+open_findings: []

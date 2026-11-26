@@ -2,6 +2,7 @@ package vn.visitvietnam.dataserving.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
@@ -58,8 +59,16 @@ public record CompactPoiResponse(
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @Schema(description = "Điểm đến")
     public record Destinations(
-            @Schema(description = "apps.srv_poi_info.destination_id") String id,
-            @Schema(description = "apps.srv_poi_info.destination_name") String name
+            @ArraySchema(
+                    arraySchema = @Schema(types = {"array", "null"},
+                            description = "apps.srv_poi_info.destination_id, mảng JSON chuỗi. Không phải mảng chuỗi JSON thì null."),
+                    schema = @Schema(type = "string"))
+            List<String> id,
+            @ArraySchema(
+                    arraySchema = @Schema(types = {"array", "null"},
+                            description = "apps.srv_poi_info.destination_name, mảng JSON chuỗi. Không phải mảng chuỗi JSON thì null."),
+                    schema = @Schema(type = "string"))
+            List<String> name
     ) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)

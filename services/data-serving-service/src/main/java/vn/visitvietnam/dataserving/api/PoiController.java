@@ -142,10 +142,10 @@ public class PoiController {
     @Operation(summary = "Danh sách thông tin thực tế của nhiều POI")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Danh sách practical info. required_fields vắng thì mỗi phần tử đủ field; có chọn thì chỉ các khóa đó, giữ null.", content = @Content(schema = @Schema(implementation = PracticalInfoListEnvelope.class))),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Body không đọc được, quá lớn, hoặc page/size không phải số.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Body không đọc được (kể cả poi_name không phải chuỗi JSON), quá lớn, hoặc page/size không phải số.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Thiếu hoặc sai bearer token.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "415", description = "Content-Type khác application/json.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "ids, required_fields, source, poi_name, page, size, sort_field hoặc sort_order ngoài hợp đồng.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "ids, required_fields, source, poi_name, page, size, sort_field hoặc sort_order ngoài hợp đồng, hoặc thiếu cả ids và poi_name.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Lỗi không phân loại.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     @PostMapping(value = "/practical_info", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -155,7 +155,6 @@ public class PoiController {
             @RequestParam(name = "source", required = false) @Pattern(regexp = "^(partner|google)?$") String source,
             @RequestParam(name = "lang", required = false) String lang,
             @RequestHeader(name = "Accept-Language", required = false) String acceptLanguage,
-            @RequestParam(name = "poi_name", required = false) @Size(max = 128) String poiName,
             @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
             @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(name = "sort_field", required = false) @Pattern(regexp = PracticalInfoQuery.SORT_REGEX) String sortField,
@@ -175,10 +174,10 @@ public class PoiController {
                 ? org.springframework.data.domain.Sort.Direction.DESC
                 : org.springframework.data.domain.Sort.Direction.ASC;
         PracticalInfoQuery query = new PracticalInfoQuery(
-                body.ids(),
+                body.ids() == null ? List.of() : body.ids(),
                 fields,
                 source == null || source.isBlank() ? null : source,
-                poiName == null || poiName.isBlank() ? null : poiName,
+                body.poiName() == null || body.poiName().isBlank() ? null : body.poiName(),
                 resolvedLang,
                 page,
                 size,

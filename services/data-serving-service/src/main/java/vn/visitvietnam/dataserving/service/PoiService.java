@@ -1,6 +1,13 @@
 package vn.visitvietnam.dataserving.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -53,6 +60,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PoiService {
 
+    private static final Logger log = LoggerFactory.getLogger(PoiService.class);
+    private static final ObjectMapper DESTINATION_JSON = JsonMapper.builder()
+            .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+            .build();
     private static final Pattern SECTOR = Pattern.compile("^[a-z0-9_]{1,64}$");
     private static final List<String> DEFAULT_SECTORS = List.of("attraction", "f_n_b", "event", "tour_n_activities");
 
@@ -267,7 +278,7 @@ public class PoiService {
                 poi.getPhone(),
                 poi.getEmail(),
                 poi.getWebsiteUrl(),
-                new CompactPoiResponse.Destinations(poi.getDestinationId(), poi.getDestinationName())
+                destinationsOf(poi)
         );
     }
 
@@ -348,7 +359,7 @@ public class PoiService {
                 businessTags,
                 addressOf(poi),
                 geoOf(poi),
-                new CompactPoiResponse.Destinations(poi.getDestinationId(), poi.getDestinationName()));
+                destinationsOf(poi));
     }
 
     private PoiFeatureResponse mapFeature(SrvPoiInfo poi, String lang, Map<String, SrvPoiMultiLang> multiLangs) {
@@ -437,5 +448,45 @@ public class PoiService {
 
     private static String blankToDefault(String lang) {
         return lang != null && !lang.isBlank() ? lang : LanguageResolver.DEFAULT_LANG;
+    }
+
+    private static CompactPoiResponse.Destinations destinationsOf(SrvPoiInfo poi) {
+        return new CompactPoiResponse.Destinations(
+                destinationArray(poi.getPoiId(), "destination_id", poi.getDestinationId()),
+                destinationArray(poi.getPoiId(), "destination_name", poi.getDestinationName()));
+    }
+
+    /** Mảng chuỗi JSON nguyên thứ tự. Null, rỗng, không phải mảng, hoặc phần tử không phải chuỗi thì null. */
+    static List<String> destinationArray(String poiId, String field, String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        JsonNode node;
+        try {
+            node = DESTINATION_JSON.readTree(raw);
+        } catch (JsonProcessingException ex) {
+            warnDestination(poiId, field, "INVALID_JSON");
+            return null;
+        }
+        if (node == null || node.isNull() || node.isMissingNode()) {
+            return null;
+        }
+        if (!node.isArray()) {
+            warnDestination(poiId, field, "NOT_ARRAY");
+            return null;
+        }
+        List<String> out = new ArrayList<>(node.size());
+        for (JsonNode element : node) {
+            if (!element.isTextual()) {
+                warnDestination(poiId, field, "BAD_ELEMENT");
+                return null;
+            }
+            out.add(element.textValue());
+        }
+        return Collections.unmodifiableList(out);
+    }
+
+    private static void warnDestination(String poiId, String field, String reason) {
+        log.warn("stored_json_parse_failed poi_id={} field={} reason={}", poiId, field, reason);
     }
 }

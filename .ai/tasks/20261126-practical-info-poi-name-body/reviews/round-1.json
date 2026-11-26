@@ -1,0 +1,20 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "API-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/api-mapping/practical_info_list.md": "d6b98160d36de4b41bf8e68229eb0771d84b2841088415400d5ded1de6292f33",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java": "da8ad6e50a7aeb2e9b3fefbfe2f4de734e09388c63a6938c17597d9b55db1dda",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PracticalInfoSearchRequest.java": "b936db5bdbf12be4b905c5022a8e71da100170ce1fea527dcea368c348675dd2",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/PracticalInfoBodyLimitFilter.java": "9268394ab22d35a705078d068b7798a12e918bf8ae02aec8321fa7338b692a2c",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java": "75a7eb7e3d3480292d819a8b3358a702ef08ae978526ffd58e9cac5702ec7d71",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/PracticalInfoBodyLimitFilterTest.java": "02c16c8b0451893c2779c1f30a23872f6e4a350af792be3a90e5656f86b9ce55",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/LegacyAndPracticalInfoIntegrationTest.java": "6da9b59e695c0b315f68edfaf27bbae5e6164a615d597dfb4d41e3aaa90c8779"
+  },
+  "elapsed_seconds": 281
+}

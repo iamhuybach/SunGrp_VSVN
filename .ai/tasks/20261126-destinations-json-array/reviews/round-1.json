@@ -1,0 +1,15 @@
+{
+  "round": 1,
+  "verdict": "PASS",
+  "findings": [],
+  "files": {
+    "docs/context/api-mapping/compact.md": "b53dec5c8705bc26302ca6949a9b571b42bd2d1f7f5a1c5dfa6b2a1a27e27ef6",
+    "docs/context/api-mapping/practical_info.md": "463c1748057e7ad2c8b3b28b69afc5f371a1dca66511501296845151e32a684f",
+    "docs/context/api-mapping/practical_info_list.md": "e3b9d21ca58c38451172f6535d7bf7adf189caeb27c533117e0fa7f3844dbf39",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/CompactPoiResponse.java": "1194b209ccce0e3093c9c8cb4be88cbd3d20fe98a204eaf98462c380ad18def4",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java": "c28f9f0ccbfffd9a7e00c08808d5b455d8636a5289db48431fb3e809c404822f",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java": "4c82cd3e97c5568d286170e0dd2d70d1487be2b9cad7364d994d36b8f5ee81bf",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java": "65a3b83db30c19b7face406b58228ccbfb68a678d57ebf9226aacf54c069b6fb"
+  },
+  "elapsed_seconds": 171
+}

@@ -50,7 +50,9 @@
 | 14 | data[].business_tags | object | có | apps.srv_poi_info.business_sector; apps.srv_poi_info.business_category; apps.srv_poi_info.subcategory_tags | Không có `business_sector_label`. |
 | 15 | data[].address | object | có | apps.srv_poi_info.full_address; apps.srv_poi_info.city; apps.srv_poi_info.district | Null khi cả ba null hoặc rỗng. |
 | 16 | data[].geo_location | object | có | apps.srv_poi_info.lat; apps.srv_poi_info.lng | Null khi thiếu một trong hai. |
-| 17 | data[].destinations | object | có | apps.srv_poi_info.destination_id; apps.srv_poi_info.destination_name | Luôn {id, name}; name null tới khi có luồng ghi (D-1). |
+| 17 | data[].destinations | object | có | apps.srv_poi_info.destination_id; apps.srv_poi_info.destination_name | Luôn {id, name}. id, name là mảng chuỗi JSON hoặc null (D-1 task 20261126-destinations-json-array). |
+| 17a | data[].destinations.id | array<string> | có | apps.srv_poi_info.destination_id | Parse mảng JSON trong text. Null/rỗng/không phải mảng/phần tử không phải chuỗi → null. Không bịa phần tử, không bỏ `\`. |
+| 17b | data[].destinations.name | array<string> | có | apps.srv_poi_info.destination_name | Parse mảng JSON trong text. Null/rỗng/không phải mảng/phần tử không phải chuỗi → null. Không bịa phần tử, không bỏ `\`. |
 | 18 | meta | object | có | envelope | Không có `meta.pagination`. |
 | 19 | meta.timestamp | string | có | envelope | ISO-8601 UTC. |
 | 20 | meta.trace_id | string | có | envelope | |
@@ -126,3 +128,5 @@ Lấy từ Dev ngày 2026-11-11.
   "errors": null
 }
 ```
+
+Ví dụ minh hoạ (không phải bản chụp Dev): `"destinations": {"id": ["dest_01"], "name": ["Hà Nội"]}`.

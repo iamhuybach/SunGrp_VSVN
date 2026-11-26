@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -125,8 +128,8 @@ class PoiServiceTest {
     void shouldReturnCompactPoisSuccessfully() {
         SrvPoiInfo poi = SrvPoiInfo.builder()
                 .poiId("poi_01")
-                .destinationId("dest_01")
-                .destinationName("Ha Noi")
+                .destinationId("[\"dest_01\"]")
+                .destinationName("[\"Ha Noi\"]")
                 .poiName("Nhà hát Lớn")
                 .sourceName("google_places")
                 .businessSector("ATTRACTION")
@@ -170,8 +173,8 @@ class PoiServiceTest {
         assertThat(item.businessTags().businessSector()).isEqualTo("ATTRACTION");
         assertThat(item.businessTags().subcategories()).containsExactly("architecture", "culture");
         assertThat(item.rating().overall()).isEqualTo(4.80);
-        assertThat(item.destinations().id()).isEqualTo("dest_01");
-        assertThat(item.destinations().name()).isEqualTo("Ha Noi");
+        assertThat(item.destinations().id()).containsExactly("dest_01");
+        assertThat(item.destinations().name()).containsExactly("Ha Noi");
     }
 
     @Test
@@ -439,8 +442,8 @@ class PoiServiceTest {
                 .poiId("poi_01")
                 .poiName("A")
                 .businessSector("attraction")
-                .destinationId("dest_01")
-                .destinationName("Ha Noi")
+                .destinationId("[\"dest_01\"]")
+                .destinationName("[\"Ha Noi\"]")
                 .build();
         when(legacyIdMapRepository.findPracticalInfoPage(eq(List.of("poi_01")), any(), any(), any(), anyBoolean(), anyInt(), anyLong()))
                 .thenReturn(new SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice(List.of(poi), 1));
@@ -452,7 +455,8 @@ class PoiServiceTest {
                 .readTree(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(info));
         assertThat(node.has("business_sector")).isFalse();
         assertThat(node.path("business_tags").path("business_sector").asText()).isEqualTo("attraction");
-        assertThat(node.path("destinations").path("name").asText()).isEqualTo("Ha Noi");
+        assertThat(node.path("destinations").path("id").isArray()).isTrue();
+        assertThat(node.path("destinations").path("name").get(0).asText()).isEqualTo("Ha Noi");
     }
 
     @Test
@@ -505,6 +509,102 @@ class PoiServiceTest {
                 "p", "cost", "{\"text\":1,\"label\":\"Chi phí\"}")).isNull();
         assertThat(vn.visitvietnam.dataserving.service.util.StoredJsonParser.labelValue(
                 "p", "cost", "{\"text\":\"a\",\"label\":\"b\",\"extra\":\"c\"}")).isNull();
+    }
+
+    @Test
+    @DisplayName("destinationArray giữ thứ tự và chuỗi rỗng")
+    void destinationArrayParsesStringArrayInOrder() {
+        assertThat(PoiService.destinationArray("poi_01", "destination_id", "[\"a\",\"b\"]"))
+                .containsExactly("a", "b");
+        assertThat(PoiService.destinationArray("poi_01", "destination_id", "[\" a \",\"\",\"a\"]"))
+                .containsExactly(" a ", "", "a");
+        assertThat(PoiService.destinationArray("poi_01", "destination_id", "[]")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("destinationArray giữ dấu gạch chéo ngược")
+    void destinationArrayKeepsBackslash() throws Exception {
+        assertThat(PoiService.destinationArray("poi_01", "destination_id", "[\"a\\\\b\"]"))
+                .containsExactly("a\\b");
+        String json = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(
+                new CompactPoiResponse.Destinations(List.of("a\\b"), null));
+        assertThat(json).contains("[\"a\\\\b\"]");
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {
+            "", "   ", "null", "dest_01", "\"[\\\"a\\\"]\"", "{\"a\":1}", "1", "[\"a\"", "[\"a\"] x"
+    })
+    @DisplayName("destinationArray trả null khi rỗng hoặc không phải mảng")
+    void destinationArrayReturnsNullForBlankOrNonArray(String raw) {
+        assertThat(PoiService.destinationArray("poi_01", "destination_id", raw)).isNull();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"[\"a\",1]", "[\"a\",null]", "[true]", "[[\"a\"]]", "[{\"id\":\"a\"}]"})
+    @DisplayName("destinationArray trả null khi phần tử không phải chuỗi")
+    void destinationArrayReturnsNullWhenElementNotString(String raw) {
+        assertThat(PoiService.destinationArray("poi_01", "destination_id", raw)).isNull();
+    }
+
+    @Test
+    @DisplayName("một cột destination hỏng không làm mất cột còn lại")
+    void compactKeepsOtherFieldWhenOneDestinationInvalid() {
+        SrvPoiInfo poi = SrvPoiInfo.builder()
+                .poiId("poi_01")
+                .poiName("A")
+                .destinationId("not-json")
+                .destinationName("[\"Ha Noi\"]")
+                .build();
+        when(poiInfoRepository.findAll(any(Specification.class), any(Sort.class))).thenReturn(List.of(poi));
+        when(multiLangRepository.findByPoiIdInAndLangIn(any(), any())).thenReturn(List.of());
+        CompactPoiResponse item = poiService.getCompactPois(List.of("poi_01"), "vi").getFirst();
+        assertThat(item.destinations().id()).isNull();
+        assertThat(item.destinations().name()).containsExactly("Ha Noi");
+    }
+
+    @Test
+    @DisplayName("compact và practical info cùng hình destinations")
+    void compactAndPracticalInfoShareDestinationsShape() throws Exception {
+        SrvPoiInfo poi = SrvPoiInfo.builder()
+                .poiId("poi_01")
+                .poiName("A")
+                .destinationId("[\"dest_01\"]")
+                .destinationName("[\"Ha Noi\"]")
+                .build();
+        when(poiInfoRepository.findAll(any(Specification.class), any(Sort.class))).thenReturn(List.of(poi));
+        when(multiLangRepository.findByPoiIdInAndLangIn(any(), any())).thenReturn(List.of());
+        when(legacyIdMapRepository.findPracticalInfoPage(any(), any(), any(), any(), anyBoolean(), anyInt(), anyLong()))
+                .thenReturn(new SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice(List.of(poi), 1));
+        when(mediaGalleryRepository.findActiveCoversByPoiIdIn(any())).thenReturn(List.of());
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        com.fasterxml.jackson.databind.JsonNode compact = mapper.valueToTree(
+                poiService.getCompactPois(List.of("poi_01"), "vi").getFirst()).path("destinations");
+        com.fasterxml.jackson.databind.JsonNode detail = mapper.valueToTree(
+                poiService.getPracticalInfo("poi_01", "vi")).path("destinations");
+        assertThat(detail).isEqualTo(compact);
+    }
+
+    @Test
+    @DisplayName("projection practical info giữ destinations là mảng")
+    void searchPracticalInfoProjectionKeepsDestinationsArray() throws Exception {
+        SrvPoiInfo poi = SrvPoiInfo.builder()
+                .poiId("poi_01")
+                .poiName("A")
+                .destinationId("[\"dest_01\"]")
+                .destinationName("[\"Ha Noi\"]")
+                .build();
+        when(legacyIdMapRepository.findPracticalInfoPage(any(), any(), any(), any(), anyBoolean(), anyInt(), anyLong()))
+                .thenReturn(new SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice(List.of(poi), 1));
+        PracticalInfoQuery query = new PracticalInfoQuery(
+                List.of("poi_01"),
+                EnumSet.of(PracticalInfoQuery.Field.DESTINATIONS),
+                null, null, "vi", 0, 10, null, Sort.Direction.ASC);
+        Object item = poiService.searchPracticalInfo(query).items().getFirst();
+        com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper().valueToTree(item);
+        assertThat(node.path("destinations").path("id").isArray()).isTrue();
+        assertThat(node.path("destinations").path("id").get(0).asText()).isEqualTo("dest_01");
     }
 
     private static SrvPoiAmenity amenity(String group, String raw, String code) {
