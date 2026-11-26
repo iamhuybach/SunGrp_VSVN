@@ -339,7 +339,7 @@ def test_columns_match_sources():
         assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
         assert by_fq[fq]["props"] == PROPS
     gold = _assign(srv, "GOLD_COLS")
-    gold["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(_cell(ddl, "srvactivepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
+    gold["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(_cell(ddl, "oldpricepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
     gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = ml_cols["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     gold["lh_vv_gold.dbo.gld_srv_poi_review"] = poidest["lh_vv_gold.dbo.gld_srv_poi_review"]
     for fq, cols in gold.items():
@@ -576,10 +576,13 @@ def test_pipeline_config_rows_match_sources():
     for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "srvcoverpy"), "EDGES_ON"):
         expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
         assert seq > 0
+    for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "oldpricepy"), "EDGES_ON"):
+        expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        assert seq > 0
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 78
+    assert len(expected) == 79
 
 
 def test_cms_seed_rows_present():
@@ -757,7 +760,7 @@ def test_gld_srv_patch_create_matches_init():
     contracts = {fq: cols for fq, cols in env["GOLD_COLS"].items()}
     contracts[dest] = poidest[dest]
     contracts["lh_vv_gold.dbo.gld_srv_poi_info"] = _assign(
-        _cell(_notebook("NB_CREATE_DDL.ipynb"), "srvactivepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
+        _cell(_notebook("NB_CREATE_DDL.ipynb"), "oldpricepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
     contracts["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = _assign(
         _cell(_notebook("NB_CREATE_DDL.ipynb"), "mlexppy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_multi_lang"]
     rewritten = {
@@ -941,6 +944,7 @@ def test_pl_cadence_seed():
 def test_pl_cadence_patch_cell():
     ddl = _notebook("NB_CREATE_DDL.ipynb")
     ids = [c.get("id") for c in ddl["cells"]]
+    ids = ids[: ids.index("lgpnamepy") + 1]
     assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
     ids = ids[:-10]
     assert ids[-22:-20] == ["plcadmd", "plcadpy"]

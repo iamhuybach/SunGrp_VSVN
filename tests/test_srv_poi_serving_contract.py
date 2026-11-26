@@ -129,8 +129,9 @@ def test_gold_and_pg_columns_and_types_match():
         assert set(PG_ONLY).isdisjoint(spec["cols"]), name
         for col, (pg_type, _java) in PG_ONLY.items():
             assert pg[name]["cols"][col] == pg_type, f"{name}.{col}"
-        assert set(spec["cols"]) == set(pg[name]["cols"]) - set(PG_ONLY), name
-        for col, gold_type in spec["cols"].items():
+        compared = {c: t for c, t in spec["cols"].items() if c not in GOLD_ONLY.get(name, set())}
+        assert set(compared) == set(pg[name]["cols"]) - set(PG_ONLY), name
+        for col, gold_type in compared.items():
             expected = GOLD_TO_PG.get(gold_type)
             if expected is None:
                 decimal = re.fullmatch(r"DECIMAL\((\d+),(\d+)\)", gold_type)
@@ -149,8 +150,9 @@ def test_entities_match_gold_columns_types_and_keys():
         assert set(PG_ONLY).isdisjoint(spec["cols"]), name
         for col, (_pg_type, java_type) in PG_ONLY.items():
             assert entity["cols"][col] == java_type, f"{name}.{col}"
-        assert set(entity["cols"]) - set(PG_ONLY) == set(spec["cols"]), f"{name}: entity columns differ from gold"
-        for col, gold_type in spec["cols"].items():
+        gold_cols = {c: t for c, t in spec["cols"].items() if c not in GOLD_ONLY.get(name, set())}
+        assert set(entity["cols"]) - set(PG_ONLY) == set(gold_cols), f"{name}: entity columns differ from gold"
+        for col, gold_type in gold_cols.items():
             expected = GOLD_TO_JAVA.get(gold_type, "BigDecimal" if gold_type.startswith("DECIMAL(") else None)
             assert entity["cols"][col] == expected, f"{name}.{col}: {entity['cols'][col]} != {expected}"
         assert set(entity["pk"]) == set(spec["pk"]), f"{name}: @Id columns {entity['pk']} != {spec['pk']}"
@@ -195,6 +197,11 @@ TECH = ("row_hash", "created_at", "updated_at", "deleted_at")
 INFO_SOURCES = ("slv_poi_entity_non_enrich", "slv_enr_poi_destination", "slv_enr_poi_info_multi_lang",
                 "slv_3p_poi_rating", "slv_3p_poi_review")
 COVER_EDGE = (1, "slv_poi_media_info", "lh_vv_gold.dbo", "gld_srv_poi_info", "RECOMPUTE", "NB_GLD_SRV_POI_INFO", 1)
+GOLD_ONLY = {
+    "srv_poi_info": {"old_address", "price_level", "price_min", "price_max"},
+    "srv_poi_multi_lang": {"story", "local_tips"},
+}
+OLDPRICE_INFO = {("old_address", "STRING"), ("price_level", "INT"), ("price_min", "DECIMAL(18,2)"), ("price_max", "DECIMAL(18,2)")}
 
 
 def _literal(source: str, name: str):
@@ -216,6 +223,7 @@ def _info_spec() -> dict:
 
 def test_info_cover_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
+    ids = ids[: ids.index("lgpnamepy") + 1]
     assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
     ids = ids[:-10]
     assert ids[-8:-6] == ["srvcovermd", "srvcoverpy"]
@@ -246,7 +254,7 @@ def test_info_cover_patch_cell():
 def test_info_cover_build_rule():
     source = _cell_source("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
     code = _code(source)
-    assert _literal(source, "OUT_COLS")[-3:] == ("review_count", "cover_id", "cover_blob_url")
+    assert _literal(source, "OUT_COLS")[-2:] == ("cover_id", "cover_blob_url")
     assert _literal(source, "COVER_COLS") == ("poi_id", "media_id", "blob_url", "is_cover")
     assert 'md = ctx.input("media")' in code
     assert '.where(F.col("is_cover"))' in code
@@ -260,29 +268,35 @@ def test_info_cover_build_rule():
     assert spec["pk"] == ("poi_id",) and spec["write_mode"] == "MERGE"
     assert spec["required_inputs"] == ("entity",)
     assert spec["inputs"]["media"] == "slv_poi_media_info"
-    assert tuple(v for k, v in spec["inputs"].items() if k != "media") == INFO_SOURCES
+    assert tuple(v for k, v in spec["inputs"].items() if k not in ("media", "price")) == INFO_SOURCES
+    assert spec["inputs"]["price"] == "slv_3p_poi_price"
 
 
 def test_info_cover_seed_and_init_ddl():
     seed: dict = {}
     exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_seed_ctrl"), seed)  # noqa: S102
     rows = [r for r in seed["PIPELINE_CONFIG_ROWS"] if r[4] == "gld_srv_poi_info"]
-    assert seed["PIPELINE_CONFIG_ROWS"][-1] == (
-        seed["_GLD30"], seed["_S"], "slv_poi_media_info", seed["_G"], "gld_srv_poi_info",
-        1, 1, "RECOMPUTE", None, None, "NB_GLD_SRV_POI_INFO")
+    assert seed["PIPELINE_CONFIG_ROWS"][-2:] == [
+        (seed["_GLD30"], seed["_S"], "slv_poi_media_info", seed["_G"], "gld_srv_poi_info",
+         1, 1, "RECOMPUTE", None, None, "NB_GLD_SRV_POI_INFO"),
+        (seed["_GLD30"], seed["_S"], "slv_3p_poi_price", seed["_G"], "gld_srv_poi_info",
+         1, 1, "RECOMPUTE", None, None, "NB_GLD_SRV_POI_INFO"),
+    ]
     assert sorted(r[2] for r in rows if r[5] == 1) == sorted(_info_spec()["inputs"].values())
     assert {r[0] for r in rows} == {"PL_VV_TRANS_SLV_TO_GLD_30M"}
     init: dict = {}
     exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
     spec = next(s for s in init["TABLE_SPECS"] if s["fq"] == "lh_vv_gold.dbo.gld_srv_poi_info")
-    info = _literal(_cell_source("NB_CREATE_DDL.ipynb", "srvactivepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
+    active = _literal(_cell_source("NB_CREATE_DDL.ipynb", "srvactivepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
+    info = _literal(_cell_source("NB_CREATE_DDL.ipynb", "oldpricepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
     assert [(c[0], c[1]) for c in spec["cols"]] == info
+    assert [c for c in info if c not in OLDPRICE_INFO] == active
     cover = _literal(_cell_source("NB_CREATE_DDL.ipynb", "srvcoverpy"), "INFO_COLS")
     poidest_info = _literal(_cell_source("NB_CREATE_DDL.ipynb", "poidestpy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
     at = [name for name, _dtype in cover].index("destination_id") + 1
     assert poidest_info == cover[:at] + [("destination_name", "STRING")] + cover[at:]
     book = [name for name, _dtype in poidest_info].index("is_bookable") + 1
-    assert info == poidest_info[:book] + [("is_active", "BOOLEAN")] + poidest_info[book:]
+    assert active == poidest_info[:book] + [("is_active", "BOOLEAN")] + poidest_info[book:]
     out = _literal(_cell_source("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"), "OUT_COLS")
     assert list(out) + list(TECH) == [c[0] for c in spec["cols"]]
 
@@ -303,6 +317,7 @@ def test_info_cover_mapping_and_pg_ddl():
 
 def test_destination_name_patch_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
+    ids = ids[: ids.index("lgpnamepy") + 1]
     assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
     ids = ids[:-10]
     assert ids[-6:-4] == ["poidestmd", "poidestpy"]
@@ -337,7 +352,7 @@ def test_destination_name_and_review_source_across_layers():
     _require_service()
     tables = _literal(_cell_source("NB_CREATE_DDL.ipynb", "poidestpy"), "TABLE_COLS")
     tables["lh_vv_gold.dbo.gld_srv_poi_info"] = _literal(
-        _cell_source("NB_CREATE_DDL.ipynb", "srvactivepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
+        _cell_source("NB_CREATE_DDL.ipynb", "oldpricepy"), "TABLE_COLS")["lh_vv_gold.dbo.gld_srv_poi_info"]
     init: dict = {}
     exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
     moved = {"lh_vv_silver.dbo.slv_enr_poi_destination"}
@@ -460,4 +475,15 @@ def test_multi_lang_poi_name_across_layers():
         for folder in ("service", "api"):
             for path in (java / folder).rglob("*.java"):
                 assert "SrvPoiMultiLang::getPoiName" not in path.read_text(encoding="utf-8")
+
+
+def test_gold_only_columns_stay_out_of_serving():
+    gold, pg = gold_tables(), pg_tables()
+    for name, cols in GOLD_ONLY.items():
+        assert cols <= set(gold[name]["cols"])
+        assert cols.isdisjoint(pg[name]["cols"])
+    if SERVICE.is_dir():
+        entities = entity_tables()
+        for name, cols in GOLD_ONLY.items():
+            assert cols.isdisjoint(entities[name]["cols"])
 

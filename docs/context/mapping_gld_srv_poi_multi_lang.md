@@ -13,6 +13,7 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 - P1: partner LEFT JOIN `slv_pn_business_service_i18ns` khi `poi_id` bằng `uuid_md5(business_service_id, 'partner')` và `lang` = `locale`. Cùng cách `NB_SLV_POI_ENTITY_NON_ENRICH` tính `poi_id` dòng partner.
 - P1: partner có `description` = `bio`, `bio` null thì `description` của enr. `experience` = `usps`, `usps` null thì `experience` của enr.
 - P1: dòng không phải partner lấy `description` và `experience` của `slv_enr_poi_info_multi_lang`.
+- `story` và `local_tips` chỉ từ `slv_pn_business_service_i18ns`, cùng join partner của `bio` và `usps`. P1 không phải partner thì null. P1 và P2 không fallback sang `slv_enr_poi_info_multi_lang`. Hai cột chỉ ở gold.
 - P2: mỗi dòng `slv_pn_business_service_i18ns` tạo một dòng gold khi `slv_enr_poi_info_multi_lang` không có dòng cùng `(poi_id, lang)`, với `poi_id` = `uuid_md5(business_service_id, 'partner')` và `lang` = `locale`. So khớp bằng `left_anti` theo `(poi_id, lang)`. Không xét `source_name` của entity, nên P1 và P2 không trùng khoá.
 - P2 lấy mọi `locale`. Không lọc dòng partner đã xoá, giữ như hiện tại (`live_only=False`). Dòng P2 vẫn tạo khi `bio` và `usps` cùng null.
 - P2: `source_name` = `'partner'`. `description` = `bio`, `experience` = `usps`, không fallback. `time_to_spend`, `best_time`, `cost` = null. P2 không đọc `slv_poi_entity_non_enrich`. Mỗi cột P2 ép về kiểu của cột P1 cùng tên.
@@ -36,6 +37,8 @@ Lakehouse.schema: `lh_vv_gold.dbo`.
 | P1: slv_enr_poi_info_multi_lang.cost | string | P1: transform 1-1<br>P2: null | cost |
 | P1: slv_pn_business_service_i18ns.bio, fallback slv_enr_poi_info_multi_lang.description<br>P2: slv_pn_business_service_i18ns.bio | string | P1: partner: bio, bio null thì description enr; nguồn khác: description enr<br>P2: bio, không fallback | description |
 | P1: slv_pn_business_service_i18ns.usps, fallback slv_enr_poi_info_multi_lang.experience<br>P2: slv_pn_business_service_i18ns.usps | string | P1: partner: usps, usps null thì experience enr; nguồn khác: experience enr<br>P2: usps, không fallback | experience |
+| P1: slv_pn_business_service_i18ns.story<br>P2: slv_pn_business_service_i18ns.story | string | P1: partner: story, không fallback; nguồn khác: null<br>P2: story, không fallback | story |
+| P1: slv_pn_business_service_i18ns.local_tips<br>P2: slv_pn_business_service_i18ns.local_tips | string | P1: partner: local_tips, không fallback; nguồn khác: null<br>P2: local_tips, không fallback | local_tips |
 | | timestamp | field hệ thống | created_at |
 | | timestamp | field hệ thống | updated_at |
 

@@ -239,6 +239,7 @@ def test_gold_rewrite_rename_map_only_cost():
 def test_rewrite_cells_order_after_seeds_cell():
     ids = [cell.get("id") for cell in _notebook("NB_CREATE_DDL.ipynb")["cells"]]
     assert ids.index("enrbrzcfgpy") < ids.index("enrbrzpy") < ids.index("enrgldpy")
+    ids = ids[: ids.index("lgpnamepy") + 1]
     assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
 
 

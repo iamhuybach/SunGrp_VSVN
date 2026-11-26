@@ -9,6 +9,16 @@ MAPPING = ROOT / "docs" / "context" / "mapping_gld_srv_poi_info.md"
 ML_MAPPING = ROOT / "docs" / "context" / "mapping_gld_srv_poi_multi_lang.md"
 TECH = ("row_hash", "created_at", "updated_at", "deleted_at")
 INFO_FQ = "lh_vv_gold.dbo.gld_srv_poi_info"
+ML_FQ = "lh_vv_gold.dbo.gld_srv_poi_multi_lang"
+OLDPRICE_INFO = [("old_address", "STRING"), ("price_level", "INT"), ("price_min", "DECIMAL(18,2)"), ("price_max", "DECIMAL(18,2)")]
+OLDPRICE_ML = [("story", "STRING"), ("local_tips", "STRING")]
+ML_BASE = [
+    ("poi_id", "STRING NOT NULL"), ("lang", "STRING NOT NULL"), ("poi_name", "STRING"), ("source_name", "STRING"),
+    ("time_to_spend", "STRING"), ("best_time", "STRING"), ("cost", "STRING"), ("description", "STRING"),
+    ("experience", "STRING"), ("row_hash", "STRING"), ("created_at", "TIMESTAMP"), ("updated_at", "TIMESTAMP"),
+    ("deleted_at", "TIMESTAMP"),
+]
+PRICE_EDGE = (1, "slv_3p_poi_price", "lh_vv_gold.dbo", "gld_srv_poi_info", "RECOMPUTE", "NB_GLD_SRV_POI_INFO", 1)
 NEW_INFO = [("rating_overall", "DECIMAL(4,2)"), ("rating_count", "INT"), ("review_count", "INT")]
 NEW_EDGES = [
     (1, "slv_3p_poi_rating", "lh_vv_gold.dbo", "gld_srv_poi_info", "RECOMPUTE", "NB_GLD_SRV_POI_INFO", 1),
@@ -222,7 +232,8 @@ def test_node_specs():
             "pk": ("poi_id",),
             "inputs": {"entity": "slv_poi_entity_non_enrich", "destination": "slv_enr_poi_destination",
                        "multi_lang": "slv_enr_poi_info_multi_lang", "rating": "slv_3p_poi_rating",
-                       "review": "slv_3p_poi_review", "media": "slv_poi_media_info"},
+                       "review": "slv_3p_poi_review", "media": "slv_poi_media_info",
+                       "price": "slv_3p_poi_price"},
             "required_inputs": ("entity",),
         },
     }
@@ -248,13 +259,16 @@ def test_node_specs():
 
 def test_build_columns_match_ddl():
     gold = _assign(_cell("NB_CREATE_DDL.ipynb", "srvpoipy"), "GOLD_COLS")
-    gold[INFO_FQ] = _assign(_cell("NB_CREATE_DDL.ipynb", "srvactivepy"), "TABLE_COLS")[INFO_FQ]
+    oldprice = _assign(_cell("NB_CREATE_DDL.ipynb", "oldpricepy"), "TABLE_COLS")
+    gold[INFO_FQ] = oldprice[INFO_FQ]
     init: dict = {}
     exec(_cell("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), init)  # noqa: S102
-    gold["lh_vv_gold.dbo.gld_srv_poi_multi_lang"] = [
+    ml_spec = [
         (col[0], col[1]) for col in next(
-            item["cols"] for item in init["TABLE_SPECS"] if item["fq"] == "lh_vv_gold.dbo.gld_srv_poi_multi_lang")
+            item["cols"] for item in init["TABLE_SPECS"] if item["fq"] == ML_FQ)
     ]
+    assert ml_spec == oldprice[ML_FQ]
+    gold[ML_FQ] = ml_spec
     pairs = {
         "gld_srv_poi_multi_lang": _assign(_cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild"), "OUT_COLS"),
         "gld_srv_poi_info": _assign(_cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild"), "OUT_COLS"),
@@ -305,6 +319,7 @@ def test_review_mapping_targets():
 
 def test_info_rating_patch():
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
+    ids = ids[: ids.index("lgpnamepy") + 1]
     assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
     ids = ids[:-10]
     assert ids[-30:-22] == [
@@ -439,7 +454,8 @@ def test_multi_lang_experience_patch():
 
 def test_multi_lang_experience_rule():
     source = _cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild")
-    assert _assign(source, "ML_COLS")[-1] == _assign(source, "OUT_COLS")[-1] == "experience"
+    assert _assign(source, "ML_COLS")[-1] == "experience"
+    assert _assign(source, "OUT_COLS")[-3:] == ("experience", "story", "local_tips")
     rule = 'F.when(partner, F.coalesce(F.col("usps"), F.col("experience"))).otherwise(F.col("experience"))'
     assert rule in source
     assert '("business_service_id", "locale", "bio", "usps")' in source
@@ -473,7 +489,7 @@ def test_multi_lang_i18n_only_branch():
         'ml_keys = ml.select(F.col("poi_id").alias("_pid"), F.col("lang").alias("_loc"))',
         'only = keyed.join(ml_keys, ["_pid", "_loc"], "left_anti")',
         'F.lit(PARTNER).alias("source_name"), *[F.lit(None).alias(c) for c in MEASURE_COLS],',
-        'F.col("bio").alias("description"), F.col("usps").alias("experience"))',
+        'F.col("bio").alias("description"), F.col("usps").alias("experience"), *I18N_TEXT_COLS)',
         ".select(*[F.col(c).cast(types[c]).alias(c) for c in OUT_COLS]))",
         "ctx.warn(I18N_ONLY_WARN, p2.count())",
     ):
@@ -551,6 +567,7 @@ def test_review_source_patch_cell():
     assert "owns_lock = False" in acquire.split("SELECT lock_exec_id", 1)[1]
     assert "raise failed from cleanup_exc" in patch
     ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
+    ids = ids[: ids.index("lgpnamepy") + 1]
     assert ids[-10:] == ["enrbrzcfgmd", "enrbrzcfgpy", "enrbrzmd", "enrbrzpy", "enrgldmd", "enrgldpy", "legacyidmd", "legacyidpy", "lgpnamemd", "lgpnamepy"]
     ids = ids[:-10]
     assert ids[-16:-12] == ["rvi18nenrmd", "rvi18nenrpy", "rvi18ngldmd", "rvi18ngldpy"]
@@ -661,4 +678,103 @@ def test_no_cost_vnd_in_active_surface():
     java = ROOT / "services" / "data-serving-service" / "src" / "main"
     for path in java.rglob("*.java"):
         assert "cost_vnd" not in path.read_text(encoding="utf-8"), path.name
+
+
+def test_old_price_story_patch_cell():
+    ids = [cell.get("id") for cell in _nb("NB_CREATE_DDL.ipynb")["cells"]]
+    assert ids[-4:] == ["lgpnamemd", "lgpnamepy", "oldpricemd", "oldpricepy"]
+    patch = _cell("NB_CREATE_DDL.ipynb", "oldpricepy")
+    assert _assign(patch, "NEW_COLS") == {INFO_FQ: OLDPRICE_INFO, ML_FQ: OLDPRICE_ML}
+    active = _assign(_cell("NB_CREATE_DDL.ipynb", "srvactivepy"), "TABLE_COLS")[INFO_FQ]
+    info = _assign(patch, "TABLE_COLS")[INFO_FQ]
+
+    def _after(cols, anchor, extra):
+        out = []
+        for item in cols:
+            out.append(item)
+            if item[0] == anchor:
+                out.extend(extra)
+        return out
+
+    want = _after(active, "full_address", [("old_address", "STRING")])
+    want = _after(want, "review_count", OLDPRICE_INFO[1:])
+    assert info == want
+    ml = _assign(patch, "TABLE_COLS")[ML_FQ]
+    assert [col for col in ml if col not in OLDPRICE_ML] == ML_BASE
+    assert _assign(patch, "EDGES_ON") == [PRICE_EDGE]
+    assert _assign(patch, "EDGES_KEEP") == (
+        "slv_poi_entity_non_enrich", "slv_enr_poi_destination", "slv_enr_poi_info_multi_lang",
+        "slv_3p_poi_rating", "slv_3p_poi_review", "slv_poi_media_info",
+    )
+    assert len(_assign(patch, "EDGES_KEEP")) == 6
+    assert _assign(patch, "PL") == _assign(_cell("NB_CREATE_DDL.ipynb", "plcadpy"), "RENAMES")[1][1]
+    assert _assign(patch, "OWNER_COL") == "load_origin"
+    order = ["held = True", "Dừng trước khi ghi", "ALTER TABLE", "INSERT INTO {CFG}", "Sau khi ghi", "finally:"]
+    assert [patch.index(token) for token in order] == sorted(patch.index(token) for token in order)
+    assert patch.index("if issues:") < patch.index("ALTER TABLE")
+    calls = [match.start() for match in re.finditer(r"(?m)^\s*_refresh_lock\(\)", patch)]
+    alter, insert = patch.index("ALTER TABLE"), patch.index("INSERT INTO {CFG}")
+    assert len(calls) == 2 and calls[0] < alter < calls[1] < insert
+    code = "\n".join(line for line in patch.splitlines() if not line.strip().startswith("#"))
+    for token in ("DROP", "DELETE", "TRUNCATE", "REPLACE", "RESTORE", "columnMapping", "MERGE INTO", "CREATE TABLE", "UPDATE {CFG}"):
+        assert token not in code
+
+
+def test_info_old_address_rule():
+    source = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    assert _assign(source, "OLD_ADDR") == ("old_formatted_address", "old_ward_with_type", "old_city_with_type")
+    out = _assign(source, "OUT_COLS")
+    assert out[out.index("full_address") + 1] == "old_address"
+    for line in (
+        'og1 = F.concat(hn, sep, st, sep, F.col("old_formatted_address"))',
+        'og2 = F.concat(hn, sep, st, sep, F.col("old_ward_with_type"), sep, F.col("old_city_with_type"))',
+        "old_address = F.when(has_dest, F.coalesce(og1, og2, g3))",
+    ):
+        assert line in source
+    for name in ("old_house_number", "old_street", "old_full_address"):
+        assert name not in source
+    assert source.count('F.col("_e_full_address")') == 1
+    assert set(_assign(source, "OLD_ADDR")).isdisjoint(_assign(source, "DEST_COLS"))
+
+
+def test_info_price_rule():
+    source = _cell("NB_GLD_SRV_POI_INFO.ipynb", "srvinfobuild")
+    assert _assign(source, "PRICE_COLS") == ("poi_id", "price_level", "price_min", "price_max")
+    assert _assign(source, "PRICE_TYPES") == {"price_level": "int", "price_min": "decimal(18,2)", "price_max": "decimal(18,2)"}
+    out = _assign(source, "OUT_COLS")
+    assert out[out.index("review_count") + 1: out.index("review_count") + 4] == ("price_level", "price_min", "price_max")
+    assert out[-2:] == ("cover_id", "cover_blob_url")
+    assert 'pr = ctx.input("price")' in source
+    assert "poi_id có hơn một dòng" in source
+    assert '.join(price, "poi_id", "left")' in source
+    assert "currency" not in source
+    body = source.split("def _price", 1)[1].split("\ndef ", 1)[0]
+    code = "\n".join(line for line in body.splitlines() if not line.strip().startswith("#"))
+    assert "source_name" not in code
+
+
+def test_multi_lang_story_local_tips_rule():
+    source = _cell("NB_GLD_SRV_POI_MULTI_LANG.ipynb", "srvmlbuild")
+    assert _assign(source, "I18N_TEXT_COLS") == ("story", "local_tips")
+    assert source.count('F.col("locale").alias("_loc"), "bio", "usps", *I18N_TEXT_COLS)') == 2
+    assert '_require(i18n, I18N_TEXT_COLS, "slv_pn_business_service_i18ns")' in source
+    assert '_require(i18n, ("business_service_id", "locale", "bio", "usps"), "slv_pn_business_service_i18ns")' in source
+    assert 'coalesce(F.col("story")' not in source
+    assert 'coalesce(F.col("local_tips")' not in source
+
+
+def test_old_price_story_mapping_rows():
+    text = MAPPING.read_text(encoding="utf-8")
+    table = text.split("### 1.2. Field Mapping", 1)[1].split("### 1.3", 1)[0]
+    assert "old_formatted_address" in table and "old_ward_with_type" in table and "old_city_with_type" in table
+    for name in ("price_level", "price_min", "price_max"):
+        assert f"slv_3p_poi_price.{name}" in table
+    assert "integer" in table and "decimal(18,2)" in table
+    handling = text.split("### 1.1. Xử lý", 1)[1].split("### 1.6", 1)[0]
+    assert "slv_3p_poi_price" in handling and "price_matched" in handling
+    ml = ML_MAPPING.read_text(encoding="utf-8")
+    ml_table = ml.split("### 1.2. Field Mapping", 1)[1]
+    assert "slv_pn_business_service_i18ns.story" in ml_table
+    assert "slv_pn_business_service_i18ns.local_tips" in ml_table
+    assert "không fallback" in ml_table
 
