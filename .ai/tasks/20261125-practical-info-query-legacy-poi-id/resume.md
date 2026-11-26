@@ -3,14 +3,14 @@
 Status: ready_to_merge
 
 Done this session:
-- User asked to move the task forward, then commit and push main.
-- Transition: waiting_runtime -> ready_to_merge. All gates pass.
+- Transition: waiting_runtime -> ready_to_merge.
+- Commit on main: c307221. The git hook blocks agent push.
 
 Next action:
-- Commit the scoped files on main, then push origin main.
-- API deploy repo stays on develop. Do not force-push it onto main.
+- User runs `git push origin main` in D:\git\SunGrp_VSVN.
+- API deploy repo is already on origin/develop. Do not force-push it onto main.
 
 Read next:
 - .ai/tasks/20261125-practical-info-query-legacy-poi-id/task-state.yaml
 
-Waiting on: nothing after the push succeeds
+Waiting on: user push of origin main
