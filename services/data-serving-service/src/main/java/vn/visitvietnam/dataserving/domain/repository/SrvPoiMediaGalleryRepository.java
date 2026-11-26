@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import vn.visitvietnam.dataserving.domain.entity.PoiMediaGalleryId;
 import vn.visitvietnam.dataserving.domain.entity.SrvPoiMediaGallery;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -27,4 +28,9 @@ public interface SrvPoiMediaGalleryRepository extends JpaRepository<SrvPoiMediaG
     @Query("SELECT m FROM SrvPoiMediaGallery m WHERE " + ACTIVE + " AND m.isCover = true"
             + " ORDER BY m.displayOrder ASC NULLS LAST, m.mediaId ASC")
     List<SrvPoiMediaGallery> findActiveCoverByPoiId(@Param("poiId") String poiId, Pageable pageable);
+
+    @Query("SELECT m FROM SrvPoiMediaGallery m WHERE m.poiId IN :poiIds"
+            + " AND (m.isActive IS NULL OR m.isActive = true) AND m.deletedAt IS NULL AND m.isCover = true"
+            + " ORDER BY m.poiId, m.displayOrder ASC NULLS LAST, m.mediaId ASC")
+    List<SrvPoiMediaGallery> findActiveCoversByPoiIdIn(@Param("poiIds") Collection<String> poiIds);
 }

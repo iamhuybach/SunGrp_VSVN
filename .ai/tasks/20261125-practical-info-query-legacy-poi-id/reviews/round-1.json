@@ -1,0 +1,49 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "API-001",
+      "severity": "P1"
+    },
+    {
+      "id": "SEC-001",
+      "severity": "P1"
+    },
+    {
+      "id": "JPA-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/api-mapping/amenities.md": "ba2b9b3701ca3fe4eebf1502a1f25195ba0ee00f0f43ab5911f92fb68fd036d1",
+    "docs/context/api-mapping/compact.md": "335df8c18cf02a0ceac51f829f9deb482119d386f317259356d06af6b6dce656",
+    "docs/context/api-mapping/experiences.md": "d2bd0c3472f7d462cb49dda3d4ca7e5019aeca3e57045cf3a9c98061d20d38b7",
+    "docs/context/api-mapping/gallery.md": "7188757a3e8e87b6ecdcafeba6f7f36461b813e72639c3153418af22f7a8a039",
+    "docs/context/api-mapping/practical_info.md": "d08c610f13c8af5ce0bc3b840f97682131fa07110c16526aeb4e984cfd4a86f6",
+    "docs/context/api-mapping/practical_info_list.md": "67502a5d7cd5d95837081945e00ea5a9ed1ec446310a8930b844e07f49433dcf",
+    "docs/context/api-mapping/reviews.md": "2b6f45edbe0d4148c179d06c17573dfc642e965d70a297f2f385ce2fae4ad759",
+    "services/data-serving-service/AGENTS.md": "2b8578fe4204cdf6191bbed418458c9f2f7e02d2d4ed0242e917fba4637d7e4c",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java": "6247a0618692b29242f8681de30dd9bde25f4507eceece793162c7581daa4a0c",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PracticalInfoProjection.java": "efa962894dcb5826c61f3f46e173899d096ef819e3a6622a779136408ffb2cd0",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PracticalInfoSearchRequest.java": "961af554efe92fc9182d029785a72eec98df828d41b254f0b71ed78866d1c4f2",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiLegacyIdMap.java": "b44a0c5497c426c2a97f1529d2307170546663e8a250ba51f8b73672b406e58e",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiLegacyIdMapRepository.java": "58fe5bf1d78411dcf4c021e51b83967417e1764e621b68c26eccbf974bd1f40d",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java": "f8457eeecdb11dd140ce209515aabcc2bf75c03b7ef9171d3e5e914cf3ece4a9",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiIdResolver.java": "08dc43e7d7379fb79c7f6734d104e278ddad27e48d10f291c1e59810be2f1281",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java": "c5edcd9ab2323251ff745492f7b9fffae0cf97bc5bb8eb5bd7a985b281e5be86",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java": "a608e13fe23ecf5e64022a26584ddbcf77c0858d92323e435cbdca7770c2e25b",
+    "services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PracticalInfoQuery.java": "7233edc86b220f45a0e53c1d83fb6491f6735ec466334a0364d599105db61665",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java": "5661990d3adafc4b18c4c3a12fd6b90d8c6cbfd7d17ae29fc1402d72535ec4af",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/dto/PracticalInfoProjectionTest.java": "93a3fa4004d1c3def4545773434e403c2a23dfa8b7dadb854b7e2d459913eab6",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/ApiBearerAuthTest.java": "39a99673494e1e8f26b2d7ed6ee52a5f43ee943fffcb46da708126e75b9f4398",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java": "4c4fac7de72eb31f5ccdb51770c9bc2ee18f3853079545b9828aace36484ff9f",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/CountingStatementInspector.java": "a44aea0af8c7c961c7c1c19271202cd841dcbd8ab160fb0637d56fa1cd890691",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/LegacyAndPracticalInfoIntegrationTest.java": "711c55554a2c7473f6576351ca0456159287960844d9b230a3c36aef0693578a",
+    "services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java": "85c37095c5671f8deee4a99630e9e9dce626859e243b38b3716a6608fda8775b",
+    "sql/postgres/gld_srv_serve.pg.sql": "f786d318df6e7af5b3ffe72feeec010ce9a52df60b648444377faa1575a8f48e",
+    "tests/test_srv_poi_api_mapping_required.py": "c335c27b7212d628d552851d6ac3225f88e7c4090a7099430aeb2b9fc78b060b",
+    "tests/test_srv_poi_serving_contract.py": "2fe23749ba191ad5cd16abb3193cbda7c1ab3b1dfa7a352439fae21fa352fa0b"
+  },
+  "elapsed_seconds": 365
+}

@@ -11,6 +11,7 @@ import vn.visitvietnam.dataserving.api.dto.PoiAmenityGroupResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiExperiencesResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiFeatureResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiGalleryItemResponse;
+import vn.visitvietnam.dataserving.api.dto.PracticalInfoProjection;
 import vn.visitvietnam.dataserving.api.dto.PoiPracticalInfoResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiReviewItemResponse;
 import vn.visitvietnam.dataserving.common.dto.PageResponse;
@@ -25,6 +26,8 @@ import vn.visitvietnam.dataserving.domain.repository.SrvPoiInfoRepository;
 import vn.visitvietnam.dataserving.domain.repository.SrvPoiMediaGalleryRepository;
 import vn.visitvietnam.dataserving.domain.repository.SrvPoiMultiLangRepository;
 import vn.visitvietnam.dataserving.domain.repository.SrvPoiReviewRepository;
+import vn.visitvietnam.dataserving.domain.repository.SrvPoiLegacyIdMapRepository;
+import vn.visitvietnam.dataserving.domain.repository.SrvPoiLegacyIdMapRepositoryCustom;
 import vn.visitvietnam.dataserving.service.util.LanguageResolver;
 import vn.visitvietnam.dataserving.service.util.StoredJsonParser;
 import vn.visitvietnam.dataserving.service.util.SubcategoryTagsParser;
@@ -33,6 +36,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -57,16 +61,21 @@ public class PoiService {
     private final SrvPoiMultiLangRepository multiLangRepository;
     private final SrvPoiReviewRepository reviewRepository;
     private final SrvPoiAmenityRepository amenityRepository;
+    private final PoiIdResolver poiIdResolver;
+    private final SrvPoiLegacyIdMapRepository legacyIdMapRepository;
 
     public record ReviewsPage(PageResponse<PoiReviewItemResponse> page, List<PoiReviewItemResponse.RatingSummary> ratingSummary) {}
+
+    public record PracticalInfoPage(List<Object> items, long total) {}
 
     public record FeaturePage(List<PoiFeatureResponse> items, long total) {}
 
     @Transactional(readOnly = true)
     public List<CompactPoiResponse> getCompactPois(List<String> ids, String targetLang) {
         String lang = blankToDefault(targetLang);
+        List<String> resolvedIds = poiIdResolver.resolveAll(ids).values().stream().distinct().toList();
         List<SrvPoiInfo> pois = poiInfoRepository.findAll(
-                PoiSpecifications.filter(ids),
+                PoiSpecifications.filter(resolvedIds),
                 Sort.by(Sort.Order.desc("createdAt"), Sort.Order.asc("poiId")));
         if (pois.isEmpty()) {
             return List.of();
@@ -79,7 +88,8 @@ public class PoiService {
 
     @Transactional(readOnly = true)
     public PageResponse<PoiGalleryItemResponse> getGallery(String poiId, int page, int size) {
-        Page<SrvPoiMediaGallery> mediaPage = mediaGalleryRepository.findActivePageByPoiId(poiId, PageRequest.of(page, size));
+        String resolved = poiIdResolver.resolve(poiId);
+        Page<SrvPoiMediaGallery> mediaPage = mediaGalleryRepository.findActivePageByPoiId(resolved, PageRequest.of(page, size));
         List<PoiGalleryItemResponse> items = mediaPage.getContent().stream()
                 .map(m -> new PoiGalleryItemResponse(m.getMediaId(), m.getBlobUrl(), m.getDisplayOrder()))
                 .toList();
@@ -88,15 +98,16 @@ public class PoiService {
 
     @Transactional(readOnly = true)
     public ReviewsPage getReviews(String poiId, int page, int size) {
+        String resolved = poiIdResolver.resolve(poiId);
         Sort sort = Sort.by(Sort.Order.desc("reviewDate"), Sort.Order.asc("reviewId"));
-        Page<SrvPoiReview> reviewPage = reviewRepository.findByPoiIdAndDeletedAtIsNull(poiId, PageRequest.of(page, size, sort));
+        Page<SrvPoiReview> reviewPage = reviewRepository.findByPoiIdAndDeletedAtIsNull(resolved, PageRequest.of(page, size, sort));
         List<PoiReviewItemResponse> items = reviewPage.getContent().stream().map(this::mapReview).toList();
         SrvPoiReview summarySource = null;
         if (!reviewPage.getContent().isEmpty()) {
             summarySource = reviewPage.getContent().getFirst();
         } else if (reviewPage.getTotalElements() > 0) {
             Page<SrvPoiReview> first = reviewRepository.findByPoiIdAndDeletedAtIsNull(
-                    poiId, PageRequest.of(0, 1, Sort.by("reviewId")));
+                    resolved, PageRequest.of(0, 1, Sort.by("reviewId")));
             if (!first.getContent().isEmpty()) {
                 summarySource = first.getContent().getFirst();
             }
@@ -137,8 +148,9 @@ public class PoiService {
 
     @Transactional(readOnly = true)
     public PoiExperiencesResponse getExperiences(String poiId, String targetLang) {
+        String resolved = poiIdResolver.resolve(poiId);
         String lang = blankToDefault(targetLang);
-        Map<String, SrvPoiMultiLang> rows = loadLangs(List.of(poiId), lang).getOrDefault(poiId, Map.of());
+        Map<String, SrvPoiMultiLang> rows = loadLangs(List.of(resolved), lang).getOrDefault(resolved, Map.of());
         List<SrvPoiMultiLang> candidates = new ArrayList<>();
         if (rows.get(lang) != null) {
             candidates.add(rows.get(lang));
@@ -147,7 +159,7 @@ public class PoiService {
             candidates.add(rows.get(LanguageResolver.DEFAULT_LANG));
         }
         for (SrvPoiMultiLang row : candidates) {
-            List<StoredJsonParser.ExperienceDraft> drafts = StoredJsonParser.experiences(poiId, row.getExperience());
+            List<StoredJsonParser.ExperienceDraft> drafts = StoredJsonParser.experiences(resolved, row.getExperience());
             if (!drafts.isEmpty()) {
                 String source = row.getSourceName();
                 return new PoiExperiencesResponse(drafts.stream()
@@ -160,27 +172,87 @@ public class PoiService {
 
     @Transactional(readOnly = true)
     public PoiPracticalInfoResponse getPracticalInfo(String poiId, String targetLang) {
-        SrvPoiInfo poi = poiInfoRepository.findByPoiIdAndDeletedAtIsNull(poiId)
-                .orElseThrow(() -> new ResourceNotFoundException("POI not found with id: " + poiId));
-        String lang = blankToDefault(targetLang);
-        Map<String, SrvPoiMultiLang> rows = loadLangs(List.of(poiId), lang).getOrDefault(poiId, Map.of());
+        List<SrvPoiInfo> rows = legacyIdMapRepository
+                .findPracticalInfoPage(List.of(poiId), null, null, null, false, 1, 0).rows();
+        if (rows.isEmpty()) {
+            throw new ResourceNotFoundException("POI not found with id: " + poiId);
+        }
+        return assemble(rows, blankToDefault(targetLang), EnumSet.allOf(PracticalInfoQuery.Field.class)).getFirst();
+    }
+
+    @Transactional(readOnly = true)
+    public PracticalInfoPage searchPracticalInfo(PracticalInfoQuery query) {
+        boolean project = query.fields() != null && !query.fields().isEmpty();
+        EnumSet<PracticalInfoQuery.Field> selected = project
+                ? query.fields()
+                : EnumSet.allOf(PracticalInfoQuery.Field.class);
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice slice = legacyIdMapRepository.findPracticalInfoPage(
+                query.ids(),
+                query.source(),
+                query.poiName(),
+                query.sortField() == null ? null : query.sortField().column(),
+                query.direction() == Sort.Direction.DESC,
+                query.size(),
+                (long) query.page() * query.size());
+        if (slice.rows().isEmpty()) {
+            return new PracticalInfoPage(List.of(), slice.total());
+        }
+        List<Object> items = new ArrayList<>(slice.rows().size());
+        for (PoiPracticalInfoResponse dto : assemble(slice.rows(), blankToDefault(query.lang()), selected)) {
+            items.add(project ? PracticalInfoProjection.select(dto, selected) : dto);
+        }
+        return new PracticalInfoPage(items, slice.total());
+    }
+
+    private List<PoiPracticalInfoResponse> assemble(List<SrvPoiInfo> rows, String lang,
+            EnumSet<PracticalInfoQuery.Field> selected) {
+        List<String> ids = rows.stream().map(SrvPoiInfo::getPoiId).toList();
+        boolean loadLang = selected.contains(PracticalInfoQuery.Field.DESCRIPTION)
+                || selected.contains(PracticalInfoQuery.Field.TIME_TO_SPEND)
+                || selected.contains(PracticalInfoQuery.Field.COST)
+                || selected.contains(PracticalInfoQuery.Field.BEST_TIME);
+        Map<String, Map<String, SrvPoiMultiLang>> langs = loadLang ? loadLangs(ids, lang) : Map.of();
+        Map<String, SrvPoiMediaGallery> covers = new HashMap<>();
+        if (selected.contains(PracticalInfoQuery.Field.COVER)) {
+            for (SrvPoiMediaGallery row : mediaGalleryRepository.findActiveCoversByPoiIdIn(ids)) {
+                covers.putIfAbsent(row.getPoiId(), row);
+            }
+        }
+        List<PoiPracticalInfoResponse> out = new ArrayList<>(rows.size());
+        for (SrvPoiInfo poi : rows) {
+            SrvPoiMediaGallery media = covers.get(poi.getPoiId());
+            PoiPracticalInfoResponse.Cover cover = media == null
+                    ? null
+                    : new PoiPracticalInfoResponse.Cover(media.getMediaId(), media.getBlobUrl());
+            out.add(buildPracticalInfo(poi, langs.getOrDefault(poi.getPoiId(), Map.of()), lang, cover, selected));
+        }
+        return out;
+    }
+
+    private PoiPracticalInfoResponse buildPracticalInfo(
+            SrvPoiInfo poi,
+            Map<String, SrvPoiMultiLang> rows,
+            String lang,
+            PoiPracticalInfoResponse.Cover cover,
+            EnumSet<PracticalInfoQuery.Field> fields) {
         SrvPoiMultiLang target = rows.get(lang);
         SrvPoiMultiLang fallback = rows.get(LanguageResolver.DEFAULT_LANG);
-        List<SrvPoiMediaGallery> covers = mediaGalleryRepository.findActiveCoverByPoiId(poiId, PageRequest.of(0, 1));
-        PoiPracticalInfoResponse.Cover cover = covers.isEmpty()
-                ? null
-                : new PoiPracticalInfoResponse.Cover(covers.getFirst().getMediaId(), covers.getFirst().getBlobUrl());
-        List<PoiFeatureResponse.OperatingHour> hours = StoredJsonParser.operatingHours(poiId, poi.getOperatingHours());
+        List<PoiFeatureResponse.OperatingHour> hours = fields.contains(PracticalInfoQuery.Field.OPERATING_HOURS)
+                ? StoredJsonParser.operatingHours(poi.getPoiId(), poi.getOperatingHours())
+                : null;
+        String holiday = fields.contains(PracticalInfoQuery.Field.HOLIDAY_EXCEPTIONS)
+                ? StoredJsonParser.singleJsonValueOrNull(poi.getPoiId(), poi.getHolidayExceptions())
+                : null;
         return new PoiPracticalInfoResponse(
                 poi.getPoiId(),
                 poi.getPoiName(),
                 firstNonBlank(text(target, SrvPoiMultiLang::getDescription), text(fallback, SrvPoiMultiLang::getDescription)),
-                toLabel(StoredJsonParser.labelValue(poiId, "time_to_spend", text(target, SrvPoiMultiLang::getTimeToSpend)),
-                        StoredJsonParser.labelValue(poiId, "time_to_spend", text(fallback, SrvPoiMultiLang::getTimeToSpend))),
-                toLabel(StoredJsonParser.labelValue(poiId, "cost", text(target, SrvPoiMultiLang::getCost)),
-                        StoredJsonParser.labelValue(poiId, "cost", text(fallback, SrvPoiMultiLang::getCost))),
-                toLabel(StoredJsonParser.labelValue(poiId, "best_time", text(target, SrvPoiMultiLang::getBestTime)),
-                        StoredJsonParser.labelValue(poiId, "best_time", text(fallback, SrvPoiMultiLang::getBestTime))),
+                toLabel(StoredJsonParser.labelValue(poi.getPoiId(), "time_to_spend", text(target, SrvPoiMultiLang::getTimeToSpend)),
+                        StoredJsonParser.labelValue(poi.getPoiId(), "time_to_spend", text(fallback, SrvPoiMultiLang::getTimeToSpend))),
+                toLabel(StoredJsonParser.labelValue(poi.getPoiId(), "cost", text(target, SrvPoiMultiLang::getCost)),
+                        StoredJsonParser.labelValue(poi.getPoiId(), "cost", text(fallback, SrvPoiMultiLang::getCost))),
+                toLabel(StoredJsonParser.labelValue(poi.getPoiId(), "best_time", text(target, SrvPoiMultiLang::getBestTime)),
+                        StoredJsonParser.labelValue(poi.getPoiId(), "best_time", text(fallback, SrvPoiMultiLang::getBestTime))),
                 cover,
                 new PoiPracticalInfoResponse.Ratings(
                         poi.getSourceName(),
@@ -189,7 +261,7 @@ public class PoiService {
                 new PoiPracticalInfoResponse.BusinessTags(poi.getBusinessSector(), poi.getBusinessCategory()),
                 new PoiPracticalInfoResponse.Status(poi.getOperatingStatus(), poi.getIsVerified(), poi.getIsRecommended(), poi.getIsBookable()),
                 hours == null ? null : new PoiPracticalInfoResponse.OperatingHours(hours),
-                StoredJsonParser.singleJsonValueOrNull(poiId, poi.getHolidayExceptions()),
+                holiday,
                 addressOf(poi),
                 geoOf(poi),
                 poi.getPhone(),
@@ -201,7 +273,8 @@ public class PoiService {
 
     @Transactional(readOnly = true)
     public List<PoiAmenityGroupResponse> getAmenities(String poiId) {
-        List<SrvPoiAmenity> amenities = amenityRepository.findByPoiIdAndDeletedAtIsNull(poiId);
+        String resolved = poiIdResolver.resolve(poiId);
+        List<SrvPoiAmenity> amenities = amenityRepository.findByPoiIdAndDeletedAtIsNull(resolved);
         if (amenities.isEmpty()) {
             return Collections.emptyList();
         }

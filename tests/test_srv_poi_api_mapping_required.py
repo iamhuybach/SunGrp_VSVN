@@ -15,7 +15,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 MAPPING_DIR = ROOT / "docs" / "context" / "api-mapping"
 DDL = ROOT / "sql" / "postgres" / "gld_srv_serve.pg.sql"
-FILES = ("compact", "gallery", "reviews", "features", "experiences", "practical_info")
+FILES = ("compact", "gallery", "reviews", "features", "experiences", "practical_info", "practical_info_list")
 AUTH_HEADER_FILES = (*FILES, "amenities")
 PATH_POI_ID_FILES = ("gallery", "reviews", "experiences", "practical_info")
 REQUEST_SECTIONS = ("Request header", "Request param", "Request body")
@@ -72,9 +72,10 @@ def test_only_path_poi_id_or_compact_body_ids_is_required(name):
         assert required in {"có", "không"}, f"{name}.md {heading} {field}: Required={required!r}"
         if required == "có" and (heading, field) != ("Request header", "Authorization"):
             assert name != "compact", f"{name}.md {heading} {field} must be Required = không"
-            assert (heading, field) == ("Request param", "poi_id"), (
-                f"{name}.md {heading} {field} must be Required = không"
-            )
+            allowed = {("Request param", "poi_id")}
+            if name == "practical_info_list":
+                allowed = {("Request body", "ids")}
+            assert (heading, field) in allowed, f"{name}.md {heading} {field} must be Required = không"
 
 
 @pytest.mark.parametrize("name", AUTH_HEADER_FILES)
@@ -111,7 +112,7 @@ def test_sample_response_uses_api_response_envelope(name):
     assert isinstance(body["meta"]["trace_id"], str)
 
 
-@pytest.mark.parametrize("name", ("gallery", "reviews", "features"))
+@pytest.mark.parametrize("name", ("gallery", "reviews", "features", "practical_info_list"))
 def test_paged_sample_has_full_offset_pagination(name):
     assert set(_sample_response(name)["meta"]["pagination"]) == PAGINATION_KEYS
 
@@ -136,6 +137,17 @@ def test_reviews_rating_summary_is_one_element_sibling_of_data():
     assert isinstance(body["data"], list)
     assert len(body["rating_summary"]) == 1
     assert set(body["rating_summary"][0]) == {"rating_count", "rating_avg_score"}
+
+
+def test_practical_info_list_whitelists_match_practical_info():
+    detail = []
+    for row in _rows(_section(_text("practical_info"), "Response")):
+        field = row["Field"]
+        if field.startswith("data.") and field.count(".") == 1:
+            detail.append(field.split(".", 1)[1])
+    params = {row["Field"]: row for heading, row in _request_rows("practical_info_list") if heading == "Request param"}
+    listed = [part.strip() for part in params["required_fields"]["Description"].split(",")]
+    assert listed == detail
 
 
 def test_d1_source_columns():

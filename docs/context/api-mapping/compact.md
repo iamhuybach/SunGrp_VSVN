@@ -28,7 +28,7 @@
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
 | 1 | lang | string | không | Ngôn ngữ mô tả. Thiếu thì dùng `Accept-Language`, rồi `vi`. |
-| 2 | ids | array | không | `apps.srv_poi_info.poi_id`. Tối thiểu 1, tối đa 20 phần tử. Mỗi phần tử không rỗng, dài tối đa 128. Thiếu, rỗng, quá 20, hoặc phần tử blank trả HTTP 422. |
+| 2 | ids | array | không | Nhận `apps.srv_poi_info.poi_id` hoặc `apps.srv_poi_legacy_id_map.legacy_poi_id` (`poi_id_status` = `OK`). `data.id` là `poi_id` mới. Tối thiểu 1, tối đa 20 phần tử. Mỗi phần tử không rỗng, dài tối đa 128. Thiếu, rỗng, quá 20, hoặc phần tử blank trả HTTP 422. |
 
 ## Response
 

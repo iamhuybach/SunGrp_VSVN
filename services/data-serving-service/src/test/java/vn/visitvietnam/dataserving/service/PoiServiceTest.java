@@ -1,5 +1,6 @@
 package vn.visitvietnam.dataserving.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,16 +29,26 @@ import vn.visitvietnam.dataserving.domain.repository.SrvPoiInfoRepository;
 import vn.visitvietnam.dataserving.domain.repository.SrvPoiMediaGalleryRepository;
 import vn.visitvietnam.dataserving.domain.repository.SrvPoiMultiLangRepository;
 import vn.visitvietnam.dataserving.domain.repository.SrvPoiReviewRepository;
+import vn.visitvietnam.dataserving.domain.repository.SrvPoiLegacyIdMapRepository;
+import vn.visitvietnam.dataserving.domain.repository.SrvPoiLegacyIdMapRepositoryCustom;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -60,8 +71,52 @@ class PoiServiceTest {
     @Mock
     private SrvPoiAmenityRepository amenityRepository;
 
+    @Mock
+    private PoiIdResolver poiIdResolver;
+
+    @Mock
+    private SrvPoiLegacyIdMapRepository legacyIdMapRepository;
+
     @InjectMocks
     private PoiService poiService;
+
+    @BeforeEach
+    void identityResolver() {
+        lenient().when(poiIdResolver.resolve(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        lenient().when(poiIdResolver.resolveAll(any())).thenAnswer(invocation -> {
+            Map<String, String> out = new LinkedHashMap<>();
+            Collection<?> ids = invocation.getArgument(0);
+            if (ids != null) {
+                for (Object id : ids) {
+                    if (id instanceof String value && !value.isBlank()) {
+                        out.put(value, value);
+                    }
+                }
+            }
+            return out;
+        });
+    }
+
+    @Test
+    @DisplayName("searchPracticalInfo không đọc multi_lang và cover khi không chọn field đó")
+    void searchPracticalInfoSkipsMultiLangAndCoverWhenNotSelected() {
+        SrvPoiInfo poi = SrvPoiInfo.builder().poiId("poi_01").poiName("A").build();
+        when(legacyIdMapRepository.findPracticalInfoPage(any(), any(), any(), any(), anyBoolean(), anyInt(), anyLong()))
+                .thenReturn(new SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice(List.of(poi), 1));
+        PracticalInfoQuery query = new PracticalInfoQuery(
+                List.of("poi_01"),
+                EnumSet.of(PracticalInfoQuery.Field.ID),
+                null,
+                null,
+                "vi",
+                0,
+                10,
+                null,
+                Sort.Direction.ASC);
+        PoiService.PracticalInfoPage page = poiService.searchPracticalInfo(query);
+        assertThat(page.total()).isEqualTo(1);
+        verifyNoInteractions(multiLangRepository, mediaGalleryRepository);
+    }
 
     // ── API 1: Compact POIs Tests ────────────────────────────────────────────
 
@@ -387,9 +442,10 @@ class PoiServiceTest {
                 .destinationId("dest_01")
                 .destinationName("Ha Noi")
                 .build();
-        when(poiInfoRepository.findByPoiIdAndDeletedAtIsNull("poi_01")).thenReturn(java.util.Optional.of(poi));
+        when(legacyIdMapRepository.findPracticalInfoPage(eq(List.of("poi_01")), any(), any(), any(), anyBoolean(), anyInt(), anyLong()))
+                .thenReturn(new SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice(List.of(poi), 1));
         when(multiLangRepository.findByPoiIdInAndLangIn(any(), any())).thenReturn(List.of());
-        when(mediaGalleryRepository.findActiveCoverByPoiId(eq("poi_01"), any(Pageable.class))).thenReturn(List.of());
+        when(mediaGalleryRepository.findActiveCoversByPoiIdIn(any())).thenReturn(List.of());
 
         PoiPracticalInfoResponse info = poiService.getPracticalInfo("poi_01", "vi");
         com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper()
@@ -402,16 +458,18 @@ class PoiServiceTest {
     @Test
     @DisplayName("practical_info 404 khi không có info, và holiday_exceptions là nguyên text cột")
     void shouldThrowWhenPracticalInfoPoiMissing() throws Exception {
-        when(poiInfoRepository.findByPoiIdAndDeletedAtIsNull("missing")).thenReturn(java.util.Optional.empty());
+        when(legacyIdMapRepository.findPracticalInfoPage(eq(List.of("missing")), any(), any(), any(), anyBoolean(), anyInt(), anyLong()))
+                .thenReturn(new SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice(List.of(), 0));
         assertThatThrownBy(() -> poiService.getPracticalInfo("missing", "vi"))
                 .isInstanceOf(ResourceNotFoundException.class);
 
         SrvPoiInfo poi = SrvPoiInfo.builder().poiId("poi_01").poiName("A").sourceName("partner")
                 .operatingHours("not-json").holidayExceptions("[ {\"date\" : \"02/09/2026\"} ]").build();
-        when(poiInfoRepository.findByPoiIdAndDeletedAtIsNull("poi_01")).thenReturn(java.util.Optional.of(poi));
+        when(legacyIdMapRepository.findPracticalInfoPage(eq(List.of("poi_01")), any(), any(), any(), anyBoolean(), anyInt(), anyLong()))
+                .thenReturn(new SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice(List.of(poi), 1));
         when(multiLangRepository.findByPoiIdInAndLangIn(any(), any())).thenReturn(List.of(
                 SrvPoiMultiLang.builder().poiId("poi_01").lang("vi").timeToSpend("{\"Thoi gian\":\"1 gio\"}").build()));
-        when(mediaGalleryRepository.findActiveCoverByPoiId(eq("poi_01"), any(Pageable.class))).thenReturn(List.of());
+        when(mediaGalleryRepository.findActiveCoversByPoiIdIn(any())).thenReturn(List.of());
 
         PoiPracticalInfoResponse info = poiService.getPracticalInfo("poi_01", "vi");
         assertThat(info.holidayExceptions()).isEqualTo("[ {\"date\" : \"02/09/2026\"} ]");

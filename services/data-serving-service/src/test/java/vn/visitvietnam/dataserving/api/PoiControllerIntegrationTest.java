@@ -20,6 +20,7 @@ import vn.visitvietnam.dataserving.api.dto.PoiReviewItemResponse;
 import vn.visitvietnam.dataserving.common.dto.PageResponse;
 import vn.visitvietnam.dataserving.common.exception.ResourceNotFoundException;
 import vn.visitvietnam.dataserving.common.web.GlobalExceptionHandler;
+import vn.visitvietnam.dataserving.common.web.PracticalInfoBodyLimitFilter;
 import vn.visitvietnam.dataserving.common.web.RequestIdFilter;
 import vn.visitvietnam.dataserving.service.PoiService;
 import vn.visitvietnam.dataserving.service.util.LanguageResolver;
@@ -40,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PoiController.class)
-@Import({SecurityConfig.class, GlobalExceptionHandler.class, LanguageResolver.class, RequestIdFilter.class})
+@Import({SecurityConfig.class, GlobalExceptionHandler.class, LanguageResolver.class, RequestIdFilter.class, PracticalInfoBodyLimitFilter.class})
 class PoiControllerIntegrationTest {
 
     @Autowired
@@ -435,5 +436,110 @@ class PoiControllerIntegrationTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    @DisplayName("POST practical_info từ chối ids rỗng và quá 500")
+    void postPracticalInfoRejectsEmptyAndOver500Ids() throws Exception {
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content("{\"ids\":[]}")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content(idsJson(501))))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("POST practical_info nhận đúng 500 id")
+    void postPracticalInfoAccepts500Ids() throws Exception {
+        when(poiService.searchPracticalInfo(any())).thenReturn(new PoiService.PracticalInfoPage(List.of(), 0));
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content(idsJson(500))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("POI practical info list retrieved successfully"));
+    }
+
+    @Test
+    @DisplayName("POST practical_info từ chối required_fields lạ")
+    void postPracticalInfoRejectsUnknownRequiredField() throws Exception {
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .queryParam("required_fields", "not_a_field")
+                        .content("{\"ids\":[\"poi_01\"]}")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("POST practical_info từ chối source ngoài whitelist")
+    void postPracticalInfoRejectsSourceOutsideWhitelist() throws Exception {
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .queryParam("source", "bing")
+                        .content("{\"ids\":[\"poi_01\"]}")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("POST practical_info từ chối hai sort_field")
+    void postPracticalInfoRejectsTwoSortFields() throws Exception {
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .queryParam("sort_field", "id,name")
+                        .content("{\"ids\":[\"poi_01\"]}")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("POST practical_info từ chối sort_order lạ")
+    void postPracticalInfoRejectsBadSortOrder() throws Exception {
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .queryParam("sort_order", "up")
+                        .content("{\"ids\":[\"poi_01\"]}")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("POST practical_info từ chối size trên 100")
+    void postPracticalInfoRejectsSizeOver100() throws Exception {
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .queryParam("size", "101")
+                        .content("{\"ids\":[\"poi_01\"]}")))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("POST practical_info body quá lớn trả 400 trước khi gọi service")
+    void postPracticalInfoRejectsOversizedBody() throws Exception {
+        byte[] body = new byte[PracticalInfoBodyLimitFilter.MAX_BYTES + 1];
+        java.util.Arrays.fill(body, (byte) 'a');
+        mockMvc.perform(authorized(post("/api/v1/pois/practical_info")
+                        .contentType("application/json")
+                        .content(body)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.meta.error_code").value("ERR_BODY_TOO_LARGE"));
+        org.mockito.Mockito.verifyNoInteractions(poiService);
+    }
+
+    private static String idsJson(int count) {
+        StringBuilder body = new StringBuilder("{\"ids\":[");
+        for (int i = 0; i < count; i++) {
+            if (i > 0) {
+                body.append(',');
+            }
+            body.append("\"id-").append(i).append('"');
+        }
+        return body.append("]}").toString();
     }
 }

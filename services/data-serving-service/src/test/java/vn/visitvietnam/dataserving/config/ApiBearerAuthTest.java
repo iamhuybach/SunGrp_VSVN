@@ -71,6 +71,7 @@ class ApiBearerAuthTest {
         when(poiService.getExperiences(any(), any())).thenReturn(new PoiExperiencesResponse(List.of()));
         when(poiService.getPracticalInfo(any(), any())).thenReturn(null);
         when(poiService.getAmenities(any())).thenReturn(List.of());
+        when(poiService.searchPracticalInfo(any())).thenReturn(new PoiService.PracticalInfoPage(List.of(), 0));
     }
 
     static Stream<Arguments> poiEndpoints() {
@@ -84,6 +85,10 @@ class ApiBearerAuthTest {
                 Arguments.of("reviews", (Supplier<MockHttpServletRequestBuilder>) () -> get("/api/v1/pois/poi_01/reviews")),
                 Arguments.of("experiences", (Supplier<MockHttpServletRequestBuilder>) () -> get("/api/v1/pois/poi_01/experiences")),
                 Arguments.of("practical_info", (Supplier<MockHttpServletRequestBuilder>) () -> get("/api/v1/pois/poi_01/practical_info")),
+                Arguments.of("practical_info_list", (Supplier<MockHttpServletRequestBuilder>) () ->
+                        post("/api/v1/pois/practical_info")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"ids\":[\"poi_01\"]}")),
                 Arguments.of("amenities", (Supplier<MockHttpServletRequestBuilder>) () -> get("/api/v1/pois/poi_01/amenities"))
         );
     }

@@ -20,7 +20,7 @@
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | poi_id | string | có | path. `apps.srv_poi_info.poi_id`. |
+| 1 | poi_id | string | có | path. Nhận `apps.srv_poi_info.poi_id` hoặc `apps.srv_poi_legacy_id_map.legacy_poi_id` (`poi_id_status` = `OK`). `data.id` là `poi_id` mới. |
 | 2 | lang | string | không | query. |
 
 ## Response

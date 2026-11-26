@@ -1,0 +1,99 @@
+schema_version: 1
+task:
+  id: 20261125-practical-info-query-legacy-poi-id
+  title: Practical info query and legacy poi_id
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-11-25'
+  updated_at: '2026-11-26'
+classification:
+  complexity: high
+  risk_level: high
+  architecture_required: true
+  evidence_required: false
+  runtime_required: true
+  signals:
+  - cross_system
+  - design_tradeoffs
+  - runtime_proof_required
+  - data_model_change
+scope:
+  systems:
+  - poi-serving-api
+  files:
+  - sql/postgres/gld_srv_serve.pg.sql
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/entity/SrvPoiLegacyIdMap.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiLegacyIdMapRepository.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiIdResolver.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiService.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PoiSpecifications.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiMediaGalleryRepository.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/service/PracticalInfoQuery.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PracticalInfoSearchRequest.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PracticalInfoProjection.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/PoiController.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/api/dto/PracticalInfoListEnvelope.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/common/web/PracticalInfoBodyLimitFilter.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiLegacyIdMapRepositoryCustom.java
+  - services/data-serving-service/src/main/java/vn/visitvietnam/dataserving/domain/repository/SrvPoiLegacyIdMapRepositoryImpl.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/common/web/PracticalInfoBodyLimitFilterTest.java
+  - tests/test_srv_poi_serving_contract.py
+  - tests/test_srv_poi_api_mapping_required.py
+  - docs/context/api-mapping/practical_info_list.md
+  - docs/context/api-mapping/practical_info.md
+  - docs/context/api-mapping/gallery.md
+  - docs/context/api-mapping/reviews.md
+  - docs/context/api-mapping/experiences.md
+  - docs/context/api-mapping/amenities.md
+  - docs/context/api-mapping/compact.md
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/domain/repository/PoiRepositoryIntegrationTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/LegacyAndPracticalInfoIntegrationTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/PoiControllerIntegrationTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/api/dto/PracticalInfoProjectionTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/PoiServiceTest.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/service/CountingStatementInspector.java
+  - services/data-serving-service/src/test/java/vn/visitvietnam/dataserving/config/ApiBearerAuthTest.java
+  - services/data-serving-service/AGENTS.md
+  - .ai/tasks/20261125-practical-info-query-legacy-poi-id/runtime-runbook.md
+  - .ai/tasks/20261125-practical-info-query-legacy-poi-id/decision.md
+review_plan:
+  required_reviewers:
+  - api-contract-reviewer
+  - app-security-reviewer
+  - jpa-performance-reviewer
+  round: 3
+  extra_round_approved_on: '2026-11-25'
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: not_required
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: pass
+  runtime: pass
+rounds:
+  verification: 2
+  review: 3
+  architecture: 2
+  runtime_failure: 0
+open_findings: []

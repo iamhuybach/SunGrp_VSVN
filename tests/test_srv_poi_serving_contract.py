@@ -28,6 +28,7 @@ GOLD_TO_JAVA = {
     "DOUBLE": "Double", "TIMESTAMP": "LocalDateTime",
 }
 PG_ONLY = {"ingestion_ts": ("timestamp without time zone", "LocalDateTime")}  # D-3: chỉ PostgreSQL, mọi bảng apps
+LEGACY_MAP = "srv_poi_legacy_id_map"
 
 
 def _notebook(name: str) -> dict:
@@ -123,7 +124,7 @@ def _require_service() -> None:
 
 def test_gold_and_pg_columns_and_types_match():
     gold, pg = gold_tables(), pg_tables()
-    assert set(gold) == set(pg)
+    assert set(gold) == set(pg) - {LEGACY_MAP}
     for name, spec in gold.items():
         assert set(PG_ONLY).isdisjoint(spec["cols"]), name
         for col, (pg_type, _java) in PG_ONLY.items():
@@ -142,7 +143,7 @@ def test_gold_and_pg_columns_and_types_match():
 def test_entities_match_gold_columns_types_and_keys():
     _require_service()
     gold, entities = gold_tables(), entity_tables()
-    assert set(gold) == set(entities)
+    assert set(gold) == set(entities) - {LEGACY_MAP}
     for name, spec in gold.items():
         entity = entities[name]
         assert set(PG_ONLY).isdisjoint(spec["cols"]), name
@@ -367,8 +368,12 @@ def test_pg_only_ingestion_ts_and_is_active_positions():
     for name in pg:
         pg_names = list(pg[name]["cols"])
         entity_names = list(entities[name]["cols"])
-        assert pg_names[pg_names.index("deleted_at") + 1] == "ingestion_ts", name
-        assert entity_names[entity_names.index("deleted_at") + 1] == "ingestion_ts", name
+        if "deleted_at" in pg[name]["cols"]:
+            assert pg_names[pg_names.index("deleted_at") + 1] == "ingestion_ts", name
+            assert entity_names[entity_names.index("deleted_at") + 1] == "ingestion_ts", name
+        else:
+            assert pg_names[-1] == "ingestion_ts", name
+            assert entity_names[-1] == "ingestion_ts", name
     info_pg = list(pg["srv_poi_info"]["cols"])
     info_entity = list(entities["srv_poi_info"]["cols"])
     assert info_pg[info_pg.index("is_bookable") + 1] == "is_active"
@@ -403,6 +408,34 @@ def test_new_columns_stay_out_of_api():
         for path in poi_docs.rglob("*"):
             if path.is_file():
                 assert "ingestion_ts" not in path.read_text(encoding="utf-8"), path
+
+
+def test_legacy_id_map_matches_gold_map_cols():
+    _require_service()
+    cols = _literal(_cell_source("NB_CREATE_DDL.ipynb", "legacyidpy"), "MAP_COLS")
+    by_name = {name: typ for name, typ in cols}
+    kept = ("legacy_poi_id", "poi_id", "poi_id_status")
+    pg = pg_tables()[LEGACY_MAP]
+    entity = entity_tables()[LEGACY_MAP]
+    assert list(pg["cols"]) == [*kept, "ingestion_ts"]
+    assert list(entity["cols"]) == [*kept, "ingestion_ts"]
+    for name in kept:
+        gold_type = _normalize_gold_type(by_name[name])
+        assert pg["cols"][name] == GOLD_TO_PG[gold_type], name
+        assert entity["cols"][name] == GOLD_TO_JAVA[gold_type], name
+    assert pg["cols"]["ingestion_ts"] == PG_ONLY["ingestion_ts"][0]
+    assert entity["cols"]["ingestion_ts"] == PG_ONLY["ingestion_ts"][1]
+    assert pg["pk"] == ("legacy_poi_id",)
+    assert entity["pk"] == ("legacy_poi_id",)
+    assert entity["id_class"] is False
+    ddl = PG_DDL.read_text(encoding="utf-8")
+    assert "legacy_poi_id text NOT NULL" in ddl
+    assert "poi_id_status text NOT NULL" in ddl
+    entity_src = (ENTITY_DIR / "SrvPoiLegacyIdMap.java").read_text(encoding="utf-8")
+    assert '@Column(name = "legacy_poi_id", nullable = false)' in entity_src
+    assert '@Column(name = "poi_id_status", nullable = false)' in entity_src
+    assert 'write_insert_only(MAP_FQ, map_src, ("legacy_poi_id",)' in _cell_source(
+        "NB_SETUP_LEGACY_GOLD_POI.ipynb", "lgpmain")
 
 
 def test_multi_lang_poi_name_across_layers():

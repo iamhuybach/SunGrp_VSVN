@@ -19,7 +19,7 @@
 
 | Stt | Field | Type | Required | Description |
 |---|---|---|---|---|
-| 1 | poi_id | string | có | path. Khóa đọc `apps.srv_poi_amenity.poi_id`. Không có query `lang`. |
+| 1 | poi_id | string | có | path. Nhận `apps.srv_poi_info.poi_id` hoặc `apps.srv_poi_legacy_id_map.legacy_poi_id` (`poi_id_status` = `OK`), rồi đọc `apps.srv_poi_amenity.poi_id` bằng `poi_id` mới. Không có query `lang`. `data.id` là `poi_id` mới. |
 
 ## Response
 

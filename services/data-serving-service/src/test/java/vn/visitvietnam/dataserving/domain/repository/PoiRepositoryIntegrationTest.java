@@ -1,10 +1,12 @@
 package vn.visitvietnam.dataserving.domain.repository;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,12 +49,22 @@ class PoiRepositoryIntegrationTest {
     @Autowired
     private SrvPoiReviewRepository poiReviewRepository;
 
+    @Autowired
+    private SrvPoiLegacyIdMapRepository legacyIdMapRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private EntityManager entityManager;
+
     private static final String TEST_POI_ID = "POI_VN_HAN_001";
     private static final String DESTINATION_ID = "DEST_HANOI";
     private static final String BUSINESS_CATEGORY = "ATTRACTION";
 
     @BeforeEach
     void setUp() {
+        legacyIdMapRepository.deleteAll();
         poiReviewRepository.deleteAll();
         poiMediaGalleryRepository.deleteAll();
         poiAmenityRepository.deleteAll();
@@ -284,6 +296,151 @@ class PoiRepositoryIntegrationTest {
         List<String> partnerOnly = poiInfoRepository.findFeatureIds(
                 "attraction,f_n_b,event", new BigDecimal("4.5"), 100, "partner", 10, 0);
         assertThat(partnerOnly).containsExactly("a-1", "b-1", "a-2");
+    }
+
+    @Test
+    @DisplayName("findResolvable chỉ giữ OK có poi_id và không trùng khóa info")
+    void legacyMapFindResolvableKeepsOnlyOkAndNewIdPrecedence() {
+        poiInfoRepository.save(SrvPoiInfo.builder().poiId("existing").poiName("Keep").build());
+        jdbcTemplate.update(
+                "INSERT INTO apps.srv_poi_legacy_id_map (legacy_poi_id, poi_id, poi_id_status) VALUES (?,?,?)",
+                "old", "new-target", "OK");
+        jdbcTemplate.update(
+                "INSERT INTO apps.srv_poi_legacy_id_map (legacy_poi_id, poi_id, poi_id_status) VALUES (?,?,?)",
+                "existing", "other", "OK");
+        jdbcTemplate.update(
+                "INSERT INTO apps.srv_poi_legacy_id_map (legacy_poi_id, poi_id, poi_id_status) VALUES (?,?,?)",
+                "bad", null, "OK");
+        jdbcTemplate.update(
+                "INSERT INTO apps.srv_poi_legacy_id_map (legacy_poi_id, poi_id, poi_id_status) VALUES (?,?,?)",
+                "miss", "new-target", "MISSING_EVIDENCE");
+        assertThat(legacyIdMapRepository.findResolvable(List.of("old", "existing", "bad", "miss")))
+                .extracting(SrvPoiLegacyIdMapRepositoryCustom.Resolution::legacyPoiId)
+                .containsExactly("old");
+    }
+
+    @Test
+    @DisplayName("trang practical info resolve id cũ, gộp trùng và bỏ dòng đã xóa")
+    void practicalInfoPageResolvesLegacyDedupesAndExcludesDeleted() {
+        insertPlain("A", "A", null);
+        insertPlain("C", "C", null);
+        jdbcTemplate.update("INSERT INTO apps.srv_poi_info (poi_id, poi_name, deleted_at) VALUES (?,?,now())", "B", "B");
+        jdbcTemplate.update(
+                "INSERT INTO apps.srv_poi_legacy_id_map (legacy_poi_id, poi_id, poi_id_status) VALUES (?,?,?)",
+                "legacy-a", "A", "OK");
+        jdbcTemplate.update(
+                "INSERT INTO apps.srv_poi_legacy_id_map (legacy_poi_id, poi_id, poi_id_status) VALUES (?,?,?)",
+                "miss", "C", "MISSING_EVIDENCE");
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice slice = legacyIdMapRepository.findPracticalInfoPage(
+                List.of("legacy-a", "A", "B", "C"), null, null, null, false, 10, 0);
+        assertThat(slice.rows()).extracting(SrvPoiInfo::getPoiId).containsExactly("A", "C");
+        assertThat(slice.total()).isEqualTo(2);
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice missed = legacyIdMapRepository.findPracticalInfoPage(
+                List.of("miss"), null, null, null, false, 10, 0);
+        assertThat(missed.rows()).isEmpty();
+        assertThat(missed.total()).isZero();
+    }
+
+    @Test
+    @DisplayName("offset quá cuối trang vẫn trả total")
+    void practicalInfoPageReturnsTotalWhenOffsetPastEnd() {
+        insertPlain("p1", "One", null);
+        insertPlain("p2", "Two", null);
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice past = legacyIdMapRepository.findPracticalInfoPage(
+                List.of("p1", "p2"), null, null, null, false, 1, 5);
+        assertThat(past.rows()).isEmpty();
+        assertThat(past.total()).isEqualTo(2);
+        SrvPoiLegacyIdMapRepositoryCustom.PracticalInfoSlice none = legacyIdMapRepository.findPracticalInfoPage(
+                List.of("absent"), null, null, null, false, 1, 0);
+        assertThat(none.rows()).isEmpty();
+        assertThat(none.total()).isZero();
+    }
+
+    @Test
+    @DisplayName("mọi cột sort, cả hai chiều, null cuối rồi poi_id")
+    void practicalInfoPageOrdersEverySortColumnBothDirectionsNullsLastThenPoiId() {
+        jdbcTemplate.update(
+                "INSERT INTO apps.srv_poi_info (poi_id, poi_name, rating_overall, rating_count) VALUES (?,?,?,?)",
+                "a", "Same", new BigDecimal("1.00"), 1);
+        jdbcTemplate.update(
+                "INSERT INTO apps.srv_poi_info (poi_id, poi_name, rating_overall, rating_count) VALUES (?,?,?,?)",
+                "b", "Same", new BigDecimal("5.00"), 9);
+        jdbcTemplate.update(
+                "INSERT INTO apps.srv_poi_info (poi_id, poi_name, rating_overall, rating_count) VALUES (?,?,?,?)",
+                "c", null, null, null);
+        jdbcTemplate.update(
+                "INSERT INTO apps.srv_poi_info (poi_id, poi_name, rating_overall, rating_count) VALUES (?,?,?,?)",
+                "d", "Zebra", new BigDecimal("3.00"), 4);
+        List<String> ids = List.of("a", "b", "c", "d");
+        assertThat(idsOf(null, false, ids)).containsExactly("a", "b", "c", "d");
+        assertThat(idsOf(SrvPoiLegacyIdMapRepositoryCustom.SortColumn.POI_ID, false, ids)).containsExactly("a", "b", "c", "d");
+        assertThat(idsOf(SrvPoiLegacyIdMapRepositoryCustom.SortColumn.POI_ID, true, ids)).containsExactly("d", "c", "b", "a");
+        assertThat(idsOf(SrvPoiLegacyIdMapRepositoryCustom.SortColumn.POI_NAME, false, ids)).containsExactly("a", "b", "d", "c");
+        assertThat(idsOf(SrvPoiLegacyIdMapRepositoryCustom.SortColumn.POI_NAME, true, ids)).containsExactly("d", "a", "b", "c");
+        assertThat(idsOf(SrvPoiLegacyIdMapRepositoryCustom.SortColumn.RATING_OVERALL, false, ids)).containsExactly("a", "d", "b", "c");
+        assertThat(idsOf(SrvPoiLegacyIdMapRepositoryCustom.SortColumn.RATING_OVERALL, true, ids)).containsExactly("b", "d", "a", "c");
+        assertThat(idsOf(SrvPoiLegacyIdMapRepositoryCustom.SortColumn.RATING_COUNT, false, ids)).containsExactly("a", "d", "b", "c");
+        assertThat(idsOf(SrvPoiLegacyIdMapRepositoryCustom.SortColumn.RATING_COUNT, true, ids)).containsExactly("b", "d", "a", "c");
+    }
+
+    @Test
+    @DisplayName("ORDER BY chỉ đến từ hằng SortColumn")
+    void practicalInfoPageSqlOrderByComesOnlyFromConstants() {
+        java.util.regex.Pattern clause = java.util.regex.Pattern.compile(
+                "ORDER BY (i\\.[a-z_]+ (ASC|DESC) NULLS LAST, i\\.poi_id ASC|i\\.poi_id ASC) LIMIT :limit OFFSET :offset$");
+        assertThat(clause.matcher(SrvPoiLegacyIdMapRepositoryImpl.DEFAULT_PAGE_SQL).find()).isTrue();
+        for (String sql : SrvPoiLegacyIdMapRepositoryImpl.ASC_PAGE_SQL.values()) {
+            assertThat(clause.matcher(sql).find()).isTrue();
+        }
+        for (String sql : SrvPoiLegacyIdMapRepositoryImpl.DESC_PAGE_SQL.values()) {
+            assertThat(clause.matcher(sql).find()).isTrue();
+        }
+    }
+
+    @Test
+    @DisplayName("predicate id dùng khóa chính khi tắt seq scan")
+    void idPredicatesUsePrimaryKeyIndexesWhenSeqScanDisabled() {
+        jdbcTemplate.execute("SET LOCAL enable_seqscan = off");
+        String resolvePlan = explain(SrvPoiLegacyIdMapRepositoryImpl.RESOLVE_SQL, false);
+        String countPlan = explain(SrvPoiLegacyIdMapRepositoryImpl.PRACTICAL_INFO_COUNT_SQL, true);
+        for (String plan : List.of(resolvePlan, countPlan)) {
+            assertThat(plan).contains("srv_poi_legacy_id_map_pkey");
+            assertThat(plan).contains("srv_poi_info_pkey");
+            assertThat(plan).doesNotContainPattern("Seq Scan on srv_poi_(info|legacy_id_map)");
+        }
+    }
+
+    private void insertPlain(String id, String name, String deleted) {
+        jdbcTemplate.update("INSERT INTO apps.srv_poi_info (poi_id, poi_name) VALUES (?,?)", id, name);
+    }
+
+    private List<String> idsOf(SrvPoiLegacyIdMapRepositoryCustom.SortColumn sort, boolean descending, List<String> ids) {
+        return legacyIdMapRepository.findPracticalInfoPage(ids, null, null, sort, descending, 10, 0)
+                .rows().stream().map(SrvPoiInfo::getPoiId).toList();
+    }
+
+    private String explain(String sql, boolean withFilters) {
+        org.hibernate.query.NativeQuery<?> query = entityManager.createNativeQuery("EXPLAIN " + sql)
+                .unwrap(org.hibernate.query.NativeQuery.class);
+        query.setParameter("ids", new String[] {"a", "b", "c"}, String[].class);
+        if (withFilters) {
+            query.setParameter("source", "");
+            query.setParameter("namePattern", "");
+        }
+        return String.join("\n", query.getResultList().stream().map(String::valueOf).toList());
+    }
+
+    @Test
+    @DisplayName("findActiveCoversByPoiIdIn sắp display_order null cuối rồi media_id")
+    void findActiveCoversByPoiIdInOrdersPerPoi() {
+        poiInfoRepository.save(SrvPoiInfo.builder().poiId(TEST_POI_ID).build());
+        poiMediaGalleryRepository.save(gallery("m1", null, true));
+        poiMediaGalleryRepository.save(gallery("m2", 5, true));
+        poiMediaGalleryRepository.save(gallery("m0", 1, true));
+        poiMediaGalleryRepository.save(gallery("skip", 0, false));
+        assertThat(poiMediaGalleryRepository.findActiveCoversByPoiIdIn(List.of(TEST_POI_ID)))
+                .extracting(SrvPoiMediaGallery::getMediaId)
+                .containsExactly("m0", "m2", "m1");
     }
 
     private SrvPoiMediaGallery gallery(String mediaId, Integer displayOrder, boolean cover) {

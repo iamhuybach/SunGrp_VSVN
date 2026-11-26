@@ -1,7 +1,7 @@
--- PostgreSQL DDL cho 5 bảng gold serving, schema apps. Task 20261029-pg-ddl-gld-srv-serve.
+-- PostgreSQL DDL cho 6 bảng gold serving, schema apps. Bảng thứ sáu là bản copy serving của lh_vv_gold.dbo.gld_poi_legacy_id_map (NB_CREATE_DDL cell legacyidpy MAP_COLS, chỉ giữ legacy_poi_id, poi_id và poi_id_status). Task 20261029-pg-ddl-gld-srv-serve.
 -- Nguồn cột: lh_vv_gold.dbo.gld_srv_poi_* (NB_SETUP_INITIAL_DDL cell init_tables, NB_CREATE_DDL).
 -- Ngoại lệ (20261116-srv-poi-info-is-active D-3): ingestion_ts chỉ có ở PostgreSQL, trên mọi bảng apps, ngay sau deleted_at. Gold không có cột này; repo không có job ghi.
--- Khóa chính theo NodeSpec.pk của notebook NB_GLD_SRV_POI_* tương ứng.
+-- Khóa chính theo NodeSpec.pk của notebook NB_GLD_SRV_POI_* tương ứng. Ngoại lệ: khóa apps.srv_poi_legacy_id_map lấy từ MERGE key lgpmain, không từ NodeSpec.
 -- Ánh xạ kiểu Fabric -> PostgreSQL (decision.md D-TYPE, D-BIGINT):
 --   STRING       -> text
 --   BOOLEAN      -> boolean
@@ -11,7 +11,7 @@
 --   DECIMAL(p,s) -> numeric(p,s)
 --   TIMESTAMP    -> timestamp without time zone
 --   Kiểu khác    -> MISSING
--- NOT NULL chỉ ở cột gold NOT NULL; đó đều là cột khóa chính.
+-- NOT NULL chỉ ở cột gold NOT NULL; đó đều là cột khóa chính, trừ poi_id_status của apps.srv_poi_legacy_id_map (NOT NULL nhưng không phải khóa chính).
 -- apps.srv_poi_review không có cột lang (decision.md D-LANG). Gold gld_srv_poi_review vẫn giữ lang.
 -- Schema apps phải có sẵn. File không tạo schema, index, view hay quyền.
 -- Chạy: psql -v ON_ERROR_STOP=1 -f <file>. Chạy lại sẽ lỗi "already exists" và rollback, không đổi gì.
@@ -21,6 +21,7 @@
 --   ALTER TABLE apps.srv_poi_info ADD COLUMN is_active boolean;
 --   ALTER TABLE apps.<srv_poi_info | srv_poi_multi_lang | srv_poi_amenity | srv_poi_media_gallery | srv_poi_review> ADD COLUMN ingestion_ts timestamp without time zone;
 -- DB đã có bảng trước 20261125-legacy-init-destination-and-poi-name: chạy tay ALTER TABLE apps.srv_poi_multi_lang ADD COLUMN poi_name text;
+-- DB đã có bảng trước 20261125-practical-info-query-legacy-poi-id: chạy tay đúng khối CREATE TABLE apps.srv_poi_legacy_id_map.
 --   ADD COLUMN đặt cột ở cuối bảng: thứ tự vật lý khác CREATE TABLE dưới đây. Nạp dữ liệu phải theo tên cột.
 
 BEGIN;
@@ -139,6 +140,14 @@ CREATE TABLE apps.srv_poi_review (
     deleted_at timestamp without time zone,
     ingestion_ts timestamp without time zone,
     PRIMARY KEY (review_id)
+);
+
+CREATE TABLE apps.srv_poi_legacy_id_map (
+    legacy_poi_id text NOT NULL,
+    poi_id text,
+    poi_id_status text NOT NULL,
+    ingestion_ts timestamp without time zone,
+    PRIMARY KEY (legacy_poi_id)
 );
 
 COMMIT;

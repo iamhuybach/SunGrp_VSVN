@@ -11,6 +11,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -30,15 +31,19 @@ import vn.visitvietnam.dataserving.api.dto.PoiAmenityGroupResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiExperiencesResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiFeatureResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiGalleryItemResponse;
+import vn.visitvietnam.dataserving.api.dto.PracticalInfoListEnvelope;
+import vn.visitvietnam.dataserving.api.dto.PracticalInfoSearchRequest;
 import vn.visitvietnam.dataserving.api.dto.PoiPracticalInfoResponse;
 import vn.visitvietnam.dataserving.api.dto.PoiReviewItemResponse;
 import vn.visitvietnam.dataserving.common.dto.ApiResponse;
 import vn.visitvietnam.dataserving.common.dto.PageResponse;
 import vn.visitvietnam.dataserving.common.dto.PaginationMeta;
 import vn.visitvietnam.dataserving.service.PoiService;
+import vn.visitvietnam.dataserving.service.PracticalInfoQuery;
 import vn.visitvietnam.dataserving.service.util.LanguageResolver;
 
 import java.math.BigDecimal;
+import java.util.EnumSet;
 import java.util.List;
 
 @Tag(name = "POI API", description = "API đọc dữ liệu địa điểm du lịch (POIs)")
@@ -132,6 +137,58 @@ public class PoiController {
     ) {
         String resolvedLang = languageResolver.resolveLanguage(lang, acceptLanguage);
         return ResponseEntity.ok(ApiResponse.success(poiService.getPracticalInfo(poiId, resolvedLang), "POI practical info retrieved successfully"));
+    }
+
+    @Operation(summary = "Danh sách thông tin thực tế của nhiều POI")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Danh sách practical info. required_fields vắng thì mỗi phần tử đủ field; có chọn thì chỉ các khóa đó, giữ null.", content = @Content(schema = @Schema(implementation = PracticalInfoListEnvelope.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Body không đọc được, quá lớn, hoặc page/size không phải số.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Thiếu hoặc sai bearer token.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "415", description = "Content-Type khác application/json.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "ids, required_fields, source, poi_name, page, size, sort_field hoặc sort_order ngoài hợp đồng.", content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "Lỗi không phân loại.", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    @PostMapping(value = "/practical_info", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<List<Object>>> searchPracticalInfo(
+            @Valid @RequestBody PracticalInfoSearchRequest body,
+            @RequestParam(name = "required_fields", required = false) @Size(max = 18) List<@Pattern(regexp = PracticalInfoQuery.FIELD_REGEX) String> requiredFields,
+            @RequestParam(name = "source", required = false) @Pattern(regexp = "^(partner|google)?$") String source,
+            @RequestParam(name = "lang", required = false) String lang,
+            @RequestHeader(name = "Accept-Language", required = false) String acceptLanguage,
+            @RequestParam(name = "poi_name", required = false) @Size(max = 128) String poiName,
+            @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+            @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(name = "sort_field", required = false) @Pattern(regexp = PracticalInfoQuery.SORT_REGEX) String sortField,
+            @RequestParam(name = "sort_order", defaultValue = "asc") @Pattern(regexp = "^(asc|desc)$") String sortOrder
+    ) {
+        String resolvedLang = languageResolver.resolveLanguage(lang, acceptLanguage);
+        EnumSet<PracticalInfoQuery.Field> fields = EnumSet.noneOf(PracticalInfoQuery.Field.class);
+        if (requiredFields != null) {
+            for (String key : requiredFields) {
+                fields.add(PracticalInfoQuery.Field.byKey(key));
+            }
+        }
+        PracticalInfoQuery.SortField sort = sortField == null || sortField.isBlank()
+                ? null
+                : PracticalInfoQuery.SortField.byKey(sortField);
+        org.springframework.data.domain.Sort.Direction direction = "desc".equals(sortOrder)
+                ? org.springframework.data.domain.Sort.Direction.DESC
+                : org.springframework.data.domain.Sort.Direction.ASC;
+        PracticalInfoQuery query = new PracticalInfoQuery(
+                body.ids(),
+                fields,
+                source == null || source.isBlank() ? null : source,
+                poiName == null || poiName.isBlank() ? null : poiName,
+                resolvedLang,
+                page,
+                size,
+                sort,
+                direction);
+        PoiService.PracticalInfoPage result = poiService.searchPracticalInfo(query);
+        return ResponseEntity.ok(ApiResponse.successList(
+                result.items(),
+                PaginationMeta.offset(page, size, result.total()),
+                "POI practical info list retrieved successfully"));
     }
 
     @Operation(summary = "Truy vấn danh sách tiện ích của POI theo nhóm")
