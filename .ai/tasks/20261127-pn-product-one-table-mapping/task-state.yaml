@@ -1,0 +1,60 @@
+schema_version: 1
+task:
+  id: 20261127-pn-product-one-table-mapping
+  title: Rewrite partner product mapping as one table
+  status: ready_to_merge
+  owner: main
+  created_at: '2026-11-27'
+  updated_at: '2026-11-28'
+classification:
+  complexity: medium
+  risk_level: medium
+  architecture_required: true
+  evidence_required: true
+  runtime_required: false
+  signals:
+  - data_model_change
+  - data_evidence_required
+scope:
+  systems:
+  - partner-product
+  files:
+  - docs/context/mapping_gld_srv_product_offer.md
+review_plan:
+  required_reviewers:
+  - sql-data-reviewer
+  round: 2
+models:
+  main:
+    expected: grok-4.7
+    effort: medium
+    actual: grok-4.7
+  architect:
+    expected: claude-opus-5-5
+    effort: high
+    actual: claude-opus-5-5
+  review:
+    expected: gpt-5.6-sol
+    effort: medium
+    actual: gpt-5.6-sol
+  author:
+    expected: claude-opus-5-5
+    effort: medium
+    actual: claude-opus-5-5
+  author_proposal:
+    expected: claude-opus-5-5
+    effort: high
+    actual: ''
+gates:
+  evidence: pass
+  architecture: pass
+  local_verification: pass
+  specialist_review: pass
+  risk_gate: not_required
+  runtime: not_required
+rounds:
+  verification: 0
+  review: 2
+  architecture: 2
+  runtime_failure: 0
+open_findings: []

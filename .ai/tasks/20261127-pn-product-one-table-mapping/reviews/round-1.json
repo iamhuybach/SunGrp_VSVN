@@ -1,0 +1,14 @@
+{
+  "round": 1,
+  "verdict": "EVIDENCE_REQUIRED",
+  "findings": [
+    {
+      "id": "SQL-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/mapping_gld_srv_product_offer.md": "62bf79c7ba9d3a3b540739f563bd9c1d193b526b09c82ee7c92beebdf2cc1141"
+  },
+  "elapsed_seconds": 221
+}
