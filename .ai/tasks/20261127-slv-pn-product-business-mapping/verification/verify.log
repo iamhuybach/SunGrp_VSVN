@@ -1,0 +1,33 @@
+# Verification 2026-11-27 14:08:14 — PASS
+Files (1): docs/context/mapping_slv_pn_product_l2.md
+
+## ruff: SKIP
+no relevant files
+
+## sqlfluff[sparksql]: SKIP
+no relevant files
+
+## sqlfluff[postgres]: SKIP
+no relevant files
+
+## json+pipeline: SKIP
+no relevant files
+
+## toml: SKIP
+no relevant files
+
+## pytest: PASS
+........................................................................ [ 16%]
+........................................................................ [ 32%]
+........................................................................ [ 48%]
+........................................................................ [ 65%]
+........................................................................ [ 81%]
+........................................................................ [ 97%]
+...........                                                              [100%]
+443 passed in 8.56s
+
+## maven: SKIP
+no relevant files
+
+## task-state: PASS
+

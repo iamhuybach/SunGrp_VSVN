@@ -9,11 +9,12 @@ task:
 classification:
   complexity: low
   risk_level: low
-  architecture_required: false
+  architecture_required: true
   evidence_required: true
   runtime_required: false
   signals:
   - data_evidence_required
+  - data_model_change
 scope:
   systems:
   - partner extract
@@ -32,7 +33,7 @@ models:
   architect:
     expected: claude-opus-5-5
     effort: high
-    actual: ''
+    actual: claude-opus-5-5
   review:
     expected: gpt-5.6-sol
     effort: medium
@@ -47,14 +48,14 @@ models:
     actual: ''
 gates:
   evidence: pass
-  architecture: not_required
-  local_verification: not_required
+  architecture: pass
+  local_verification: pass
   specialist_review: not_required
   risk_gate: not_required
   runtime: not_required
 rounds:
   verification: 0
   review: 0
-  architecture: 0
+  architecture: 1
   runtime_failure: 0
 open_findings: []
