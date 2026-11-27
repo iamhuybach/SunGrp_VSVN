@@ -380,6 +380,9 @@ Grain của bảng node là `pk` trong `NodeSpec`. Grain của bảng L1 là `ke
 | `slv_poi_entity_non_enrich` | silver | `poi_id` | `MERGE` | `NB_SLV_POI_ENTITY_NON_ENRICH` |
 | `slv_poi_amenity` | silver | (`poi_id`, `business_sector`, `amenity_group`, `amenity_raw`) | `MERGE` | `NB_SLV_POI_AMENITY` |
 | `slv_poi_media_info` | silver | (`media_id`, `poi_id`) | `MERGE` | `NB_SLV_POI_MEDIA_INFO` |
+| `slv_pn_product_sale` | silver | `product_id` | `MERGE` | `NB_SLV_PN_PRODUCT_SALE` |
+| `slv_pn_hotel_room_offer` | silver | `room_type_id` | `MERGE` | `NB_SLV_PN_HOTEL_ROOM_OFFER` |
+| `slv_pn_hotel_rate_offer` | silver | `rate_plan_id` | `MERGE` | `NB_SLV_PN_HOTEL_RATE_OFFER` |
 | `ref_dictionary_place_type` | silver ref | (`source_name`, `place_type`) | `MERGE` seed | `NB_SETUP_INITIAL_DDL` |
 | `ref_dictionary_amenities` | silver ref | (`source_name`, `business_sector`, `amenity_group`, `amenity_raw`, `amenity`) | `MERGE` seed | `NB_SETUP_INITIAL_DDL` |
 | `slv_enr_poi_review_multi_lang` | silver | MISSING | không có cạnh ghi | MISSING |

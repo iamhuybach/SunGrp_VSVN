@@ -54,7 +54,7 @@ def test_sql_merge_target_owner_predicates():
 def test_merge_target_passes_owner_only_when_column_present():
     source = _cell(_notebook("NB_LIB_TRANSFORM_SLV_GLD.ipynb"), "926a3f9c")
     assert "owner = OWNER_COL if OWNER_COL in table_columns(fq) else None" in source
-    assert "sql_merge_target(fq, view, cols, spec.pk, spec.soft_delete_set, owner)" in source
+    assert "sql_merge_target(fq, view, cols, spec.pk, spec.soft_delete_set, owner, spec.deleted_flag)" in source
     assert "before_write()" in source
     assert "merge_target(trg_fq, df, spec, tag, lambda: refresh_flow_lock(pl, exec_id))" in source
 

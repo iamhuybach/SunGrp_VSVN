@@ -1,0 +1,31 @@
+{
+  "round": 2,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "STATE-002",
+      "severity": "P1"
+    },
+    {
+      "id": "SPARK-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "docs/context/03_OPERATOR_GUIDE.md": "cb4c450c4913d37f08e31785a1d128bfe3dd8e88588c99a713f8f9b8bbbe59b6",
+    "docs/context/NB_LIB_TRANSFORM_SLV_GLD.md": "28d1da969675e6fbdce0cd2567f638755d00bee051d5492625c8d0cd6dca0e10",
+    "docs/context/mapping_slv_pn_product_l2.md": "82c440651806d063c1040e976f7ab9689b82d113eafcff5f19887475daedc46e",
+    "notebooks/NB_CREATE_DDL.ipynb": "80193a684613afb0556cb489f59744179cfef8eabecbbb52286d8db6845e627f",
+    "notebooks/NB_LIB_TRANSFORM_SLV_GLD.ipynb": "9cfc9a484cab0d13f2a15018b330a0e89aadb2671f6a33c751f7fbc56c84c58d",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "302aaf3b6f63358ffe11cf71947d785ac8635c26187ba99639150b0adfba2037",
+    "notebooks/NB_SLV_PN_HOTEL_RATE_OFFER.ipynb": "08cad2ade5eea0c1a10dfb161c4bcf53b65b5be9b1f6ac3889fa1f16d1ceca86",
+    "notebooks/NB_SLV_PN_HOTEL_ROOM_OFFER.ipynb": "71cbde09f3c00bf12541021ebeb0080982884df18952f997687471abc1dc281e",
+    "notebooks/NB_SLV_PN_PRODUCT_SALE.ipynb": "594c810b262deae0bdf657ccddceb00800860367305da2eb2830ab6575dc8b03",
+    "tests/test_enr_poi_contract.py": "ef6fd7b506762fc37db0fa395e81080e99b21e10e814960406b1f9f49a30cc42",
+    "tests/test_initial_ddl_contract.py": "7b5069e6e08e845cf8c3679b33cd2728aa4611bd5554759cd48297dbb35ebc60",
+    "tests/test_legacy_gold_poi_init_contract.py": "59efbaa6ac903eb5ebfcc042d98c3b669944d3259d6c2ad3e5e7dd0caccfa812",
+    "tests/test_slv_pn_product_l2_contract.py": "206a7a12cd39425972fa8c2566ca67ae7745d37c7020ecda29aa78e044d59705",
+    "tests/test_srv_poi_serving_contract.py": "dcb0c40f7f911e738c581fa5affae472e00ea5477bdb9d4987209d10364cde2e"
+  },
+  "elapsed_seconds": 169
+}

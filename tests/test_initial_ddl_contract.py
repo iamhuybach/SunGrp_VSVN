@@ -579,10 +579,13 @@ def test_pipeline_config_rows_match_sources():
     for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "oldpricepy"), "EDGES_ON"):
         expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
         assert seq > 0
+    for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "pnl2edgepy"), "EDGES_ON"):
+        expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        assert seq > 0
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 79
+    assert len(expected) == 84
 
 
 def test_cms_seed_rows_present():

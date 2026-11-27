@@ -732,7 +732,9 @@ def test_dest_portal_patch_cell():
 
     nb = json.loads((ROOT / "notebooks" / "NB_CREATE_DDL.ipynb").read_text(encoding="utf-8"))
     ids = [cell.get("id") for cell in nb["cells"]]
-    assert ids[-4:] == ["oldpricemd", "oldpricepy", "destportalmd", "destportalpy"]
+    start = ids.index("oldpricemd")
+    assert ids[start:start + 4] == ["oldpricemd", "oldpricepy", "destportalmd", "destportalpy"]
+    assert ids[-2:] == ["pnl2edgemd", "pnl2edgepy"]
     source = _cell("NB_CREATE_DDL.ipynb", "destportalpy")
     env: dict = {}
     exec(_cell("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), env)  # noqa: S102

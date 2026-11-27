@@ -276,12 +276,18 @@ def test_info_cover_seed_and_init_ddl():
     seed: dict = {}
     exec(_cell_source("NB_SETUP_INITIAL_DDL.ipynb", "init_seed_ctrl"), seed)  # noqa: S102
     rows = [r for r in seed["PIPELINE_CONFIG_ROWS"] if r[4] == "gld_srv_poi_info"]
-    assert seed["PIPELINE_CONFIG_ROWS"][-2:] == [
+    all_rows = seed["PIPELINE_CONFIG_ROWS"]
+    price_at = next(
+        index for index, row in enumerate(all_rows)
+        if row[2] == "slv_3p_poi_price" and row[4] == "gld_srv_poi_info"
+    )
+    assert all_rows[price_at - 1:price_at + 1] == [
         (seed["_GLD30"], seed["_S"], "slv_poi_media_info", seed["_G"], "gld_srv_poi_info",
          1, 1, "RECOMPUTE", None, None, "NB_GLD_SRV_POI_INFO"),
         (seed["_GLD30"], seed["_S"], "slv_3p_poi_price", seed["_G"], "gld_srv_poi_info",
          1, 1, "RECOMPUTE", None, None, "NB_GLD_SRV_POI_INFO"),
     ]
+    assert all_rows[price_at + 1][4] == "slv_pn_product_sale"
     assert sorted(r[2] for r in rows if r[5] == 1) == sorted(_info_spec()["inputs"].values())
     assert {r[0] for r in rows} == {"PL_VV_TRANS_SLV_TO_GLD_30M"}
     init: dict = {}

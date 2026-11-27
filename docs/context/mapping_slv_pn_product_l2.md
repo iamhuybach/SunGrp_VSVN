@@ -99,9 +99,7 @@ Số giữ nguyên. Notebook cũ gọi `0` Room only, `1` Breakfast, `2` Half bo
 
 ## Câu hỏi cần chốt
 
-Bốn mục dưới đây không chặn tài liệu này. Chúng thuộc task hiện thực sau.
-
-1. Notebook node sở hữu ba bảng chưa có tên.
-2. Ba bảng chưa đăng ký trong `TABLE_SPECS`, `TABLE_CONFIGS`, hay `ctrl_cfg_schema_registry`.
-3. Cờ xoá mà `NB_LIB_TRANSFORM_SLV_GLD` đọc từ bản build là điều kiện để hiện thực Q-21. Cờ không lưu thành cột và không vào `row_hash`. Task này chỉ ghi hợp đồng.
+1. Đã chốt. Notebook node: `NB_SLV_PN_PRODUCT_SALE`, `NB_SLV_PN_HOTEL_ROOM_OFFER`, `NB_SLV_PN_HOTEL_RATE_OFFER`. Một notebook một bảng, `docs/context/02_NAMING_CONVENTION.md` §2. Task `20261127-slv-pn-product-l2-transform`.
+2. Đã chốt. Không thêm dòng `TABLE_SPECS`, `TABLE_CONFIGS`, hay `ctrl_cfg_schema_registry`. Năm cạnh `RECOMPUTE` nằm trong `PIPELINE_CONFIG_ROWS` của `NB_SETUP_INITIAL_DDL` và cell `pnl2edgepy` của `NB_CREATE_DDL`, pipeline `PL_VV_TRANS_SLV_TO_GLD_30M`.
+3. Đã chốt. Cờ xoá là cột build `_is_deleted`, khai báo `NodeSpec.deleted_flag`. Không lưu thành cột và không vào `row_hash`. Mặc định của lib vẫn tắt.
 4. `valid_from` và `valid_to` kế thừa câu hỏi 4 của mapping L1: đơn vị `EPOCH_S_TS` trên dữ liệu đang chạy chưa kết luận. Hai cột vẫn copy 1-1.
