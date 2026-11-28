@@ -734,7 +734,7 @@ def test_dest_portal_patch_cell():
     ids = [cell.get("id") for cell in nb["cells"]]
     start = ids.index("oldpricemd")
     assert ids[start:start + 4] == ["oldpricemd", "oldpricepy", "destportalmd", "destportalpy"]
-    assert ids[-2:] == ["pnl2edgemd", "pnl2edgepy"]
+    assert ids[-4:] == ["pnl2edgemd", "pnl2edgepy", "gldprdddlmd", "gldprdddlpy"]
     source = _cell("NB_CREATE_DDL.ipynb", "destportalpy")
     env: dict = {}
     exec(_cell("NB_SETUP_INITIAL_DDL.ipynb", "init_tables"), env)  # noqa: S102

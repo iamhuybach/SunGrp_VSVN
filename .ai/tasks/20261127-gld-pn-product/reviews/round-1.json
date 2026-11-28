@@ -1,0 +1,28 @@
+{
+  "round": 1,
+  "verdict": "FIX_REQUIRED",
+  "findings": [
+    {
+      "id": "SQL-001",
+      "severity": "P1"
+    },
+    {
+      "id": "SQL-002",
+      "severity": "P1"
+    },
+    {
+      "id": "SQL-003",
+      "severity": "P1"
+    },
+    {
+      "id": "SPARK-001",
+      "severity": "P1"
+    }
+  ],
+  "files": {
+    "notebooks/NB_CREATE_DDL.ipynb": "14c7a33f1de454bea6f1f3426207e0c28fa6864c1c0a7154d825489f553420c0",
+    "notebooks/NB_GLD_SRV_PRODUCT_OFFER.ipynb": "e35d1532829699c5ef5c83dad217806dfc23d820b4018f687bba6088206167b0",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "c2942a5f38013333f716e21e9b228cafd32c3cb6459b157b1126c7c4422284c8"
+  },
+  "elapsed_seconds": 258
+}

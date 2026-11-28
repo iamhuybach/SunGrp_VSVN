@@ -1,0 +1,11 @@
+{
+  "round": 2,
+  "verdict": "EVIDENCE_REQUIRED",
+  "findings": [],
+  "files": {
+    "notebooks/NB_CREATE_DDL.ipynb": "705b10095d8c6bde0d0d40b2869d13996f636bf8acb0faa55b42fcaf394b8fa2",
+    "notebooks/NB_GLD_SRV_PRODUCT_OFFER.ipynb": "eb4e872600a19f06f3533e1fcb425ea3f5d6dc05c5aec3d1ecc8fdcb6a4294f3",
+    "notebooks/NB_SETUP_INITIAL_DDL.ipynb": "c2942a5f38013333f716e21e9b228cafd32c3cb6459b157b1126c7c4422284c8"
+  },
+  "elapsed_seconds": 120
+}

@@ -284,8 +284,9 @@ def test_table_inventory_matches_sources():
     found.update(_exec_assigns(_cell(ddl, "mediaddlpy"), {"MEDIA_COLS", "TABLE_COLS"})["TABLE_COLS"])
     found.update(_exec_assigns(_cell(ddl, "amenddlpy"), {"AMENITY_COLS", "TABLE_COLS"})["TABLE_COLS"])
     found.update(_assign(_cell(ddl, "srvrevpy"), "TABLE_COLS").keys())
+    found.update(_assign(_cell(ddl, "gldprdddlpy"), "TABLE_COLS").keys())
     assert {spec["fq"] for spec in specs} == found
-    assert len(specs) == 22
+    assert len(specs) == 23
     plan = _by_id(_initial())["init_plan"]
     assert f"len(fqs) != {len(specs)}" in plan
     assert f"TABLE_SPECS cần {len(specs)} fq duy nhất" in plan
@@ -356,6 +357,10 @@ def test_columns_match_sources():
         for fq, cols in _exec_assigns(_cell(ddl, cell_id), names)["TABLE_COLS"].items():
             assert by_fq[fq]["cols"] == [(col, dtype, None) for col, dtype in cols]
             assert by_fq[fq]["props"] == PROPS
+    offer = "lh_vv_gold.dbo.gld_srv_product_offer"
+    offer_cols = _assign(_cell(ddl, "gldprdddlpy"), "TABLE_COLS")[offer]
+    assert by_fq[offer]["cols"] == [(col, dtype, None) for col, dtype in offer_cols]
+    assert by_fq[offer]["props"] == PROPS
     assert by_fq["lh_vv_ctrl.dbo.ctrl_cdc_state"]["partition"] == ["src_tbl"]
     assert by_fq["lh_vv_ctrl.dbo.ctrl_cdc_reject"]["partition"] == ["src_tbl"]
 
@@ -582,10 +587,13 @@ def test_pipeline_config_rows_match_sources():
     for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "pnl2edgepy"), "EDGES_ON"):
         expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
         assert seq > 0
+    for seq, src, schema, target, mode, notebook, priority in _assign(_cell(ddl, "gldprdddlpy"), "EDGES_ON"):
+        expected.append((gld, silver, src, schema, target, 1, priority, mode, None, None, notebook))
+        assert seq > 0
     namespace: dict = {}
     exec(_by_id(_initial())["init_seed_ctrl"], namespace)  # noqa: S102
     assert namespace["PIPELINE_CONFIG_ROWS"] == expected
-    assert len(expected) == 84
+    assert len(expected) == 99
 
 
 def test_cms_seed_rows_present():
